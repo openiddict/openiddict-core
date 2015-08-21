@@ -1,0 +1,7 @@
+language: csharp
+sudo: false
+script:
+  - ./build.sh verify
+mono:
+  - alpha
+  - latest
