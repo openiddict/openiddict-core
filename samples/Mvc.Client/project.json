@@ -1,0 +1,40 @@
+{
+    "webroot": "wwwroot",
+    "exclude": "wwwroot/**/*.*",
+
+    "version": "1.0.0-beta2-*",
+
+    "dependencies": {
+        "Microsoft.AspNet.Mvc": "6.0.0-*",
+        "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
+        "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+
+        "Microsoft.Framework.Logging.Console": "1.0.0-*",
+
+        "Newtonsoft.Json": "7.0.1"
+    },
+
+    "commands": {
+        "kestrel": "Microsoft.AspNet.Hosting --server=Microsoft.AspNet.Server.Kestrel --server.urls=http://localhost:53507",
+        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:53507"
+    },
+
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Net.Http": "4.0.0.0"
+            }
+        },
+
+        "dnxcore50": {
+            "dependencies": {
+                "System.Net.Http": "4.0.1-*",
+                "System.Runtime.Serialization.Primitives": "4.0.11-*"
+            }
+        }
+    }
+}

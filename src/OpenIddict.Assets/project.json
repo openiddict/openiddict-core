@@ -1,0 +1,15 @@
+﻿{
+    "version": "1.0.0-alpha1-*",
+
+    "resource": [ "fonts/*", "scripts/*", "stylesheets/*" ],
+
+    "frameworks": {
+        "dnx451": { },
+
+        "dnxcore50": {
+            "dependencies": {
+                "System.Runtime": "4.0.21-*"
+            }
+        }
+    }
+}

@@ -1,0 +1,19 @@
+﻿@using AspNet.Security.OpenIdConnect.Extensions
+@using Microsoft.IdentityModel.Protocols.OpenIdConnect
+@using OpenIddict.Models
+
+@model Tuple<OpenIdConnectMessage, Application>
+
+<div class="jumbotron">
+    <h1>Authorization</h1>
+
+    <p class="lead text-left">Do you wanna grant <strong>@Model.Item2.DisplayName</strong> an access to your resources? (scopes requested: @Model.Item1.Scope)</p>
+    <p class="lead text-left"><strong>@Model.Item2.DisplayName</strong> will be able to access the following endpoints: @string.Join(" ; ", Model.Item1.GetResources())</p>
+
+    <form enctype="application/x-www-form-urlencoded" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="unique_id" value="@Model.Item1.GetUniqueIdentifier()" />
+        <input formaction="@Url.Action("Accept")" class="btn btn-lg btn-success" name="Authorize" type="submit" value="Yeah, sure" />
+        <input formaction="@Url.Action("Deny")" class="btn btn-lg btn-danger" name="Deny" type="submit" value="Hell, no" />
+    </form>
+</div>
