@@ -17,6 +17,7 @@
             "version": "1.0.0-*"
         },
 
+        "AspNet.Hosting.Extensions": "1.0.0-*",
         "AspNet.Security.OpenIdConnect.Server": "1.0.0-*",
 
         "OpenIddict.Assets": "1.0.0-*",
@@ -26,8 +27,7 @@
     "frameworks": {
         "dnx451": {
             "dependencies": {
-                "Microsoft.AspNet.Owin": "1.0.0-*",
-                "Microsoft.Owin": "3.0.0",
+                "AspNet.Hosting.Katana.Extensions": "1.0.0-*",
                 "NWebsec.Owin": "1.0.0"
             }
         },

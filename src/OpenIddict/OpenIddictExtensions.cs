@@ -5,33 +5,20 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNet.Builder.Internal;
-using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.StaticFiles;
-using Microsoft.Dnx.Runtime;
-using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Internal;
-using Microsoft.Framework.Logging;
 using OpenIddict;
 
 #if DNX451
-using Microsoft.Owin.Builder;
-using Microsoft.Owin.BuilderProperties;
 using NWebsec.Owin;
-using Owin;
 #endif
 
 namespace Microsoft.AspNet.Builder {
@@ -104,8 +91,8 @@ namespace Microsoft.AspNet.Builder {
                     return next(context);
                 });
 
-    #if DNX451
-                builder.UseOwinAppBuilder(owin => {
+#if DNX451
+                builder.UseKatana(owin => {
                     // Insert a new middleware responsible of setting the Content-Security-Policy header.
                     // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20Content%20Security%20Policy&referringTitle=NWebsec
                     owin.UseCsp(options => options.DefaultSources(directive => directive.Self())
@@ -125,7 +112,7 @@ namespace Microsoft.AspNet.Builder {
                     // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
                     owin.UseXXssProtection(options => options.EnabledWithBlockMode());
                 });
-    #endif
+#endif
 
                 builder.UseStaticFiles(new StaticFileOptions {
                     FileProvider = new EmbeddedFileProvider(
@@ -241,108 +228,5 @@ namespace Microsoft.AspNet.Builder {
                 });
             });
         }
-
-        // Note: remove when https://github.com/aspnet-contrib/AspNet.Hosting.Extensions/pull/1 is merged.
-        internal static IApplicationBuilder Isolate(
-            [NotNull] this IApplicationBuilder app,
-            [NotNull] Action<IApplicationBuilder> configuration,
-            [NotNull] Action<IServiceCollection> serviceConfiguration) {
-            var services = new ServiceCollection();
-
-            // Retrieve the runtime services from the host provider.
-            var manifest = CallContextServiceLocator.Locator.ServiceProvider.GetService<IRuntimeServices>();
-            if (manifest != null) {
-                foreach (var service in manifest.Services) {
-                    services.AddTransient(service, sp => CallContextServiceLocator.Locator.ServiceProvider.GetService(service));
-                }
-            }
-
-            services.AddLogging();
-
-            // Copy the services added by the hosting layer.
-            services.AddInstance(app.ApplicationServices.GetRequiredService<IApplicationEnvironment>());
-            services.AddInstance(app.ApplicationServices.GetRequiredService<IApplicationLifetime>());
-            services.AddInstance(app.ApplicationServices.GetRequiredService<IHostingEnvironment>());
-            services.AddInstance(app.ApplicationServices.GetRequiredService<ILoggerFactory>());
-            services.AddInstance(app.ApplicationServices.GetRequiredService<IHttpContextAccessor>());
-            services.AddInstance(app.ApplicationServices.GetRequiredService<TelemetrySource>());
-            services.AddInstance(app.ApplicationServices.GetRequiredService<TelemetryListener>());
-
-            serviceConfiguration(services);
-            var provider = services.BuildServiceProvider();
-
-            var builder = new ApplicationBuilder(null);
-            builder.ApplicationServices = provider;
-
-            builder.Use(next => async context => {
-                var priorApplicationServices = context.ApplicationServices;
-                var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
-
-                // Store the original request services in the current ASP.NET context.
-                context.Items[typeof(IServiceProvider)] = context.RequestServices;
-
-                try {
-                    using (var scope = scopeFactory.CreateScope()) {
-                        context.ApplicationServices = provider;
-                        context.RequestServices = scope.ServiceProvider;
-
-                        await next(context);
-                    }
-                }
-                finally {
-                    context.RequestServices = null;
-                    context.ApplicationServices = priorApplicationServices;
-                }
-            });
-
-            configuration(builder);
-
-            return app.Use(next => {
-                // Run the rest of the pipeline in the original context,
-                // with the services defined by the parent application builder.
-                builder.Run(async context => {
-                    var priorApplicationServices = context.ApplicationServices;
-                    var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
-
-                    try {
-                        using (var scope = scopeFactory.CreateScope()) {
-                            context.ApplicationServices = app.ApplicationServices;
-                            context.RequestServices = scope.ServiceProvider;
-
-                            await next(context);
-                        }
-                    }
-                    finally {
-                        context.RequestServices = null;
-                        context.ApplicationServices = priorApplicationServices;
-                    }
-                });
-
-                var branch = builder.Build();
-
-                return context => branch(context);
-            });
-        }
-
-#if DNX451
-        // Note: remove when this extension is moved to https://github.com/aspnet-contrib/AspNet.Hosting.Extensions
-        internal static IApplicationBuilder UseOwinAppBuilder(
-            [NotNull] this IApplicationBuilder app,
-            [NotNull] Action<IAppBuilder> configuration) {
-            return app.UseOwin(setup => setup(next => {
-                var builder = new AppBuilder();
-                var lifetime = app.ApplicationServices.GetService<IApplicationLifetime>();
-
-                var properties = new AppProperties(builder.Properties);
-                properties.AppName = app.ApplicationServices.GetApplicationUniqueIdentifier();
-                properties.OnAppDisposing = lifetime?.ApplicationStopping ?? CancellationToken.None;
-                properties.DefaultApp = next;
-
-                configuration(builder);
-
-                return builder.Build<Func<IDictionary<string, object>, Task>>();
-            }));
-        }
-#endif
     }
 }
