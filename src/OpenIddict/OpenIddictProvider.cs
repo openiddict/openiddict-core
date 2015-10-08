@@ -15,8 +15,8 @@ using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using OpenIddict.Models;
 
 namespace OpenIddict {

@@ -10,9 +10,9 @@
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
 
-        "Microsoft.Framework.Configuration.Json": "1.0.0-*",
+        "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
 
-        "Microsoft.Framework.NotNullAttribute.Sources": {
+        "Microsoft.Extensions.NotNullAttribute.Sources": {
             "type": "build",
             "version": "1.0.0-*"
         },

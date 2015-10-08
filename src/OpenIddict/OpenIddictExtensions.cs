@@ -13,8 +13,8 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.StaticFiles;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using OpenIddict;
 
 #if DNX451
