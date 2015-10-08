@@ -1,6 +1,6 @@
 {
     "webroot": "wwwroot",
-    "exclude": "wwwroot/**/*.*",
+    "exclude": "wwwroot/**/*",
 
     "version": "1.0.0-beta2-*",
 
