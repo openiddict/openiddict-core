@@ -79,5 +79,11 @@ namespace OpenIddict {
         /// Setting this option to false in production is strongly encouraged to mitigate man-in-the-middle attacks.
         /// </summary>
         public bool AllowInsecureHttp { get; set; }
+
+        /// <summary>
+        /// Set to <c>true</c> to allow you to use your own views/styles/scripts in your server.
+        /// When using custom views you MUST provide Razor views for Authorize, Logout, and SignIn actions.
+        /// </summary>
+        public bool UseCustomViews { get; set; }
     }
 }
