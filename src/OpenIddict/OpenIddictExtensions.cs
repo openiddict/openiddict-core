@@ -113,12 +113,13 @@ namespace Microsoft.AspNet.Builder {
                     owin.UseXXssProtection(options => options.EnabledWithBlockMode());
                 });
 #endif
-
-                builder.UseStaticFiles(new StaticFileOptions {
-                    FileProvider = new EmbeddedFileProvider(
-                        assembly: Assembly.Load(new AssemblyName("OpenIddict.Assets")),
-                        baseNamespace: "OpenIddict.Assets")
-                });
+                if (!instance.UseCustomViews) {
+                    builder.UseStaticFiles(new StaticFileOptions {
+                        FileProvider = new EmbeddedFileProvider(
+                            assembly: Assembly.Load(new AssemblyName("OpenIddict.Assets")),
+                            baseNamespace: "OpenIddict.Assets")
+                    });
+                }
 
                 builder.UseCors(options => {
                     options.AllowAnyHeader();
@@ -192,9 +193,11 @@ namespace Microsoft.AspNet.Builder {
                     // Update the Razor options to use an embedded provider
                     // extracting its views from the current assembly.
                     .AddRazorOptions(options => {
-                        options.FileProvider = new EmbeddedFileProvider(
-                            assembly: typeof(OpenIddictOptions).GetTypeInfo().Assembly,
-                            baseNamespace: typeof(OpenIddictOptions).Namespace);
+                        if (!instance.UseCustomViews) {
+                            options.FileProvider = new EmbeddedFileProvider(
+                                assembly: typeof(OpenIddictOptions).GetTypeInfo().Assembly,
+                                baseNamespace: typeof(OpenIddictOptions).Namespace);
+                        }
                     });
 
                 // Register the sign-in manager in the isolated container.
