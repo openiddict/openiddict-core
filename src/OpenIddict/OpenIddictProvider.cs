@@ -14,7 +14,6 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Data.Entity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using OpenIddict.Models;
@@ -48,12 +47,9 @@ namespace OpenIddict {
                 return;
             }
 
-            var database = context.HttpContext.RequestServices.GetRequiredService<TContext>();
-
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await (from entity in database.Applications
-                                     where entity.ApplicationID == context.ClientId
-                                     select entity).SingleOrDefaultAsync(context.HttpContext.RequestAborted);
+            var applicationStore = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationStore>();
+            var application = await applicationStore.FindApplicationByIdAsync(context.ClientId, context.HttpContext.RequestAborted);
 
             if (application == null) {
                 context.Rejected(
@@ -75,9 +71,10 @@ namespace OpenIddict {
         }
 
         public override async Task ValidateClientLogoutRedirectUri([NotNull] ValidateClientLogoutRedirectUriContext context) {
-            var database = context.HttpContext.RequestServices.GetRequiredService<TContext>();
+            var applicationStore = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationStore>();
+            var application = await applicationStore.FindApplicationByLogoutRedirectUri(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted);
 
-            if (!await database.Applications.AnyAsync(application => application.LogoutRedirectUri == context.PostLogoutRedirectUri)) {
+            if (application == null) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid post_logout_redirect_uri");
@@ -114,9 +111,8 @@ namespace OpenIddict {
             var database = context.HttpContext.RequestServices.GetRequiredService<TContext>();
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await (from entity in database.Applications
-                                     where entity.ApplicationID == context.ClientId
-                                     select entity).SingleOrDefaultAsync(context.HttpContext.RequestAborted);
+            var applicationStore = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationStore>();
+            var application = await applicationStore.FindApplicationByIdAsync(context.ClientId, context.HttpContext.RequestAborted);
 
             if (application == null) {
                 context.Rejected(

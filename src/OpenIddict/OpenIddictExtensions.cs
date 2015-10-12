@@ -62,16 +62,17 @@ namespace Microsoft.AspNet.Builder {
             where TContext : OpenIddictContext<TUser, TRole, string>
             where TRole : IdentityRole<string>
             where TUser : IdentityUser<string> {
-            return app.UseOpenIddict<TContext, TUser, TRole, string>(configuration);
+            return app.UseOpenIddict<TContext, TUser, TRole, string, DefaultOpenIddictApplicationStore<TUser, TRole, string>>(configuration);
         }
 
-        public static IApplicationBuilder UseOpenIddict<TContext, TUser, TRole, TKey>(
+        public static IApplicationBuilder UseOpenIddict<TContext, TUser, TRole, TKey, TApplicationStore>(
             [NotNull] this IApplicationBuilder app,
             [NotNull] Action<OpenIddictOptions> configuration)
             where TContext : OpenIddictContext<TUser, TRole, TKey>
             where TUser : IdentityUser<TKey>
             where TRole : IdentityRole<TKey>
-            where TKey : IEquatable<TKey> {
+            where TKey : IEquatable<TKey>
+            where TApplicationStore : class, IOpenIddictApplicationStore {
             var instance = new OpenIddictOptions();
 
             // Turn ApplicationCanDisplayErrors on to ensure ASP.NET MVC 6
@@ -229,6 +230,9 @@ namespace Microsoft.AspNet.Builder {
                     // Resolve the EntityFramework context from the parent container.
                     return container.GetRequiredService<TContext>();
                 });
+
+                // Register the ApplicationStore in the isolated container.
+                services.AddScoped<IOpenIddictApplicationStore, TApplicationStore>();
             });
         }
     }

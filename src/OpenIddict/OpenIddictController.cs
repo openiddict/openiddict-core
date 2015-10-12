@@ -83,9 +83,8 @@ namespace OpenIddict {
             // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
             // corresponds to the client_id specified in the authorization request using
             // IOpenIdConnectServerProvider.ValidateClientRedirectUri (see OpenIddictProvider.cs).
-            var application = await (from entity in Context.Applications
-                                     where entity.ApplicationID == request.ClientId
-                                     select entity).SingleOrDefaultAsync(HttpContext.RequestAborted);
+            var applicationStore = HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationStore>();
+            var application = await applicationStore.FindApplicationByIdAsync(request.ClientId, HttpContext.RequestAborted);
 
             // In theory, this null check is thus not strictly necessary. That said, a race condition
             // and a null reference exception could appear here if you manually removed the application
@@ -100,8 +99,7 @@ namespace OpenIddict {
             return View("Authorize", Tuple.Create(request, application));
         }
 
-        [Authorize]
-        [HttpPost, ValidateAntiForgeryToken]
+        [Authorize, HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Accept() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
@@ -143,9 +141,8 @@ namespace OpenIddict {
             // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
             // corresponds to the client_id specified in the authorization request using
             // IOpenIdConnectServerProvider.ValidateClientRedirectUri (see OpenIddictProvider.cs).
-            var application = await (from entity in Context.Applications
-                                     where entity.ApplicationID == request.ClientId
-                                     select entity).SingleOrDefaultAsync(HttpContext.RequestAborted);
+            var applicationStore = HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationStore>();
+            var application = await applicationStore.FindApplicationByIdAsync(request.ClientId, HttpContext.RequestAborted);
 
             // In theory, this null check is thus not strictly necessary. That said, a race condition
             // and a null reference exception could appear here if you manually removed the application
@@ -174,8 +171,7 @@ namespace OpenIddict {
             return new EmptyResult();
         }
 
-        [Authorize]
-        [HttpPost, ValidateAntiForgeryToken]
+        [Authorize, HttpPost, ValidateAntiForgeryToken]
         public IActionResult Deny() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
