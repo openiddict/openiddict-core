@@ -1,0 +1,41 @@
+{
+    "version": "1.0.0-alpha1-*",
+
+    "resource": "Views/**",
+
+    "dependencies": {
+        "Microsoft.AspNet.Cors": "6.0.0-*",
+        "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
+        "Microsoft.AspNet.Identity": "3.0.0-*",
+        "Microsoft.AspNet.Mvc": "6.0.0-*",
+        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+
+        "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+
+        "Microsoft.Extensions.NotNullAttribute.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+
+        "AspNet.Hosting.Extensions": "1.0.0-*",
+        "AspNet.Security.OpenIdConnect.Server": "1.0.0-*",
+
+        "OpenIddict.Assets": "1.0.0-*"
+    },
+
+    "frameworks": {
+        "dnx451": {
+            "dependencies": {
+                "AspNet.Hosting.Katana.Extensions": "1.0.0-*",
+                "NWebsec.Owin": "1.0.0"
+            }
+        },
+
+        "dnxcore50": {
+            "dependencies": {
+                "System.Linq": "4.0.1-*",
+                "System.Runtime.Serialization.Primitives": "4.0.11-*"
+            }
+        }
+    }
+}

@@ -12,19 +12,11 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Data.Entity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
-using OpenIddict.Models;
 
 namespace OpenIddict {
-    public class OpenIddictProvider<TContext, TUser, TRole, TKey> : OpenIdConnectServerProvider
-        where TContext : OpenIddictContext<TUser, TRole, TKey>
-        where TUser : IdentityUser<TKey>
-        where TRole : IdentityRole<TKey>
-        where TKey : IEquatable<TKey> {
+    public class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
         public override Task MatchEndpoint([NotNull] MatchEndpointContext context) {
             // Note: by default, OpenIdConnectServerHandler only handles authorization requests made to AuthorizationEndpointPath.
             // This context handler uses a more relaxed policy that allows extracting authorization requests received at
@@ -48,13 +40,10 @@ namespace OpenIddict {
                 return;
             }
 
-            var database = context.HttpContext.RequestServices.GetRequiredService<TContext>();
-
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await (from entity in database.Applications
-                                     where entity.ApplicationID == context.ClientId
-                                     select entity).SingleOrDefaultAsync(context.HttpContext.RequestAborted);
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
+            var application = await manager.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -63,7 +52,7 @@ namespace OpenIddict {
                 return;
             }
 
-            if (!string.Equals(context.RedirectUri, application.RedirectUri, StringComparison.Ordinal)) {
+            if (!string.Equals(context.RedirectUri, await manager.GetRedirectUriAsync(application), StringComparison.Ordinal)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid redirect_uri");
@@ -75,9 +64,10 @@ namespace OpenIddict {
         }
 
         public override async Task ValidateClientLogoutRedirectUri([NotNull] ValidateClientLogoutRedirectUriContext context) {
-            var database = context.HttpContext.RequestServices.GetRequiredService<TContext>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
-            if (!await database.Applications.AnyAsync(application => application.LogoutRedirectUri == context.PostLogoutRedirectUri)) {
+            var application = await manager.FindApplicationByLogoutRedirectUri(context.PostLogoutRedirectUri);
+            if (application == null) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid post_logout_redirect_uri");
@@ -111,13 +101,10 @@ namespace OpenIddict {
                 return;
             }
 
-            var database = context.HttpContext.RequestServices.GetRequiredService<TContext>();
-
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await (from entity in database.Applications
-                                     where entity.ApplicationID == context.ClientId
-                                     select entity).SingleOrDefaultAsync(context.HttpContext.RequestAborted);
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
+            var application = await manager.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -126,8 +113,10 @@ namespace OpenIddict {
                 return;
             }
 
-            // Reject tokens requests containing a client_secret if the client application is not confidential.
-            if (application.Type == ApplicationType.Public && !string.IsNullOrEmpty(context.ClientSecret)) {
+            // Reject tokens requests containing a client_secret
+            // if the client application is not confidential.
+            var type = await manager.GetApplicationTypeAsync(application);
+            if (type == OpenIddictConstants.ApplicationTypes.Public && !string.IsNullOrEmpty(context.ClientSecret)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Public clients are not allowed to send a client_secret");
@@ -136,8 +125,8 @@ namespace OpenIddict {
             }
 
             // Confidential applications MUST authenticate.
-            else if (application.Type == ApplicationType.Confidential &&
-                !string.Equals(context.ClientSecret, application.Secret, StringComparison.Ordinal)) {
+            else if (type == OpenIddictConstants.ApplicationTypes.Confidential && 
+                    !await manager.ValidateSecretAsync(application, context.ClientSecret)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid credentials: ensure that you specified a correct client_secret");
@@ -173,7 +162,7 @@ namespace OpenIddict {
                 return;
             }
 
-            var manager = context.HttpContext.RequestServices.GetRequiredService<UserManager<TUser>>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
             // Ensure the user still exists.
             var user = await manager.FindByIdAsync(principal.GetUserId());
@@ -208,7 +197,7 @@ namespace OpenIddict {
                 return;
             }
 
-            var manager = context.HttpContext.RequestServices.GetRequiredService<UserManager<TUser>>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
             // Note: principal is guaranteed to be non-null since ValidateAuthorizationRequest
             // rejects prompt=none requests missing or having an invalid id_token_hint.
@@ -225,16 +214,16 @@ namespace OpenIddict {
             }
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, user.Id.ToString());
+            identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user));
 
             // Only add the name claim if the "profile" scope was present in the token request.
             if (context.Request.GetScopes().Contains("profile", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Name, user.UserName, destination: "id_token token");
+                identity.AddClaim(ClaimTypes.Name, await manager.GetUserNameAsync(user), destination: "id_token token");
             }
 
             // Only add the email address if the "email" scope was present in the token request.
             if (context.Request.GetScopes().Contains("email", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Email, user.Email, destination: "id_token token");
+                identity.AddClaim(ClaimTypes.Email, await manager.GetEmailAsync(user), destination: "id_token token");
             }
 
             // Call SignInAsync to create and return a new OpenID Connect response containing the serialized code/tokens.
@@ -246,7 +235,7 @@ namespace OpenIddict {
         }
 
         public override async Task GrantResourceOwnerCredentials([NotNull] GrantResourceOwnerCredentialsContext context) {
-            var manager = context.HttpContext.RequestServices.GetRequiredService<UserManager<TUser>>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
             var user = await manager.FindByNameAsync(context.UserName);
             if (user == null) {
@@ -291,18 +280,18 @@ namespace OpenIddict {
             }
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, user.Id.ToString());
+            identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user));
 
             // Only add the name claim if the "profile" scope was present in the token request.
             if (context.Request.GetScopes().Contains("profile", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Name, user.UserName, destination: "id_token token");
+                identity.AddClaim(ClaimTypes.Name, await manager.GetUserNameAsync(user), destination: "id_token token");
             }
 
             // Only add the email address if the "email" scope was present in the token request.
             if (context.Request.GetScopes().Contains("email", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Email, user.Email, destination: "id_token token");
+                identity.AddClaim(ClaimTypes.Email, await manager.GetEmailAsync(user), destination: "id_token token");
             }
-            
+
             context.Validated(new ClaimsPrincipal(identity));
         }
     }

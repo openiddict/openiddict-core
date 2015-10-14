@@ -1,13 +1,16 @@
-{
+﻿{
     "version": "1.0.0-alpha1-*",
 
     "dependencies": {
-        "OpenIddict.EF": "1.0.0-*",
+        "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
 
         "Microsoft.Extensions.NotNullAttribute.Sources": {
             "type": "build",
             "version": "1.0.0-*"
-        }
+        },
+
+        "OpenIddict.Core": "1.0.0-*",
+        "OpenIddict.Models": "1.0.0-*"
     },
 
     "frameworks": {

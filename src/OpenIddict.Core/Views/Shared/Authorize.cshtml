@@ -1,14 +1,13 @@
 ﻿@using AspNet.Security.OpenIdConnect.Extensions
 @using Microsoft.IdentityModel.Protocols.OpenIdConnect
-@using OpenIddict.Models
 
-@model Tuple<OpenIdConnectMessage, Application>
+@model Tuple<OpenIdConnectMessage, string>
 
 <div class="jumbotron">
     <h1>Authorization</h1>
 
-    <p class="lead text-left">Do you wanna grant <strong>@Model.Item2.DisplayName</strong> an access to your resources? (scopes requested: @Model.Item1.Scope)</p>
-    <p class="lead text-left"><strong>@Model.Item2.DisplayName</strong> will be able to access the following endpoints: @string.Join(" ; ", Model.Item1.GetResources())</p>
+    <p class="lead text-left">Do you wanna grant <strong>@Model.Item2</strong> an access to your resources? (scopes requested: @Model.Item1.Scope)</p>
+    <p class="lead text-left"><strong>@Model.Item2</strong> will be able to access the following endpoints: @string.Join(" ; ", Model.Item1.GetResources())</p>
 
     <form enctype="application/x-www-form-urlencoded" method="post">
         @Html.AntiForgeryToken()

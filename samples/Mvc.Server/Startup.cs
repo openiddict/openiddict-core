@@ -34,7 +34,8 @@ namespace Mvc.Server {
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddOpenIddict();
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
@@ -75,7 +76,7 @@ namespace Mvc.Server {
 
             // Note: OpenIddict must be added after
             // ASP.NET Identity and the external providers.
-            app.UseOpenIddict<ApplicationDbContext, ApplicationUser>(options => {
+            app.UseOpenIddict(options => {
                 options.AllowInsecureHttp = true;
             });
 

@@ -13,30 +13,21 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIddict {
-    // Note: this controller is generic and doesn't need to
-    // be marked as internal to prevent MVC from discovering it.
-    public class OpenIddictController<TContext, TUser, TRole, TKey> : Controller
-        where TContext : OpenIddictContext<TUser, TRole, TKey>
-        where TUser : IdentityUser<TKey>
-        where TRole : IdentityRole<TKey>
-        where TKey : IEquatable<TKey> {
-        public OpenIddictController([NotNull] TContext context) {
-            Context = context;
+    // Note: this controller is generic and doesn't need to be marked as internal to prevent MVC from discovering it.
+    public class OpenIddictController<TUser, TApplication> : Controller where TUser : class where TApplication : class {
+        public OpenIddictController([NotNull] OpenIddictManager<TUser, TApplication> manager) {
+            Manager = manager;
         }
 
         /// <summary>
-        /// Gets the OpenIddict context.
+        /// Gets the OpenIddict manager used by the controller.
         /// </summary>
-        protected TContext Context { get; }
+        protected virtual OpenIddictManager<TUser, TApplication> Manager { get; }
 
         /// <summary>
         /// Gets the OpenIddict options used by the server.
@@ -83,9 +74,7 @@ namespace OpenIddict {
             // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
             // corresponds to the client_id specified in the authorization request using
             // IOpenIdConnectServerProvider.ValidateClientRedirectUri (see OpenIddictProvider.cs).
-            var application = await (from entity in Context.Applications
-                                     where entity.ApplicationID == request.ClientId
-                                     select entity).SingleOrDefaultAsync(HttpContext.RequestAborted);
+            var application = await Manager.FindApplicationByIdAsync(request.ClientId);
 
             // In theory, this null check is thus not strictly necessary. That said, a race condition
             // and a null reference exception could appear here if you manually removed the application
@@ -97,11 +86,10 @@ namespace OpenIddict {
                 });
             }
 
-            return View("Authorize", Tuple.Create(request, application));
+            return View("Authorize", Tuple.Create(request, await Manager.GetDisplayNameAsync(application)));
         }
 
-        [Authorize]
-        [HttpPost, ValidateAntiForgeryToken]
+        [Authorize, HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Accept() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
@@ -113,11 +101,8 @@ namespace OpenIddict {
                 });
             }
 
-            // Resolve the user manager from the services provider.
-            var manager = HttpContext.RequestServices.GetRequiredService<UserManager<TUser>>();
-
             // Retrieve the user data using the unique identifier.
-            var user = await manager.FindByIdAsync(User.GetUserId());
+            var user = await Manager.FindByIdAsync(User.GetUserId());
             if (user == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.ServerError,
@@ -128,24 +113,22 @@ namespace OpenIddict {
             // Create a new ClaimsIdentity containing the claims that
             // will be used to create an id_token, a token or a code.
             var identity = new ClaimsIdentity(Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, user.Id.ToString());
+            identity.AddClaim(ClaimTypes.NameIdentifier, await Manager.GetUserIdAsync(user));
 
             // Only add the name claim if the "profile" scope was present in the token request.
             if (request.GetScopes().Contains("profile", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Name, user.UserName, destination: "id_token token");
+                identity.AddClaim(ClaimTypes.Name, await Manager.GetUserNameAsync(user), destination: "id_token token");
             }
 
             // Only add the email address if the "email" scope was present in the token request.
             if (request.GetScopes().Contains("email", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Email, user.Email, destination: "id_token token");
+                identity.AddClaim(ClaimTypes.Email, await Manager.GetEmailAsync(user), destination: "id_token token");
             }
 
             // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
             // corresponds to the client_id specified in the authorization request using
             // IOpenIdConnectServerProvider.ValidateClientRedirectUri (see OpenIddictProvider.cs).
-            var application = await (from entity in Context.Applications
-                                     where entity.ApplicationID == request.ClientId
-                                     select entity).SingleOrDefaultAsync(HttpContext.RequestAborted);
+            var application = await Manager.FindApplicationByIdAsync(request.ClientId);
 
             // In theory, this null check is thus not strictly necessary. That said, a race condition
             // and a null reference exception could appear here if you manually removed the application
@@ -161,8 +144,8 @@ namespace OpenIddict {
             // Note: setting identity.Actor is not mandatory but can be useful to access
             // the whole delegation chain from the resource server (see ResourceController.cs).
             identity.Actor = new ClaimsIdentity(Options.AuthenticationScheme);
-            identity.Actor.AddClaim(ClaimTypes.NameIdentifier, application.ApplicationID);
-            identity.Actor.AddClaim(ClaimTypes.Name, application.DisplayName, destination: "id_token token");
+            identity.Actor.AddClaim(ClaimTypes.NameIdentifier, request.ClientId);
+            identity.Actor.AddClaim(ClaimTypes.Name, await Manager.GetDisplayNameAsync(application), destination: "id_token token");
 
             // This call will instruct AspNet.Security.OpenIdConnect.Server to serialize
             // the specified identity to build appropriate tokens (id_token and token).
@@ -174,8 +157,7 @@ namespace OpenIddict {
             return new EmptyResult();
         }
 
-        [Authorize]
-        [HttpPost, ValidateAntiForgeryToken]
+        [Authorize, HttpPost, ValidateAntiForgeryToken]
         public IActionResult Deny() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
