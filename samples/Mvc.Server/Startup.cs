@@ -41,10 +41,14 @@ namespace Mvc.Server {
         }
 
         public void Configure(IApplicationBuilder app) {
+            app.UseIISPlatformHandler();
+
             var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
             factory.AddConsole();
 
+
             app.UseStaticFiles();
+
 
             // Add a middleware used to validate access
             // tokens and protect the API endpoints.

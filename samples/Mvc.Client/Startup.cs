@@ -23,7 +23,11 @@ namespace Mvc.Client {
         public void Configure(IApplicationBuilder app, IRuntimeEnvironment environment) {
             var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
             factory.AddConsole();
-            
+
+            app.UseIISPlatformHandler();
+
+            app.UseStaticFiles();
+
             // Insert a new cookies middleware in the pipeline to store the user
             // identity after he has been redirected from the identity provider.
             app.UseCookieAuthentication(options => {
@@ -63,7 +67,6 @@ namespace Mvc.Client {
                     docRetriever: new HttpDocumentRetriever { RequireHttps = false });
             });
 
-            app.UseStaticFiles();
 
             app.UseMvc();
         }
