@@ -1,13 +1,11 @@
 {
     "webroot": "wwwroot",
-    "exclude": "wwwroot/**/*",
-
-    "version": "1.0.0-*",
 
     "dependencies": {
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
         "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
+        "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
@@ -18,22 +16,25 @@
     },
 
     "commands": {
-        "kestrel": "Microsoft.AspNet.Hosting --server=Microsoft.AspNet.Server.Kestrel --server.urls=http://localhost:53507",
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:53507"
+        "web": "Microsoft.AspNet.Server.Kestrel"
     },
 
     "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Net.Http": "4.0.0.0"
-            }
-        },
+        "dnx451": { },
+        "dnxcore50": { }
+    },
 
-        "dnxcore50": {
-            "dependencies": {
-                "System.Net.Http": "4.0.1-*",
-                "System.Runtime.Serialization.Primitives": "4.0.11-*"
-            }
-        }
-    }
+    "exclude": [
+        "wwwroot",
+        "node_modules",
+        "bower_components"
+    ],
+
+    "publishExclude": [
+        "node_modules",
+        "bower_components",
+        "**.xproj",
+        "**.user",
+        "**.vspscc"
+    ]
 }

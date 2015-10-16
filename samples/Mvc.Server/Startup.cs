@@ -39,6 +39,10 @@ namespace Mvc.Server {
             var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
             factory.AddConsole();
 
+            app.UseIISPlatformHandler(options => {
+                options.FlowWindowsAuthentication = false;
+            });
+
             app.UseStaticFiles();
 
             // Add a middleware used to validate access

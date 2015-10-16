@@ -20,7 +20,13 @@ namespace Mvc.Client {
         public void Configure(IApplicationBuilder app) {
             var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
             factory.AddConsole();
-            
+
+            app.UseIISPlatformHandler(options => {
+                options.FlowWindowsAuthentication = false;
+            });
+
+            app.UseStaticFiles();
+
             // Insert a new cookies middleware in the pipeline to store the user
             // identity after he has been redirected from the identity provider.
             app.UseCookieAuthentication(options => {
@@ -54,7 +60,6 @@ namespace Mvc.Client {
                 options.Scope.Add("email");
             });
 
-            app.UseStaticFiles();
 
             app.UseMvc();
         }
