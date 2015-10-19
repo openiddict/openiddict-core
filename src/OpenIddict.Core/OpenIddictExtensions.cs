@@ -24,6 +24,9 @@ namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
         public static OpenIddictBuilder AddOpenIddictCore<TApplication>(
             [NotNull] this IdentityBuilder builder) where TApplication : class {
+            builder.Services.AddAuthentication();
+            builder.Services.AddCaching();
+
             builder.Services.AddSingleton(
                 typeof(OpenIdConnectServerProvider),
                 typeof(OpenIddictProvider<,>).MakeGenericType(
@@ -56,9 +59,67 @@ namespace Microsoft.AspNet.Builder {
             // Call the configuration delegate defined by the user.
             configuration(instance);
 
-            var types = app.ApplicationServices.GetRequiredService<OpenIddictBuilder>();
+            if (!instance.UseCustomViews) {
+                app.UseStaticFiles(new StaticFileOptions {
+                    FileProvider = new EmbeddedFileProvider(
+                        assembly: Assembly.Load(new AssemblyName("OpenIddict.Assets")),
+                        baseNamespace: "OpenIddict.Assets")
+                });
+            }
 
-            // Run OpenIddict in an isolated environment.
+            app.UseCors(options => {
+                options.AllowAnyHeader();
+                options.AllowAnyMethod();
+                options.AllowAnyOrigin();
+                options.AllowCredentials();
+            });
+
+            // Add OpenIdConnectServerMiddleware to the ASP.NET 5 pipeline.
+            app.UseOpenIdConnectServer(options => {
+                // Resolve the OpenIddict provider from the global services container.
+                options.Provider = app.ApplicationServices.GetRequiredService<OpenIdConnectServerProvider>();
+
+                // Copy the OpenIddict options to the ASOS configuration.
+                options.Options.AuthenticationScheme = instance.AuthenticationScheme;
+
+                options.Options.Issuer = instance.Issuer;
+
+                options.Options.AuthorizationEndpointPath = instance.AuthorizationEndpointPath;
+                options.Options.LogoutEndpointPath = instance.LogoutEndpointPath;
+
+                options.Options.AccessTokenLifetime = instance.AccessTokenLifetime;
+                options.Options.AuthorizationCodeLifetime = instance.AuthorizationCodeLifetime;
+                options.Options.IdentityTokenLifetime = instance.IdentityTokenLifetime;
+                options.Options.RefreshTokenLifetime = instance.RefreshTokenLifetime;
+
+                options.Options.ApplicationCanDisplayErrors = instance.ApplicationCanDisplayErrors;
+                options.Options.AllowInsecureHttp = instance.AllowInsecureHttp;
+            });
+
+#if DNX451
+            app.UseKatana(owin => {
+                // Insert a new middleware responsible of setting the Content-Security-Policy header.
+                // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20Content%20Security%20Policy&referringTitle=NWebsec
+                owin.UseCsp(options => options.DefaultSources(directive => directive.Self())
+                                              .ImageSources(directive => directive.Self().CustomSources("*"))
+                                              .ScriptSources(directive => directive.UnsafeInline())
+                                              .StyleSources(directive => directive.Self().UnsafeInline()));
+
+                // Insert a new middleware responsible of setting the X-Content-Type-Options header.
+                // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
+                owin.UseXContentTypeOptions();
+
+                // Insert a new middleware responsible of setting the X-Frame-Options header.
+                // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
+                owin.UseXfo(options => options.Deny());
+
+                // Insert a new middleware responsible of setting the X-Xss-Protection header.
+                // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
+                owin.UseXXssProtection(options => options.EnabledWithBlockMode());
+            });
+#endif
+
+            // Run the rest of the pipeline in an isolated environment.
             return app.Isolate(builder => {
                 // Add the options to the ASP.NET context
                 // before executing the rest of the pipeline.
@@ -66,65 +127,6 @@ namespace Microsoft.AspNet.Builder {
                     context.Items[typeof(OpenIddictOptions)] = instance;
 
                     return next(context);
-                });
-
-#if DNX451
-                builder.UseKatana(owin => {
-                    // Insert a new middleware responsible of setting the Content-Security-Policy header.
-                    // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20Content%20Security%20Policy&referringTitle=NWebsec
-                    owin.UseCsp(options => options.DefaultSources(directive => directive.Self())
-                                                  .ImageSources(directive => directive.Self().CustomSources("*"))
-                                                  .ScriptSources(directive => directive.UnsafeInline())
-                                                  .StyleSources(directive => directive.Self().UnsafeInline()));
-
-                    // Insert a new middleware responsible of setting the X-Content-Type-Options header.
-                    // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
-                    owin.UseXContentTypeOptions();
-
-                    // Insert a new middleware responsible of setting the X-Frame-Options header.
-                    // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
-                    owin.UseXfo(options => options.Deny());
-
-                    // Insert a new middleware responsible of setting the X-Xss-Protection header.
-                    // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
-                    owin.UseXXssProtection(options => options.EnabledWithBlockMode());
-                });
-#endif
-                if (!instance.UseCustomViews) {
-                    builder.UseStaticFiles(new StaticFileOptions {
-                        FileProvider = new EmbeddedFileProvider(
-                            assembly: Assembly.Load(new AssemblyName("OpenIddict.Assets")),
-                            baseNamespace: "OpenIddict.Assets")
-                    });
-                }
-
-                builder.UseCors(options => {
-                    options.AllowAnyHeader();
-                    options.AllowAnyMethod();
-                    options.AllowAnyOrigin();
-                    options.AllowCredentials();
-                });
-
-                // Add OpenIdConnectServerMiddleware to the ASP.NET 5 pipeline.
-                builder.UseOpenIdConnectServer(options => {
-                    // Resolve the OpenIddict provider from the global services container.
-                    options.Provider = app.ApplicationServices.GetRequiredService<OpenIdConnectServerProvider>();
-
-                    // Copy the OpenIddict options to the ASOS configuration.
-                    options.Options.AuthenticationScheme = instance.AuthenticationScheme;
-
-                    options.Options.Issuer = instance.Issuer;
-
-                    options.Options.AuthorizationEndpointPath = instance.AuthorizationEndpointPath;
-                    options.Options.LogoutEndpointPath = instance.LogoutEndpointPath;
-
-                    options.Options.AccessTokenLifetime = instance.AccessTokenLifetime;
-                    options.Options.AuthorizationCodeLifetime = instance.AuthorizationCodeLifetime;
-                    options.Options.IdentityTokenLifetime = instance.IdentityTokenLifetime;
-                    options.Options.RefreshTokenLifetime = instance.RefreshTokenLifetime;
-
-                    options.Options.ApplicationCanDisplayErrors = instance.ApplicationCanDisplayErrors;
-                    options.Options.AllowInsecureHttp = instance.AllowInsecureHttp;
                 });
 
                 // Register ASP.NET MVC 6 and the actions
@@ -157,13 +159,12 @@ namespace Microsoft.AspNet.Builder {
                     }
                 });
             }, services => {
-                services.AddAuthentication();
-                services.AddCaching();
+                var builder = app.ApplicationServices.GetRequiredService<OpenIddictBuilder>();
 
                 services.AddMvc()
                     // Register the OpenIddict controller.
                     .AddControllersAsServices(new[] {
-                        typeof(OpenIddictController<,>).MakeGenericType(types.UserType, types.ApplicationType)
+                        typeof(OpenIddictController<,>).MakeGenericType(builder.UserType, builder.ApplicationType)
                     })
 
                     // Update the Razor options to use an embedded provider
@@ -177,23 +178,23 @@ namespace Microsoft.AspNet.Builder {
                     });
 
                 // Register the sign-in manager in the isolated container.
-                services.AddScoped(typeof(SignInManager<>).MakeGenericType(types.UserType), provider => {
+                services.AddScoped(typeof(SignInManager<>).MakeGenericType(builder.UserType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
                     Debug.Assert(container != null);
 
                     // Resolve the sign-in manager from the parent container.
-                    return container.GetRequiredService(typeof(SignInManager<>).MakeGenericType(types.UserType));
+                    return container.GetRequiredService(typeof(SignInManager<>).MakeGenericType(builder.UserType));
                 });
 
                 // Register the user manager in the isolated container.
-                services.AddScoped(typeof(OpenIddictManager<,>).MakeGenericType(types.UserType, types.ApplicationType), provider => {
+                services.AddScoped(typeof(OpenIddictManager<,>).MakeGenericType(builder.UserType, builder.ApplicationType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
                     Debug.Assert(container != null);
 
                     // Resolve the user manager from the parent container.
-                    return container.GetRequiredService(typeof(OpenIddictManager<,>).MakeGenericType(types.UserType, types.ApplicationType));
+                    return container.GetRequiredService(typeof(OpenIddictManager<,>).MakeGenericType(builder.UserType, builder.ApplicationType));
                 });
             });
         }
