@@ -8,10 +8,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 
 namespace OpenIddict {
-    public class OpenIddictManager<TUser, TApplication> : UserManager<TUser> where TUser : class where TApplication : class {
+    public class OpenIddictManager<TUser, TApplication, TScope> : UserManager<TUser> where TUser : class where TApplication : class where TScope : class
+    {
         public OpenIddictManager([NotNull] IServiceProvider services)
             : base(services: services,
-                   store: services.GetService<IOpenIddictStore<TUser, TApplication>>(),
+                   store: services.GetService<IOpenIddictStore<TUser, TApplication, TScope>>(),
                    optionsAccessor: services.GetService<IOptions<IdentityOptions>>(),
                    passwordHasher: services.GetService<IPasswordHasher<TUser>>(),
                    userValidators: services.GetServices<IUserValidator<TUser>>(),
@@ -31,8 +32,8 @@ namespace OpenIddict {
         /// <summary>
         /// Gets the store associated with the current manager.
         /// </summary>
-        public virtual new IOpenIddictStore<TUser, TApplication> Store {
-            get { return base.Store as IOpenIddictStore<TUser, TApplication>; }
+        public virtual new IOpenIddictStore<TUser, TApplication, TScope> Store {
+            get { return base.Store as IOpenIddictStore<TUser, TApplication, TScope>; }
         }
 
         public virtual Task<TApplication> FindApplicationByIdAsync(string identifier) {

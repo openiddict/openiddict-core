@@ -12,13 +12,13 @@ using OpenIddict.Models;
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
         public static OpenIddictBuilder AddOpenIddict([NotNull] this IdentityBuilder builder) {
-            return builder.AddOpenIddictCore<Application>()
+            return builder.AddOpenIddictCore<Application, Scope>()
                           .AddEntityFrameworkStore();
         }
 
-        public static OpenIddictBuilder AddOpenIddict<TApplication>([NotNull] this IdentityBuilder builder)
+        public static OpenIddictBuilder AddOpenIddict<TApplication, TScope>([NotNull] this IdentityBuilder builder)
             where TApplication : Application {
-            return builder.AddOpenIddictCore<TApplication>()
+            return builder.AddOpenIddictCore<TApplication, TScope>()
                           .AddEntityFrameworkStore();
         }
     }

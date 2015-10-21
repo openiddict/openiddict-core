@@ -20,14 +20,15 @@ namespace Microsoft.AspNet.Builder {
             var keyType = ResolveKeyType(builder);
 
             builder.Services.AddScoped(
-                typeof(IOpenIddictStore<,>).MakeGenericType(builder.UserType, builder.ApplicationType),
-                typeof(OpenIddictStore<,,,>).MakeGenericType(builder.UserType, builder.ApplicationType, builder.RoleType, keyType));
+                typeof(IOpenIddictStore<,,>).MakeGenericType(builder.UserType, builder.ApplicationType, builder.ScopeType),
+                typeof(OpenIddictStore<,,,,>).MakeGenericType(builder.UserType, builder.ApplicationType, builder.RoleType, keyType, builder.ScopeType));
             
-            var type = typeof(OpenIddictContext<,,,>).MakeGenericType(new[] {
+            var type = typeof(OpenIddictContext<,,,,>).MakeGenericType(new[] {
                 /* TUser: */ builder.UserType,
                 /* TApplication: */ builder.ApplicationType,
                 /* TRole: */ builder.RoleType,
-                /* TKey: */ keyType
+                /* TKey: */ keyType,
+                /* TScope*/ builder.ScopeType
             });
 
             builder.Services.AddScoped(type, provider => {

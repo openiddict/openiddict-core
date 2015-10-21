@@ -16,7 +16,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
 namespace OpenIddict {
-    public class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
+    public class OpenIddictProvider<TUser, TApplication, TScope> : OpenIdConnectServerProvider where TUser : class where TApplication : class where TScope : class
+    {
         public override Task MatchEndpoint([NotNull] MatchEndpointContext context) {
             // Note: by default, OpenIdConnectServerHandler only handles authorization requests made to AuthorizationEndpointPath.
             // This context handler uses a more relaxed policy that allows extracting authorization requests received at
@@ -41,7 +42,7 @@ namespace OpenIddict {
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication, TScope>>();
 
             var application = await manager.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
@@ -64,7 +65,7 @@ namespace OpenIddict {
         }
 
         public override async Task ValidateClientLogoutRedirectUri([NotNull] ValidateClientLogoutRedirectUriContext context) {
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication, TScope>>();
 
             var application = await manager.FindApplicationByLogoutRedirectUri(context.PostLogoutRedirectUri);
             if (application == null) {
@@ -102,7 +103,7 @@ namespace OpenIddict {
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication, TScope>>();
 
             var application = await manager.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
@@ -162,7 +163,7 @@ namespace OpenIddict {
                 return;
             }
 
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication, TScope>>();
 
             // Ensure the user still exists.
             var user = await manager.FindByIdAsync(principal.GetUserId());
@@ -197,7 +198,7 @@ namespace OpenIddict {
                 return;
             }
 
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication, TScope>>();
 
             // Note: principal is guaranteed to be non-null since ValidateAuthorizationRequest
             // rejects prompt=none requests missing or having an invalid id_token_hint.
@@ -235,7 +236,7 @@ namespace OpenIddict {
         }
 
         public override async Task GrantResourceOwnerCredentials([NotNull] GrantResourceOwnerCredentialsContext context) {
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication, TScope>>();
 
             var user = await manager.FindByNameAsync(context.UserName);
             if (user == null) {

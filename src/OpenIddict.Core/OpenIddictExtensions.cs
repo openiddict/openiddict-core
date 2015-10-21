@@ -22,24 +22,25 @@ using NWebsec.Owin;
 
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
-        public static OpenIddictBuilder AddOpenIddictCore<TApplication>(
+        public static OpenIddictBuilder AddOpenIddictCore<TApplication, TScope>(
             [NotNull] this IdentityBuilder builder) where TApplication : class {
             builder.Services.AddAuthentication();
             builder.Services.AddCaching();
 
             builder.Services.AddSingleton(
                 typeof(OpenIdConnectServerProvider),
-                typeof(OpenIddictProvider<,>).MakeGenericType(
-                    builder.UserType, typeof(TApplication)));
+                typeof(OpenIddictProvider<,,>).MakeGenericType(
+                    builder.UserType, typeof(TApplication), typeof(TScope)));
 
             builder.Services.AddScoped(
-                typeof(OpenIddictManager<,>).MakeGenericType(
-                    builder.UserType, typeof(TApplication)));
+                typeof(OpenIddictManager<,,>).MakeGenericType(
+                    builder.UserType, typeof(TApplication), typeof(TScope)));
 
             var services = new OpenIddictBuilder(builder.Services) {
                 ApplicationType = typeof(TApplication),
                 RoleType = builder.RoleType,
-                UserType = builder.UserType
+                UserType = builder.UserType,
+                ScopeType = typeof(TScope)
             };
 
             builder.Services.AddInstance(services);
@@ -135,26 +136,26 @@ namespace Microsoft.AspNet.Builder {
                     // Register the actions corresponding to the authorization endpoint.
                     if (instance.AuthorizationEndpointPath.HasValue) {
                         routes.MapRoute("{D97891B4}", instance.AuthorizationEndpointPath.Value.Substring(1), new {
-                            controller = typeof(OpenIddictController<,>).Name,
-                            action = nameof(OpenIddictController<dynamic, dynamic>.Authorize)
+                            controller = typeof(OpenIddictController<,,>).Name,
+                            action = nameof(OpenIddictController<dynamic, dynamic, dynamic>.Authorize)
                         });
 
                         routes.MapRoute("{7148DB83}", instance.AuthorizationEndpointPath.Value.Substring(1) + "/accept", new {
-                            controller = typeof(OpenIddictController<,>).Name,
-                            action = nameof(OpenIddictController<dynamic, dynamic>.Accept)
+                            controller = typeof(OpenIddictController<,,>).Name,
+                            action = nameof(OpenIddictController<dynamic, dynamic, dynamic>.Accept)
                         });
 
                         routes.MapRoute("{23438BCC}", instance.AuthorizationEndpointPath.Value.Substring(1) + "/deny", new {
-                            controller = typeof(OpenIddictController<,>).Name,
-                            action = nameof(OpenIddictController<dynamic, dynamic>.Deny)
+                            controller = typeof(OpenIddictController<,,>).Name,
+                            action = nameof(OpenIddictController<dynamic, dynamic, dynamic>.Deny)
                         });
                     }
 
                     // Register the action corresponding to the logout endpoint.
                     if (instance.LogoutEndpointPath.HasValue) {
                         routes.MapRoute("{C7DB102A}", instance.LogoutEndpointPath.Value.Substring(1), new {
-                            controller = typeof(OpenIddictController<,>).Name,
-                            action = nameof(OpenIddictController<dynamic, dynamic>.Logout)
+                            controller = typeof(OpenIddictController<,,>).Name,
+                            action = nameof(OpenIddictController<dynamic, dynamic, dynamic>.Logout)
                         });
                     }
                 });
@@ -164,7 +165,7 @@ namespace Microsoft.AspNet.Builder {
                 services.AddMvc()
                     // Register the OpenIddict controller.
                     .AddControllersAsServices(new[] {
-                        typeof(OpenIddictController<,>).MakeGenericType(builder.UserType, builder.ApplicationType)
+                        typeof(OpenIddictController<,,>).MakeGenericType(builder.UserType, builder.ApplicationType)
                     })
 
                     // Update the Razor options to use an embedded provider
@@ -188,13 +189,13 @@ namespace Microsoft.AspNet.Builder {
                 });
 
                 // Register the user manager in the isolated container.
-                services.AddScoped(typeof(OpenIddictManager<,>).MakeGenericType(builder.UserType, builder.ApplicationType), provider => {
+                services.AddScoped(typeof(OpenIddictManager<,,>).MakeGenericType(builder.UserType, builder.ApplicationType, builder.ScopeType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
                     Debug.Assert(container != null);
 
                     // Resolve the user manager from the parent container.
-                    return container.GetRequiredService(typeof(OpenIddictManager<,>).MakeGenericType(builder.UserType, builder.ApplicationType));
+                    return container.GetRequiredService(typeof(OpenIddictManager<,,>).MakeGenericType(builder.UserType, builder.ApplicationType, builder.ScopeType));
                 });
             });
         }

@@ -19,15 +19,16 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIddict {
     // Note: this controller is generic and doesn't need to be marked as internal to prevent MVC from discovering it.
-    public class OpenIddictController<TUser, TApplication> : Controller where TUser : class where TApplication : class {
-        public OpenIddictController([NotNull] OpenIddictManager<TUser, TApplication> manager) {
+    public class OpenIddictController<TUser, TApplication, TScope> : Controller where TUser : class where TApplication : class where TScope : class
+    {
+        public OpenIddictController([NotNull] OpenIddictManager<TUser, TApplication, TScope> manager) {
             Manager = manager;
         }
 
         /// <summary>
         /// Gets the OpenIddict manager used by the controller.
         /// </summary>
-        protected virtual OpenIddictManager<TUser, TApplication> Manager { get; }
+        protected virtual OpenIddictManager<TUser, TApplication, TScope> Manager { get; }
 
         /// <summary>
         /// Gets the OpenIddict options used by the server.
