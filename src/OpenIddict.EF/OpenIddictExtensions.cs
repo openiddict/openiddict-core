@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Builder {
                 /* TApplication: */ builder.ApplicationType,
                 /* TRole: */ builder.RoleType,
                 /* TKey: */ keyType,
-                /* TScope*/ builder.ScopeType
+                /* TScope: */ builder.ScopeType
             });
 
             builder.Services.AddScoped(type, provider => {
