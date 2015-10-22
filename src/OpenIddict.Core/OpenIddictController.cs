@@ -274,7 +274,7 @@ namespace OpenIddict {
         public string Description { get; set; }
     }
 
-    public static class OPenidConnectMessageExtension
+    public static class OpenIdConnectMessageExtension
     {
         /// <summary>
         /// Extracts the standard OpenId connect scopes from an <see cref="OpenIdConnectMessage"/>.
