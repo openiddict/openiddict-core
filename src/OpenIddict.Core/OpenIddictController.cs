@@ -88,7 +88,7 @@ namespace OpenIddict {
                 });
             }
 
-            // Get all scopess associated with the current application and ensure all scopes specified in the authorization request 
+            // Get all scopes associated with the current application and ensure all scopes specified in the authorization request 
             // belongs to the current application or fail with an error, note that we automatically strip out standard **openid** scopes.
             var requestedScopes = request.GetCustomScopes();
 
