@@ -114,7 +114,7 @@ requirements/needs.
 <td>
     The base address used to uniquely identify the authorization server.<br>
     The URI must be absolute and may contain a path, but no query string or fragment part.<br>
-    Unless AllowInsecureHttp has been set to true, an HTTPS address must be provided.
+    Unless <code>AllowInsecureHttp</code> has been set to <code>true</code>, an HTTPS address must be provided.
 </td>
 <td><code>oidc-server</code></td>
 </tr>
@@ -183,9 +183,9 @@ requirements/needs.
   <td>AllowInsecureHttp</td>
   <td>bool</td>
   <td>
-    True to allow incoming requests to arrive on HTTP and to allow redirect_uri parameters to have HTTP URI addresses.
+    Set to <code>true</code> to allow incoming requests to arrive on HTTP and to allow `redirect_uri` parameters to have HTTP URI addresses.
     <br>
-    <sub>Setting this option to false in production is strongly encouraged to mitigate man-in-the-middle attacks.</sub>
+    <sub>Setting this option to <code>false</code> in production is strongly encouraged to mitigate man-in-the-middle attacks.</sub>
   </td>
   <td><code>false</code></td>
 </tr>
