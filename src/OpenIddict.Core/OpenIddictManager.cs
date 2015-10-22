@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
@@ -74,6 +75,51 @@ namespace OpenIddict {
             }
 
             return Store.ValidateSecretAsync(application, secret, Context.RequestAborted);
+        }
+
+        public virtual Task<IEnumerable<TScope>> GetScopesByApplicationAsync(TApplication application)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Store.GetScopesByApplicationAsync(application, Context.RequestAborted);
+        }
+
+        public virtual Task<IEnumerable<TScope>> GetAuthorizationRequesteScopesAsync(IEnumerable<string> requestScopes)
+        {
+            return Store.GetAuthorizationRequesteScopesAsync(requestScopes, Context.RequestAborted);
+        }
+
+        public virtual Task<string> GetScopeIdAsync(TScope scope)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.GetScopeIdAsync(scope, Context.RequestAborted);
+        }
+
+        public virtual Task<string> GetScopeDisplayNameAsync(TScope scope)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.GetScopeDisplayNameAsync(scope, Context.RequestAborted);
+        }
+
+        public virtual Task<string> GetScopeDescriptionAsync(TScope scope)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.GetScopeDescriptionAsync(scope, Context.RequestAborted);
         }
     }
 }

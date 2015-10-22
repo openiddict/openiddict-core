@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Builder {
                 services.AddMvc()
                     // Register the OpenIddict controller.
                     .AddControllersAsServices(new[] {
-                        typeof(OpenIddictController<,,>).MakeGenericType(builder.UserType, builder.ApplicationType)
+                        typeof(OpenIddictController<,,>).MakeGenericType(builder.UserType, builder.ApplicationType, builder.ScopeType)
                     })
 
                     // Update the Razor options to use an embedded provider

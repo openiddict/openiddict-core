@@ -81,9 +81,9 @@ namespace OpenIddict
             return Task.FromResult(string.Equals(application.Secret, secret, StringComparison.Ordinal));
         }
 
-        public virtual Task<IEnumerable<TScope>> GetScopesByApplicationAsync(TApplication application, CancellationToken cancellationToken)
+        public virtual async Task<IEnumerable<TScope>> GetScopesByApplicationAsync(TApplication application, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IEnumerable<TScope>>(Context.Scopes.Where(s => s.ApplicationID == application.ApplicationID).ToList());
+            return await Context.Scopes.Where(s => s.ApplicationID == application.ApplicationID).ToListAsync(cancellationToken);
         }
 
         public virtual Task<string> GetScopeDisplayNameAsync(TScope scope, CancellationToken cancellationToken)
@@ -94,6 +94,33 @@ namespace OpenIddict
             }
 
             return Task.FromResult(scope.DisplayName);
+        }
+
+        public virtual Task<string> GetScopeDescriptionAsync(TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Task.FromResult(scope.Description);
+        }
+
+        public virtual Task<string> GetScopeIdAsync(TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Task.FromResult(scope.ScopeID);
+        }
+
+        public async Task<IEnumerable<TScope>> GetAuthorizationRequesteScopesAsync(IEnumerable<string> requestScopes, CancellationToken cancellationToken)
+        {
+            // Note that scopes should be evalued in a case-sensitive way, as described here http://tools.ietf.org/html/rfc6749#section-3.3
+            // so I'm using string.Equals to make this intent crystal clear.
+            return await Context.Scopes.Where(s => requestScopes.Contains(s.ScopeID, StringComparer.Ordinal)).ToListAsync(cancellationToken);
         }
     }
 }

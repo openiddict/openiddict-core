@@ -12,6 +12,9 @@ namespace OpenIddict {
         Task<string> GetRedirectUriAsync(TApplication application, CancellationToken cancellationToken);
         Task<bool> ValidateSecretAsync(TApplication application, string secret, CancellationToken cancellationToken);
         Task<IEnumerable<TScope>> GetScopesByApplicationAsync(TApplication application, CancellationToken cancellationToken);
+        Task<IEnumerable<TScope>> GetAuthorizationRequesteScopesAsync(IEnumerable<string> requestScopes, CancellationToken cancellationToken);
         Task<string> GetScopeDisplayNameAsync(TScope scope, CancellationToken cancellationToken);
+        Task<string> GetScopeDescriptionAsync(TScope scope, CancellationToken cancellationToken);
+        Task<string> GetScopeIdAsync(TScope scope, CancellationToken cancellationToken);
     }
 }
