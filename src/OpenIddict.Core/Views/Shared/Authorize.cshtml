@@ -11,7 +11,11 @@
 
     <form enctype="application/x-www-form-urlencoded" method="post">
         @Html.AntiForgeryToken()
-        <input type="hidden" name="unique_id" value="@Model.Item1.GetUniqueIdentifier()" />
+
+        @foreach (var parameter in Model.Item1.Parameters) {
+            <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+        }
+
         <input formaction="@Url.Action("Accept")" class="btn btn-lg btn-success" name="Authorize" type="submit" value="Yeah, sure" />
         <input formaction="@Url.Action("Deny")" class="btn btn-lg btn-danger" name="Deny" type="submit" value="Hell, no" />
     </form>

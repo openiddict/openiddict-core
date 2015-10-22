@@ -115,14 +115,28 @@ namespace OpenIddict {
             var identity = new ClaimsIdentity(Options.AuthenticationScheme);
             identity.AddClaim(ClaimTypes.NameIdentifier, await Manager.GetUserIdAsync(user));
 
-            // Only add the name claim if the "profile" scope was present in the token request.
-            if (request.GetScopes().Contains("profile", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Name, await Manager.GetUserNameAsync(user), destination: "id_token token");
+            // Resolve the username and the email address associated with the user.
+            var username = await Manager.GetUserNameAsync(user);
+            var email = await Manager.GetEmailAsync(user);
+
+            // Only add the name claim if the "profile" scope was present in the authorization request.
+            if (request.ContainsScope(OpenIdConnectConstants.Scopes.Profile)) {
+                // Return an error if the username corresponds to the registered
+                // email address and if the "email" scope has not been requested.
+                if (!request.ContainsScope(OpenIdConnectConstants.Scopes.Email) &&
+                     string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
+                    return View("Error", new OpenIdConnectMessage {
+                        Error = OpenIdConnectConstants.Errors.InvalidRequest,
+                        ErrorDescription = "The 'email' scope is required."
+                    });
+                }
+
+                identity.AddClaim(ClaimTypes.Name, username, destination: "id_token token");
             }
 
             // Only add the email address if the "email" scope was present in the token request.
-            if (request.GetScopes().Contains("email", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Email, await Manager.GetEmailAsync(user), destination: "id_token token");
+            if (request.ContainsScope(OpenIdConnectConstants.Scopes.Email)) {
+                identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
             }
 
             // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
@@ -41,6 +42,12 @@ namespace OpenIddict {
 
         public virtual Task<TApplication> FindApplicationByLogoutRedirectUri(string url) {
             return Store.FindApplicationByLogoutRedirectUri(url, Context.RequestAborted);
+        }
+
+        public virtual async Task<string> FindClaimAsync(TUser user, string type) {
+            return (from claim in await GetClaimsAsync(user)
+                    where string.Equals(claim.Type, type, StringComparison.Ordinal)
+                    select claim.Value).FirstOrDefault();
         }
 
         public virtual Task<string> GetApplicationTypeAsync(TApplication application) {

@@ -52,7 +52,6 @@ namespace Mvc.Client {
                 options.Resource = "http://localhost:54540/";
 
                 options.Scope.Add("email");
-                options.Scope.Add("profile");
 
                 // Note: by default, IdentityModel beta8 now refuses to initiate non-HTTPS calls.
                 // To work around this limitation, the configuration manager is manually

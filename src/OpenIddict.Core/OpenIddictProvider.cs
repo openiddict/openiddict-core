@@ -216,13 +216,16 @@ namespace OpenIddict {
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
             identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user));
 
-            // Only add the name claim if the "profile" scope was present in the token request.
-            if (context.Request.GetScopes().Contains("profile", StringComparer.OrdinalIgnoreCase)) {
+            // Only add the name claim if the "profile" scope was present in the authorization request.
+            // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
+            // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
+            // don't include the "email" scope if the username corresponds to the registed email address.
+            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Profile)) {
                 identity.AddClaim(ClaimTypes.Name, await manager.GetUserNameAsync(user), destination: "id_token token");
             }
 
-            // Only add the email address if the "email" scope was present in the token request.
-            if (context.Request.GetScopes().Contains("email", StringComparer.OrdinalIgnoreCase)) {
+            // Only add the email address if the "email" scope was present in the authorization request.
+            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email)) {
                 identity.AddClaim(ClaimTypes.Email, await manager.GetEmailAsync(user), destination: "id_token token");
             }
 
@@ -232,6 +235,60 @@ namespace OpenIddict {
             // Mark the response as handled
             // to skip the rest of the pipeline.
             context.HandleResponse();
+        }
+
+        public override async Task ProfileEndpoint([NotNull] ProfileEndpointContext context) {
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+
+            var principal = context.AuthenticationTicket?.Principal;
+            Debug.Assert(principal != null);
+
+            // Note: user may be null if the user has been removed.
+            // In this case, return a 400 response.
+            var user = await manager.FindByIdAsync(principal.GetUserId());
+            if (user == null) {
+                context.Response.StatusCode = 400;
+                context.HandleResponse();
+
+                return;
+            }
+
+            // Note: "sub" is a mandatory claim.
+            // See http://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse
+            context.Subject = await manager.GetUserIdAsync(user);
+
+            // Only add the "preferred_username" claim if the "profile" scope was present in the access token.
+            // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
+            // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
+            // don't include the "email" scope if the username corresponds to the registed email address.
+            if (principal.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Profile)) {
+                context.PreferredUsername = await manager.GetUserNameAsync(user);
+                context.FamilyName = await manager.FindClaimAsync(user, ClaimTypes.Surname);
+                context.GivenName = await manager.FindClaimAsync(user, ClaimTypes.GivenName);
+                context.BirthDate = await manager.FindClaimAsync(user, ClaimTypes.DateOfBirth);
+            }
+
+            // Only add the email address details if the "email" scope was present in the access token.
+            if (principal.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Email)) {
+                context.Email = await manager.GetEmailAsync(user);
+
+                // Only add the "email_verified" claim
+                // if the email address is non-null.
+                if (!string.IsNullOrEmpty(context.Email)) {
+                    context.EmailVerified = await manager.IsEmailConfirmedAsync(user);
+                }
+            };
+
+            // Only add the phone number details if the "phone" scope was present in the access token.
+            if (principal.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Phone)) {
+                context.PhoneNumber = await manager.GetPhoneNumberAsync(user);
+
+                // Only add the "phone_number_verified"
+                // claim if the phone number is non-null.
+                if (!string.IsNullOrEmpty(context.PhoneNumber)) {
+                    context.PhoneNumberVerified = await manager.IsPhoneNumberConfirmedAsync(user);
+                }
+            }
         }
 
         public override async Task GrantResourceOwnerCredentials([NotNull] GrantResourceOwnerCredentialsContext context) {
@@ -282,14 +339,29 @@ namespace OpenIddict {
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
             identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user));
 
+            // Resolve the username and the email address associated with the user.
+            var username = await manager.GetUserNameAsync(user);
+            var email = await manager.GetEmailAsync(user);
+
             // Only add the name claim if the "profile" scope was present in the token request.
-            if (context.Request.GetScopes().Contains("profile", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Name, await manager.GetUserNameAsync(user), destination: "id_token token");
+            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Profile)) {
+                // Return an error if the username corresponds to the registered
+                // email address and if the "email" scope has not been requested.
+                if (!context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email) &&
+                     string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
+                    context.Rejected(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The 'email' scope is required.");
+
+                    return;
+                }
+
+                identity.AddClaim(ClaimTypes.Name, username, destination: "id_token token");
             }
 
             // Only add the email address if the "email" scope was present in the token request.
-            if (context.Request.GetScopes().Contains("email", StringComparer.OrdinalIgnoreCase)) {
-                identity.AddClaim(ClaimTypes.Email, await manager.GetEmailAsync(user), destination: "id_token token");
+            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email)) {
+                identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
             }
 
             context.Validated(new ClaimsPrincipal(identity));
