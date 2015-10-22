@@ -1,26 +1,53 @@
 # OpenIddict, as an OpenID Connect Addict
 
-### What's Open Iddict ?
+### What's OpenIddict ?
 
-OpenIddict library aims to provide a simple and easy out of the box solution to implement your OpenID Connect 
-server for ASP.NET 5.
-OpenIddict leverages the use of Identity (for user management) and Entityframework (as store provider).
+OpenIddict library aims to provide a simple and easy out of the box solution 
+to implement an OpenID Connect server for ASP.NET 5.
 
-### What's Open ID Connect ?
+It does leverages the use of Identity (for user management) and 
+EntityFramework (as a store provider).
 
-Open ID is a protocol that allows multiple clients to delegate the Authentication to one or multiple Authority servers.
-Facebook, Google, Twitter, are all well-known as OpenId Authority Servers.
+Under the hood it uses [AspNet.Security.OpenIdConnect.Server](https://github.com/PinpointTownes/AspNet.Security.OpenIdConnect.Server) 
+middleware that works with any standards-compliant OAuth2/OpenID Connect 
+client including the official OpenID Connect client middleware 
+developed by Microsoft.
 
-### Why should I want/need my own Open ID Connect Server?
+### What's OpenID Connect ?
 
-There are many scenarios on when this may be useful, 
+Applications often need to identify their users. 
+The simplistic approach is to create a local database for the users’ accounts 
+and credentials. While this may work well for some scenarios, people find
+signup and account creation to be tedious which translates to less users using
+your application.
 
- 1. Having multiple applications with one central place for authentication.
- 2. Having non-trusted clients (like JavaScript, Desktop or Mobile applications).
- 3. Needs or wants to use single sign-on for multiple services.
+Having multiple applications; maintainance of user databases and 
+registration/login workflows can easily became an administrative and 
+security nightmare.
 
-In general terms, you want to have a centralized authentication server/login and then any allowed clients
-(yours or not) can use the authentication server to handle identity and claims.
+The established solution to these problems is to delegate user authentication 
+and provisioning to a dedicated, purpose-built service, called an Identity 
+Provider (IdP).
+
+OpenID Connect is a standard protocol on top of OAuth that enables Clients to 
+verify the identity of the End-User based on the authentication performed by 
+an Authorization Server, as well as to obtain basic profile information about 
+the End-User in an interoperable and REST-like manner.
+
+For more documentation, visit [OpenID Connect web site](http://openid.net/connect/)
+
+### Why an OpenID Connect Server?
+
+A consumer web site can greatly streamline user onboarding by integrating 
+login with existing Identity Providers.
+On the enterprise side, this would be ideally be one internal Identity Provider.
+
+Having an internal Idenity Provider provides you ability to use local password 
+authentication, control the information that is exposed to the client applications
+and more generally, you can control who access your API.
+
+In general terms, you may want to have a centralized authentication for many
+clients (yours or not) that handle identity.
 
 --------------
 
@@ -33,8 +60,9 @@ To use OpenIddict Server you need to include OpenIddict as a dependency in your 
     },
 ```
 
-In ConfigureServices there's a handy extension method for IdentityBuilder that you need to set up.
-Here is a complete ConfigureServices including Identity, Mvc and EntityFramework:
+In `ConfigureServices` there's a handy extension method of `IdentityBuilder` 
+that you need to set up. Here is a complete `ConfigureServices` including 
+Identity, Mvc and EntityFramework:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services) {
@@ -52,8 +80,9 @@ public void ConfigureServices(IServiceCollection services) {
 
     /// .... other services you may have
 }
+```
 
-in your Configure method, you will need to use it:
+in the `Configure` method, you configure your pipeline to use it:
 
 ```csharp
 public void Configure(IApplicationBuilder app) {
@@ -67,11 +96,12 @@ public void Configure(IApplicationBuilder app) {
 }
 ```
 
-> `UseOpenIddict()` must be **AFTER** `app.UseIdentity()` and any external providers.
+> **Note:** `UseOpenIddict()` must be used ***after*** `app.UseIdentity()` and any external providers.
 
 ### Configuration & Options.
 
-<p>OpenIddict have multiple options you can set to customize for your requirements/needs.<p>
+OpenIddict have multiple options you can set to customize for your 
+requirements/needs.
 
 <table>
 <thead>
@@ -94,7 +124,7 @@ public void Configure(IApplicationBuilder app) {
   <td>The base address (absolute) used to uniquely identify the authorization server.<br>
       <sub><i>Unless <code>AllowInsecureHttp</code> has been set to <code>true</code>, an HTTPS address must be provided.</i></sub>
   </td>
-  <td></td>
+  <td>Automatically inferred from the request URL</td>
 </tr>
 <tr>
   <td>
@@ -103,7 +133,7 @@ public void Configure(IApplicationBuilder app) {
     LogoutEndpointPath
   </td>
   <td>PathString</td>
-  <td>The path of the endpoint. Can be set to <code>PathString.Empty</code> to disable the endpoint</td>
+  <td>The path of the endpoint. Can be set to <code>PathString.Empty</code> to disable the endpoint.</td>
   <td>
       <code>/connect/authorize</code>
       <br>
