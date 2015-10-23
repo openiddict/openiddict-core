@@ -19,6 +19,11 @@ namespace OpenIddict {
         public Type ApplicationType { get; set; }
 
         /// <summary>
+        /// Gets ort sets the type corresponding to the Scope type.
+        /// </summary>
+        public Type ScopeType { get; set; }
+
+        /// <summary>
         /// Gets or sets the type corresponding to the Role entity.
         /// </summary>
         public Type RoleType { get; set; }

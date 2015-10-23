@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -19,15 +20,15 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIddict {
     // Note: this controller is generic and doesn't need to be marked as internal to prevent MVC from discovering it.
-    public class OpenIddictController<TUser, TApplication> : Controller where TUser : class where TApplication : class {
-        public OpenIddictController([NotNull] OpenIddictManager<TUser, TApplication> manager) {
+    public class OpenIddictController<TUser, TApplication, TScope> : Controller where TUser : class where TApplication : class where TScope : class {
+        public OpenIddictController([NotNull] OpenIddictManager<TUser, TApplication, TScope> manager) {
             Manager = manager;
         }
 
         /// <summary>
         /// Gets the OpenIddict manager used by the controller.
         /// </summary>
-        protected virtual OpenIddictManager<TUser, TApplication> Manager { get; }
+        protected virtual OpenIddictManager<TUser, TApplication, TScope> Manager { get; }
 
         /// <summary>
         /// Gets the OpenIddict options used by the server.
@@ -86,10 +87,44 @@ namespace OpenIddict {
                 });
             }
 
-            return View("Authorize", Tuple.Create(request, await Manager.GetDisplayNameAsync(application)));
+            // Get all scopes associated with the current request
+            var requestScopes = await Manager.GetAuthorizationRequesteScopesAsync(request.GetRequestScopes());
+
+            // Get all scopes associated with the current application
+            var applicationScopes = await Manager.GetScopesByApplicationAsync(application);
+
+            // TODO Add a better/smarter check?
+            // Ensure all scopes specified in the authorization request belongs to the current application or fail with an error, 
+            // note that we automatically strip out standard **openid** scopes.
+            if (!requestScopes.Intersect(applicationScopes).SequenceEqual(requestScopes)) {
+                return View("Error", new OpenIdConnectMessage {
+                    Error = OpenIdConnectConstants.Errors.InvalidRequest,
+                    ErrorDescription = "One or more of the request scopes does not belong to the calling client application"
+                });
+            }
+
+            // Create a scope model for all scopes that exists in the dB
+            var scopeModels = new Dictionary<string, Tuple<string, string>>();
+            foreach (var scope in requestScopes) {
+                scopeModels.Add(await Manager.GetScopeIdAsync(scope), Tuple.Create(
+                    await Manager.GetScopeDisplayNameAsync(scope),
+                    await Manager.GetScopeDescriptionAsync(scope)
+                    ));
+            }
+
+            // Add a default model for each scope that is not present in the dB, the scope description is actually the scope values itself
+            foreach (var scope in request.GetRequestScopes()) {
+                if (!scopeModels.ContainsKey(scope)) {
+                    scopeModels.Add(scope, Tuple.Create(scope, string.Empty));
+                }
+            }
+
+            return View("Authorize", Tuple.Create(request, await Manager.GetDisplayNameAsync(application), scopeModels));
         }
 
-        [Authorize, HttpPost, ValidateAntiForgeryToken]
+        [Authorize, HttpPost
+            //ValidateAntiForgeryToken
+        ]
         public async Task<IActionResult> Accept() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
@@ -147,6 +182,11 @@ namespace OpenIddict {
             identity.Actor.AddClaim(ClaimTypes.NameIdentifier, request.ClientId);
             identity.Actor.AddClaim(ClaimTypes.Name, await Manager.GetDisplayNameAsync(application), destination: "id_token token");
 
+            // Add selected scopes back to ASOS
+            if (Request.Form.ContainsKey("scope")) {
+                request.Scope = Request.Form["scope"];
+            }
+
             // This call will instruct AspNet.Security.OpenIdConnect.Server to serialize
             // the specified identity to build appropriate tokens (id_token and token).
             // Note: you should always make sure the identities you return contain either
@@ -157,7 +197,9 @@ namespace OpenIddict {
             return new EmptyResult();
         }
 
-        [Authorize, HttpPost, ValidateAntiForgeryToken]
+        [Authorize, HttpPost
+            //ValidateAntiForgeryToken
+        ]
         public IActionResult Deny() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
@@ -226,6 +268,24 @@ namespace OpenIddict {
             // a 'sub' or a 'ClaimTypes.NameIdentifier' claim. In this case, the returned
             // identities always contain the name identifier returned by the external provider.
             await HttpContext.Authentication.SignOutAsync(Options.AuthenticationScheme);
+        }
+    }
+
+    internal static class OpenIdConnectMessageExtension {
+        /// <summary>
+        /// Extracts the non-standard scopes from an <see cref="OpenIdConnectMessage"/>.
+        /// </summary>
+        /// <param name="message">The <see cref="OpenIdConnectMessage"/> instance.</param>
+        public static IEnumerable<string> GetRequestScopes(this OpenIdConnectMessage message) {
+            if (message == null) {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            return message.GetScopes().Except(GetOpenIdScope());
+        }
+
+        private static IEnumerable<string> GetOpenIdScope() {
+            yield return OpenIdConnectConstants.Scopes.OpenId;
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Mvc.Server {
 
         public void ConfigureServices(IServiceCollection services) {
             services.AddMvc();
+            services.AddCors();
 
             services.AddEntityFramework()
                 .AddSqlServer()
@@ -47,6 +48,8 @@ namespace Mvc.Server {
 
             app.UseStaticFiles();
 
+            app.UseDeveloperExceptionPage();
+
             // Add a middleware used to validate access
             // tokens and protect the API endpoints.
             app.UseJwtBearerAuthentication(options => {
@@ -59,7 +62,9 @@ namespace Mvc.Server {
                 options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                     metadataAddress: options.Authority + ".well-known/openid-configuration",
                     configRetriever: new OpenIdConnectConfigurationRetriever(),
-                    docRetriever: new HttpDocumentRetriever { RequireHttps = false });
+                    docRetriever: new HttpDocumentRetriever {
+                        RequireHttps = false
+                    });
             });
 
             app.UseIdentity();
@@ -83,6 +88,7 @@ namespace Mvc.Server {
             app.UseMvcWithDefaultRoute();
 
             using (var context = app.ApplicationServices.GetRequiredService<ApplicationDbContext>()) {
+                context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
                 // Add Mvc.Client to the known applications.
@@ -94,6 +100,24 @@ namespace Mvc.Server {
                         LogoutRedirectUri = "http://localhost:53507/",
                         Secret = "secret_secret_secret",
                         Type = ApplicationType.Confidential
+                    });
+
+                    context.SaveChanges();
+                }
+
+                if (!context.Scopes.Any()) {
+                    context.Scopes.Add(new Scope {
+                        ScopeID = "myScope",
+                        ApplicationID = "myClient",
+                        Description = "Provide access to all your bank informations and allows application to make donations on your behalf",
+                        DisplayName = "Bank account",
+                    });
+
+                    context.Scopes.Add(new Scope {
+                        ScopeID = "myScope2",
+                        ApplicationID = "myClient",
+                        Description = "Provide unlimited access to your facebook account",
+                        DisplayName = "Facebook account",
                     });
 
                     context.SaveChanges();

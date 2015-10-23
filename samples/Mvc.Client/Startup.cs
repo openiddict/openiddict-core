@@ -53,6 +53,8 @@ namespace Mvc.Client {
 
                 options.Scope.Add("email");
                 options.Scope.Add("profile");
+                options.Scope.Add("myScope");
+                options.Scope.Add("myScope2");
 
                 // Note: by default, IdentityModel beta8 now refuses to initiate non-HTTPS calls.
                 // To work around this limitation, the configuration manager is manually
