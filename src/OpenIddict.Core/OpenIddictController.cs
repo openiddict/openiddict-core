@@ -90,15 +90,12 @@ namespace OpenIddict {
 
             // Get all scopes associated with the current application and ensure all scopes specified in the authorization request 
             // belongs to the current application or fail with an error, note that we automatically strip out standard **openid** scopes.
-            var requestedScopes = request.GetCustomScopes();
+            var requestScopes = await Manager.GetAuthorizationRequesteScopesAsync(request.GetCustomScopes());
 
             // Get all application scopes
             var applicationScopes = await Manager.GetScopesByApplicationAsync(application);
 
-            // Get all request scopes
-            var requestScopes = await Manager.GetAuthorizationRequesteScopesAsync(requestedScopes);
-            
-            // TODO Add a better/smarter check
+            // TODO Add a better/smarter check?
             if (!requestScopes.Intersect(applicationScopes).SequenceEqual(requestScopes)){
                 return View("Error", new OpenIdConnectMessage{
                     Error = OpenIdConnectConstants.Errors.InvalidRequest,
@@ -107,11 +104,8 @@ namespace OpenIddict {
             }
 
             var scopeModels = new List<ScopeModel>();
-            foreach (var scope in requestScopes)
-            {
-                // TODO this is higly inefficient in case of db lookups, so we should avoid await inside the foreach!
-                scopeModels.Add(new ScopeModel
-                {
+            foreach (var scope in requestScopes) {
+                scopeModels.Add(new ScopeModel {
                     ScopeId = await Manager.GetScopeIdAsync(scope),
                     DisplayName = await Manager.GetScopeDisplayNameAsync(scope),
                     Description = await Manager.GetScopeDescriptionAsync(scope),
@@ -179,10 +173,9 @@ namespace OpenIddict {
             identity.Actor.AddClaim(ClaimTypes.NameIdentifier, request.ClientId);
             identity.Actor.AddClaim(ClaimTypes.Name, await Manager.GetDisplayNameAsync(application), destination: "id_token token");
 
-            // Add selected scopes to the identity
+            // Add selected scopes back to ASOS
             if (Request.Form.ContainsKey("scope")) {
-                // TODO does remember OpenID connect scopes make sense?
-                request.Scope = string.Join(" ", request.GetStandardScopes().Concat(Request.Form["scope"]));
+                request.Scope = Request.Form["scope"];
             }
 
             // This call will instruct AspNet.Security.OpenIdConnect.Server to serialize
@@ -274,22 +267,8 @@ namespace OpenIddict {
         public string Description { get; set; }
     }
 
-    public static class OpenIdConnectMessageExtension
+    internal static class OpenIdConnectMessageExtension
     {
-        /// <summary>
-        /// Extracts the standard OpenId connect scopes from an <see cref="OpenIdConnectMessage"/>.
-        /// </summary>
-        /// <param name="message">The <see cref="OpenIdConnectMessage"/> instance.</param>
-        public static IEnumerable<string> GetStandardScopes(this OpenIdConnectMessage message)
-        {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            return message.GetScopes().Intersect(GetOpenIdStandardScopes());
-        }
-
         /// <summary>
         /// Extracts the non-standard scopes from an <see cref="OpenIdConnectMessage"/>.
         /// </summary>
@@ -301,15 +280,12 @@ namespace OpenIddict {
                 throw new ArgumentNullException(nameof(message));
             }
 
-            return message.GetScopes().Except(GetOpenIdStandardScopes());
+            return message.GetScopes().Except(GetOpenIdScope());
         }
 
-        public static IEnumerable<string> GetOpenIdStandardScopes()
+        private static IEnumerable<string> GetOpenIdScope()
         {
             yield return OpenIdConnectConstants.Scopes.OpenId;
-            yield return OpenIdConnectConstants.Scopes.Email;
-            yield return OpenIdConnectConstants.Scopes.Profile;
-            yield return OpenIdConnectConstants.Scopes.OfflineAccess;
         }
     }
 }
