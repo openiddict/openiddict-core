@@ -5,7 +5,7 @@
 OpenIddict library aims to provide a simple and easy out of the box solution 
 to implement an OpenID Connect server for ASP.NET 5.
 
-It does leverages the use of Identity (for user management) and 
+It leverages the use of Identity (for user management) and 
 EntityFramework (as a store provider).
 
 Under the hood it uses [AspNet.Security.OpenIdConnect.Server](https://github.com/PinpointTownes/AspNet.Security.OpenIdConnect.Server) 
@@ -208,6 +208,8 @@ requirements/needs.
 </table>
 
 You can find working samples in the [samples](https://github.com/openiddict/core/tree/dev/samples) directory.
+
+Nightly builds can now be found on the [aspnet-contrib](https://github.com/aspnet-contrib) MyGet repository https://www.myget.org/F/aspnet-contrib/api/v3/index.json.
 
 ## Support
 
