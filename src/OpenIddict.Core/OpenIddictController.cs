@@ -88,14 +88,15 @@ namespace OpenIddict {
                 });
             }
 
-            // Get all scopes associated with the current application and ensure all scopes specified in the authorization request 
-            // belongs to the current application or fail with an error, note that we automatically strip out standard **openid** scopes.
-            var requestScopes = await Manager.GetAuthorizationRequesteScopesAsync(request.GetCustomScopes());
+            // Get all scopes associated with the current request
+            var requestScopes = await Manager.GetAuthorizationRequesteScopesAsync(request.GetRequestScopes());
 
-            // Get all application scopes
+            // Get all scopes associated with the current application
             var applicationScopes = await Manager.GetScopesByApplicationAsync(application);
 
             // TODO Add a better/smarter check?
+            // Ensure all scopes specified in the authorization request belongs to the current application or fail with an error, 
+            // note that we automatically strip out standard **openid** scopes.
             if (!requestScopes.Intersect(applicationScopes).SequenceEqual(requestScopes)){
                 return View("Error", new OpenIdConnectMessage{
                     Error = OpenIdConnectConstants.Errors.InvalidRequest,
@@ -103,19 +104,28 @@ namespace OpenIddict {
                 });
             }
 
-            var scopeModels = new List<ScopeModel>();
+            // Create a scope model for all scopes that exists in the dB
+            var scopeModels = new Dictionary<string, Tuple<string, string>>();
             foreach (var scope in requestScopes) {
-                scopeModels.Add(new ScopeModel {
-                    ScopeId = await Manager.GetScopeIdAsync(scope),
-                    DisplayName = await Manager.GetScopeDisplayNameAsync(scope),
-                    Description = await Manager.GetScopeDescriptionAsync(scope),
-                });
+                scopeModels.Add(await Manager.GetScopeIdAsync(scope), Tuple.Create(
+                    await Manager.GetScopeDisplayNameAsync(scope),
+                    await Manager.GetScopeDescriptionAsync(scope)
+                    ));
+            }
+
+            // Add a default model for each scope that is not present in the dB, the scope description is actually the scope values itself
+            foreach (var scope in request .GetRequestScopes()) {
+                if (!scopeModels.ContainsKey(scope)) {
+                    scopeModels.Add(scope, Tuple.Create(scope, string.Empty));
+                }
             }
 
             return View("Authorize", Tuple.Create(request, await Manager.GetDisplayNameAsync(application), scopeModels));
         }
 
-        [Authorize, HttpPost, ValidateAntiForgeryToken]
+        [Authorize, HttpPost, 
+            //ValidateAntiForgeryToken
+            ]
         public async Task<IActionResult> Accept() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
@@ -188,7 +198,9 @@ namespace OpenIddict {
             return new EmptyResult();
         }
 
-        [Authorize, HttpPost, ValidateAntiForgeryToken]
+        [Authorize, HttpPost, 
+            //ValidateAntiForgeryToken
+            ]
         public IActionResult Deny() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
@@ -260,20 +272,13 @@ namespace OpenIddict {
         }
     }
 
-    public class ScopeModel
-    {
-        public string ScopeId { get; set; }
-        public string DisplayName { get; set; }
-        public string Description { get; set; }
-    }
-
     internal static class OpenIdConnectMessageExtension
     {
         /// <summary>
         /// Extracts the non-standard scopes from an <see cref="OpenIdConnectMessage"/>.
         /// </summary>
         /// <param name="message">The <see cref="OpenIdConnectMessage"/> instance.</param>
-        public static IEnumerable<string> GetCustomScopes(this OpenIdConnectMessage message)
+        public static IEnumerable<string> GetRequestScopes(this OpenIdConnectMessage message)
         {
             if (message == null)
             {

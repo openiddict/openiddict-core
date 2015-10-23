@@ -3,7 +3,7 @@
 @using Microsoft.IdentityModel.Protocols.OpenIdConnect
 @using OpenIddict
 
-@model Tuple<OpenIdConnectMessage, string, List<ScopeModel>>
+@model Tuple<OpenIdConnectMessage, string, Dictionary<string, Tuple<string, string>>>
 
 <div class="jumbotron">
     <h1>Authorization</h1>
@@ -14,12 +14,12 @@
     <form enctype="application/x-www-form-urlencoded" method="post">
         @Html.AntiForgeryToken()
         <input type="hidden" name="unique_id" value="@Model.Item1.GetUniqueIdentifier()" />
-        @foreach (ScopeModel scope in Model.Item3)
+        @foreach (var scope in Model.Item3)
         {
             <div class="scope">
-                <label for="scope_@scope.ScopeId">@scope.DisplayName</label>
-                <input id="scope_@scope.ScopeId" name="scope" type="checkbox" value="@scope.ScopeId" />
-                <p>@scope.Description</p>
+                <label for="scope_@scope.Key">@scope.Value.Item1</label>
+                <input id="scope_@scope.Key" name="scope" type="checkbox" value="@scope.Key" />
+                <p>@scope.Value.Item2</p>
             </div>
         }
 
