@@ -1,7 +1,5 @@
-﻿namespace OpenIddict.Models
-{
-    public class Scope
-    {
+﻿namespace OpenIddict.Models {
+    public class Scope {
         public string ScopeID { get; set; }
         public string DisplayName { get; set; }
         public string Description { get; set; }

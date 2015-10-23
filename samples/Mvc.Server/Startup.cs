@@ -62,7 +62,9 @@ namespace Mvc.Server {
                 options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                     metadataAddress: options.Authority + ".well-known/openid-configuration",
                     configRetriever: new OpenIdConnectConfigurationRetriever(),
-                    docRetriever: new HttpDocumentRetriever { RequireHttps = false });
+                    docRetriever: new HttpDocumentRetriever {
+                        RequireHttps = false
+                    });
             });
 
             app.UseIdentity();
@@ -85,7 +87,7 @@ namespace Mvc.Server {
 
             app.UseMvcWithDefaultRoute();
 
-            using (var context = app.ApplicationServices.GetRequiredService<ApplicationDbContext>()){
+            using (var context = app.ApplicationServices.GetRequiredService<ApplicationDbContext>()) {
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
@@ -103,18 +105,15 @@ namespace Mvc.Server {
                     context.SaveChanges();
                 }
 
-                if (!context.Scopes.Any())
-                {
-                    context.Scopes.Add(new Scope
-                    {
+                if (!context.Scopes.Any()) {
+                    context.Scopes.Add(new Scope {
                         ScopeID = "myScope",
                         ApplicationID = "myClient",
                         Description = "Provide access to all your bank informations and allows application to make donations on your behalf",
                         DisplayName = "Bank account",
                     });
 
-                    context.Scopes.Add(new Scope
-                    {
+                    context.Scopes.Add(new Scope {
                         ScopeID = "myScope2",
                         ApplicationID = "myClient",
                         Description = "Provide unlimited access to your facebook account",
