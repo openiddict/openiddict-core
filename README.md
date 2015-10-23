@@ -9,7 +9,7 @@ It leverages the use of Identity (for user management) and
 EntityFramework (as a store provider).
 
 Under the hood it uses [AspNet.Security.OpenIdConnect.Server](https://github.com/PinpointTownes/AspNet.Security.OpenIdConnect.Server) 
-middleware that works with any standards-compliant OAuth2/OpenID Connect 
+middleware that works with any standards-compliant OAuth 2.0/OpenID Connect 
 client including the official OpenID Connect client middleware 
 developed by Microsoft.
 
@@ -29,7 +29,7 @@ The established solution to these problems is to delegate user authentication
 and provisioning to a dedicated, purpose-built service, called an Identity 
 Provider (IdP).
 
-OpenID Connect is a standard protocol on top of OAuth that enables Clients to 
+OpenID Connect is a standard protocol on top of OAuth 2.0 that enables Clients to 
 verify the identity of the End-User based on the authentication performed by 
 an Authorization Server, as well as to obtain basic profile information about 
 the End-User in an interoperable and REST-like manner.
