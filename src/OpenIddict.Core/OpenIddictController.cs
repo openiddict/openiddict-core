@@ -10,8 +10,8 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
-using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNet.Authorization;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Internal;
@@ -20,8 +20,11 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 namespace OpenIddict {
     // Note: this controller is generic and doesn't need to be marked as internal to prevent MVC from discovering it.
     public class OpenIddictController<TUser, TApplication> : Controller where TUser : class where TApplication : class {
-        public OpenIddictController([NotNull] OpenIddictManager<TUser, TApplication> manager) {
+        public OpenIddictController(
+            [NotNull] OpenIddictManager<TUser, TApplication> manager,
+            [NotNull] OpenIddictOptions options) {
             Manager = manager;
+            Options = options;
         }
 
         /// <summary>
@@ -32,7 +35,7 @@ namespace OpenIddict {
         /// <summary>
         /// Gets the OpenIddict options used by the server.
         /// </summary>
-        protected virtual OpenIddictOptions Options => (OpenIddictOptions) HttpContext.Items[typeof(OpenIddictOptions)];
+        protected virtual OpenIddictOptions Options { get; }
 
         [HttpGet, HttpPost]
         public async Task<IActionResult> Authorize() {

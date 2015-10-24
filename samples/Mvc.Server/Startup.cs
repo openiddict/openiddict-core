@@ -76,9 +76,7 @@ namespace Mvc.Server {
 
             // Note: OpenIddict must be added after
             // ASP.NET Identity and the external providers.
-            app.UseOpenIddict(options => {
-                options.AllowInsecureHttp = true;
-            });
+            app.UseOpenIddict();
 
             app.UseMvcWithDefaultRoute();
 

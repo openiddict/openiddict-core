@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Reflection;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.StaticFiles;
@@ -22,8 +23,8 @@ using NWebsec.Owin;
 
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
-        public static OpenIddictBuilder AddOpenIddictCore<TApplication>(
-            [NotNull] this IdentityBuilder builder) where TApplication : class {
+        public static OpenIddictServices AddOpenIddictCore<TApplication>([NotNull] this IdentityBuilder builder)
+            where TApplication : class {
             builder.Services.AddAuthentication();
             builder.Services.AddCaching();
 
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.Builder {
                 typeof(OpenIddictManager<,>).MakeGenericType(
                     builder.UserType, typeof(TApplication)));
 
-            var services = new OpenIddictBuilder(builder.Services) {
+            var services = new OpenIddictServices(builder.Services) {
                 ApplicationType = typeof(TApplication),
                 RoleType = builder.RoleType,
                 UserType = builder.UserType
@@ -47,19 +48,22 @@ namespace Microsoft.AspNet.Builder {
             return services;
         }
 
+        public static IApplicationBuilder UseOpenIddict([NotNull] this IApplicationBuilder app) {
+            return app.UseOpenIddict(options => { });
+        }
+
         public static IApplicationBuilder UseOpenIddict(
             [NotNull] this IApplicationBuilder app,
-            [NotNull] Action<OpenIddictOptions> configuration) {
-            var instance = new OpenIddictOptions();
+            [NotNull] Action<OpenIddictBuilder> configuration) {
+            var builder = new OpenIddictBuilder(app);
 
-            // Turn ApplicationCanDisplayErrors on to ensure ASP.NET MVC 6
-            // handles errored requests and returns an appropriate error page.
-            instance.ApplicationCanDisplayErrors = true;
+            // By default, enable AllowInsecureHttp in development/testing environments.
+            var environment = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            builder.Options.AllowInsecureHttp = environment.IsDevelopment() || environment.IsEnvironment("Testing");
 
-            // Call the configuration delegate defined by the user.
-            configuration(instance);
+            configuration(builder);
 
-            if (!instance.UseCustomViews) {
+            if (!builder.Options.UseCustomViews) {
                 app.UseStaticFiles(new StaticFileOptions {
                     FileProvider = new EmbeddedFileProvider(
                         assembly: Assembly.Load(new AssemblyName("OpenIddict.Assets")),
@@ -76,24 +80,8 @@ namespace Microsoft.AspNet.Builder {
 
             // Add OpenIdConnectServerMiddleware to the ASP.NET 5 pipeline.
             app.UseOpenIdConnectServer(options => {
-                // Resolve the OpenIddict provider from the global services container.
+                options.Options = builder.Options;
                 options.Provider = app.ApplicationServices.GetRequiredService<OpenIdConnectServerProvider>();
-
-                // Copy the OpenIddict options to the ASOS configuration.
-                options.Options.AuthenticationScheme = instance.AuthenticationScheme;
-
-                options.Options.Issuer = instance.Issuer;
-
-                options.Options.AuthorizationEndpointPath = instance.AuthorizationEndpointPath;
-                options.Options.LogoutEndpointPath = instance.LogoutEndpointPath;
-
-                options.Options.AccessTokenLifetime = instance.AccessTokenLifetime;
-                options.Options.AuthorizationCodeLifetime = instance.AuthorizationCodeLifetime;
-                options.Options.IdentityTokenLifetime = instance.IdentityTokenLifetime;
-                options.Options.RefreshTokenLifetime = instance.RefreshTokenLifetime;
-
-                options.Options.ApplicationCanDisplayErrors = instance.ApplicationCanDisplayErrors;
-                options.Options.AllowInsecureHttp = instance.AllowInsecureHttp;
             });
 
 #if DNX451
@@ -120,57 +108,45 @@ namespace Microsoft.AspNet.Builder {
 #endif
 
             // Run the rest of the pipeline in an isolated environment.
-            return app.Isolate(builder => {
-                // Add the options to the ASP.NET context
-                // before executing the rest of the pipeline.
-                builder.Use(next => context => {
-                    context.Items[typeof(OpenIddictOptions)] = instance;
+            return app.Isolate(container => container.UseMvc(routes => {
+                // Register the actions corresponding to the authorization endpoint.
+                if (builder.Options.AuthorizationEndpointPath.HasValue) {
+                    routes.MapRoute("{D97891B4}", builder.Options.AuthorizationEndpointPath.Value.Substring(1), new {
+                        controller = typeof(OpenIddictController<,>).Name,
+                        action = nameof(OpenIddictController<dynamic, dynamic>.Authorize)
+                    });
 
-                    return next(context);
-                });
+                    routes.MapRoute("{7148DB83}", builder.Options.AuthorizationEndpointPath.Value.Substring(1) + "/accept", new {
+                        controller = typeof(OpenIddictController<,>).Name,
+                        action = nameof(OpenIddictController<dynamic, dynamic>.Accept)
+                    });
 
-                // Register ASP.NET MVC 6 and the actions
-                // associated to the OpenIddict controller.
-                builder.UseMvc(routes => {
-                    // Register the actions corresponding to the authorization endpoint.
-                    if (instance.AuthorizationEndpointPath.HasValue) {
-                        routes.MapRoute("{D97891B4}", instance.AuthorizationEndpointPath.Value.Substring(1), new {
-                            controller = typeof(OpenIddictController<,>).Name,
-                            action = nameof(OpenIddictController<dynamic, dynamic>.Authorize)
-                        });
+                    routes.MapRoute("{23438BCC}", builder.Options.AuthorizationEndpointPath.Value.Substring(1) + "/deny", new {
+                        controller = typeof(OpenIddictController<,>).Name,
+                        action = nameof(OpenIddictController<dynamic, dynamic>.Deny)
+                    });
+                }
 
-                        routes.MapRoute("{7148DB83}", instance.AuthorizationEndpointPath.Value.Substring(1) + "/accept", new {
-                            controller = typeof(OpenIddictController<,>).Name,
-                            action = nameof(OpenIddictController<dynamic, dynamic>.Accept)
-                        });
-
-                        routes.MapRoute("{23438BCC}", instance.AuthorizationEndpointPath.Value.Substring(1) + "/deny", new {
-                            controller = typeof(OpenIddictController<,>).Name,
-                            action = nameof(OpenIddictController<dynamic, dynamic>.Deny)
-                        });
-                    }
-
-                    // Register the action corresponding to the logout endpoint.
-                    if (instance.LogoutEndpointPath.HasValue) {
-                        routes.MapRoute("{C7DB102A}", instance.LogoutEndpointPath.Value.Substring(1), new {
-                            controller = typeof(OpenIddictController<,>).Name,
-                            action = nameof(OpenIddictController<dynamic, dynamic>.Logout)
-                        });
-                    }
-                });
-            }, services => {
-                var builder = app.ApplicationServices.GetRequiredService<OpenIddictBuilder>();
+                // Register the action corresponding to the logout endpoint.
+                if (builder.Options.LogoutEndpointPath.HasValue) {
+                    routes.MapRoute("{C7DB102A}", builder.Options.LogoutEndpointPath.Value.Substring(1), new {
+                        controller = typeof(OpenIddictController<,>).Name,
+                        action = nameof(OpenIddictController<dynamic, dynamic>.Logout)
+                    });
+                }
+            }), services => {
+                var instance = app.ApplicationServices.GetRequiredService<OpenIddictServices>();
 
                 services.AddMvc()
                     // Register the OpenIddict controller.
                     .AddControllersAsServices(new[] {
-                        typeof(OpenIddictController<,>).MakeGenericType(builder.UserType, builder.ApplicationType)
+                        typeof(OpenIddictController<,>).MakeGenericType(instance.UserType, instance.ApplicationType)
                     })
 
                     // Update the Razor options to use an embedded provider
                     // extracting its views from the current assembly.
                     .AddRazorOptions(options => {
-                        if (!instance.UseCustomViews) {
+                        if (!builder.Options.UseCustomViews) {
                             options.FileProvider = new EmbeddedFileProvider(
                                 assembly: typeof(OpenIddictOptions).GetTypeInfo().Assembly,
                                 baseNamespace: "OpenIddict.Core");
@@ -178,24 +154,26 @@ namespace Microsoft.AspNet.Builder {
                     });
 
                 // Register the sign-in manager in the isolated container.
-                services.AddScoped(typeof(SignInManager<>).MakeGenericType(builder.UserType), provider => {
+                services.AddScoped(typeof(SignInManager<>).MakeGenericType(instance.UserType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
                     Debug.Assert(container != null);
 
                     // Resolve the sign-in manager from the parent container.
-                    return container.GetRequiredService(typeof(SignInManager<>).MakeGenericType(builder.UserType));
+                    return container.GetRequiredService(typeof(SignInManager<>).MakeGenericType(instance.UserType));
                 });
 
                 // Register the user manager in the isolated container.
-                services.AddScoped(typeof(OpenIddictManager<,>).MakeGenericType(builder.UserType, builder.ApplicationType), provider => {
+                services.AddScoped(typeof(OpenIddictManager<,>).MakeGenericType(instance.UserType, instance.ApplicationType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
                     Debug.Assert(container != null);
 
                     // Resolve the user manager from the parent container.
-                    return container.GetRequiredService(typeof(OpenIddictManager<,>).MakeGenericType(builder.UserType, builder.ApplicationType));
+                    return container.GetRequiredService(typeof(OpenIddictManager<,>).MakeGenericType(instance.UserType, instance.ApplicationType));
                 });
+
+                services.AddScoped(provider => builder.Options);
             });
         }
     }

@@ -16,21 +16,21 @@ using OpenIddict;
 
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
-        public static OpenIddictBuilder AddEntityFrameworkStore([NotNull] this OpenIddictBuilder builder) {
-            builder.Services.AddScoped(
-                typeof(IOpenIddictStore<,>).MakeGenericType(builder.UserType, builder.ApplicationType),
+        public static OpenIddictServices AddEntityFrameworkStore([NotNull] this OpenIddictServices services) {
+            services.Services.AddScoped(
+                typeof(IOpenIddictStore<,>).MakeGenericType(services.UserType, services.ApplicationType),
                 typeof(OpenIddictStore<,,,,>).MakeGenericType(
-                    /* TUser: */ builder.UserType,
-                    /* TApplication: */ builder.ApplicationType,
-                    /* TRole: */ builder.RoleType,
-                    /* TContext: */ ResolveContextType(builder),
-                    /* TKey: */ ResolveKeyType(builder)));
+                    /* TUser: */ services.UserType,
+                    /* TApplication: */ services.ApplicationType,
+                    /* TRole: */ services.RoleType,
+                    /* TContext: */ ResolveContextType(services),
+                    /* TKey: */ ResolveKeyType(services)));
 
-            return builder;
+            return services;
         }
 
-        private static Type ResolveContextType([NotNull] OpenIddictBuilder builder) {
-            var service = (from registration in builder.Services
+        private static Type ResolveContextType([NotNull] OpenIddictServices services) {
+            var service = (from registration in services.Services
                            where registration.ServiceType.IsConstructedGenericType
                            let definition = registration.ServiceType.GetGenericTypeDefinition()
                            where definition == typeof(IUserStore<>)
@@ -65,9 +65,9 @@ namespace Microsoft.AspNet.Builder {
             throw new InvalidOperationException("The type of the database context cannot be automatically inferred.");
         }
 
-        private static Type ResolveKeyType([NotNull] OpenIddictBuilder builder) {
+        private static Type ResolveKeyType([NotNull] OpenIddictServices services) {
             TypeInfo type;
-            for (type = builder.UserType.GetTypeInfo(); type != null; type = type.BaseType?.GetTypeInfo()) {
+            for (type = services.UserType.GetTypeInfo(); type != null; type = type.BaseType?.GetTypeInfo()) {
                 if (!type.IsGenericType) {
                     continue;
                 }
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Builder {
 
             throw new InvalidOperationException(
                 "The type of the key identifier used by the user " +
-               $"entity '{builder.UserType}' cannot be automatically inferred.");
+               $"entity '{services.UserType}' cannot be automatically inferred.");
         }
     }
 }

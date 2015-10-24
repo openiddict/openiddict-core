@@ -1,36 +1,21 @@
-﻿/*
- * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- * See https://github.com/openiddict/core for more information concerning
- * the license and the contributors participating to this project.
- */
+﻿using OpenIddict;
 
-using System;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace OpenIddict {
-    public class OpenIddictBuilder {
-        internal OpenIddictBuilder(IServiceCollection services) {
-            Services = services;
+namespace Microsoft.AspNet.Builder {
+    /// <summary>
+    /// Holds various properties allowing to configure OpenIddct.
+    /// </summary>
+    public class OpenIddictBuilder : OpenIdConnectServerBuilder {
+        public OpenIddictBuilder(IApplicationBuilder builder)
+            : base(builder) {
+            Options = new OpenIddictOptions();
         }
 
         /// <summary>
-        /// Gets or sets the type corresponding to the Application entity.
+        /// Gets or sets the options used by OpenIddict.
         /// </summary>
-        public Type ApplicationType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type corresponding to the Role entity.
-        /// </summary>
-        public Type RoleType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type corresponding to the User entity.
-        /// </summary>
-        public Type UserType { get; set; }
-
-        /// <summary>
-        /// Gets the services used by OpenIddict.
-        /// </summary>
-        public IServiceCollection Services { get; }
+        public new OpenIddictOptions Options {
+            get { return base.Options as OpenIddictOptions; }
+            set { base.Options = value; }
+        }
     }
 }
