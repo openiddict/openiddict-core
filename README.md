@@ -53,6 +53,10 @@ clients (yours or not) that handle identity.
 
 ## Getting Started
 
+You can find working samples in the [samples](https://github.com/openiddict/core/tree/dev/samples) directory.
+
+Nightly builds can now be found on the [aspnet-contrib](https://github.com/aspnet-contrib) MyGet repository https://www.myget.org/F/aspnet-contrib/api/v3/index.json.
+
 To use OpenIddict Server you need to include OpenIddict as a dependency in your project.json:
 ```
     "dependencies": {
@@ -206,10 +210,6 @@ requirements/needs.
 </tr>
 </tbody>
 </table>
-
-You can find working samples in the [samples](https://github.com/openiddict/core/tree/dev/samples) directory.
-
-Nightly builds can now be found on the [aspnet-contrib](https://github.com/aspnet-contrib) MyGet repository https://www.myget.org/F/aspnet-contrib/api/v3/index.json.
 
 ## Support
 
