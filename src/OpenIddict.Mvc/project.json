@@ -1,0 +1,37 @@
+﻿{
+    "version": "1.0.0-alpha1-*",
+
+    "description": "MVC 6 module for OpenIddict.",
+
+    "resource": "Views/**",
+
+    "dependencies": {
+        "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
+        "Microsoft.AspNet.Mvc": "6.0.0-*",
+
+        "Microsoft.AspNet.FileProviders.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+
+        "Microsoft.Extensions.NotNullAttribute.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+
+        "AspNet.Hosting.Extensions": "1.0.0-*",
+        
+        "OpenIddict.Core": "1.0.0-*"
+    },
+
+    "frameworks": {
+        "dnx451": {
+            "dependencies": {
+                "AspNet.Hosting.Katana.Extensions": "1.0.0-*",
+                "NWebsec.Owin": "1.0.0"
+            }
+        },
+
+        "dnxcore50": { }
+    }
+}

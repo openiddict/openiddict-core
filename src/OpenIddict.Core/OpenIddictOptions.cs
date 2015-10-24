@@ -12,11 +12,5 @@ namespace OpenIddict {
             AuthenticationScheme = OpenIddictDefaults.AuthenticationScheme;
             ApplicationCanDisplayErrors = true;
         }
-
-        /// <summary>
-        /// Set to <c>true</c> to allow you to use your own views/styles/scripts in your server.
-        /// When using custom views you MUST provide Razor views for Authorize, Logout, and SignIn actions.
-        /// </summary>
-        public bool UseCustomViews { get; set; }
     }
 }

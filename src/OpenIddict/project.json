@@ -1,8 +1,12 @@
 {
     "version": "1.0.0-alpha1-*",
 
+    "description": "Easy-to-use OpenID Connect server for ASP.NET 5.",
+
     "dependencies": {
+        "OpenIddict.Assets": "1.0.0-*",
         "OpenIddict.EF": "1.0.0-*",
+        "OpenIddict.Mvc": "1.0.0-*",
 
         "Microsoft.Extensions.NotNullAttribute.Sources": {
             "type": "build",

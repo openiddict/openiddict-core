@@ -1,4 +1,5 @@
-﻿using OpenIddict;
+﻿using System.Collections.Generic;
+using OpenIddict;
 
 namespace Microsoft.AspNet.Builder {
     /// <summary>
@@ -9,6 +10,11 @@ namespace Microsoft.AspNet.Builder {
             : base(builder) {
             Options = new OpenIddictOptions();
         }
+
+        /// <summary>
+        /// Gets the list of the OpenIddict modules.
+        /// </summary>
+        public ICollection<OpenIddictModule> Modules { get; } = new List<OpenIddictModule>();
 
         /// <summary>
         /// Gets or sets the options used by OpenIddict.

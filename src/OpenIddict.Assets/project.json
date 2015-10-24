@@ -1,7 +1,21 @@
 ﻿{
     "version": "1.0.0-alpha1-*",
 
+    "description": "Contains the default assets used by OpenIddict.",
+
     "resource": [ "fonts/*", "scripts/*", "stylesheets/*" ],
+
+    "dependencies": {
+        "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
+        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+
+        "Microsoft.Extensions.NotNullAttribute.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        
+        "OpenIddict.Core": "1.0.0-*"
+    },
 
     "frameworks": {
         "dnx451": { },

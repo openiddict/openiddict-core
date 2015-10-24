@@ -1,6 +1,8 @@
 ﻿{
     "version": "1.0.0-alpha1-*",
 
+    "description": "Contains the default models used by OpenIddict.",
+
     "frameworks": {
         "dnx451": { },
         "dnxcore50": {

@@ -38,7 +38,7 @@ namespace OpenIddict {
         protected virtual OpenIddictOptions Options { get; }
 
         [HttpGet, HttpPost]
-        public async Task<IActionResult> Authorize() {
+        public virtual async Task<IActionResult> Authorize() {
             // Note: when a fatal error occurs during the request processing, an OpenID Connect response
             // is prematurely forged and added to the ASP.NET context by OpenIdConnectServerHandler.
             // In this case, the OpenID Connect request is null and cannot be used.
@@ -93,7 +93,7 @@ namespace OpenIddict {
         }
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Accept() {
+        public virtual async Task<IActionResult> Accept() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
             var request = HttpContext.GetOpenIdConnectRequest();
@@ -175,7 +175,7 @@ namespace OpenIddict {
         }
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
-        public IActionResult Deny() {
+        public virtual IActionResult Deny() {
             // Extract the authorization request from the cache,
             // the query string or the request form.
             var request = HttpContext.GetOpenIdConnectRequest();
@@ -200,7 +200,7 @@ namespace OpenIddict {
         }
 
         [HttpGet]
-        public async Task<ActionResult> Logout() {
+        public virtual async Task<ActionResult> Logout() {
             // Note: when a fatal error occurs during the request processing, an OpenID Connect response
             // is prematurely forged and added to the ASP.NET context by OpenIdConnectServerHandler.
             // In this case, the OpenID Connect request is null and cannot be used.
@@ -231,7 +231,7 @@ namespace OpenIddict {
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task Logout(CancellationToken cancellationToken) {
+        public virtual async Task Logout(CancellationToken cancellationToken) {
             // Instruct the cookies middleware to delete the local cookie created
             // when the user agent is redirected from the external identity provider
             // after a successful authentication flow (e.g Google or Facebook).

@@ -1,6 +1,8 @@
 ﻿{
     "version": "1.0.0-alpha1-*",
 
+    "description": "Entity Framework adapter for OpenIddict.",
+
     "dependencies": {
         "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
 

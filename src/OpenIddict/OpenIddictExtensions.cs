@@ -7,20 +7,40 @@
 using System;
 using Microsoft.AspNet.Identity;
 using Microsoft.Extensions.Internal;
-using OpenIddict;
 using OpenIddict.Models;
 
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
-        public static OpenIddictServices AddOpenIddict([NotNull] this IdentityBuilder builder) {
-            return builder.AddOpenIddictCore<Application>()
-                          .AddEntityFrameworkStore();
+        public static IdentityBuilder AddOpenIddict([NotNull] this IdentityBuilder builder) {
+            return builder.AddOpenIddictCore<Application>(configuration => {
+                // Use the EF adapter by default.
+                configuration.UseEntityFramework();
+            });
         }
 
-        public static OpenIddictServices AddOpenIddict<TApplication>([NotNull] this IdentityBuilder builder)
+        public static IdentityBuilder AddOpenIddict<TApplication>([NotNull] this IdentityBuilder builder)
             where TApplication : Application {
-            return builder.AddOpenIddictCore<TApplication>()
-                          .AddEntityFrameworkStore();
+            return builder.AddOpenIddictCore<TApplication>(configuration => {
+                // Use the EF adapter by default.
+                configuration.UseEntityFramework();
+            });
+        }
+
+        public static IApplicationBuilder UseOpenIddict([NotNull] this IApplicationBuilder app) {
+            return app.UseOpenIddict(options => { });
+        }
+
+        public static IApplicationBuilder UseOpenIddict(
+            [NotNull] this IApplicationBuilder app,
+            [NotNull] Action<OpenIddictBuilder> configuration) {
+            return app.UseOpenIddictCore(builder => {
+                // By default, both the assets
+                // and the MVC modules are enabled.
+                builder.UseAssets();
+                builder.UseMvc();
+
+                configuration(builder);
+            });
         }
     }
 }

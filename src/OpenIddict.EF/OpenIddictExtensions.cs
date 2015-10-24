@@ -16,7 +16,7 @@ using OpenIddict;
 
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
-        public static OpenIddictServices AddEntityFrameworkStore([NotNull] this OpenIddictServices services) {
+        public static OpenIddictServices UseEntityFramework([NotNull] this OpenIddictServices services) {
             services.Services.AddScoped(
                 typeof(IOpenIddictStore<,>).MakeGenericType(services.UserType, services.ApplicationType),
                 typeof(OpenIddictStore<,,,,>).MakeGenericType(
