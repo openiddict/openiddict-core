@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.Data.Entity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using OpenIddict;
@@ -16,35 +17,52 @@ using OpenIddict;
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
         public static OpenIddictBuilder AddEntityFrameworkStore([NotNull] this OpenIddictBuilder builder) {
-            // Resolve the key type from the user type definition.
-            var keyType = ResolveKeyType(builder);
-
             builder.Services.AddScoped(
                 typeof(IOpenIddictStore<,>).MakeGenericType(builder.UserType, builder.ApplicationType),
-                typeof(OpenIddictStore<,,,>).MakeGenericType(builder.UserType, builder.ApplicationType, builder.RoleType, keyType));
-            
-            var type = typeof(OpenIddictContext<,,,>).MakeGenericType(new[] {
-                /* TUser: */ builder.UserType,
-                /* TApplication: */ builder.ApplicationType,
-                /* TRole: */ builder.RoleType,
-                /* TKey: */ keyType
-            });
-
-            builder.Services.AddScoped(type, provider => {
-                // Resolve the user store from the parent container and extract the associated context.
-                dynamic store = provider.GetRequiredService(typeof(IUserStore<>).MakeGenericType(builder.UserType));
-
-                dynamic context = store?.Context;
-                if (!type.GetTypeInfo().IsAssignableFrom(context?.GetType())) {
-                    throw new InvalidOperationException(
-                        "Only EntityFramework contexts derived from " +
-                        "OpenIddictContext can be used with OpenIddict.");
-                }
-
-                return context;
-            });
+                typeof(OpenIddictStore<,,,,>).MakeGenericType(
+                    /* TUser: */ builder.UserType,
+                    /* TApplication: */ builder.ApplicationType,
+                    /* TRole: */ builder.RoleType,
+                    /* TContext: */ ResolveContextType(builder),
+                    /* TKey: */ ResolveKeyType(builder)));
 
             return builder;
+        }
+
+        private static Type ResolveContextType([NotNull] OpenIddictBuilder builder) {
+            var service = (from registration in builder.Services
+                           where registration.ServiceType.IsConstructedGenericType
+                           let definition = registration.ServiceType.GetGenericTypeDefinition()
+                           where definition == typeof(IUserStore<>)
+                           select registration.ImplementationType).SingleOrDefault();
+
+            if (service == null) {
+                throw new InvalidOperationException(
+                    "The type of the database context cannot be automatically inferred. " +
+                    "Make sure 'AddOpenIddict()' is the last chained call when configuring the services.");
+            }
+
+            TypeInfo type;
+            for (type = service.GetTypeInfo(); type != null; type = type.BaseType?.GetTypeInfo()) {
+                if (!type.IsGenericType) {
+                    continue;
+                }
+
+                var definition = type.GetGenericTypeDefinition();
+                if (definition == null) {
+                    continue;
+                }
+
+                if (definition != typeof(UserStore<,,,>)) {
+                    continue;
+                }
+
+                return (from argument in type.AsType().GetGenericArguments()
+                        where typeof(DbContext).IsAssignableFrom(argument)
+                        select argument).Single();
+            }
+
+            throw new InvalidOperationException("The type of the database context cannot be automatically inferred.");
         }
 
         private static Type ResolveKeyType([NotNull] OpenIddictBuilder builder) {

@@ -6,21 +6,26 @@ using Microsoft.Data.Entity;
 using OpenIddict.Models;
 
 namespace OpenIddict {
-    public class OpenIddictStore<TUser, TApplication, TRole, TKey> : UserStore<TUser, TRole, OpenIddictContext<TUser, TApplication, TRole, TKey>, TKey>, IOpenIddictStore<TUser, TApplication>
+    public class OpenIddictStore<TUser, TApplication, TRole, TContext, TKey> : UserStore<TUser, TRole, TContext, TKey>, IOpenIddictStore<TUser, TApplication>
         where TUser : IdentityUser<TKey>
         where TApplication : Application
         where TRole : IdentityRole<TKey>
+        where TContext : DbContext
         where TKey : IEquatable<TKey> {
-        public OpenIddictStore(OpenIddictContext<TUser, TApplication, TRole, TKey> context)
+        public OpenIddictStore(TContext context)
             : base(context) {
         }
 
+        public DbSet<TApplication> Applications {
+            get { return Context.Set<TApplication>(); }
+        }
+
         public virtual Task<TApplication> FindApplicationByIdAsync(string identifier, CancellationToken cancellationToken) {
-            return Context.Applications.SingleOrDefaultAsync(application => application.ApplicationID == identifier, cancellationToken);
+            return Applications.SingleOrDefaultAsync(application => application.ApplicationID == identifier, cancellationToken);
         }
 
         public virtual Task<TApplication> FindApplicationByLogoutRedirectUri(string url, CancellationToken cancellationToken) {
-            return Context.Applications.SingleOrDefaultAsync(application => application.LogoutRedirectUri == url, cancellationToken);
+            return Applications.SingleOrDefaultAsync(application => application.LogoutRedirectUri == url, cancellationToken);
         }
 
         public virtual Task<string> GetApplicationTypeAsync(TApplication application, CancellationToken cancellationToken) {
