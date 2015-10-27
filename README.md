@@ -58,10 +58,11 @@ You can find working samples in the [samples](https://github.com/openiddict/core
 Nightly builds can now be found on the [aspnet-contrib](https://github.com/aspnet-contrib) MyGet repository https://www.myget.org/F/aspnet-contrib/api/v3/index.json.
 
 To use OpenIddict Server you need to include OpenIddict as a dependency in your project.json:
-```
-    "dependencies": {
-        "OpenIddict": "1.0.0-*"
-    },
+
+```json
+"dependencies": {
+    "OpenIddict": "1.0.0-*"
+},
 ```
 
 In `ConfigureServices` there's a handy extension method of `IdentityBuilder` 
@@ -190,21 +191,6 @@ requirements/needs.
     Set to <code>true</code> to allow incoming requests to arrive on HTTP and to allow `redirect_uri` parameters to have HTTP URI addresses.
     <br>
     <sub>Setting this option to <code>false</code> in production is strongly encouraged to mitigate man-in-the-middle attacks.</sub>
-  </td>
-  <td><code>false</code></td>
-</tr>
-<tr>
-  <td>UseCustomViews</td>
-  <td>bool</td>
-  <td>
-  OpenIddict comes with built in views out of the box. If you want to use your custom views, you can set this option to true and provide the following required views:
-  <br>
-  <ul>
-    <li>Authorize.cshtml</li>
-    <li>Logout.cshtml</li>
-    <li>Signin.cshtml</li>
-    <li>Error.cshtml</li>
-  </ul>
   </td>
   <td><code>false</code></td>
 </tr>
