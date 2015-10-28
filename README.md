@@ -1,14 +1,14 @@
-# OpenIddict, as an OpenID Connect Addict
+# OpenIddict, the OpenID Connect server you'll be addict to :smile:
 
 ### What's OpenIddict ?
 
-OpenIddict library aims to provide a simple and easy out of the box solution 
+OpenIddict aims at providing a simple and easy out of the box solution 
 to implement an OpenID Connect server for ASP.NET 5.
 
 It leverages the use of Identity (for user management) and 
 EntityFramework (as a store provider).
 
-Under the hood it uses [AspNet.Security.OpenIdConnect.Server](https://github.com/PinpointTownes/AspNet.Security.OpenIdConnect.Server) 
+Under the hood it uses [AspNet.Security.OpenIdConnect.Server](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server) 
 middleware that works with any standards-compliant OAuth 2.0/OpenID Connect 
 client including the official OpenID Connect client middleware 
 developed by Microsoft.
@@ -22,7 +22,7 @@ signup and account creation to be tedious which translates to less users using
 your application.
 
 Having multiple applications; maintainance of user databases and 
-registration/login workflows can easily became an administrative and 
+registration/login workflows can easily become an administrative and 
 security nightmare.
 
 The established solution to these problems is to delegate user authentication 
@@ -42,9 +42,9 @@ A consumer web site can greatly streamline user onboarding by integrating
 login with existing Identity Providers.
 On the enterprise side, this would be ideally be one internal Identity Provider.
 
-Having an internal Idenity Provider provides you ability to use local password 
+Having an internal Identity Provider provides you ability to use local password 
 authentication, control the information that is exposed to the client applications
-and more generally, you can control who access your API.
+and more generally, you can control who can access your API.
 
 In general terms, you may want to have a centralized authentication for many
 clients (yours or not) that handle identity.
@@ -105,7 +105,7 @@ public void Configure(IApplicationBuilder app) {
 
 ### Configuration & Options.
 
-OpenIddict have multiple options you can set to customize for your 
+OpenIddict has multiple options you can set to customize for your 
 requirements/needs.
 
 <table>
