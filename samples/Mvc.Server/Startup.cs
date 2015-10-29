@@ -2,35 +2,27 @@ using System.Linq;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
 using OpenIddict.Models;
 
 namespace Mvc.Server {
     public class Startup {
-        public Startup(IApplicationEnvironment environment) {
-            Configuration = new ConfigurationBuilder()
-                .SetBasePath(environment.ApplicationBasePath)
+        public void ConfigureServices(IServiceCollection services) {
+            var configuration = new ConfigurationBuilder()
                 .AddJsonFile("config.json")
                 .AddEnvironmentVariables()
                 .Build();
-        }
 
-        public IConfiguration Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services) {
             services.AddMvc();
 
             services.AddEntityFramework()
                 .AddSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+                    options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -52,14 +44,7 @@ namespace Mvc.Server {
             app.UseJwtBearerAuthentication(options => {
                 options.Audience = "http://localhost:54540/";
                 options.Authority = "http://localhost:54540/";
-
-                // Note: by default, IdentityModel beta8 now refuses to initiate non-HTTPS calls.
-                // To work around this limitation, the configuration manager is manually
-                // instantiated with a document retriever allowing HTTP calls.
-                options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                    metadataAddress: options.Authority + ".well-known/openid-configuration",
-                    configRetriever: new OpenIdConnectConfigurationRetriever(),
-                    docRetriever: new HttpDocumentRetriever { RequireHttps = false });
+                options.RequireHttpsMetadata = false;
             });
 
             app.UseIdentity();
@@ -88,7 +73,7 @@ namespace Mvc.Server {
                     context.Applications.Add(new Application {
                         ApplicationID = "myClient",
                         DisplayName = "My client application",
-                        RedirectUri = "http://localhost:53507/oidc",
+                        RedirectUri = "http://localhost:53507/signin-oidc",
                         LogoutRedirectUri = "http://localhost:53507/",
                         Secret = "secret_secret_secret",
                         Type = ApplicationType.Confidential
