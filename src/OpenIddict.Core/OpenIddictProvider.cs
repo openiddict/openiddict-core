@@ -7,7 +7,6 @@
 using System;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -101,9 +100,9 @@ namespace OpenIddict {
                 return;
             }
 
-            // Retrieve the application details corresponding to the requested client_id.
             var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
+            // Retrieve the application details corresponding to the requested client_id.
             var application = await manager.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
                 context.Rejected(
@@ -138,40 +137,52 @@ namespace OpenIddict {
         }
 
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
-            // Only validate prompt=none requests at this stage.
-            if (!string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
-                return;
-            }
-
-            // Extract the principal contained in the id_token_hint parameter.
-            // If no principal can be extracted, an error is returned to the client application.
-            var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
-            if (principal == null) {
-                context.Rejected(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The required id_token_hint parameter is missing");
-
-                return;
-            }
-
-            if (!string.Equals(principal.FindFirstValue(JwtRegisteredClaimNames.Aud), context.Request.ClientId)) {
-                context.Rejected(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The id_token_hint parameter is invalid");
-
-                return;
-            }
-
             var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
-            // Ensure the user still exists.
-            var user = await manager.FindByIdAsync(principal.GetUserId());
-            if (user == null) {
+            // Retrieve the application details corresponding to the requested client_id.
+            var application = await manager.FindApplicationByIdAsync(context.ClientContext.ClientId);
+            Debug.Assert(application != null);
+
+            // To prevent downgrade attacks, ensure that authorization requests using the hybrid/implicit
+            // flow are rejected if the client identifier corresponds to a confidential application.
+            var type = await manager.GetApplicationTypeAsync(application);
+            if (type == OpenIddictConstants.ApplicationTypes.Confidential && !context.Request.IsAuthorizationCodeFlow()) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The id_token_hint parameter is invalid");
+                    description: "Confidential clients can only use response_type=code.");
 
                 return;
+            }
+
+            if (string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
+                // Extract the principal contained in the id_token_hint parameter.
+                // If no principal can be extracted, an error is returned to the client application.
+                var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
+                if (principal == null) {
+                    context.Rejected(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The required id_token_hint parameter is missing");
+
+                    return;
+                }
+
+                if (!string.Equals(principal.FindFirstValue(JwtRegisteredClaimNames.Aud), context.Request.ClientId)) {
+                    context.Rejected(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The id_token_hint parameter is invalid");
+
+                    return;
+                }
+
+                // Ensure the user still exists.
+                var user = await manager.FindByIdAsync(principal.GetUserId());
+                if (user == null) {
+                    context.Rejected(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The id_token_hint parameter is invalid");
+
+                    return;
+                }
             }
         }
 
