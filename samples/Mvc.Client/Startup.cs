@@ -35,7 +35,9 @@ namespace Mvc.Client {
                 options.ClientId = "myClient";
                 options.ClientSecret = "secret_secret_secret";
                 options.PostLogoutRedirectUri = "http://localhost:53507/";
+
                 options.RequireHttpsMetadata = false;
+                options.GetClaimsFromUserInfoEndpoint = true;
 
                 // Use the authorization code flow.
                 options.ResponseType = OpenIdConnectResponseTypes.Code;
