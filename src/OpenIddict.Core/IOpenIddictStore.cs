@@ -9,6 +9,6 @@ namespace OpenIddict {
         Task<string> GetApplicationTypeAsync(TApplication application, CancellationToken cancellationToken);
         Task<string> GetDisplayNameAsync(TApplication application, CancellationToken cancellationToken);
         Task<string> GetRedirectUriAsync(TApplication application, CancellationToken cancellationToken);
-        Task<bool> ValidateSecretAsync(TApplication application, string secret, CancellationToken cancellationToken);
+        Task<string> GetHashedSecretAsync(TApplication application, CancellationToken cancellationToken);
     }
 }

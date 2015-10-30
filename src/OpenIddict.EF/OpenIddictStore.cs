@@ -33,16 +33,7 @@ namespace OpenIddict {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            switch (application.Type) {
-            case ApplicationType.Confidential:
-                return Task.FromResult(OpenIddictConstants.ApplicationTypes.Confidential);
-
-            case ApplicationType.Public:
-                return Task.FromResult(OpenIddictConstants.ApplicationTypes.Public);
-
-            default:
-                throw new InvalidOperationException($"Unsupported application type ('{application.Type.ToString()}').");
-            }
+            return Task.FromResult(application.Type);
         }
 
         public virtual Task<string> GetDisplayNameAsync(TApplication application, CancellationToken cancellationToken) {
@@ -61,12 +52,12 @@ namespace OpenIddict {
             return Task.FromResult(application.RedirectUri);
         }
 
-        public virtual Task<bool> ValidateSecretAsync(TApplication application, string secret, CancellationToken cancellationToken) {
+        public virtual Task<string> GetHashedSecretAsync(TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(string.Equals(application.Secret, secret, StringComparison.Ordinal));
+            return Task.FromResult(application.Secret);
         }
     }
 }

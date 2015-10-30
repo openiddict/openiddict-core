@@ -51,7 +51,7 @@ namespace OpenIddict {
                 return;
             }
 
-            if (!string.Equals(context.RedirectUri, await manager.GetRedirectUriAsync(application), StringComparison.Ordinal)) {
+            if (!await manager.ValidateRedirectUriAsync(application, context.RedirectUri)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid redirect_uri");
@@ -114,8 +114,7 @@ namespace OpenIddict {
 
             // Reject tokens requests containing a client_secret
             // if the client application is not confidential.
-            var type = await manager.GetApplicationTypeAsync(application);
-            if (type == OpenIddictConstants.ApplicationTypes.Public && !string.IsNullOrEmpty(context.ClientSecret)) {
+            if (await manager.IsPublicApplicationAsync(application) && !string.IsNullOrEmpty(context.ClientSecret)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Public clients are not allowed to send a client_secret");
@@ -124,7 +123,7 @@ namespace OpenIddict {
             }
 
             // Confidential applications MUST authenticate.
-            else if (type == OpenIddictConstants.ApplicationTypes.Confidential && 
+            else if (await manager.IsConfidentialApplicationAsync(application) && 
                     !await manager.ValidateSecretAsync(application, context.ClientSecret)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -145,8 +144,7 @@ namespace OpenIddict {
 
             // To prevent downgrade attacks, ensure that authorization requests using the hybrid/implicit
             // flow are rejected if the client identifier corresponds to a confidential application.
-            var type = await manager.GetApplicationTypeAsync(application);
-            if (type == OpenIddictConstants.ApplicationTypes.Confidential && !context.Request.IsAuthorizationCodeFlow()) {
+            if (await manager.IsConfidentialApplicationAsync(application) && !context.Request.IsAuthorizationCodeFlow()) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Confidential clients can only use response_type=code.");

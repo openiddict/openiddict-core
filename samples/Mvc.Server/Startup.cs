@@ -1,4 +1,5 @@
 using System.Linq;
+using CryptoHelper;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
+using OpenIddict;
 using OpenIddict.Models;
 
 namespace Mvc.Server {
@@ -75,8 +77,8 @@ namespace Mvc.Server {
                         DisplayName = "My client application",
                         RedirectUri = "http://localhost:53507/signin-oidc",
                         LogoutRedirectUri = "http://localhost:53507/",
-                        Secret = "secret_secret_secret",
-                        Type = ApplicationType.Confidential
+                        Secret = Crypto.HashPassword("secret_secret_secret"),
+                        Type = OpenIddictConstants.ApplicationTypes.Confidential
                     });
 
                     context.SaveChanges();

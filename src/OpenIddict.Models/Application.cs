@@ -11,6 +11,6 @@ namespace OpenIddict.Models {
         public string RedirectUri { get; set; }
         public string LogoutRedirectUri { get; set; }
         public string Secret { get; set; }
-        public ApplicationType Type { get; set; }
+        public string Type { get; set; }
     }
 }

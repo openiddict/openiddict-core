@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using CryptoHelper;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,12 +51,21 @@ namespace OpenIddict {
                     select claim.Value).FirstOrDefault();
         }
 
-        public virtual Task<string> GetApplicationTypeAsync(TApplication application) {
+        public virtual async Task<string> GetApplicationTypeAsync(TApplication application) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Store.GetApplicationTypeAsync(application, Context.RequestAborted);
+            var type = await Store.GetApplicationTypeAsync(application, Context.RequestAborted);
+
+            // Ensure the application type returned by the store is supported by the manager.
+            if (!string.Equals(type, OpenIddictConstants.ApplicationTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(type, OpenIddictConstants.ApplicationTypes.Public, StringComparison.OrdinalIgnoreCase)) {
+                throw new InvalidOperationException("Only 'confidential' or 'public' applications are " +
+                                                    "supported by the default OpenIddict manager.");
+            }
+
+            return type;
         }
 
         public virtual Task<string> GetDisplayNameAsync(TApplication application) {
@@ -66,20 +76,41 @@ namespace OpenIddict {
             return Store.GetDisplayNameAsync(application, Context.RequestAborted);
         }
 
-        public virtual Task<string> GetRedirectUriAsync(TApplication application) {
+        public virtual async Task<bool> ValidateRedirectUriAsync(TApplication application, string address) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Store.GetRedirectUriAsync(application, Context.RequestAborted);
+            if (!string.Equals(address, await Store.GetRedirectUriAsync(application, Context.RequestAborted), StringComparison.Ordinal)) {
+                Logger.LogWarning("Client validation failed because {RedirectUri} was not a valid redirect_uri " +
+                                  "for {Client}", address, await GetDisplayNameAsync(application));
+
+                return false;
+            }
+
+            return true;
         }
 
-        public virtual Task<bool> ValidateSecretAsync(TApplication application, string secret) {
+        public virtual async Task<bool> ValidateSecretAsync(TApplication application, string secret) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Store.ValidateSecretAsync(application, secret, Context.RequestAborted);
+            var type = await GetApplicationTypeAsync(application);
+            if (!string.Equals(type, OpenIddictConstants.ApplicationTypes.Confidential, StringComparison.OrdinalIgnoreCase)) {
+                Logger.LogWarning("Client authentication cannot be enforced for non-confidential applications.");
+
+                return false;
+            }
+
+            var hash = await Store.GetHashedSecretAsync(application, Context.RequestAborted);
+            if (!Crypto.VerifyHashedPassword(hash, secret)) {
+                Logger.LogWarning("Client authentication failed for {Client}.", await GetDisplayNameAsync(application));
+
+                return false;
+            }
+
+            return true;
         }
     }
 }
