@@ -34,7 +34,7 @@ namespace OpenIddict {
             if (string.IsNullOrEmpty(context.RedirectUri)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The required redirect_uri parameter was missing");
+                    description: "The required redirect_uri parameter was missing.");
 
                 return;
             }
@@ -46,7 +46,7 @@ namespace OpenIddict {
             if (application == null) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Application not found in the database: ensure that your client_id is correct");
+                    description: "Application not found in the database: ensure that your client_id is correct.");
 
                 return;
             }
@@ -54,7 +54,7 @@ namespace OpenIddict {
             if (!await manager.ValidateRedirectUriAsync(application, context.RedirectUri)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Invalid redirect_uri");
+                    description: "Invalid redirect_uri.");
 
                 return;
             }
@@ -69,7 +69,7 @@ namespace OpenIddict {
             if (application == null) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Invalid post_logout_redirect_uri");
+                    description: "Invalid post_logout_redirect_uri.");
 
                 return;
             }
@@ -87,7 +87,7 @@ namespace OpenIddict {
                     context.Rejected(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
                         description: "Missing credentials: ensure that your credentials were correctly " +
-                                     "flowed in the request body or in the authorization header");
+                                     "flowed in the request body or in the authorization header.");
 
                     return;
                 }
@@ -107,29 +107,38 @@ namespace OpenIddict {
             if (application == null) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Application not found in the database: ensure that your client_id is correct");
+                    description: "Application not found in the database: ensure that your client_id is correct.");
 
                 return;
             }
 
-            // Reject tokens requests containing a client_secret
-            // if the client application is not confidential.
+            // Reject tokens requests containing a client_secret if the client application is not confidential.
             if (await manager.IsPublicApplicationAsync(application) && !string.IsNullOrEmpty(context.ClientSecret)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "Public clients are not allowed to send a client_secret");
+                    description: "Public clients are not allowed to send a client_secret.");
 
                 return;
             }
 
-            // Confidential applications MUST authenticate.
-            else if (await manager.IsConfidentialApplicationAsync(application) && 
-                    !await manager.ValidateSecretAsync(application, context.ClientSecret)) {
-                context.Rejected(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Invalid credentials: ensure that you specified a correct client_secret");
+            // Confidential applications MUST authenticate. Note: this security
+            // measure also helps protecting them from impersonation attacks.
+            else if (await manager.IsConfidentialApplicationAsync(application)) {
+                if (string.IsNullOrEmpty(context.ClientSecret)) {
+                    context.Rejected(
+                        error: OpenIdConnectConstants.Errors.InvalidClient,
+                        description: "Missing credentials: ensure that you specified a client_secret.");
 
-                return;
+                    return;
+                }
+
+                if (!await manager.ValidateSecretAsync(application, context.ClientSecret)) {
+                    context.Rejected(
+                        error: OpenIdConnectConstants.Errors.InvalidClient,
+                        description: "Invalid credentials: ensure that you specified a correct client_secret.");
+
+                    return;
+                }
             }
 
             context.Validated();
@@ -159,7 +168,7 @@ namespace OpenIddict {
                 if (principal == null) {
                     context.Rejected(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The required id_token_hint parameter is missing");
+                        description: "The required id_token_hint parameter is missing.");
 
                     return;
                 }
@@ -167,7 +176,7 @@ namespace OpenIddict {
                 if (!string.Equals(principal.FindFirstValue(JwtRegisteredClaimNames.Aud), context.Request.ClientId)) {
                     context.Rejected(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The id_token_hint parameter is invalid");
+                        description: "The id_token_hint parameter is invalid.");
 
                     return;
                 }
@@ -177,7 +186,7 @@ namespace OpenIddict {
                 if (user == null) {
                     context.Rejected(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The id_token_hint parameter is invalid");
+                        description: "The id_token_hint parameter is invalid.");
 
                     return;
                 }
@@ -194,7 +203,7 @@ namespace OpenIddict {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
                     description: "Only authorization code and refresh token grant types " +
-                                 "are accepted by this authorization server");
+                                 "are accepted by this authorization server.");
             }
 
             return Task.FromResult<object>(null);
@@ -307,7 +316,7 @@ namespace OpenIddict {
             if (user == null) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
-                    description: "Invalid credentials");
+                    description: "Invalid credentials.");
 
                 return;
             }
@@ -316,7 +325,7 @@ namespace OpenIddict {
             if (manager.SupportsUserLockout && await manager.IsLockedOutAsync(user)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
-                    description: "Account locked out");
+                    description: "Account locked out.");
 
                 return;
             }
@@ -325,7 +334,7 @@ namespace OpenIddict {
             if (!await manager.CheckPasswordAsync(user, context.Password)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
-                    description: "Invalid credentials");
+                    description: "Invalid credentials.");
 
                 if (manager.SupportsUserLockout) {
                     await manager.AccessFailedAsync(user);
@@ -334,7 +343,7 @@ namespace OpenIddict {
                     if (await manager.IsLockedOutAsync(user)) {
                         context.Rejected(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
-                            description: "Account locked out");
+                            description: "Account locked out.");
                     }
                 }
 

@@ -104,6 +104,13 @@ namespace OpenIddict {
             }
 
             var hash = await Store.GetHashedSecretAsync(application, Context.RequestAborted);
+            if (string.IsNullOrEmpty(hash)) {
+                Logger.LogError("Client authentication failed for {Client} because " +
+                                "no client secret was associated with the application.");
+
+                return false;
+            }
+
             if (!Crypto.VerifyHashedPassword(hash, secret)) {
                 Logger.LogWarning("Client authentication failed for {Client}.", await GetDisplayNameAsync(application));
 
