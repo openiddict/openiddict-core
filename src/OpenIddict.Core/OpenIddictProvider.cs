@@ -197,13 +197,12 @@ namespace OpenIddict {
             // Note: OpenIdConnectServerHandler supports authorization code, refresh token, client credentials
             // and resource owner password credentials grant types but this authorization server uses a stricter policy
             // rejecting the last one. You may consider relaxing it to support the client credentials grant types.
-            if (!context.Request.IsAuthorizationCodeGrantType() &&
-                !context.Request.IsRefreshTokenGrantType() &&
-                !context.Request.IsPasswordGrantType()) {
+            if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType() &&
+                !context.Request.IsPasswordGrantType() && !context.Request.IsClientCredentialsGrantType()) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
-                    description: "Only authorization code and refresh token grant types " +
-                                 "are accepted by this authorization server.");
+                    description: "Only authorization code, refresh token, client credentials " +
+                                 "and password grants are accepted by this authorization server.");
             }
 
             return Task.FromResult<object>(null);
@@ -307,6 +306,20 @@ namespace OpenIddict {
                     context.PhoneNumberVerified = await manager.IsPhoneNumberConfirmedAsync(user);
                 }
             }
+        }
+
+        public override async Task GrantClientCredentials([NotNull] GrantClientCredentialsContext context) {
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+
+            // Retrieve the application details corresponding to the requested client_id.
+            var application = await manager.FindApplicationByIdAsync(context.ClientId);
+            Debug.Assert(application != null);
+
+            var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
+            identity.AddClaim(ClaimTypes.NameIdentifier, context.ClientId);
+            identity.AddClaim(ClaimTypes.Name, await manager.GetDisplayNameAsync(application));
+
+            context.Validated(new ClaimsPrincipal(identity));
         }
 
         public override async Task GrantResourceOwnerCredentials([NotNull] GrantResourceOwnerCredentialsContext context) {
