@@ -1,5 +1,5 @@
-# OpenIddict
-##the OpenID Connect server you'll be addict to.
+OpenIddict<br><sub>The OpenID Connect server you'll be addict to.</sub>
+=======
 
 AppVeyor: [![Build status](https://ci.appveyor.com/api/projects/status/d0d8git3o6lqkvbm?svg=true)](https://ci.appveyor.com/project/aspnet-contrib/core)
 
