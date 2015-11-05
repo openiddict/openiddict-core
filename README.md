@@ -13,10 +13,10 @@ to implement an OpenID Connect server for ASP.NET 5.
 
 ### Why an OpenID Connect Server?
 
-With an OpenID Conenct Server you can manage all your users using local 
-password or an external identity provider management in one place for all 
-your applications in one central place, with the power to control who can access
-you API and the information that is exposed to each client. 
+With an OpenID Connect Server you can manage all your users using local 
+password or an external identity provider management for all your applications 
+in one central place, with the power to control who can access you API and 
+the information that is exposed to each client. 
 
 
 ### How does it work?
@@ -24,8 +24,8 @@ you API and the information that is exposed to each client.
 OpenIddict, by default, leverages the use of Identity (for user management) and 
 EntityFramework (as an optional store provider).
 
-Adding it to your existing application allows to you to register clients 
-to server and authenticate tokens.
+Adding it to your existing application allows you to register clients and 
+serve them authenticate tokens.
 
 Under the hood it uses [AspNet.Security.OpenIdConnect.Server](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server) 
 middleware that works with any standards-compliant OAuth 2.0/OpenID Connect 
@@ -48,9 +48,9 @@ To use OpenIddict Server you need to include OpenIddict as a dependency in your 
 },
 ```
 
-In `ConfigureServices` there's a handy extension method of `IdentityBuilder` 
-that you need to set up. Here is a complete `ConfigureServices` including 
-Identity, Mvc and EntityFramework:
+There's a handy extension method of `IdentityBuilder` to add the services needed
+to the dependency container in your `ConfigureServices` method. Here is a 
+complete `ConfigureServices` including Identity, Mvc and EntityFramework:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services) {
@@ -70,7 +70,8 @@ public void ConfigureServices(IServiceCollection services) {
 }
 ```
 
-in the `Configure` method, you configure your pipeline to use it:
+To configure your pipeline, there's also a handy extension method to plug the
+`OpenIddict` middleware into it you can use on `Configure` method: 
 
 ```csharp
 public void Configure(IApplicationBuilder app) {
@@ -86,6 +87,9 @@ public void Configure(IApplicationBuilder app) {
 
 > **Note:** `UseOpenIddict()` must be used ***after*** `app.UseIdentity()` and any external providers.
 
+For a better insight in different options and configurations available check out 
+[Configuration & Options](https://github.com/openiddict/core/wiki/Configuration-&-Options)
+in the project wiki.
 
 ## Support
 
