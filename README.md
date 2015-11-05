@@ -15,7 +15,7 @@ to implement an OpenID Connect server for ASP.NET 5.
 
 With an OpenID Connect Server you can manage all your users using local 
 password or an external identity provider management for all your applications 
-in one central place, with the power to control who can access you API and 
+in one central place, with the power to control who can access your API and 
 the information that is exposed to each client. 
 
 
