@@ -7,6 +7,7 @@
 using System;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -162,6 +163,16 @@ namespace OpenIddict {
             }
 
             if (string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
+                // If the user is not authenticated, return an error to the client application.
+                // See http://openid.net/specs/openid-connect-core-1_0.html#Authenticates
+                if (!context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
+                    context.Rejected(
+                        error: OpenIdConnectConstants.Errors.LoginRequired,
+                        description: "The user must be authenticated.");
+
+                    return;
+                }
+
                 // Extract the principal contained in the id_token_hint parameter.
                 // If no principal can be extracted, an error is returned to the client application.
                 var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
@@ -173,7 +184,8 @@ namespace OpenIddict {
                     return;
                 }
 
-                if (!string.Equals(principal.FindFirstValue(JwtRegisteredClaimNames.Aud), context.Request.ClientId)) {
+                // Ensure the client application is listed as a valid audience in the identity token.
+                if (!principal.HasClaim(JwtRegisteredClaimNames.Aud, context.Request.ClientId)) {
                     context.Rejected(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The id_token_hint parameter is invalid.");
@@ -181,7 +193,16 @@ namespace OpenIddict {
                     return;
                 }
 
-                // Ensure the user still exists.
+                // Ensure the identity token corresponds to the authenticated user.
+                if (!principal.HasClaim(ClaimTypes.NameIdentifier, context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier))) {
+                    context.Rejected(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The id_token_hint parameter is invalid.");
+
+                    return;
+                }
+
+                // Ensure the user profile still exists in the database.
                 var user = await manager.FindByIdAsync(principal.GetUserId());
                 if (user == null) {
                     context.Rejected(
