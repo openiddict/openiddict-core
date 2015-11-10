@@ -30,8 +30,8 @@ namespace OpenIddict {
         }
 
         public override async Task ValidateClientRedirectUri([NotNull] ValidateClientRedirectUriContext context) {
-            // Note: redirect_uri is not required for pure OAuth2 requests but this provider uses a stricter
-            // policy making it mandatory. Requests missing an explicit redirect_uri are always rejected.
+            // Note: redirect_uri is not required for pure OAuth2 requests but this provider uses a stricter policy making it mandatory,
+            // as required by the OpenID Connect specification: http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
             if (string.IsNullOrEmpty(context.RedirectUri)) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -79,22 +79,24 @@ namespace OpenIddict {
         }
 
         public override async Task ValidateClientAuthentication([NotNull] ValidateClientAuthenticationContext context) {
-            // Note: client authentication is not mandatory for non-confidential client applications like mobile apps
-            // (except when using the client credentials grant type) but OpenIddict uses a safer policy that makes
-            // client authentication mandatory when using the authorization code grant type of the refresh token grant type
-            // and returns an error if the client_id and/or the client_secret is/are missing.
-            if (context.Request.IsAuthorizationCodeGrantType() || context.Request.IsRefreshTokenGrantType()) {
-                if (string.IsNullOrEmpty(context.ClientId) || string.IsNullOrEmpty(context.ClientSecret)) {
-                    context.Rejected(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "Missing credentials: ensure that your credentials were correctly " +
-                                     "flowed in the request body or in the authorization header.");
+            // Note: in pure OAuth2, client authentication is not required for non-confidential client applications like mobile apps
+            // but OpenIddict uses a stricter policy that makes client authentication mandatory when using the refresh token grant type,
+            // as required by the OpenID Connect specification: http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken
+            // When client_id and/or client_secret is/are missing, an error is returned to the client application.
+            if (context.Request.IsRefreshTokenGrantType() && (string.IsNullOrEmpty(context.ClientId) ||
+                                                              string.IsNullOrEmpty(context.ClientSecret))) {
+                context.Rejected(
+                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    description: "Missing credentials: ensure that your credentials were correctly " +
+                                 "flowed in the request body or in the authorization header.");
 
-                    return;
-                }
+                return;
             }
 
-            // Skip client authentication if the client_id is missing.
+            // Skip client authentication if the client identifier is missing.
+            // Note: ASOS will automatically ensure that the calling application
+            // cannot use an authorization code or a refresh token if it's not
+            // the intended audience, even if client authentication was skipped.
             if (string.IsNullOrEmpty(context.ClientId)) {
                 context.Skipped();
 
@@ -122,8 +124,8 @@ namespace OpenIddict {
                 return;
             }
 
-            // Confidential applications MUST authenticate. Note: this security
-            // measure also helps protecting them from impersonation attacks.
+            // Confidential applications MUST authenticate
+            // to protect them from impersonation attacks.
             else if (await manager.IsConfidentialApplicationAsync(application)) {
                 if (string.IsNullOrEmpty(context.ClientSecret)) {
                     context.Rejected(
@@ -154,6 +156,8 @@ namespace OpenIddict {
 
             // To prevent downgrade attacks, ensure that authorization requests using the hybrid/implicit
             // flow are rejected if the client identifier corresponds to a confidential application.
+            // Note: when using the authorization code grant, ValidateClientAuthentication is responsible of
+            // rejecting the token request if the client_id corresponds to an unauthenticated confidential client.
             if (await manager.IsConfidentialApplicationAsync(application) && !context.Request.IsAuthorizationCodeFlow()) {
                 context.Rejected(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -215,9 +219,9 @@ namespace OpenIddict {
         }
 
         public override Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context) {
-            // Note: OpenIdConnectServerHandler supports authorization code, refresh token, client credentials
-            // and resource owner password credentials grant types but this authorization server uses a stricter policy
-            // rejecting the last one. You may consider relaxing it to support the client credentials grant types.
+            // Note: OpenIdConnectServerHandler supports authorization code, refresh token,
+            // client credentials, resource owner password credentials and custom grants
+            // but this authorization server uses a stricter policy rejecting custom grant types.
             if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType() &&
                 !context.Request.IsPasswordGrantType() && !context.Request.IsClientCredentialsGrantType()) {
                 context.Rejected(

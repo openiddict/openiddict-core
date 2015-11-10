@@ -96,8 +96,7 @@ namespace OpenIddict {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var type = await GetApplicationTypeAsync(application);
-            if (!string.Equals(type, OpenIddictConstants.ApplicationTypes.Confidential, StringComparison.OrdinalIgnoreCase)) {
+            if (!await this.IsConfidentialApplicationAsync(application)) {
                 Logger.LogWarning("Client authentication cannot be enforced for non-confidential applications.");
 
                 return false;
