@@ -1,5 +1,5 @@
 # OpenIddict
-### The OpenID Connect server you'll be addict to.
+### The OpenID Connect server you'll be addicted to.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/d0d8git3o6lqkvbm?svg=true)](https://ci.appveyor.com/project/aspnet-contrib/core) 
 [![Build status](https://travis-ci.org/openiddict/core.svg)](https://travis-ci.org/openiddict/core)
@@ -73,7 +73,7 @@ public void ConfigureServices(IServiceCollection services) {
     services.AddIdentity<ApplicationUser, IdentityRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders()
-        .AddOpenIddict();     // Add the OpenIddict services after registering the Identity services.
+        .AddOpenIddict(); // Add the OpenIddict services after registering the Identity services.
 }
 ```
 
