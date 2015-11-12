@@ -1,0 +1,12 @@
+﻿@using Microsoft.IdentityModel.Protocols.OpenIdConnect
+@model OpenIdConnectMessage
+    
+<div class="jumbotron">
+    <h2>Ooooops, something went really bad with your OpenID Connect request! :(</h2>
+    <p class="lead text-left">
+        <strong>@Model.Error</strong>
+        @if (!string.IsNullOrEmpty(Model.ErrorDescription)) {
+            <small>@Model.ErrorDescription</small>
+        }
+    </p>
+</div>
