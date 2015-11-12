@@ -151,7 +151,7 @@ namespace OpenIddict {
             var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await manager.FindApplicationByIdAsync(context.ClientContext.ClientId);
+            var application = await manager.FindApplicationByIdAsync(context.ClientId);
             Debug.Assert(application != null);
 
             // To prevent downgrade attacks, ensure that authorization requests using the hybrid/implicit
