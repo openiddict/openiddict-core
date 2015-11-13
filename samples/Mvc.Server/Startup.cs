@@ -73,7 +73,7 @@ namespace Mvc.Server {
                 // Add Mvc.Client to the known applications.
                 if (!context.Applications.Any()) {
                     context.Applications.Add(new Application {
-                        ApplicationID = "myClient",
+                        Id = "myClient",
                         DisplayName = "My client application",
                         RedirectUri = "http://localhost:53507/signin-oidc",
                         LogoutRedirectUri = "http://localhost:53507/",
