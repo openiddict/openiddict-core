@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Builder {
                 // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20Content%20Security%20Policy&referringTitle=NWebsec
                 owin.UseCsp(options => options.DefaultSources(directive => directive.Self())
                                               .ImageSources(directive => directive.Self().CustomSources("*"))
-                                              .ScriptSources(directive => directive.UnsafeInline())
+                                              .ScriptSources(directive => directive.Self().UnsafeInline())
                                               .StyleSources(directive => directive.Self().UnsafeInline()));
 
                 // Insert a new middleware responsible of setting the X-Content-Type-Options header.
