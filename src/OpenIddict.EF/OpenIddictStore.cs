@@ -21,7 +21,7 @@ namespace OpenIddict {
         }
 
         public virtual Task<TApplication> FindApplicationByIdAsync(string identifier, CancellationToken cancellationToken) {
-            return Applications.SingleOrDefaultAsync(application => application.ApplicationID == identifier, cancellationToken);
+            return Applications.SingleOrDefaultAsync(application => application.Id == identifier, cancellationToken);
         }
 
         public virtual Task<TApplication> FindApplicationByLogoutRedirectUri(string url, CancellationToken cancellationToken) {
