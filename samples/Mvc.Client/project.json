@@ -2,7 +2,7 @@
     "webroot": "wwwroot",
     "exclude": "wwwroot/**/*",
 
-    "version": "1.0.0-beta2-*",
+    "version": "1.0.0-*",
 
     "dependencies": {
         "Microsoft.AspNet.Mvc": "6.0.0-*",
