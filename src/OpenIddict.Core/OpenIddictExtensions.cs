@@ -62,7 +62,10 @@ namespace Microsoft.AspNet.Builder {
         public static IApplicationBuilder UseOpenIddictCore(
             [NotNull] this IApplicationBuilder app,
             [NotNull] Action<OpenIddictBuilder> configuration) {
-            var builder = new OpenIddictBuilder(app);
+            var builder = new OpenIddictBuilder();
+
+            // Resolve the OpenIddict provider from the services container.
+            builder.Options.Provider = app.ApplicationServices.GetRequiredService<OpenIdConnectServerProvider>();
 
             // By default, enable AllowInsecureHttp in development/testing environments.
             var environment = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
@@ -78,10 +81,7 @@ namespace Microsoft.AspNet.Builder {
             }));
 
             // Add OpenIdConnectServerMiddleware to the ASP.NET 5 pipeline.
-            builder.AddModule(0, map => map.UseOpenIdConnectServer(options => {
-                options.Options = builder.Options;
-                options.Provider = app.ApplicationServices.GetRequiredService<OpenIdConnectServerProvider>();
-            }));
+            builder.AddModule(0, map => map.UseOpenIdConnectServer(builder.Options));
 
             // Register the OpenIddict modules in the ASP.NET 5 pipeline.
             foreach (var module in builder.Modules.OrderBy(module => module.Position)) {

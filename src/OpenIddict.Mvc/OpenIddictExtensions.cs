@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Builder {
                     });
                 }
             }), services => {
-                var registration = builder.Builder.ApplicationServices.GetRequiredService<OpenIddictServices>();
+                var registration = app.ApplicationServices.GetRequiredService<OpenIddictServices>();
 
                 services.AddMvc()
                     // Register the OpenIddict controller.
