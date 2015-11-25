@@ -33,7 +33,7 @@ namespace OpenIddict {
             // Note: redirect_uri is not required for pure OAuth2 requests but this provider uses a stricter policy making it mandatory,
             // as required by the OpenID Connect specification: http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
             if (string.IsNullOrEmpty(context.RedirectUri)) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "The required redirect_uri parameter was missing.");
 
@@ -45,7 +45,7 @@ namespace OpenIddict {
 
             var application = await manager.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Application not found in the database: ensure that your client_id is correct.");
 
@@ -53,14 +53,14 @@ namespace OpenIddict {
             }
 
             if (!await manager.ValidateRedirectUriAsync(application, context.RedirectUri)) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid redirect_uri.");
 
                 return;
             }
 
-            context.Validated();
+            context.Validate();
         }
 
         public override async Task ValidateClientLogoutRedirectUri([NotNull] ValidateClientLogoutRedirectUriContext context) {
@@ -68,14 +68,14 @@ namespace OpenIddict {
 
             var application = await manager.FindApplicationByLogoutRedirectUri(context.PostLogoutRedirectUri);
             if (application == null) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid post_logout_redirect_uri.");
 
                 return;
             }
 
-            context.Validated();
+            context.Validate();
         }
 
         public override async Task ValidateClientAuthentication([NotNull] ValidateClientAuthenticationContext context) {
@@ -85,7 +85,7 @@ namespace OpenIddict {
             // When client_id and/or client_secret is/are missing, an error is returned to the client application.
             if (context.Request.IsRefreshTokenGrantType() && (string.IsNullOrEmpty(context.ClientId) ||
                                                               string.IsNullOrEmpty(context.ClientSecret))) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Missing credentials: ensure that your credentials were correctly " +
                                  "flowed in the request body or in the authorization header.");
@@ -98,7 +98,7 @@ namespace OpenIddict {
             // cannot use an authorization code or a refresh token if it's not
             // the intended audience, even if client authentication was skipped.
             if (string.IsNullOrEmpty(context.ClientId)) {
-                context.Skipped();
+                context.Skip();
 
                 return;
             }
@@ -108,7 +108,7 @@ namespace OpenIddict {
             // Retrieve the application details corresponding to the requested client_id.
             var application = await manager.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Application not found in the database: ensure that your client_id is correct.");
 
@@ -117,7 +117,7 @@ namespace OpenIddict {
 
             // Reject tokens requests containing a client_secret if the client application is not confidential.
             if (await manager.IsPublicApplicationAsync(application) && !string.IsNullOrEmpty(context.ClientSecret)) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Public clients are not allowed to send a client_secret.");
 
@@ -128,7 +128,7 @@ namespace OpenIddict {
             // to protect them from impersonation attacks.
             else if (await manager.IsConfidentialApplicationAsync(application)) {
                 if (string.IsNullOrEmpty(context.ClientSecret)) {
-                    context.Rejected(
+                    context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidClient,
                         description: "Missing credentials: ensure that you specified a client_secret.");
 
@@ -136,7 +136,7 @@ namespace OpenIddict {
                 }
 
                 if (!await manager.ValidateSecretAsync(application, context.ClientSecret)) {
-                    context.Rejected(
+                    context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidClient,
                         description: "Invalid credentials: ensure that you specified a correct client_secret.");
 
@@ -144,7 +144,7 @@ namespace OpenIddict {
                 }
             }
 
-            context.Validated();
+            context.Validate();
         }
 
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
@@ -159,7 +159,7 @@ namespace OpenIddict {
             // Note: when using the authorization code grant, ValidateClientAuthentication is responsible of
             // rejecting the token request if the client_id corresponds to an unauthenticated confidential client.
             if (await manager.IsConfidentialApplicationAsync(application) && !context.Request.IsAuthorizationCodeFlow()) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Confidential clients can only use response_type=code.");
 
@@ -170,7 +170,7 @@ namespace OpenIddict {
                 // If the user is not authenticated, return an error to the client application.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#Authenticates
                 if (!context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
-                    context.Rejected(
+                    context.Reject(
                         error: OpenIdConnectConstants.Errors.LoginRequired,
                         description: "The user must be authenticated.");
 
@@ -181,7 +181,7 @@ namespace OpenIddict {
                 // If no principal can be extracted, an error is returned to the client application.
                 var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
                 if (principal == null) {
-                    context.Rejected(
+                    context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The required id_token_hint parameter is missing.");
 
@@ -190,7 +190,7 @@ namespace OpenIddict {
 
                 // Ensure the client application is listed as a valid audience in the identity token.
                 if (!principal.HasClaim(JwtRegisteredClaimNames.Aud, context.Request.ClientId)) {
-                    context.Rejected(
+                    context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The id_token_hint parameter is invalid.");
 
@@ -199,7 +199,7 @@ namespace OpenIddict {
 
                 // Ensure the identity token corresponds to the authenticated user.
                 if (!principal.HasClaim(ClaimTypes.NameIdentifier, context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier))) {
-                    context.Rejected(
+                    context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The id_token_hint parameter is invalid.");
 
@@ -209,7 +209,7 @@ namespace OpenIddict {
                 // Ensure the user profile still exists in the database.
                 var user = await manager.FindByIdAsync(principal.GetUserId());
                 if (user == null) {
-                    context.Rejected(
+                    context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The id_token_hint parameter is invalid.");
 
@@ -224,7 +224,7 @@ namespace OpenIddict {
             // but this authorization server uses a stricter policy rejecting custom grant types.
             if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType() &&
                 !context.Request.IsPasswordGrantType() && !context.Request.IsClientCredentialsGrantType()) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
                     description: "Only authorization code, refresh token, client credentials " +
                                  "and password grants are accepted by this authorization server.");
@@ -344,7 +344,7 @@ namespace OpenIddict {
             identity.AddClaim(ClaimTypes.NameIdentifier, context.ClientId);
             identity.AddClaim(ClaimTypes.Name, await manager.GetDisplayNameAsync(application));
 
-            context.Validated(new ClaimsPrincipal(identity));
+            context.Validate(new ClaimsPrincipal(identity));
         }
 
         public override async Task GrantResourceOwnerCredentials([NotNull] GrantResourceOwnerCredentialsContext context) {
@@ -352,7 +352,7 @@ namespace OpenIddict {
 
             var user = await manager.FindByNameAsync(context.UserName);
             if (user == null) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "Invalid credentials.");
 
@@ -361,7 +361,7 @@ namespace OpenIddict {
 
             // Ensure the user is not already locked out.
             if (manager.SupportsUserLockout && await manager.IsLockedOutAsync(user)) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "Account locked out.");
 
@@ -370,7 +370,7 @@ namespace OpenIddict {
             
             // Ensure the password is valid.
             if (!await manager.CheckPasswordAsync(user, context.Password)) {
-                context.Rejected(
+                context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "Invalid credentials.");
 
@@ -379,7 +379,7 @@ namespace OpenIddict {
 
                     // Ensure the user is not locked out.
                     if (await manager.IsLockedOutAsync(user)) {
-                        context.Rejected(
+                        context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
                             description: "Account locked out.");
                     }
@@ -405,7 +405,7 @@ namespace OpenIddict {
                 // email address and if the "email" scope has not been requested.
                 if (!context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email) &&
                      string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                    context.Rejected(
+                    context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The 'email' scope is required.");
 
@@ -420,7 +420,7 @@ namespace OpenIddict {
                 identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
             }
 
-            context.Validated(new ClaimsPrincipal(identity));
+            context.Validate(new ClaimsPrincipal(identity));
         }
     }
 }
