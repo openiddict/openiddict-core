@@ -10,6 +10,7 @@ using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Internal;
 using OpenIddict;
 
@@ -22,12 +23,12 @@ namespace Microsoft.AspNet.Builder {
             builder.Services.AddAuthentication();
             builder.Services.AddCaching();
 
-            builder.Services.AddSingleton(
-                typeof(OpenIdConnectServerProvider),
+            builder.Services.TryAddSingleton(
+                typeof(IOpenIdConnectServerProvider),
                 typeof(OpenIddictProvider<,>).MakeGenericType(
                     builder.UserType, typeof(TApplication)));
 
-            builder.Services.AddScoped(
+            builder.Services.TryAddScoped(
                 typeof(OpenIddictManager<,>).MakeGenericType(
                     builder.UserType, typeof(TApplication)));
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.Builder {
                 UserType = builder.UserType
             };
 
-            builder.Services.AddInstance(services);
+            builder.Services.TryAdd(ServiceDescriptor.Instance(services));
 
             configuration(services);
 
@@ -65,7 +66,7 @@ namespace Microsoft.AspNet.Builder {
             var builder = new OpenIddictBuilder();
 
             // Resolve the OpenIddict provider from the services container.
-            builder.Options.Provider = app.ApplicationServices.GetRequiredService<OpenIdConnectServerProvider>();
+            builder.Options.Provider = app.ApplicationServices.GetRequiredService<IOpenIdConnectServerProvider>();
 
             // By default, enable AllowInsecureHttp in development/testing environments.
             var environment = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
