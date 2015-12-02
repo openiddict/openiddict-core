@@ -256,7 +256,7 @@ namespace OpenIddict {
             }
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user));
+            identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user), destination: "id_token token");
 
             // Only add the name claim if the "profile" scope was present in the authorization request.
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
@@ -341,8 +341,8 @@ namespace OpenIddict {
             Debug.Assert(application != null);
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, context.ClientId);
-            identity.AddClaim(ClaimTypes.Name, await manager.GetDisplayNameAsync(application));
+            identity.AddClaim(ClaimTypes.NameIdentifier, context.ClientId, destination: "id_token token");
+            identity.AddClaim(ClaimTypes.Name, await manager.GetDisplayNameAsync(application), destination: "id_token token");
 
             context.Validate(new ClaimsPrincipal(identity));
         }
@@ -393,7 +393,7 @@ namespace OpenIddict {
             }
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user));
+            identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user), destination: "id_token token");
 
             // Resolve the username and the email address associated with the user.
             var username = await manager.GetUserNameAsync(user);
