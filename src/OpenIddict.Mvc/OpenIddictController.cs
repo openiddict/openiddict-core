@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -113,40 +114,23 @@ namespace OpenIddict {
                 });
             }
 
+            // Return an error if the username corresponds to the registered
+            // email address and if the "email" scope has not been requested.
+            if (request.ContainsScope(OpenIdConnectConstants.Scopes.Profile) &&
+               !request.ContainsScope(OpenIdConnectConstants.Scopes.Email) &&
+                string.Equals(await Manager.GetUserNameAsync(user),
+                              await Manager.GetEmailAsync(user),
+                              StringComparison.OrdinalIgnoreCase)) {
+                return View("Error", new OpenIdConnectMessage {
+                    Error = OpenIdConnectConstants.Errors.InvalidRequest,
+                    ErrorDescription = "The 'email' scope is required."
+                });
+            }
+
             // Create a new ClaimsIdentity containing the claims that
             // will be used to create an id_token, a token or a code.
-            var identity = new ClaimsIdentity(Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, await Manager.GetUserIdAsync(user));
-
-            // Resolve the username and the email address associated with the user.
-            var username = await Manager.GetUserNameAsync(user);
-            var email = await Manager.GetEmailAsync(user);
-
-            // Only add the name claim if the "profile" scope was present in the authorization request.
-            if (request.ContainsScope(OpenIdConnectConstants.Scopes.Profile)) {
-                // Return an error if the username corresponds to the registered
-                // email address and if the "email" scope has not been requested.
-                if (!request.ContainsScope(OpenIdConnectConstants.Scopes.Email) &&
-                     string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                    return View("Error", new OpenIdConnectMessage {
-                        Error = OpenIdConnectConstants.Errors.InvalidRequest,
-                        ErrorDescription = "The 'email' scope is required."
-                    });
-                }
-
-                identity.AddClaim(ClaimTypes.Name, username, destination: "id_token token");
-            }
-
-            // Only add the email address if the "email" scope was present in the token request.
-            if (request.ContainsScope(OpenIdConnectConstants.Scopes.Email)) {
-                identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
-            }
-
-            if (Manager.SupportsUserRole) {
-                foreach (var name in await Manager.GetRolesAsync(user)) {
-                    identity.AddClaim(identity.RoleClaimType, name, destination: "id_token token");
-                }
-            }
+            var identity = await Manager.CreateIdentityAsync(user, request.GetScopes());
+            Debug.Assert(identity != null);
 
             // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
             // corresponds to the client_id specified in the authorization request using

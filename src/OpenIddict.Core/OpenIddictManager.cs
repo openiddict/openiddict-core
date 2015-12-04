@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using AspNet.Security.OpenIdConnect.Extensions;
 using CryptoHelper;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
@@ -23,6 +26,7 @@ namespace OpenIddict {
                    logger: services.GetService<ILogger<UserManager<TUser>>>(),
                    contextAccessor: services.GetService<IHttpContextAccessor>()) {
             Context = services.GetRequiredService<IHttpContextAccessor>().HttpContext;
+            Options = services.GetRequiredService<IOptions<IdentityOptions>>().Value;
         }
 
         /// <summary>
@@ -31,10 +35,70 @@ namespace OpenIddict {
         public virtual HttpContext Context { get; }
 
         /// <summary>
+        /// Gets the Identity options associated with the current manager.
+        /// </summary>
+        public virtual IdentityOptions Options { get; }
+
+        /// <summary>
         /// Gets the store associated with the current manager.
         /// </summary>
         public virtual new IOpenIddictStore<TUser, TApplication> Store {
             get { return base.Store as IOpenIddictStore<TUser, TApplication>; }
+        }
+
+        public virtual async Task<ClaimsIdentity> CreateIdentityAsync(TUser user, IEnumerable<string> scopes) {
+            if (user == null) {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (scopes == null) {
+                throw new ArgumentNullException(nameof(scopes));
+            }
+
+            var identity = new ClaimsIdentity(
+                OpenIddictDefaults.AuthenticationScheme,
+                Options.ClaimsIdentity.UserNameClaimType,
+                Options.ClaimsIdentity.RoleClaimType);
+
+            identity.AddClaim(ClaimTypes.NameIdentifier, await GetUserIdAsync(user), destination: "id_token token");
+
+            // Resolve the username and the email address associated with the user.
+            var username = await GetUserNameAsync(user);
+            var email = await GetEmailAsync(user);
+
+            // Only add the name claim if the "profile" scope was granted.
+            if (scopes.Contains(OpenIdConnectConstants.Scopes.Profile)) {
+                // Throw an exception if the username corresponds to the registered
+                // email address and if the "email" scope has not been requested.
+                if (!scopes.Contains(OpenIdConnectConstants.Scopes.Email) &&
+                     string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
+                    throw new InvalidOperationException("The 'email' scope is required.");
+                }
+
+                identity.AddClaim(ClaimTypes.Name, username, destination: "id_token token");
+            }
+
+            // Only add the email address if the "email" scope was granted.
+            if (scopes.Contains(OpenIdConnectConstants.Scopes.Email)) {
+                identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
+            }
+
+            if (SupportsUserRole) {
+                foreach (var role in await GetRolesAsync(user)) {
+                    identity.AddClaim(identity.RoleClaimType, role, destination: "id_token token");
+                }
+            }
+
+            if (SupportsUserSecurityStamp) {
+                var identifier = await GetSecurityStampAsync(user);
+
+                if (!string.IsNullOrEmpty(identifier)) {
+                    identity.AddClaim(Options.ClaimsIdentity.SecurityStampClaimType,
+                        identifier, destination: "id_token token");
+                }
+            }
+
+            return identity;
         }
 
         public virtual Task<TApplication> FindApplicationByIdAsync(string identifier) {
@@ -46,6 +110,14 @@ namespace OpenIddict {
         }
 
         public virtual async Task<string> FindClaimAsync(TUser user, string type) {
+            if (user == null) {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (string.IsNullOrEmpty(type)) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             // Note: GetClaimsAsync will automatically throw an exception
             // if the underlying store doesn't support custom claims.
 

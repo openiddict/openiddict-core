@@ -12,8 +12,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
+using Microsoft.AspNet.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.OptionsModel;
 
 namespace OpenIddict {
     public class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
@@ -336,6 +338,35 @@ namespace OpenIddict {
             }
         }
 
+        public override async Task ValidationEndpoint([NotNull] ValidationEndpointContext context) {
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
+
+            // If the user manager doesn't support security
+            // stamps, skip the additional validation logic.
+            if (!manager.SupportsUserSecurityStamp) {
+                return;
+            }
+
+            var principal = context.AuthenticationTicket?.Principal;
+            Debug.Assert(principal != null);
+
+            var user = await manager.FindByIdAsync(principal.GetUserId());
+            if (user == null) {
+                context.Active = false;
+
+                return;
+            }
+
+            var identifier = principal.GetClaim(options.Value.ClaimsIdentity.SecurityStampClaimType);
+            if (!string.IsNullOrEmpty(identifier) &&
+                !string.Equals(identifier, await manager.GetSecurityStampAsync(user), StringComparison.Ordinal)) {
+                context.Active = false;
+
+                return;
+            }
+        }
+
         public override async Task GrantClientCredentials([NotNull] GrantClientCredentialsContext context) {
             var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
@@ -348,6 +379,39 @@ namespace OpenIddict {
             identity.AddClaim(ClaimTypes.Name, await manager.GetDisplayNameAsync(application), destination: "id_token token");
 
             context.Validate(new ClaimsPrincipal(identity));
+        }
+
+        public override async Task GrantRefreshToken([NotNull] GrantRefreshTokenContext context) {
+            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
+
+            // If the user manager doesn't support security
+            // stamps, skip the default validation logic.
+            if (!manager.SupportsUserSecurityStamp) {
+                return;
+            }
+
+            var principal = context.AuthenticationTicket?.Principal;
+            Debug.Assert(principal != null);
+
+            var user = await manager.FindByIdAsync(principal.GetUserId());
+            if (user == null) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidGrant,
+                    description: "The refresh token is no longer valid.");
+
+                return;
+            }
+
+            var identifier = principal.GetClaim(options.Value.ClaimsIdentity.SecurityStampClaimType);
+            if (!string.IsNullOrEmpty(identifier) &&
+                !string.Equals(identifier, await manager.GetSecurityStampAsync(user), StringComparison.Ordinal)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidGrant,
+                    description: "The refresh token is no longer valid.");
+
+                return;
+            }
         }
 
         public override async Task GrantResourceOwnerCredentials([NotNull] GrantResourceOwnerCredentialsContext context) {
@@ -395,39 +459,22 @@ namespace OpenIddict {
                 await manager.ResetAccessFailedCountAsync(user);
             }
 
-            var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user), destination: "id_token token");
+            // Return an error if the username corresponds to the registered
+            // email address and if the "email" scope has not been requested.
+            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Profile) &&
+               !context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email) &&
+                string.Equals(await manager.GetUserNameAsync(user),
+                              await manager.GetEmailAsync(user),
+                              StringComparison.OrdinalIgnoreCase)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The 'email' scope is required.");
 
-            // Resolve the username and the email address associated with the user.
-            var username = await manager.GetUserNameAsync(user);
-            var email = await manager.GetEmailAsync(user);
-
-            // Only add the name claim if the "profile" scope was present in the token request.
-            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Profile)) {
-                // Return an error if the username corresponds to the registered
-                // email address and if the "email" scope has not been requested.
-                if (!context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email) &&
-                     string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The 'email' scope is required.");
-
-                    return;
-                }
-
-                identity.AddClaim(ClaimTypes.Name, username, destination: "id_token token");
+                return;
             }
 
-            // Only add the email address if the "email" scope was present in the token request.
-            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email)) {
-                identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
-            }
-
-            if (manager.SupportsUserRole) {
-                foreach (var name in await manager.GetRolesAsync(user)) {
-                    identity.AddClaim(identity.RoleClaimType, name, destination: "id_token token");
-                }
-            }
+            var identity = await manager.CreateIdentityAsync(user, context.Request.GetScopes());
+            Debug.Assert(identity != null);
 
             context.Validate(new ClaimsPrincipal(identity));
         }
