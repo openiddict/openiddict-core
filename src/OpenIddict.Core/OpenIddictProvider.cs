@@ -305,9 +305,12 @@ namespace OpenIddict {
             // don't include the "email" scope if the username corresponds to the registed email address.
             if (principal.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Profile)) {
                 context.PreferredUsername = await manager.GetUserNameAsync(user);
-                context.FamilyName = await manager.FindClaimAsync(user, ClaimTypes.Surname);
-                context.GivenName = await manager.FindClaimAsync(user, ClaimTypes.GivenName);
-                context.BirthDate = await manager.FindClaimAsync(user, ClaimTypes.DateOfBirth);
+
+                if (manager.SupportsUserClaim) {
+                    context.FamilyName = await manager.FindClaimAsync(user, ClaimTypes.Surname);
+                    context.GivenName = await manager.FindClaimAsync(user, ClaimTypes.GivenName);
+                    context.BirthDate = await manager.FindClaimAsync(user, ClaimTypes.DateOfBirth);
+                }
             }
 
             // Only add the email address details if the "email" scope was present in the access token.
@@ -418,6 +421,12 @@ namespace OpenIddict {
             // Only add the email address if the "email" scope was present in the token request.
             if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email)) {
                 identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
+            }
+
+            if (manager.SupportsUserRole) {
+                foreach (var name in await manager.GetRolesAsync(user)) {
+                    identity.AddClaim(identity.RoleClaimType, name, destination: "id_token token");
+                }
             }
 
             context.Validate(new ClaimsPrincipal(identity));

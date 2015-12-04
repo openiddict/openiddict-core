@@ -142,6 +142,12 @@ namespace OpenIddict {
                 identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
             }
 
+            if (Manager.SupportsUserRole) {
+                foreach (var name in await Manager.GetRolesAsync(user)) {
+                    identity.AddClaim(identity.RoleClaimType, name, destination: "id_token token");
+                }
+            }
+
             // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
             // corresponds to the client_id specified in the authorization request using
             // IOpenIdConnectServerProvider.ValidateClientRedirectUri (see OpenIddictProvider.cs).

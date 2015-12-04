@@ -46,6 +46,9 @@ namespace OpenIddict {
         }
 
         public virtual async Task<string> FindClaimAsync(TUser user, string type) {
+            // Note: GetClaimsAsync will automatically throw an exception
+            // if the underlying store doesn't support custom claims.
+
             return (from claim in await GetClaimsAsync(user)
                     where string.Equals(claim.Type, type, StringComparison.Ordinal)
                     select claim.Value).FirstOrDefault();
