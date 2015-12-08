@@ -15,37 +15,33 @@ using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
+using NWebsec.Middleware;
 using OpenIddict;
-
-#if DNX451
-using NWebsec.Owin;
-#endif
 
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
         public static OpenIddictBuilder UseMvc([NotNull] this OpenIddictBuilder builder) {
-#if DNX451
-            builder.AddModule(-20, app => app.UseKatana(owin => {
+
+            builder.AddModule(-20, app => {
                 // Insert a new middleware responsible of setting the Content-Security-Policy header.
                 // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20Content%20Security%20Policy&referringTitle=NWebsec
-                owin.UseCsp(options => options.DefaultSources(directive => directive.Self())
-                                              .ImageSources(directive => directive.Self().CustomSources("*"))
-                                              .ScriptSources(directive => directive.Self().UnsafeInline())
-                                              .StyleSources(directive => directive.Self().UnsafeInline()));
+                app.UseCsp(options => options.DefaultSources(directive => directive.Self())
+                                             .ImageSources(directive => directive.Self().CustomSources("*"))
+                                             .ScriptSources(directive => directive.Self().UnsafeInline())
+                                             .StyleSources(directive => directive.Self().UnsafeInline()));
 
                 // Insert a new middleware responsible of setting the X-Content-Type-Options header.
                 // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
-                owin.UseXContentTypeOptions();
+                app.UseXContentTypeOptions();
 
                 // Insert a new middleware responsible of setting the X-Frame-Options header.
                 // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
-                owin.UseXfo(options => options.Deny());
+                app.UseXfo(options => options.Deny());
 
                 // Insert a new middleware responsible of setting the X-Xss-Protection header.
                 // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
-                owin.UseXXssProtection(options => options.EnabledWithBlockMode());
-            }));
-#endif
+                app.UseXXssProtection(options => options.EnabledWithBlockMode());
+            });
 
             // Run the rest of the pipeline in an isolated environment.
             builder.AddModule(10, app => app.Isolate(map => map.UseMvc(routes => {

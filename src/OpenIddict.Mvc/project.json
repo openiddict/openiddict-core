@@ -6,6 +6,8 @@
     "resource": "Views/**",
 
     "dependencies": {
+        "AspNet.Hosting.Extensions": "1.0.0-*",
+
         "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
 
@@ -19,19 +21,16 @@
             "version": "1.0.0-*"
         },
 
-        "AspNet.Hosting.Extensions": "1.0.0-*",
-        
+        "NWebsec.Middleware": {
+            "type": "build",
+            "version": "1.0.0-gamma-custom-*"
+        },
+
         "OpenIddict.Core": "1.0.0-*"
     },
 
     "frameworks": {
-        "dnx451": {
-            "dependencies": {
-                "AspNet.Hosting.Katana.Extensions": "1.0.0-*",
-                "NWebsec.Owin": "1.0.0"
-            }
-        },
-
+        "dnx451": { },
         "dnxcore50": { }
     }
 }
