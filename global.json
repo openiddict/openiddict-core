@@ -1,1 +1,1 @@
-{ "sources": [ "src" ] }
+{ "sources": [ "src", "external" ] }

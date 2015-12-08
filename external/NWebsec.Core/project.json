@@ -1,0 +1,34 @@
+﻿{
+
+  "version": "2.0.0-gamma-custom-*",
+  "title": "NWebsec.Core (ASP.NET 5)",
+  "description": "This library provides core functionality for the NWebsec security libraries.",
+  "releaseNotes": "This release includes core functions for the NWebsec security libaries.",
+  "authors": [ "André N. Klingsheim" ],
+  "owners": [ "André N. Klingsheim" ],
+  "copyright": "Copyright © 2014 - 2015",
+  "tags": [ "NWebsec Security AspNet AppSec" ],
+  "projectUrl": "https://docs.nwebsec.com/en/latest/",
+  "licenseUrl": "https://github.com/NWebsec/NWebsec/blob/master/LICENSE",
+  "iconUrl": "https://klings.blob.core.windows.net/nwebsecicon/nwebsec_nuget.png",
+  "frameworks": {
+    "dnx451": { },
+    "net451": { },
+    "dotnet5.4": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.1-beta-23516",
+        "System.Runtime": "4.0.21-beta-23516",
+        "System.Security.Cryptography.Algorithms": "4.0.0-beta-23516",
+        "System.Security.Cryptography.X509Certificates": "4.0.0-beta-23516",
+        "System.Text.RegularExpressions": "4.0.11-beta-23516"
+      }
+    }
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Http.Abstractions": "1.0.0-rc2-*",
+    "NWebsec.Annotations": {
+      "version": "1.0.0-*",
+      "type": "build"
+    }
+  }
+}
