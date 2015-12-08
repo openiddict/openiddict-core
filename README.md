@@ -35,6 +35,11 @@ Note: OpenIddict uses **[EntityFramework 7](https://github.com/aspnet/EntityFram
 
 To use OpenIddict, you need to:
 
+  - **Update your DNX runtime to use the latest RC2 nightly builds**:
+```
+dnvm upgrade -u
+```
+
   - **Have an existing project or create a new one** (note: when creating a new project using Visual Studio's default ASP.NET 5 template, using **individual user accounts authentication** is strongly recommended).
 
   - **Add the appropriate MyGet repositories to your NuGet sources**. This can be done by adding a new `NuGet.Config` file at the root of your solution:
