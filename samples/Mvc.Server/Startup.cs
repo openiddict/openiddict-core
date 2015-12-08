@@ -1,6 +1,7 @@
 using System.Linq;
 using CryptoHelper;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.HttpOverrides;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
@@ -42,6 +43,10 @@ namespace Mvc.Server {
 
             app.UseIISPlatformHandler(options => {
                 options.FlowWindowsAuthentication = false;
+            });
+
+            app.UseOverrideHeaders(new OverrideHeaderMiddlewareOptions {
+                ForwardedOptions = ForwardedHeaders.All
             });
 
             app.UseStaticFiles();

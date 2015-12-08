@@ -2,6 +2,7 @@ using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -24,6 +25,10 @@ namespace Mvc.Client {
 
             app.UseIISPlatformHandler(options => {
                 options.FlowWindowsAuthentication = false;
+            });
+
+            app.UseOverrideHeaders(new OverrideHeaderMiddlewareOptions {
+                ForwardedOptions = ForwardedHeaders.All
             });
 
             app.UseStaticFiles();
