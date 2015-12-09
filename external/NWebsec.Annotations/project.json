@@ -1,0 +1,18 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "NWebsec.Annotations Class Library",
+  "authors": [ "klings" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "frameworks": {
+    "dnx451": { },
+    "net451": { },
+    "dotnet5.4": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.1-beta-23516"
+      }
+    }
+  }
+}
