@@ -20,7 +20,7 @@
         },
 
         "AspNet.Hosting.Extensions": "1.0.0-*",
-        "NWebsec.Middleware": "1.0.0-gamma-37",
+        "NWebsec.Middleware": "1.0.0-gamma-custom-*",
         "OpenIddict.Core": "1.0.0-*"
     },
 
