@@ -12,7 +12,7 @@ namespace NWebsec.Core.HttpHeaders.Csp
     {
         private const string HostRegex = @"^(\*\.)?([\p{Ll}\p{Lu}0-9\-]+)(\.[\p{Ll}\p{Lu}0-9\-]+)*$";
         private static readonly string SchemeOnlyRegex = "^[a-zA-Z]*[a-zA-Z0-9" + Regex.Escape("+.-") + "]:$";
-        private static readonly string[] KnownSchemes = { "http", "https", "data", "ws", "wss" };
+        private static readonly string[] KnownSchemes = { "http", "https", "ws", "wss" };
         private readonly string _source;
 
         private CspUriSource(string source)
