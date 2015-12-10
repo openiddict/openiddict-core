@@ -49,9 +49,10 @@ namespace Microsoft.AspNet.Builder {
             [NotNull] this OpenIddictBuilder builder,
             [NotNull] string name, int position,
             [NotNull] Action<IApplicationBuilder> registration) {
-            // By default, prevent duplicate registrations.
-            if (builder.Modules.Any(module => string.Equals(module.Name, name))) {
-                return builder;
+            // Note: always call ToArray to make sure the foreach
+            // block doesn't iterate on the modified collection.
+            foreach (var module in builder.Modules.Where(module => string.Equals(module.Name, name)).ToArray()) {
+                builder.Modules.Remove(module);
             }
 
             builder.Modules.Add(new OpenIddictModule {
@@ -81,12 +82,6 @@ namespace Microsoft.AspNet.Builder {
 
             configuration(builder);
 
-            builder.AddModule("CORS", -10, map => map.UseCors(options => {
-                options.AllowAnyHeader();
-                options.AllowAnyMethod();
-                options.AllowAnyOrigin();
-                options.AllowCredentials();
-            }));
 
             // Add OpenIdConnectServerMiddleware to the ASP.NET 5 pipeline.
             builder.AddModule("ASOS", 0, map => map.UseOpenIdConnectServer(builder.Options));

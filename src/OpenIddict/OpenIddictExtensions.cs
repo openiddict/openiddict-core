@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.Builder {
             [NotNull] this IApplicationBuilder app,
             [NotNull] Action<OpenIddictBuilder> configuration) {
             return app.UseOpenIddictCore(builder => {
-                // By default, both the assets
-                // and the MVC modules are enabled.
+                builder.UseNWebsec();
+                builder.UseCors();
                 builder.UseAssets();
                 builder.UseMvc();
 

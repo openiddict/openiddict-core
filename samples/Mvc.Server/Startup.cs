@@ -10,8 +10,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
+using NWebsec.Middleware;
 using OpenIddict;
 using OpenIddict.Models;
+
 
 namespace Mvc.Server {
     public class Startup {
@@ -92,7 +94,19 @@ namespace Mvc.Server {
 
             // Note: OpenIddict must be added after
             // ASP.NET Identity and the external providers.
-            app.UseOpenIddict();
+            app.UseOpenIddict(options => {
+                // You can customize the default Content Security Policy (CSP) by calling UseNWebsec explicitly.
+                // This can be useful to allow your HTML views to reference remote scripts/images/styles.
+                options.UseNWebsec(directives => {
+                    directives.DefaultSources(directive => directive.Self())
+                        .ImageSources(directive => directive.Self().CustomSources("*"))
+                        .ScriptSources(directive => directive
+                            .Self()
+                            .UnsafeInline()
+                            .CustomSources("https://my.custom.url"))
+                        .StyleSources(directive => directive.Self().UnsafeInline());
+                });
+            });
 
             app.UseMvcWithDefaultRoute();
 

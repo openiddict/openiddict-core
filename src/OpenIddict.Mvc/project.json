@@ -17,12 +17,6 @@
             "version": "1.0.0-*"
         },
 
-        "NWebsec": {
-            "type": "build",
-            "version": "1.0.0-internal-*",
-            "target": "project"
-        },
-
         "OpenIddict.Core": "1.0.0-*"
     },
 

@@ -13,36 +13,14 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
-using NWebsec.Middleware;
 using OpenIddict;
 using OpenIddict.Mvc;
 
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
         public static OpenIddictBuilder UseMvc([NotNull] this OpenIddictBuilder builder) {
-            builder.AddModule("NWebsec", -20, app => {
-                // Insert a new middleware responsible of setting the Content-Security-Policy header.
-                // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20Content%20Security%20Policy&referringTitle=NWebsec
-                app.UseCsp(options => options.DefaultSources(directive => directive.Self())
-                                             .ImageSources(directive => directive.Self().CustomSources("*"))
-                                             .ScriptSources(directive => directive.Self().UnsafeInline())
-                                             .StyleSources(directive => directive.Self().UnsafeInline()));
-
-                // Insert a new middleware responsible of setting the X-Content-Type-Options header.
-                // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
-                app.UseXContentTypeOptions();
-
-                // Insert a new middleware responsible of setting the X-Frame-Options header.
-                // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
-                app.UseXfo(options => options.Deny());
-
-                // Insert a new middleware responsible of setting the X-Xss-Protection header.
-                // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20security%20headers&referringTitle=NWebsec
-                app.UseXXssProtection(options => options.EnabledWithBlockMode());
-            });
-
-            // Run the rest of the pipeline in an isolated environment.
-            builder.AddModule("MVC", 10, app => app.Isolate(map => map.UseMvc(routes => {
+            // Run MVC in an isolated environment.
+            return builder.AddModule("MVC", 10, app => app.Isolate(map => map.UseMvc(routes => {
                 // Register the actions corresponding to the authorization endpoint.
                 if (builder.Options.AuthorizationEndpointPath.HasValue) {
                     routes.MapRoute("{D97891B4}", builder.Options.AuthorizationEndpointPath.Value.Substring(1), new {
@@ -110,8 +88,6 @@ namespace Microsoft.AspNet.Builder {
                 // Register the options in the isolated container.
                 services.AddScoped(provider => builder.Options);
             }));
-
-            return builder;
         }
 
         private class OpenIddictConvention : IControllerModelConvention {
