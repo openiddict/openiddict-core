@@ -27,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{DE
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NWebsec", "external\NWebsec\NWebsec.xproj", "{38C8E88F-1D01-466F-B47D-6D67F13C1594}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Security", "src\OpenIddict.Security\OpenIddict.Security.xproj", "{3744B1BC-3498-4958-B020-B2688A78B989}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{38C8E88F-1D01-466F-B47D-6D67F13C1594}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38C8E88F-1D01-466F-B47D-6D67F13C1594}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38C8E88F-1D01-466F-B47D-6D67F13C1594}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3744B1BC-3498-4958-B020-B2688A78B989}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3744B1BC-3498-4958-B020-B2688A78B989}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3744B1BC-3498-4958-B020-B2688A78B989}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3744B1BC-3498-4958-B020-B2688A78B989}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,5 +89,6 @@ Global
 		{E60CF8CA-6313-4359-BE43-AFCBB927EA30} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 		{7AE46E2F-E93B-4FF9-B941-6CD7A3E1BF84} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 		{38C8E88F-1D01-466F-B47D-6D67F13C1594} = {DE26CC68-28BA-44BB-B28E-43B949C6C606}
+		{3744B1BC-3498-4958-B020-B2688A78B989} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 	EndGlobalSection
 EndGlobal
