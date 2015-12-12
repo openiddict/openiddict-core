@@ -8,13 +8,9 @@
     "dependencies": {
         "AspNet.Hosting.Extensions": "1.0.0-*",
 
+        "Microsoft.AspNet.FileProviders.Composite": "1.0.0-*",
         "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
-
-        "Microsoft.AspNet.FileProviders.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        },
 
         "Microsoft.Extensions.NotNullAttribute.Sources": {
             "type": "build",

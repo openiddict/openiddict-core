@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNet.FileProviders;
@@ -14,7 +13,6 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Primitives;
 using NWebsec.Middleware;
 using OpenIddict;
 
@@ -81,12 +79,11 @@ namespace Microsoft.AspNet.Builder {
                     .AddRazorOptions(options => {
                         // Update the Razor options to also use a combined provider that
                         // falls back to the current assembly when searching for views.
-                        options.FileProvider = new CombinedFileSystemProvider(new[] {
+                        options.FileProvider = new CompositeFileProvider(
                             options.FileProvider,
                             new EmbeddedFileProvider(
                                 assembly: typeof(OpenIddictController<,>).GetTypeInfo().Assembly,
-                                baseNamespace: "OpenIddict.Mvc")
-                        });
+                                baseNamespace: "OpenIddict.Mvc"));
                     });
 
                 // Register the sign-in manager in the isolated container.
@@ -126,53 +123,6 @@ namespace Microsoft.AspNet.Builder {
                 // Note: manually updating the controller name is required
                 // to remove the ending markers added to the generic type name.
                 controller.ControllerName = "OpenIddict";
-            }
-        }
-
-        private class CombinedFileSystemProvider : IFileProvider {
-            public CombinedFileSystemProvider(IList<IFileProvider> providers) {
-                Providers = providers;
-            }
-
-            public IList<IFileProvider> Providers { get; }
-
-            public IDirectoryContents GetDirectoryContents(string subpath) {
-                for (var index = 0; index < Providers.Count; index++) {
-                    var provider = Providers[index];
-
-                    var result = provider.GetDirectoryContents(subpath);
-                    if (result != null && result.Exists) {
-                        return result;
-                    }
-                }
-
-                return new NotFoundDirectoryContents();
-            }
-
-            public IFileInfo GetFileInfo(string subpath) {
-                for (var index = 0; index < Providers.Count; index++) {
-                    var provider = Providers[index];
-
-                    var result = provider.GetFileInfo(subpath);
-                    if (result != null && result.Exists) {
-                        return result;
-                    }
-                }
-
-                return new NotFoundFileInfo(subpath);
-            }
-
-            public IChangeToken Watch(string filter) {
-                for (var index = 0; index < Providers.Count; index++) {
-                    var provider = Providers[index];
-
-                    var result = provider.Watch(filter);
-                    if (result != null) {
-                        return result;
-                    }
-                }
-
-                return NoopChangeToken.Singleton;
             }
         }
     }
