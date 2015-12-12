@@ -31,6 +31,10 @@
 
     "frameworks": {
         "dnx451": { },
-        "dnxcore50": { }
+        "dnxcore50": {
+            "dependencies": {
+                "System.Reflection": "4.1.0-*"
+            }
+        }
     }
 }

@@ -10,13 +10,16 @@
   "projectUrl": "https://docs.nwebsec.com/en/latest/",
   "licenseUrl": "https://github.com/NWebsec/NWebsec/blob/master/LICENSE",
   "iconUrl": "https://klings.blob.core.windows.net/nwebsecicon/nwebsec_nuget.png",
+
+  "shared": "**/**.cs",
+
   "frameworks": {
     "dnx451": { },
     "net451": { },
     "dotnet5.4": {
       "dependencies": {
-        "Microsoft.CSharp": "4.0.1-beta-23516",
-        "System.Runtime": "4.0.21-beta-23516"
+        "Microsoft.CSharp": "4.0.1-*",
+        "System.Runtime": "4.0.21-*"
       }
     }
 

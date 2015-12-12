@@ -21,7 +21,6 @@ using OpenIddict;
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
         public static OpenIddictBuilder UseMvc([NotNull] this OpenIddictBuilder builder) {
-
             builder.AddModule(-20, app => {
                 // Insert a new middleware responsible of setting the Content-Security-Policy header.
                 // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20Content%20Security%20Policy&referringTitle=NWebsec
