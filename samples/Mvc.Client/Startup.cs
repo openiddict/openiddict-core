@@ -60,10 +60,6 @@ namespace Mvc.Client {
                 // the different endpoints URIs or the token validation parameters explicitly.
                 options.Authority = "http://localhost:54540/";
 
-                // Note: the resource property represents the different endpoints the
-                // access token should be issued for (values must be space-delimited).
-                options.Resource = "http://localhost:54540/";
-
                 options.Scope.Add("email");
             });
 

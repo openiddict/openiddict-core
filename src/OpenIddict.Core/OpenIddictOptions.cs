@@ -9,7 +9,6 @@ using AspNet.Security.OpenIdConnect.Server;
 namespace OpenIddict {
     public class OpenIddictOptions : OpenIdConnectServerOptions {
         public OpenIddictOptions() {
-            AuthenticationScheme = OpenIddictDefaults.AuthenticationScheme;
             ApplicationCanDisplayErrors = true;
         }
     }

@@ -53,11 +53,20 @@ namespace Mvc.Server {
 
             // Add a middleware used to validate access
             // tokens and protect the API endpoints.
-            app.UseJwtBearerAuthentication(options => {
-                options.Audience = "http://localhost:54540/";
-                options.Authority = "http://localhost:54540/";
-                options.RequireHttpsMetadata = false;
-            });
+            app.UseOAuthValidation();
+
+            // Alternatively, you can also use the introspection middleware.
+            // Using it is recommended if your resource server is in a
+            // different application/separated from the authorization server.
+            // 
+            // app.UseOAuthIntrospection(options => {
+            //     options.AutomaticAuthenticate = true;
+            //     options.AutomaticChallenge = true;
+            //     options.Authority = "http://localhost:54540/";
+            //     options.Audience = "resource_server";
+            //     options.ClientId = "resource_server";
+            //     options.ClientSecret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd";
+            // });
 
             app.UseIdentity();
 
@@ -82,6 +91,15 @@ namespace Mvc.Server {
 
                 // Add Mvc.Client to the known applications.
                 if (!context.Applications.Any()) {
+                    // Note: when using the introspection middleware, your resource server
+                    // MUST be registered as an OAuth2 client and have valid credentials.
+                    // 
+                    // context.Applications.Add(new Application {
+                    //     Id = "resource_server",
+                    //     DisplayName = "Main resource server",
+                    //     Secret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd"
+                    // });
+
                     context.Applications.Add(new Application {
                         Id = "myClient",
                         DisplayName = "My client application",

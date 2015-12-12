@@ -2,10 +2,12 @@
     "webroot": "wwwroot",
 
     "dependencies": {
+        "AspNet.Security.OAuth.Introspection": "1.0.0-*",
+        "AspNet.Security.OAuth.Validation": "1.0.0-*",
+
         "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
 
         "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.JwtBearer": "1.0.0-*",
         "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
         "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Server;
 using CryptoHelper;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity;
@@ -56,7 +57,7 @@ namespace OpenIddict {
             }
 
             var identity = new ClaimsIdentity(
-                OpenIddictDefaults.AuthenticationScheme,
+                OpenIdConnectServerDefaults.AuthenticationScheme,
                 Options.ClaimsIdentity.UserNameClaimType,
                 Options.ClaimsIdentity.RoleClaimType);
 
