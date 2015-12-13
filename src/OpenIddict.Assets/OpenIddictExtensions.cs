@@ -12,7 +12,7 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
         public static OpenIddictBuilder UseAssets([NotNull] this OpenIddictBuilder builder) {
-            return builder.AddModule(-20, app => app.UseStaticFiles(new StaticFileOptions {
+            return builder.AddModule("Assets", -20, app => app.UseStaticFiles(new StaticFileOptions {
                 FileProvider = new EmbeddedFileProvider(
                     assembly: Assembly.Load(new AssemblyName("OpenIddict.Assets")),
                     baseNamespace: "OpenIddict.Assets")

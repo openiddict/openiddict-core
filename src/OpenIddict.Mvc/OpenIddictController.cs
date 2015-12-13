@@ -18,7 +18,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Internal;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace OpenIddict {
+namespace OpenIddict.Mvc {
     // Note: this controller is generic and doesn't need to be marked as internal to prevent MVC from discovering it.
     public class OpenIddictController<TUser, TApplication> : Controller where TUser : class where TApplication : class {
         public OpenIddictController(

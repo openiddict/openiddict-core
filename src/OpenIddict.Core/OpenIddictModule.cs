@@ -7,6 +7,11 @@ namespace OpenIddict {
     /// </summary>
     public class OpenIddictModule {
         /// <summary>
+        /// Gets or sets the name of the module.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
         /// Gets or sets the position of the module in the ASP.NET pipeline.
         /// </summary>
         public int Position { get; set; }

@@ -15,11 +15,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using NWebsec.Middleware;
 using OpenIddict;
+using OpenIddict.Mvc;
 
 namespace Microsoft.AspNet.Builder {
     public static class OpenIddictExtensions {
         public static OpenIddictBuilder UseMvc([NotNull] this OpenIddictBuilder builder) {
-            builder.AddModule(-20, app => {
+            builder.AddModule("NWebsec", -20, app => {
                 // Insert a new middleware responsible of setting the Content-Security-Policy header.
                 // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20Content%20Security%20Policy&referringTitle=NWebsec
                 app.UseCsp(options => options.DefaultSources(directive => directive.Self())
@@ -41,7 +42,7 @@ namespace Microsoft.AspNet.Builder {
             });
 
             // Run the rest of the pipeline in an isolated environment.
-            builder.AddModule(10, app => app.Isolate(map => map.UseMvc(routes => {
+            builder.AddModule("MVC", 10, app => app.Isolate(map => map.UseMvc(routes => {
                 // Register the actions corresponding to the authorization endpoint.
                 if (builder.Options.AuthorizationEndpointPath.HasValue) {
                     routes.MapRoute("{D97891B4}", builder.Options.AuthorizationEndpointPath.Value.Substring(1), new {
@@ -83,7 +84,7 @@ namespace Microsoft.AspNet.Builder {
                             options.FileProvider,
                             new EmbeddedFileProvider(
                                 assembly: typeof(OpenIddictController<,>).GetTypeInfo().Assembly,
-                                baseNamespace: "OpenIddict.Mvc"));
+                                baseNamespace: typeof(OpenIddictController<,>).Namespace));
                     });
 
                 // Register the sign-in manager in the isolated container.
