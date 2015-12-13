@@ -17,9 +17,10 @@
             "version": "1.0.0-*"
         },
 
-        "NWebsec.Middleware": {
+        "NWebsec": {
             "type": "build",
-            "version": "1.0.0-gamma-custom-*"
+            "version": "1.0.0-internal-*",
+            "target": "project"
         },
 
         "OpenIddict.Core": "1.0.0-*"

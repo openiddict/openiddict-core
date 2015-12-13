@@ -1,8 +1,7 @@
 ﻿{
-
-  "version": "2.0.0-gamma-custom-*",
-  "title": "NWebsec.Core (ASP.NET 5)",
-  "description": "This library provides core functionality for the NWebsec security libraries.",
+  "version": "1.0.0-internal-*",
+  "title": "NWebsec.Middleware (ASP.NET 5)",
+  "description": "NWebsec middleware for ASP.NET 5 applications. NWebsec helps you set important security headers and detect potentially dangerous redirects. See project website for documentation.",
   "releaseNotes": "This release includes core functions for the NWebsec security libaries.",
   "authors": [ "André N. Klingsheim" ],
   "owners": [ "André N. Klingsheim" ],
@@ -13,21 +12,19 @@
   "iconUrl": "https://klings.blob.core.windows.net/nwebsecicon/nwebsec_nuget.png",
 
   "shared": "**/**.cs",
-  
+
   "frameworks": {
     "dnx451": { },
     "net451": { },
     "dotnet5.4": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-*",
-        "System.Runtime": "4.0.21-*",
-        "System.Security.Cryptography.Algorithms": "4.0.0-*",
-        "System.Security.Cryptography.X509Certificates": "4.0.0-*",
-        "System.Text.RegularExpressions": "4.0.11-*"
+        "System.Runtime": "4.0.21-*"
       }
     }
+
   },
   "dependencies": {
-    "Microsoft.AspNet.Http.Abstractions": "1.0.0-*"
+    "Microsoft.AspNet.Http.Abstractions": "1.0.0-rc2-*"
   }
 }
