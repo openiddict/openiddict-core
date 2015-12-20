@@ -27,8 +27,8 @@ namespace Mvc.Client {
                 options.FlowWindowsAuthentication = false;
             });
 
-            app.UseOverrideHeaders(new OverrideHeaderMiddlewareOptions {
-                ForwardedOptions = ForwardedHeaders.All
+            app.UseOverrideHeaders(options => {
+                options.ForwardedOptions = ForwardedHeaders.All;
             });
 
             app.UseStaticFiles();
