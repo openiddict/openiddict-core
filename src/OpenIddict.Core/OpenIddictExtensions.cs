@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Builder {
                 UserType = builder.UserType
             };
 
-            builder.Services.TryAdd(ServiceDescriptor.Instance(services));
+            builder.Services.TryAddSingleton(services);
 
             configuration(services);
 
