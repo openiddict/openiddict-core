@@ -1,6 +1,7 @@
 using System.Linq;
 using CryptoHelper;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.HttpOverrides;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
@@ -14,6 +15,15 @@ using OpenIddict.Models;
 
 namespace Mvc.Server {
     public class Startup {
+        public static void Main(string[] args) {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
+        }
+
         public void ConfigureServices(IServiceCollection services) {
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("config.json")

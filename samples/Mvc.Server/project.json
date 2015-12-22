@@ -22,8 +22,12 @@
         "OpenIddict": "1.0.0-*"
     },
 
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
     "commands": {
-        "web": "Microsoft.AspNet.Server.Kestrel"
+        "web": "Mvc.Server"
     },
 
     "frameworks": {

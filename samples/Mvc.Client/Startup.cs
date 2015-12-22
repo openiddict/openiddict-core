@@ -1,6 +1,7 @@
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,15 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Mvc.Client {
     public class Startup {
+        public static void Main(string[] args) {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
+        }
+
         public void ConfigureServices(IServiceCollection services) {
             services.Configure<SharedAuthenticationOptions>(options => {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
