@@ -1,6 +1,4 @@
 {
-    "webroot": "wwwroot",
-
     "dependencies": {
         "AspNet.Security.OAuth.Introspection": "1.0.0-*",
         "AspNet.Security.OAuth.Validation": "1.0.0-*",
