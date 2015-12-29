@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
+using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -217,6 +218,20 @@ namespace OpenIddict {
 
                     return;
                 }
+
+                // Return an error if the username corresponds to the registered
+                // email address and if the "email" scope has not been requested.
+                if (context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
+                   !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email) &&
+                    string.Equals(await manager.GetUserNameAsync(user),
+                                  await manager.GetEmailAsync(user),
+                                  StringComparison.OrdinalIgnoreCase)) {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The 'email' scope is required.");
+
+                    return;
+                }
             }
         }
 
@@ -257,24 +272,22 @@ namespace OpenIddict {
                 return;
             }
 
-            var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, await manager.GetUserIdAsync(user), destination: "id_token token");
-
-            // Only add the name claim if the "profile" scope was present in the authorization request.
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
             // don't include the "email" scope if the username corresponds to the registed email address.
-            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Profile)) {
-                identity.AddClaim(ClaimTypes.Name, await manager.GetUserNameAsync(user), destination: "id_token token");
-            }
+            var identity = await manager.CreateIdentityAsync(user, context.Request.GetScopes());
+            Debug.Assert(identity != null);
 
-            // Only add the email address if the "email" scope was present in the authorization request.
-            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email)) {
-                identity.AddClaim(ClaimTypes.Email, await manager.GetEmailAsync(user), destination: "id_token token");
-            }
+            // Create a new authentication ticket holding the user identity.
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(identity),
+                null, context.Options.AuthenticationScheme);
+
+            ticket.SetResources(context.Request.GetResources());
+            ticket.SetScopes(context.Request.GetScopes());
 
             // Call SignInAsync to create and return a new OpenID Connect response containing the serialized code/tokens.
-            await context.HttpContext.Authentication.SignInAsync(context.Options.AuthenticationScheme, new ClaimsPrincipal(identity));
+            await context.HttpContext.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
 
             // Mark the response as handled
             // to skip the rest of the pipeline.
@@ -378,7 +391,16 @@ namespace OpenIddict {
             identity.AddClaim(ClaimTypes.NameIdentifier, context.ClientId, destination: "id_token token");
             identity.AddClaim(ClaimTypes.Name, await manager.GetDisplayNameAsync(application), destination: "id_token token");
 
-            context.Validate(new ClaimsPrincipal(identity));
+            // Create a new authentication ticket
+            // holding the application identity.
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(identity),
+                null, context.Options.AuthenticationScheme);
+
+            ticket.SetResources(context.Request.GetResources());
+            ticket.SetScopes(context.Request.GetScopes());
+
+            context.Validate(ticket);
         }
 
         public override async Task GrantRefreshToken([NotNull] GrantRefreshTokenContext context) {
@@ -461,8 +483,8 @@ namespace OpenIddict {
 
             // Return an error if the username corresponds to the registered
             // email address and if the "email" scope has not been requested.
-            if (context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Profile) &&
-               !context.Request.ContainsScope(OpenIdConnectConstants.Scopes.Email) &&
+            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
+               !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email) &&
                 string.Equals(await manager.GetUserNameAsync(user),
                               await manager.GetEmailAsync(user),
                               StringComparison.OrdinalIgnoreCase)) {
@@ -476,7 +498,15 @@ namespace OpenIddict {
             var identity = await manager.CreateIdentityAsync(user, context.Request.GetScopes());
             Debug.Assert(identity != null);
 
-            context.Validate(new ClaimsPrincipal(identity));
+            // Create a new authentication ticket holding the user identity.
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(identity),
+                null, context.Options.AuthenticationScheme);
+
+            ticket.SetResources(context.Request.GetResources());
+            ticket.SetScopes(context.Request.GetScopes());
+
+            context.Validate(ticket);
         }
     }
 }

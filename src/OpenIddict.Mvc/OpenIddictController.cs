@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
+using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Authentication;
@@ -116,8 +117,8 @@ namespace OpenIddict.Mvc {
 
             // Return an error if the username corresponds to the registered
             // email address and if the "email" scope has not been requested.
-            if (request.ContainsScope(OpenIdConnectConstants.Scopes.Profile) &&
-               !request.ContainsScope(OpenIdConnectConstants.Scopes.Email) &&
+            if (request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
+               !request.HasScope(OpenIdConnectConstants.Scopes.Email) &&
                 string.Equals(await Manager.GetUserNameAsync(user),
                               await Manager.GetEmailAsync(user),
                               StringComparison.OrdinalIgnoreCase)) {
@@ -154,12 +155,17 @@ namespace OpenIddict.Mvc {
             identity.Actor.AddClaim(ClaimTypes.NameIdentifier, request.ClientId);
             identity.Actor.AddClaim(ClaimTypes.Name, await Manager.GetDisplayNameAsync(application), destination: "id_token token");
 
+            // Create a new authentication ticket holding the user identity.
+            var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), null, Options.AuthenticationScheme);
+            ticket.SetResources(request.GetResources());
+            ticket.SetScopes(request.GetScopes());
+
             // This call will instruct AspNet.Security.OpenIdConnect.Server to serialize
             // the specified identity to build appropriate tokens (id_token and token).
             // Note: you should always make sure the identities you return contain either
             // a 'sub' or a 'ClaimTypes.NameIdentifier' claim. In this case, the returned
             // identities always contain the name identifier returned by the external provider.
-            await HttpContext.Authentication.SignInAsync(Options.AuthenticationScheme, new ClaimsPrincipal(identity));
+            await HttpContext.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
 
             return new EmptyResult();
         }
