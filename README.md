@@ -35,12 +35,12 @@ Note: OpenIddict uses **[EntityFramework 7](https://github.com/aspnet/EntityFram
 
 To use OpenIddict, you need to:
 
-  - **Update your DNX runtime to use the latest RC2 nightly builds**:
+  - **Update your DNX runtime and your ASP.NET 5 packages to use the latest RC2 nightly builds**:
 ```
 dnvm upgrade -u
 ```
 
-  - **Have an existing project or create a new one** (note: when creating a new project using Visual Studio's default ASP.NET 5 template, using **individual user accounts authentication** is strongly recommended).
+  - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET 5 template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
   - **Add the appropriate MyGet repositories to your NuGet sources**. This can be done by adding a new `NuGet.Config` file at the root of your solution:
 
@@ -82,6 +82,10 @@ public void ConfigureServices(IServiceCollection services) {
 }
 ```
 
+> **Note:** for more information about the different options and configurations available, check out 
+[Configuration and options](https://github.com/openiddict/core/wiki/Configuration-and-options)
+in the project wiki.
+
   - **Add the OpenIddict middleware in your ASP.NET 5 pipeline** by calling `app.UseOpenIddict()` after `app.UseIdentity()`:
 
 ```csharp
@@ -98,9 +102,50 @@ public void Configure(IApplicationBuilder app) {
 
 > **Note:** `UseOpenIddict()` must be registered ***after*** `app.UseIdentity()` and the external providers.
 
-For a better insight on the different options and configurations available, check out 
-[Configuration and Options](https://github.com/openiddict/core/wiki/Configuration-&-Options)
-in the project wiki.
+  - **Update your EntityFramework context to inherit from `OpenIddictContext`**:
+
+```csharp
+public class ApplicationDbContext : OpenIddictContext<ApplicationUser> { }
+```
+
+> **Note:** although recommended, inheriting from `OpenIddictContext` is not mandatory. Alternatively, you can also create your own context and manually add the entity sets needed by OpenIddict:
+
+```csharp
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
+    public DbSet<Application> Applications { get; set; }
+}
+```
+
+  - **Register your client application**:
+
+```csharp
+using (var context = app.ApplicationServices.GetRequiredService<ApplicationDbContext>()) {
+    context.Database.EnsureCreated();
+
+    if (!context.Applications.Any()) {
+        context.Applications.Add(new Application {
+            // Assign a unique identifier to your client app:
+            Id = "48BF1BC3-CE01-4787-BBF2-0426EAD21342",
+
+            // Assign a display named used in the consent form page:
+            DisplayName = "MVC6 client application",
+
+            // Register the appropriate redirect_uri and post_logout_redirect_uri:
+            RedirectUri = "http://localhost:53507/signin-oidc",
+            LogoutRedirectUri = "http://localhost:53507/",
+
+            // Generate a new derived key from the client secret:
+            Secret = Crypto.HashPassword("secret_secret_secret"),
+
+            // Note: use "public" for JS/mobile/desktop applications
+            // and "confidential" for server-side applications.
+            Type = OpenIddictConstants.ApplicationTypes.Confidential
+        });
+
+        context.SaveChanges();
+    }
+}
+```
 
 ## Support
 
