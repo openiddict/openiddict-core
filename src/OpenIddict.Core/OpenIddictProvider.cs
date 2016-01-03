@@ -82,19 +82,12 @@ namespace OpenIddict {
         }
 
         public override async Task ValidateClientAuthentication([NotNull] ValidateClientAuthenticationContext context) {
-            // Note: in pure OAuth2, client authentication is not required for non-confidential client applications like mobile apps
-            // but OpenIddict uses a stricter policy that makes client authentication mandatory when using the refresh token grant type,
-            // as required by the OpenID Connect specification: http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken
-            // When client_id and/or client_secret is/are missing, an error is returned to the client application.
-            if (context.Request.IsRefreshTokenGrantType() && (string.IsNullOrEmpty(context.ClientId) ||
-                                                              string.IsNullOrEmpty(context.ClientSecret))) {
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Missing credentials: ensure that your credentials were correctly " +
-                                 "flowed in the request body or in the authorization header.");
-
-                return;
-            }
+            // Note: though required by the OpenID Connect specification for the refresh token grant,
+            // client authentication is not mandatory for non-confidential client applications in OAuth2.
+            // To avoid breaking OAuth2 scenarios, OpenIddict uses a relaxed policy that allows
+            // public applications to use the refresh token grant without having to authenticate.
+            // See http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken
+            // and https://tools.ietf.org/html/rfc6749#section-6 for more information.
 
             // Skip client authentication if the client identifier is missing.
             // Note: ASOS will automatically ensure that the calling application
