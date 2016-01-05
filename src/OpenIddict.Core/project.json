@@ -18,7 +18,7 @@
 
         "AspNet.Security.OpenIdConnect.Server": "1.0.0-*",
 
-        "CryptoHelper": "1.0.0-rc1-build03"
+        "CryptoHelper": "1.0.0-rc2-*"
     },
 
     "frameworks": {
