@@ -3,7 +3,7 @@ using OpenIddict;
 
 namespace Microsoft.AspNet.Builder {
     /// <summary>
-    /// Holds various properties allowing to configure OpenIddct.
+    /// Holds various properties allowing to configure OpenIddict.
     /// </summary>
     public class OpenIddictBuilder {
         /// <summary>
