@@ -96,6 +96,18 @@ namespace OpenIddict.Mvc {
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Accept() {
+            // Note: when a fatal error occurs during the request processing, an OpenID Connect response
+            // is prematurely forged and added to the ASP.NET context by OpenIdConnectServerHandler.
+            // In this case, the OpenID Connect request is null and cannot be used.
+            // When the user agent can be safely redirected to the client application,
+            // OpenIdConnectServerHandler automatically handles the error and MVC is not invoked.
+            // You can safely remove this part and let AspNet.Security.OpenIdConnect.Server automatically
+            // handle the unrecoverable errors by switching ApplicationCanDisplayErrors to false.
+            var response = HttpContext.GetOpenIdConnectResponse();
+            if (response != null) {
+                return View("Error", response);
+            }
+
             // Extract the authorization request from the cache,
             // the query string or the request form.
             var request = HttpContext.GetOpenIdConnectRequest();
@@ -112,19 +124,6 @@ namespace OpenIddict.Mvc {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.ServerError,
                     ErrorDescription = "An internal error has occurred"
-                });
-            }
-
-            // Return an error if the username corresponds to the registered
-            // email address and if the "email" scope has not been requested.
-            if (request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
-               !request.HasScope(OpenIdConnectConstants.Scopes.Email) &&
-                string.Equals(await Manager.GetUserNameAsync(user),
-                              await Manager.GetEmailAsync(user),
-                              StringComparison.OrdinalIgnoreCase)) {
-                return View("Error", new OpenIdConnectMessage {
-                    Error = OpenIdConnectConstants.Errors.InvalidRequest,
-                    ErrorDescription = "The 'email' scope is required."
                 });
             }
 
@@ -172,6 +171,18 @@ namespace OpenIddict.Mvc {
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
         public virtual IActionResult Deny() {
+            // Note: when a fatal error occurs during the request processing, an OpenID Connect response
+            // is prematurely forged and added to the ASP.NET context by OpenIdConnectServerHandler.
+            // In this case, the OpenID Connect request is null and cannot be used.
+            // When the user agent can be safely redirected to the client application,
+            // OpenIdConnectServerHandler automatically handles the error and MVC is not invoked.
+            // You can safely remove this part and let AspNet.Security.OpenIdConnect.Server automatically
+            // handle the unrecoverable errors by switching ApplicationCanDisplayErrors to false.
+            var response = HttpContext.GetOpenIdConnectResponse();
+            if (response != null) {
+                return View("Error", response);
+            }
+
             // Extract the authorization request from the cache,
             // the query string or the request form.
             var request = HttpContext.GetOpenIdConnectRequest();

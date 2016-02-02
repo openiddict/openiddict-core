@@ -63,6 +63,34 @@ namespace OpenIddict {
                 return;
             }
 
+            // If the user is connected, ensure that a corresponding profile exists and that
+            // the appropriate set of scopes is requested to prevent personal data leakage.
+            if (context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
+                // Ensure the user profile still exists in the database.
+                var user = await manager.FindByIdAsync(context.HttpContext.User.GetUserId());
+                if (user == null) {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.ServerError,
+                        description: "An internal error has occurred.");
+
+                    return;
+                }
+
+                // Return an error if the username corresponds to the registered
+                // email address and if the "email" scope has not been requested.
+                if (context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
+                   !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email) &&
+                    string.Equals(await manager.GetUserNameAsync(user),
+                                  await manager.GetEmailAsync(user),
+                                  StringComparison.OrdinalIgnoreCase)) {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The 'email' scope is required.");
+
+                    return;
+                }
+            }
+
             // Run additional checks for prompt=none requests.
             if (string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
                 // If the user is not authenticated, return an error to the client application.
@@ -93,30 +121,6 @@ namespace OpenIddict {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The id_token_hint parameter is invalid.");
-
-                    return;
-                }
-
-                // Ensure the user profile still exists in the database.
-                var user = await manager.FindByIdAsync(principal.GetUserId());
-                if (user == null) {
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The id_token_hint parameter is invalid.");
-
-                    return;
-                }
-
-                // Return an error if the username corresponds to the registered
-                // email address and if the "email" scope has not been requested.
-                if (context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
-                   !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email) &&
-                    string.Equals(await manager.GetUserNameAsync(user),
-                                  await manager.GetEmailAsync(user),
-                                  StringComparison.OrdinalIgnoreCase)) {
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The 'email' scope is required.");
 
                     return;
                 }
