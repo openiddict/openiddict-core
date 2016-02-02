@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Builder {
         public static OpenIddictBuilder UseNWebsec(
             [NotNull] this OpenIddictBuilder builder,
             [NotNull] Action<IFluentCspOptions> configuration) {
-            return builder.AddModule("NWebsec", -20, app => {
+            return builder.AddModule("NWebsec", 5, app => {
                 // Insert a new middleware responsible of setting the Content-Security-Policy header.
                 // See https://nwebsec.codeplex.com/wikipage?title=Configuring%20Content%20Security%20Policy&referringTitle=NWebsec
                 app.UseCsp(configuration);

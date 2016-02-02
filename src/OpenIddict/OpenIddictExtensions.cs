@@ -34,9 +34,9 @@ namespace Microsoft.AspNet.Builder {
             [NotNull] this IApplicationBuilder app,
             [NotNull] Action<OpenIddictBuilder> configuration) {
             return app.UseOpenIddictCore(builder => {
-                builder.UseNWebsec();
-                builder.UseCors();
                 builder.UseAssets();
+                builder.UseCors();
+                builder.UseNWebsec();
                 builder.UseMvc();
 
                 configuration(builder);

@@ -14,7 +14,6 @@ using NWebsec.Middleware;
 using OpenIddict;
 using OpenIddict.Models;
 
-
 namespace Mvc.Server {
     public class Startup {
         public static void Main(string[] args) {
