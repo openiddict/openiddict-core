@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
@@ -160,7 +161,8 @@ namespace OpenIddict {
             // Create a new authentication ticket holding the user identity.
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
-                null, context.Options.AuthenticationScheme);
+                new AuthenticationProperties(),
+                context.Options.AuthenticationScheme);
 
             ticket.SetResources(context.Request.GetResources());
             ticket.SetScopes(context.Request.GetScopes());
