@@ -84,7 +84,7 @@ namespace OpenIddict {
                 identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
             }
 
-            if (SupportsUserRole) {
+            if (SupportsUserRole && scopes.Contains(OpenIddictConstants.Scopes.Roles)) {
                 foreach (var role in await GetRolesAsync(user)) {
                     identity.AddClaim(identity.RoleClaimType, role, destination: "id_token token");
                 }

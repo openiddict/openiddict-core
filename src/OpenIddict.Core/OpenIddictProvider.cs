@@ -11,6 +11,7 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
+using Newtonsoft.Json.Linq;
 
 namespace OpenIddict {
     public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
@@ -50,7 +51,7 @@ namespace OpenIddict {
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
             // don't include the "email" scope if the username corresponds to the registed email address.
-            if (principal.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Profile)) {
+            if (context.AuthenticationTicket.HasScope(OpenIdConnectConstants.Scopes.Profile)) {
                 context.PreferredUsername = await manager.GetUserNameAsync(user);
 
                 if (manager.SupportsUserClaim) {
@@ -61,7 +62,7 @@ namespace OpenIddict {
             }
 
             // Only add the email address details if the "email" scope was present in the access token.
-            if (principal.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Email)) {
+            if (context.AuthenticationTicket.HasScope(OpenIdConnectConstants.Scopes.Email)) {
                 context.Email = await manager.GetEmailAsync(user);
 
                 // Only add the "email_verified" claim
@@ -72,13 +73,21 @@ namespace OpenIddict {
             };
 
             // Only add the phone number details if the "phone" scope was present in the access token.
-            if (principal.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Phone)) {
+            if (context.AuthenticationTicket.HasScope(OpenIdConnectConstants.Scopes.Phone)) {
                 context.PhoneNumber = await manager.GetPhoneNumberAsync(user);
 
                 // Only add the "phone_number_verified"
                 // claim if the phone number is non-null.
                 if (!string.IsNullOrEmpty(context.PhoneNumber)) {
                     context.PhoneNumberVerified = await manager.IsPhoneNumberConfirmedAsync(user);
+                }
+            }
+
+            // Only add the roles list if the "roles" scope was present in the access token.
+            if (manager.SupportsUserRole && context.AuthenticationTicket.HasScope(OpenIddictConstants.Scopes.Roles)) {
+                var roles = await manager.GetRolesAsync(user);
+                if (roles.Count != 0) {
+                    context.Claims[OpenIddictConstants.Claims.Roles] = JArray.FromObject(roles);
                 }
             }
         }

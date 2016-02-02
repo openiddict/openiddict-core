@@ -71,6 +71,7 @@ namespace Mvc.Client {
                 options.Authority = "http://localhost:54540/";
 
                 options.Scope.Add("email");
+                options.Scope.Add("roles");
             });
 
 
