@@ -102,8 +102,14 @@ namespace OpenIddict {
             Debug.Assert(application != null);
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, context.ClientId, destination: "id_token token");
-            identity.AddClaim(ClaimTypes.Name, await manager.GetDisplayNameAsync(application), destination: "id_token token");
+
+            // Note: the name identifier is always included in both identity and
+            // access tokens, even if an explicit destination is not specified.
+            identity.AddClaim(ClaimTypes.NameIdentifier, context.ClientId);
+
+            identity.AddClaim(ClaimTypes.Name, await manager.GetDisplayNameAsync(application),
+                OpenIdConnectConstants.Destinations.AccessToken,
+                OpenIdConnectConstants.Destinations.IdentityToken);
 
             // Create a new authentication ticket
             // holding the application identity.

@@ -152,7 +152,10 @@ namespace OpenIddict.Mvc {
             // the whole delegation chain from the resource server (see ResourceController.cs).
             identity.Actor = new ClaimsIdentity(Options.AuthenticationScheme);
             identity.Actor.AddClaim(ClaimTypes.NameIdentifier, request.ClientId);
-            identity.Actor.AddClaim(ClaimTypes.Name, await Manager.GetDisplayNameAsync(application), destination: "id_token token");
+
+            identity.Actor.AddClaim(ClaimTypes.Name, await Manager.GetDisplayNameAsync(application),
+                OpenIdConnectConstants.Destinations.AccessToken,
+                OpenIdConnectConstants.Destinations.IdentityToken);
 
             // Create a new authentication ticket holding the user identity.
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), null, Options.AuthenticationScheme);

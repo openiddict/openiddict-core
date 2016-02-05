@@ -61,7 +61,9 @@ namespace OpenIddict {
                 Options.ClaimsIdentity.UserNameClaimType,
                 Options.ClaimsIdentity.RoleClaimType);
 
-            identity.AddClaim(ClaimTypes.NameIdentifier, await GetUserIdAsync(user), destination: "id_token token");
+            // Note: the name identifier is always included in both identity and
+            // access tokens, even if an explicit destination is not specified.
+            identity.AddClaim(ClaimTypes.NameIdentifier, await GetUserIdAsync(user));
 
             // Resolve the username and the email address associated with the user.
             var username = await GetUserNameAsync(user);
@@ -76,17 +78,23 @@ namespace OpenIddict {
                     throw new InvalidOperationException("The 'email' scope is required.");
                 }
 
-                identity.AddClaim(ClaimTypes.Name, username, destination: "id_token token");
+                identity.AddClaim(ClaimTypes.Name, username,
+                    OpenIdConnectConstants.Destinations.AccessToken,
+                    OpenIdConnectConstants.Destinations.IdentityToken);
             }
 
             // Only add the email address if the "email" scope was granted.
             if (scopes.Contains(OpenIdConnectConstants.Scopes.Email)) {
-                identity.AddClaim(ClaimTypes.Email, email, destination: "id_token token");
+                identity.AddClaim(ClaimTypes.Email, email,
+                    OpenIdConnectConstants.Destinations.AccessToken,
+                    OpenIdConnectConstants.Destinations.IdentityToken);
             }
 
             if (SupportsUserRole && scopes.Contains(OpenIddictConstants.Scopes.Roles)) {
                 foreach (var role in await GetRolesAsync(user)) {
-                    identity.AddClaim(identity.RoleClaimType, role, destination: "id_token token");
+                    identity.AddClaim(identity.RoleClaimType, role,
+                    OpenIdConnectConstants.Destinations.AccessToken,
+                    OpenIdConnectConstants.Destinations.IdentityToken);
                 }
             }
 
@@ -94,8 +102,9 @@ namespace OpenIddict {
                 var identifier = await GetSecurityStampAsync(user);
 
                 if (!string.IsNullOrEmpty(identifier)) {
-                    identity.AddClaim(Options.ClaimsIdentity.SecurityStampClaimType,
-                        identifier, destination: "id_token token");
+                    identity.AddClaim(Options.ClaimsIdentity.SecurityStampClaimType, identifier,
+                        OpenIdConnectConstants.Destinations.AccessToken,
+                        OpenIdConnectConstants.Destinations.IdentityToken);
                 }
             }
 
