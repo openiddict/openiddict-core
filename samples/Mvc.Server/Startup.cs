@@ -132,6 +132,22 @@ namespace Mvc.Server {
                         Type = OpenIddictConstants.ApplicationTypes.Confidential
                     });
 
+                    // To test this sample with Postman, use the following settings:
+                    // 
+                    // * Authorization URL: http://localhost:54540/connect/authorize
+                    // * Access token URL: http://localhost:54540/connect/token
+                    // * Client ID: postman
+                    // * Client secret: [blank] (not used with public clients)
+                    // * Scope: openid email profile roles
+                    // * Grant type: authorization code
+                    // * Request access token locally: yes
+                    context.Applications.Add(new Application {
+                        Id = "postman",
+                        DisplayName = "Postman",
+                        RedirectUri = "https://www.getpostman.com/oauth2/callback",
+                        Type = OpenIddictConstants.ApplicationTypes.Public
+                    });
+
                     context.SaveChanges();
                 }
             }
