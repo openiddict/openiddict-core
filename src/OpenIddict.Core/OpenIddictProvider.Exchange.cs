@@ -128,12 +128,6 @@ namespace OpenIddict {
             var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
 
-            // If the user manager doesn't support security
-            // stamps, skip the default validation logic.
-            if (!manager.SupportsUserSecurityStamp) {
-                return;
-            }
-
             var principal = context.AuthenticationTicket?.Principal;
             Debug.Assert(principal != null);
 
@@ -146,14 +140,18 @@ namespace OpenIddict {
                 return;
             }
 
-            var identifier = principal.GetClaim(options.Value.ClaimsIdentity.SecurityStampClaimType);
-            if (!string.IsNullOrEmpty(identifier) &&
-                !string.Equals(identifier, await manager.GetSecurityStampAsync(user), StringComparison.Ordinal)) {
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidGrant,
-                    description: "The refresh token is no longer valid.");
+            // If the user manager supports security stamps,
+            // ensure that the refresh token is still valid.
+            if (manager.SupportsUserSecurityStamp) {
+                var identifier = principal.GetClaim(options.Value.ClaimsIdentity.SecurityStampClaimType);
+                if (!string.IsNullOrEmpty(identifier) &&
+                    !string.Equals(identifier, await manager.GetSecurityStampAsync(user), StringComparison.Ordinal)) {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: "The refresh token is no longer valid.");
 
-                return;
+                    return;
+                }
             }
 
             // Note: the "scopes" property stored in context.AuthenticationTicket is automatically
