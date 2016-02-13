@@ -52,7 +52,6 @@ dnvm upgrade -u
     <add key="AspNetVNext" value="https://www.myget.org/F/aspnetvnext/api/v2" />
     <add key="AzureAd Nightly" value="http://www.myget.org/F/azureadwebstacknightly/" />
     <add key="NuGet" value="https://api.nuget.org/v3/index.json" />
-    <add key="DotNetCore" value="https://www.myget.org/F/dotnet-core/" />
   </packageSources>
 </configuration>
 ```
