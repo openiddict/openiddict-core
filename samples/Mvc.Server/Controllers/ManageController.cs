@@ -1,9 +1,9 @@
 ﻿using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
 using Mvc.Server.ViewModels.Manage;
@@ -15,20 +15,23 @@ namespace Mvc.Server.Controllers {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
+        private readonly ILogger _logger;
 
         public ManageController(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
-            IEmailSender emailSender,
-            ISmsSender smsSender) {
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
+        IEmailSender emailSender,
+        ISmsSender smsSender,
+        ILoggerFactory loggerFactory) {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _smsSender = smsSender;
+            _logger = loggerFactory.CreateLogger<ManageController>();
         }
 
         //
-        // GET: /Account/Index
+        // GET: /Manage/Index
         [HttpGet]
         public async Task<IActionResult> Index(ManageMessageId? message = null) {
             ViewData["StatusMessage"] =
@@ -52,24 +55,14 @@ namespace Mvc.Server.Controllers {
         }
 
         //
-        // GET: /Account/RemoveLogin
-        [HttpGet]
-        public async Task<IActionResult> RemoveLogin() {
-            var user = await GetCurrentUserAsync();
-            var linkedAccounts = await _userManager.GetLoginsAsync(user);
-            ViewData["ShowRemoveButton"] = await _userManager.HasPasswordAsync(user) || linkedAccounts.Count > 1;
-            return View(linkedAccounts);
-        }
-
-        //
         // POST: /Manage/RemoveLogin
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemoveLogin(string loginProvider, string providerKey) {
+        public async Task<IActionResult> RemoveLogin(RemoveLoginViewModel account) {
             ManageMessageId? message = ManageMessageId.Error;
             var user = await GetCurrentUserAsync();
             if (user != null) {
-                var result = await _userManager.RemoveLoginAsync(user, loginProvider, providerKey);
+                var result = await _userManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
                 if (result.Succeeded) {
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     message = ManageMessageId.RemoveLoginSuccess;
@@ -79,13 +72,13 @@ namespace Mvc.Server.Controllers {
         }
 
         //
-        // GET: /Account/AddPhoneNumber
+        // GET: /Manage/AddPhoneNumber
         public IActionResult AddPhoneNumber() {
             return View();
         }
 
         //
-        // POST: /Account/AddPhoneNumber
+        // POST: /Manage/AddPhoneNumber
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPhoneNumber(AddPhoneNumberViewModel model) {
@@ -108,6 +101,7 @@ namespace Mvc.Server.Controllers {
             if (user != null) {
                 await _userManager.SetTwoFactorEnabledAsync(user, true);
                 await _signInManager.SignInAsync(user, isPersistent: false);
+                _logger.LogInformation(1, "User enabled two-factor authentication.");
             }
             return RedirectToAction(nameof(Index), "Manage");
         }
@@ -121,12 +115,13 @@ namespace Mvc.Server.Controllers {
             if (user != null) {
                 await _userManager.SetTwoFactorEnabledAsync(user, false);
                 await _signInManager.SignInAsync(user, isPersistent: false);
+                _logger.LogInformation(2, "User disabled two-factor authentication.");
             }
             return RedirectToAction(nameof(Index), "Manage");
         }
 
         //
-        // GET: /Account/VerifyPhoneNumber
+        // GET: /Manage/VerifyPhoneNumber
         [HttpGet]
         public async Task<IActionResult> VerifyPhoneNumber(string phoneNumber) {
             var code = await _userManager.GenerateChangePhoneNumberTokenAsync(await GetCurrentUserAsync(), phoneNumber);
@@ -135,7 +130,7 @@ namespace Mvc.Server.Controllers {
         }
 
         //
-        // POST: /Account/VerifyPhoneNumber
+        // POST: /Manage/VerifyPhoneNumber
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyPhoneNumber(VerifyPhoneNumberViewModel model) {
@@ -156,8 +151,9 @@ namespace Mvc.Server.Controllers {
         }
 
         //
-        // GET: /Account/RemovePhoneNumber
-        [HttpGet]
+        // GET: /Manage/RemovePhoneNumber
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemovePhoneNumber() {
             var user = await GetCurrentUserAsync();
             if (user != null) {
@@ -178,7 +174,7 @@ namespace Mvc.Server.Controllers {
         }
 
         //
-        // POST: /Account/Manage
+        // POST: /Manage/ChangePassword
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model) {
@@ -190,6 +186,7 @@ namespace Mvc.Server.Controllers {
                 var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                 if (result.Succeeded) {
                     await _signInManager.SignInAsync(user, isPersistent: false);
+                    _logger.LogInformation(3, "User changed their password successfully.");
                     return RedirectToAction(nameof(Index), new { Message = ManageMessageId.ChangePasswordSuccess });
                 }
                 AddErrors(result);
@@ -227,7 +224,7 @@ namespace Mvc.Server.Controllers {
             return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
         }
 
-        //GET: /Account/Manage
+        //GET: /Manage/ManageLogins
         [HttpGet]
         public async Task<IActionResult> ManageLogins(ManageMessageId? message = null) {
             ViewData["StatusMessage"] =
@@ -255,8 +252,8 @@ namespace Mvc.Server.Controllers {
         public IActionResult LinkLogin(string provider) {
             // Request a redirect to the external login provider to link a login for the current user
             var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, User.GetUserId());
-            return new ChallengeResult(provider, properties);
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _userManager.GetUserId(User));
+            return Challenge(provider, properties);
         }
 
         //
@@ -267,7 +264,7 @@ namespace Mvc.Server.Controllers {
             if (user == null) {
                 return View("Error");
             }
-            var info = await _signInManager.GetExternalLoginInfoAsync(User.GetUserId());
+            var info = await _signInManager.GetExternalLoginInfoAsync(await _userManager.GetUserIdAsync(user));
             if (info == null) {
                 return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
             }
@@ -284,14 +281,6 @@ namespace Mvc.Server.Controllers {
             }
         }
 
-        private async Task<bool> HasPhoneNumber() {
-            var user = await _userManager.FindByIdAsync(User.GetUserId());
-            if (user != null) {
-                return user.PhoneNumber != null;
-            }
-            return false;
-        }
-
         public enum ManageMessageId {
             AddPhoneSuccess,
             AddLoginSuccess,
@@ -303,17 +292,8 @@ namespace Mvc.Server.Controllers {
             Error
         }
 
-        private async Task<ApplicationUser> GetCurrentUserAsync() {
-            return await _userManager.FindByIdAsync(User.GetUserId());
-        }
-
-        private IActionResult RedirectToLocal(string returnUrl) {
-            if (Url.IsLocalUrl(returnUrl)) {
-                return Redirect(returnUrl);
-            }
-            else {
-                return RedirectToAction(nameof(HomeController.Index), nameof(HomeController));
-            }
+        private Task<ApplicationUser> GetCurrentUserAsync() {
+            return _userManager.GetUserAsync(User);
         }
 
         #endregion

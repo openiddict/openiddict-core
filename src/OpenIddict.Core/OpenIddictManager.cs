@@ -2,38 +2,47 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using CryptoHelper;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict {
     public class OpenIddictManager<TUser, TApplication> : UserManager<TUser> where TUser : class where TApplication : class {
-        public OpenIddictManager([NotNull] IServiceProvider services)
-            : base(services: services,
-                   store: services.GetService<IOpenIddictStore<TUser, TApplication>>(),
-                   optionsAccessor: services.GetService<IOptions<IdentityOptions>>(),
-                   passwordHasher: services.GetService<IPasswordHasher<TUser>>(),
-                   userValidators: services.GetServices<IUserValidator<TUser>>(),
-                   passwordValidators: services.GetServices<IPasswordValidator<TUser>>(),
-                   keyNormalizer: services.GetService<ILookupNormalizer>(),
-                   errors: services.GetService<IdentityErrorDescriber>(),
-                   logger: services.GetService<ILogger<UserManager<TUser>>>(),
-                   contextAccessor: services.GetService<IHttpContextAccessor>()) {
-            Context = services.GetRequiredService<IHttpContextAccessor>().HttpContext;
-            Options = services.GetRequiredService<IOptions<IdentityOptions>>().Value;
+        public OpenIddictManager(
+            IOpenIddictStore<TUser, TApplication> store,
+            IOptions<IdentityOptions> optionsAccessor,
+            IPasswordHasher<TUser> passwordHasher,
+            IEnumerable<IUserValidator<TUser>> userValidators,
+            IEnumerable<IPasswordValidator<TUser>> passwordValidators,
+            ILookupNormalizer keyNormalizer,
+            IdentityErrorDescriber errors,
+            IServiceProvider services,
+            ILogger<UserManager<TUser>> logger)
+            : base(store, optionsAccessor,
+                   passwordHasher, userValidators,
+                   passwordValidators, keyNormalizer,
+                   errors, services, logger) {
+            Context = services.GetService<IHttpContextAccessor>()?.HttpContext;
+            Options = optionsAccessor.Value;
         }
 
         /// <summary>
         /// Gets the HTTP context associated with the current manager.
         /// </summary>
         public virtual HttpContext Context { get; }
+
+        /// <summary>
+        /// Gets the cancellation token used to abort async operations.
+        /// </summary>
+        public virtual CancellationToken CancellationToken => Context?.RequestAborted ?? CancellationToken.None;
 
         /// <summary>
         /// Gets the Identity options associated with the current manager.
@@ -112,11 +121,11 @@ namespace OpenIddict {
         }
 
         public virtual Task<TApplication> FindApplicationByIdAsync(string identifier) {
-            return Store.FindApplicationByIdAsync(identifier, Context.RequestAborted);
+            return Store.FindApplicationByIdAsync(identifier, CancellationToken);
         }
 
         public virtual Task<TApplication> FindApplicationByLogoutRedirectUri(string url) {
-            return Store.FindApplicationByLogoutRedirectUri(url, Context.RequestAborted);
+            return Store.FindApplicationByLogoutRedirectUri(url, CancellationToken);
         }
 
         public virtual async Task<string> FindClaimAsync(TUser user, string type) {
@@ -141,7 +150,7 @@ namespace OpenIddict {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var type = await Store.GetApplicationTypeAsync(application, Context.RequestAborted);
+            var type = await Store.GetApplicationTypeAsync(application, CancellationToken);
 
             // Ensure the application type returned by the store is supported by the manager.
             if (!string.Equals(type, OpenIddictConstants.ApplicationTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
@@ -158,7 +167,7 @@ namespace OpenIddict {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Store.GetDisplayNameAsync(application, Context.RequestAborted);
+            return Store.GetDisplayNameAsync(application, CancellationToken);
         }
 
         public virtual async Task<bool> ValidateRedirectUriAsync(TApplication application, string address) {
@@ -166,7 +175,7 @@ namespace OpenIddict {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (!string.Equals(address, await Store.GetRedirectUriAsync(application, Context.RequestAborted), StringComparison.Ordinal)) {
+            if (!string.Equals(address, await Store.GetRedirectUriAsync(application, CancellationToken), StringComparison.Ordinal)) {
                 Logger.LogWarning("Client validation failed because {RedirectUri} was not a valid redirect_uri " +
                                   "for {Client}", address, await GetDisplayNameAsync(application));
 
@@ -187,7 +196,7 @@ namespace OpenIddict {
                 return false;
             }
 
-            var hash = await Store.GetHashedSecretAsync(application, Context.RequestAborted);
+            var hash = await Store.GetHashedSecretAsync(application, CancellationToken);
             if (string.IsNullOrEmpty(hash)) {
                 Logger.LogError("Client authentication failed for {Client} because " +
                                 "no client secret was associated with the application.");

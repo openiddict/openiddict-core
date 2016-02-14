@@ -1,32 +1,40 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
-        "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
-        "Microsoft.AspNet.HttpOverrides": "1.0.0-*",
-        "Microsoft.AspNet.Hosting": "1.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
-
+        "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+        "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
+        "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
+        "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
+        "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+        "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
+        "Microsoft.AspNetCore.Hosting": "1.0.0-*",
+        "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+        "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
         "Microsoft.Extensions.Logging.Console": "1.0.0-*",
         "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
+        "Microsoft.NETCore.Platforms": "1.0.1-*"
+    },
 
-        "Newtonsoft.Json": "7.0.1"
+    "frameworks": {
+        "dnx451": { },
+
+        "dnxcore50": {
+            "imports": "portable-net45+win8"
+        }
     },
 
     "compilationOptions": {
-        "emitEntryPoint": true
+        "emitEntryPoint": true,
+        "preserveCompilationContext": true
     },
 
     "commands": {
         "web": "Mvc.Client"
     },
 
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
-    },
+    "content": [
+        "wwwroot",
+        "Views"
+    ],
 
     "exclude": [
         "wwwroot",

@@ -1,6 +1,6 @@
 ﻿/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- * See https://github.com/openiddict/core for more information concerning
+ * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
  */
 
@@ -11,12 +11,12 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Extensions.Internal;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIddict.Mvc {
@@ -119,7 +119,7 @@ namespace OpenIddict.Mvc {
             }
 
             // Retrieve the user data using the unique identifier.
-            var user = await Manager.FindByIdAsync(User.GetUserId());
+            var user = await Manager.GetUserAsync(User);
             if (user == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.ServerError,
@@ -245,7 +245,7 @@ namespace OpenIddict.Mvc {
             // Instruct the cookies middleware to delete the local cookie created
             // when the user agent is redirected from the external identity provider
             // after a successful authentication flow (e.g Google or Facebook).
-            await HttpContext.Authentication.SignOutAsync("Microsoft.AspNet.Identity.Application");
+            await HttpContext.Authentication.SignOutAsync("Microsoft.AspNetCore.Identity.Application");
 
             // This call will instruct AspNet.Security.OpenIdConnect.Server to serialize
             // the specified identity to build appropriate tokens (id_token and token).

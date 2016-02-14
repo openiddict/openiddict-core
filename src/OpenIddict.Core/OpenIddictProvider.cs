@@ -1,6 +1,6 @@
 ﻿/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- * See https://github.com/openiddict/core for more information concerning
+ * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
  */
 
@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Newtonsoft.Json.Linq;
@@ -30,12 +31,12 @@ namespace OpenIddict {
         public override async Task ProfileEndpoint([NotNull] ProfileEndpointContext context) {
             var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
-            var principal = context.AuthenticationTicket?.Principal;
+            var principal = context.Ticket?.Principal;
             Debug.Assert(principal != null);
 
             // Note: user may be null if the user has been removed.
             // In this case, return a 400 response.
-            var user = await manager.FindByIdAsync(principal.GetUserId());
+            var user = await manager.GetUserAsync(principal);
             if (user == null) {
                 context.Response.StatusCode = 400;
                 context.HandleResponse();
@@ -51,7 +52,7 @@ namespace OpenIddict {
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
             // don't include the "email" scope if the username corresponds to the registed email address.
-            if (context.AuthenticationTicket.HasScope(OpenIdConnectConstants.Scopes.Profile)) {
+            if (context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Profile)) {
                 context.PreferredUsername = await manager.GetUserNameAsync(user);
 
                 if (manager.SupportsUserClaim) {
@@ -62,7 +63,7 @@ namespace OpenIddict {
             }
 
             // Only add the email address details if the "email" scope was present in the access token.
-            if (context.AuthenticationTicket.HasScope(OpenIdConnectConstants.Scopes.Email)) {
+            if (context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Email)) {
                 context.Email = await manager.GetEmailAsync(user);
 
                 // Only add the "email_verified" claim
@@ -73,7 +74,7 @@ namespace OpenIddict {
             };
 
             // Only add the phone number details if the "phone" scope was present in the access token.
-            if (context.AuthenticationTicket.HasScope(OpenIdConnectConstants.Scopes.Phone)) {
+            if (context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Phone)) {
                 context.PhoneNumber = await manager.GetPhoneNumberAsync(user);
 
                 // Only add the "phone_number_verified"
@@ -84,7 +85,7 @@ namespace OpenIddict {
             }
 
             // Only add the roles list if the "roles" scope was present in the access token.
-            if (manager.SupportsUserRole && context.AuthenticationTicket.HasScope(OpenIddictConstants.Scopes.Roles)) {
+            if (manager.SupportsUserRole && context.Ticket.HasScope(OpenIddictConstants.Scopes.Roles)) {
                 var roles = await manager.GetRolesAsync(user);
                 if (roles.Count != 0) {
                     context.Claims[OpenIddictConstants.Claims.Roles] = JArray.FromObject(roles);

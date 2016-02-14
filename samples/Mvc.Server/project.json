@@ -2,36 +2,42 @@
     "dependencies": {
         "AspNet.Security.OAuth.Introspection": "1.0.0-*",
         "AspNet.Security.OAuth.Validation": "1.0.0-*",
-
-        "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
-
-        "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
-        "Microsoft.AspNet.Diagnostics": "1.0.0-*",
-        "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
-        "Microsoft.AspNet.HttpOverrides": "1.0.0-*",
-        "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
-
+        "Microsoft.AspNetCore.Authentication.Google": "1.0.0-*",
+        "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-*",
+        "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
+        "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+        "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
+        "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
+        "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+        "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
+        "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
         "Microsoft.Extensions.Logging.Console": "1.0.0-*",
         "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
-
+        "Microsoft.NETCore.Platforms": "1.0.1-*",
         "OpenIddict": "1.0.0-*"
     },
 
+    "frameworks": {
+        "dnx451": { },
+
+        "dnxcore50": {
+            "imports": "portable-net45+win8"
+        }
+    },
+
     "compilationOptions": {
-        "emitEntryPoint": true
+        "emitEntryPoint": true,
+        "preserveCompilationContext": true
     },
 
     "commands": {
         "web": "Mvc.Server"
     },
 
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
-    },
+    "content": [
+        "wwwroot",
+        "Views"
+    ],
 
     "exclude": [
         "wwwroot",
@@ -45,9 +51,5 @@
         "**.xproj",
         "**.user",
         "**.vspscc"
-    ],
-
-    "scripts": {
-        "prepublish": [ "npm install", "bower install", "gulp clean", "gulp min" ]
-    }
+    ]
 }

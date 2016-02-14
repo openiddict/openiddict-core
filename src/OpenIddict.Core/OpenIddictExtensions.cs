@@ -1,25 +1,33 @@
 ﻿/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- * See https://github.com/openiddict/core for more information concerning
+ * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
  */
 
 using System;
 using System.Linq;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Identity;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Internal;
 using OpenIddict;
 
-namespace Microsoft.AspNet.Builder {
+namespace Microsoft.AspNetCore.Builder {
     public static class OpenIddictExtensions {
         public static IdentityBuilder AddOpenIddictCore<TApplication>(
             [NotNull] this IdentityBuilder builder,
             [NotNull] Action<OpenIddictServices> configuration)
             where TApplication : class {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configuration == null) {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             builder.Services.AddAuthentication();
             builder.Services.AddCaching();
 
@@ -49,6 +57,18 @@ namespace Microsoft.AspNet.Builder {
             [NotNull] this OpenIddictBuilder builder,
             [NotNull] string name, int position,
             [NotNull] Action<IApplicationBuilder> registration) {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (string.IsNullOrEmpty(name)) {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (registration == null) {
+                throw new ArgumentNullException(nameof(registration));
+            }
+
             // Note: always call ToArray to make sure the foreach
             // block doesn't iterate on the modified collection.
             foreach (var module in builder.Modules.Where(module => string.Equals(module.Name, name)).ToArray()) {
@@ -71,6 +91,14 @@ namespace Microsoft.AspNet.Builder {
         public static IApplicationBuilder UseOpenIddictCore(
             [NotNull] this IApplicationBuilder app,
             [NotNull] Action<OpenIddictBuilder> configuration) {
+            if (app == null) {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (configuration == null) {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             var builder = new OpenIddictBuilder();
 
             // Resolve the OpenIddict provider from the services container.

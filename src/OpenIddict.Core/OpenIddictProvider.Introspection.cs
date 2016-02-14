@@ -1,18 +1,17 @@
 ﻿/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- * See https://github.com/openiddict/core for more information concerning
+ * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
  */
 
 using System;
 using System.Diagnostics;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNet.Identity;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict {
@@ -82,10 +81,10 @@ namespace OpenIddict {
                 return;
             }
 
-            var principal = context.AuthenticationTicket?.Principal;
+            var principal = context.Ticket?.Principal;
             Debug.Assert(principal != null);
 
-            var user = await manager.FindByIdAsync(principal.GetUserId());
+            var user = await manager.GetUserAsync(principal);
             if (user == null) {
                 context.Active = false;
 

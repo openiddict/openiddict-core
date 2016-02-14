@@ -7,25 +7,18 @@
 
     "dependencies": {
         "AspNet.Hosting.Extensions": "1.0.0-*",
-
-        "Microsoft.AspNet.FileProviders.Composite": "1.0.0-*",
-        "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
-
-        "Microsoft.Extensions.NotNullAttribute.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        },
-
+        "JetBrains.Annotations": "10.1.2-eap",
+        "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+        "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
+        "Microsoft.Extensions.FileProviders.Composite": "1.0.0-*",
         "OpenIddict.Core": "1.0.0-*"
     },
 
     "frameworks": {
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Reflection": "4.1.0-*"
-            }
+        "net451": { },
+
+        "dotnet5.6": {
+            "imports": "portable-net451+win8"
         }
     }
 }

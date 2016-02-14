@@ -1,1 +1,3 @@
-{ "sources": [ "src", "external" ] }
+{
+    "projects": [ "src", "external" ]
+}

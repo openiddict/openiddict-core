@@ -1,9 +1,8 @@
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Authentication.Cookies;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.HttpOverrides;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -11,8 +10,11 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 namespace Mvc.Client {
     public class Startup {
         public static void Main(string[] args) {
-            var application = new WebApplicationBuilder()
-                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+            var application = new WebHostBuilder()
+                .UseCaptureStartupErrors(captureStartupError: true)
+                .UseDefaultConfiguration(args)
+                .UseIISPlatformHandlerUrl()
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseStartup<Startup>()
                 .Build();
 
@@ -20,11 +22,10 @@ namespace Mvc.Client {
         }
 
         public void ConfigureServices(IServiceCollection services) {
-            services.Configure<SharedAuthenticationOptions>(options => {
+            services.AddAuthentication(options => {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });
 
-            services.AddAuthentication();
             services.AddMvc();
         }
 
@@ -33,45 +34,44 @@ namespace Mvc.Client {
             factory.AddConsole();
             factory.AddDebug();
 
-            app.UseIISPlatformHandler(options => {
-                options.FlowWindowsAuthentication = false;
+            app.UseIISPlatformHandler();
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions {
+                ForwardedHeaders = ForwardedHeaders.All
             });
 
-            app.UseOverrideHeaders(options => {
-                options.ForwardedOptions = ForwardedHeaders.All;
-            });
+            app.UseDeveloperExceptionPage();
 
             app.UseStaticFiles();
 
             // Insert a new cookies middleware in the pipeline to store the user
             // identity after he has been redirected from the identity provider.
-            app.UseCookieAuthentication(options => {
-                options.AutomaticAuthenticate = true;
-                options.AutomaticChallenge = true;
-                options.LoginPath = new PathString("/signin");
+            app.UseCookieAuthentication(new CookieAuthenticationOptions {
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                LoginPath = new PathString("/signin")
             });
 
-            app.UseOpenIdConnectAuthentication(options => {
+            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions {
                 // Note: these settings must match the application details
                 // inserted in the database at the server level.
-                options.ClientId = "myClient";
-                options.ClientSecret = "secret_secret_secret";
-                options.PostLogoutRedirectUri = "http://localhost:53507/";
+                ClientId = "myClient",
+                ClientSecret = "secret_secret_secret",
+                PostLogoutRedirectUri = "http://localhost:53507/",
 
-                options.RequireHttpsMetadata = false;
-                options.GetClaimsFromUserInfoEndpoint = true;
-                options.SaveTokensAsClaims = true;
+                RequireHttpsMetadata = false,
+                GetClaimsFromUserInfoEndpoint = true,
+                SaveTokensAsClaims = true,
 
                 // Use the authorization code flow.
-                options.ResponseType = OpenIdConnectResponseTypes.Code;
+                ResponseType = OpenIdConnectResponseTypes.Code,
 
                 // Note: setting the Authority allows the OIDC client middleware to automatically
                 // retrieve the identity provider's configuration and spare you from setting
                 // the different endpoints URIs or the token validation parameters explicitly.
-                options.Authority = "http://localhost:54540/";
+                Authority = "http://localhost:54540/",
 
-                options.Scope.Add("email");
-                options.Scope.Add("roles");
+                Scope = { "email", "roles" }
             });
 
 

@@ -6,24 +6,17 @@
     "resource": [ "fonts/*", "scripts/*", "stylesheets/*" ],
 
     "dependencies": {
-        "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
-
-        "Microsoft.Extensions.NotNullAttribute.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        },
-        
+        "JetBrains.Annotations": "10.1.2-eap",
+        "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
+        "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
         "OpenIddict.Core": "1.0.0-*"
     },
 
     "frameworks": {
-        "dnx451": { },
+        "net451": { },
 
-        "dnxcore50": {
-            "dependencies": {
-                "System.Runtime": "4.0.21-*"
-            }
+        "dotnet5.4": {
+            "imports": "portable-net451+win8"
         }
     }
 }

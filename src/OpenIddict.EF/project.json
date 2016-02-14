@@ -4,19 +4,17 @@
     "description": "Entity Framework adapter for OpenIddict.",
 
     "dependencies": {
-        "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
-
-        "Microsoft.Extensions.NotNullAttribute.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        },
-
+        "JetBrains.Annotations": "10.1.2-eap",
+        "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-*",
         "OpenIddict.Core": "1.0.0-*",
         "OpenIddict.Models": "1.0.0-*"
     },
 
     "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
+        "net451": { },
+
+        "dotnet5.4": {
+            "imports": "portable-net451+win8"
+        }
     }
 }

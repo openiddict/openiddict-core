@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using OpenIddict;
 
-namespace Microsoft.AspNet.Builder {
+namespace Microsoft.AspNetCore.Builder {
     /// <summary>
     /// Holds various properties allowing to configure OpenIddict.
     /// </summary>

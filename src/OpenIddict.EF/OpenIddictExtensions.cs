@@ -1,22 +1,26 @@
 ﻿/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- * See https://github.com/openiddict/core for more information concerning
+ * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
  */
 
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Data.Entity;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using OpenIddict;
 
-namespace Microsoft.AspNet.Builder {
+namespace Microsoft.AspNetCore.Builder {
     public static class OpenIddictExtensions {
         public static OpenIddictServices UseEntityFramework([NotNull] this OpenIddictServices services) {
+            if (services == null) {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.Services.AddScoped(
                 typeof(IOpenIddictStore<,>).MakeGenericType(services.UserType, services.ApplicationType),
                 typeof(OpenIddictStore<,,,,>).MakeGenericType(

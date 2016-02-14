@@ -1,6 +1,6 @@
 ﻿/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- * See https://github.com/openiddict/core for more information concerning
+ * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
  */
 
@@ -10,11 +10,11 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Identity;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict {
@@ -128,10 +128,10 @@ namespace OpenIddict {
             var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
 
-            var principal = context.AuthenticationTicket?.Principal;
+            var principal = context.Ticket?.Principal;
             Debug.Assert(principal != null);
 
-            var user = await manager.FindByIdAsync(principal.GetUserId());
+            var user = await manager.GetUserAsync(principal);
             if (user == null) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -156,14 +156,14 @@ namespace OpenIddict {
 
             // Note: the "scopes" property stored in context.AuthenticationTicket is automatically
             // updated by ASOS when the client application requests a restricted scopes collection.
-            var identity = await manager.CreateIdentityAsync(user, context.AuthenticationTicket.GetScopes());
+            var identity = await manager.CreateIdentityAsync(user, context.Ticket.GetScopes());
             Debug.Assert(identity != null);
 
             // Create a new authentication ticket holding the user identity but
             // reuse the authentication properties stored in the refresh token.
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
-                context.AuthenticationTicket.Properties,
+                context.Ticket.Properties,
                 context.Options.AuthenticationScheme);
 
             context.Validate(ticket);

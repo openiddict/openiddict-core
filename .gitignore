@@ -6,6 +6,7 @@
 target/
 .nuget/
 .vs/
+.build/
 
 # User-specific files
 *.suo

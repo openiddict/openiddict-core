@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Identity;
 
 namespace Mvc.Server.ViewModels.Manage {
     public class ManageLoginsViewModel

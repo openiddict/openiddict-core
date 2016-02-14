@@ -4,19 +4,18 @@
     "description": "Easy-to-use OpenID Connect server for ASP.NET 5.",
 
     "dependencies": {
+        "JetBrains.Annotations": "10.1.2-eap",
         "OpenIddict.Assets": "1.0.0-*",
         "OpenIddict.EF": "1.0.0-*",
         "OpenIddict.Mvc": "1.0.0-*",
-        "OpenIddict.Security": "1.0.0-*",
-
-        "Microsoft.Extensions.NotNullAttribute.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        }
+        "OpenIddict.Security": "1.0.0-*"
     },
 
     "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
+        "net451": { },
+
+        "dotnet5.6": {
+            "imports": "portable-net451+win8"
+        }
     }
 }

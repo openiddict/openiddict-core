@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace OpenIddict {
     public interface IOpenIddictStore<TUser, TApplication> : IUserStore<TUser> where TUser : class where TApplication : class {

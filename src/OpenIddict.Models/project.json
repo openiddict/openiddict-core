@@ -4,11 +4,14 @@
     "description": "Contains the default models used by OpenIddict.",
 
     "frameworks": {
-        "dnx451": { },
-        "dnxcore50": {
+        "net451": { },
+
+        "dotnet5.4": {
             "dependencies": {
-                "System.Runtime": "4.0.21-*"
-            }
+                "System.Runtime": "4.1.0-*"
+            },
+
+            "imports": "portable-net451+win8"
         }
     }
 }

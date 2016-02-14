@@ -1,11 +1,10 @@
 ﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
 using Mvc.Server.ViewModels.Account;
@@ -168,10 +167,6 @@ namespace Mvc.Server.Controllers {
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = null) {
-            if (User.IsSignedIn()) {
-                return RedirectToAction(nameof(ManageController.Index), "Manage");
-            }
-
             if (ModelState.IsValid) {
                 // Get the information about the user from the external login provider
                 var info = await _signInManager.GetExternalLoginInfoAsync();
@@ -395,7 +390,7 @@ namespace Mvc.Server.Controllers {
         }
 
         private async Task<ApplicationUser> GetCurrentUserAsync() {
-            return await _userManager.FindByIdAsync(User.GetUserId());
+            return await _userManager.GetUserAsync(User);
         }
 
         private IActionResult RedirectToLocal(string returnUrl) {

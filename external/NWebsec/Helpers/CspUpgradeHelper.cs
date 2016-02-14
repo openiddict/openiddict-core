@@ -4,7 +4,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace NWebsec.Middleware.Helpers
 {

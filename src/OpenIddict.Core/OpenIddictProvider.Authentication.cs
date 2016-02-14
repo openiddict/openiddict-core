@@ -1,6 +1,6 @@
 ﻿/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- * See https://github.com/openiddict/core for more information concerning
+ * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
  */
 
@@ -12,10 +12,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Http.Authentication;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 
 namespace OpenIddict {
     public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
@@ -68,7 +68,7 @@ namespace OpenIddict {
             // the appropriate set of scopes is requested to prevent personal data leakage.
             if (context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
                 // Ensure the user profile still exists in the database.
-                var user = await manager.FindByIdAsync(context.HttpContext.User.GetUserId());
+                var user = await manager.GetUserAsync(context.HttpContext.User);
                 if (user == null) {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.ServerError,
@@ -147,7 +147,7 @@ namespace OpenIddict {
             // the initial check made by ValidateAuthorizationRequest.
             // In this case, ignore the prompt=none request and
             // continue to the next middleware in the pipeline.
-            var user = await manager.FindByIdAsync(principal.GetUserId());
+            var user = await manager.GetUserAsync(principal);
             if (user == null) {
                 return;
             }

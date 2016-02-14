@@ -1,10 +1,10 @@
 using System.Linq;
 using CryptoHelper;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.HttpOverrides;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,8 +17,11 @@ using OpenIddict.Models;
 namespace Mvc.Server {
     public class Startup {
         public static void Main(string[] args) {
-            var application = new WebApplicationBuilder()
-                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+            var application = new WebHostBuilder()
+                .UseCaptureStartupErrors(captureStartupError: true)
+                .UseDefaultConfiguration(args)
+                .UseIISPlatformHandlerUrl()
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseStartup<Startup>()
                 .Build();
 
@@ -52,13 +55,13 @@ namespace Mvc.Server {
             factory.AddConsole();
             factory.AddDebug();
 
-            app.UseIISPlatformHandler(options => {
-                options.FlowWindowsAuthentication = false;
+            app.UseIISPlatformHandler();
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions {
+                ForwardedHeaders = ForwardedHeaders.All
             });
 
-            app.UseOverrideHeaders(options => {
-                options.ForwardedOptions = ForwardedHeaders.All;
-            });
+            app.UseDeveloperExceptionPage();
 
             app.UseStaticFiles();
 
@@ -81,14 +84,14 @@ namespace Mvc.Server {
 
             app.UseIdentity();
 
-            app.UseGoogleAuthentication(options => {
-                options.ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com";
-                options.ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f";
+            app.UseGoogleAuthentication(new GoogleOptions {
+                ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
+                ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f"
             });
 
-            app.UseTwitterAuthentication(options => {
-                options.ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g";
-                options.ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI";
+            app.UseTwitterAuthentication(new TwitterOptions {
+                ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
+                ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
             });
 
             // Note: OpenIddict must be added after
