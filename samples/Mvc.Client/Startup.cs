@@ -74,7 +74,6 @@ namespace Mvc.Client {
                 Scope = { "email", "roles" }
             });
 
-
             app.UseMvc();
         }
     }
