@@ -2,7 +2,7 @@
 ### The OpenID Connect server you'll be addicted to.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/d0d8git3o6lqkvbm?svg=true)](https://ci.appveyor.com/project/aspnet-contrib/core) 
-[![Build status](https://travis-ci.org/openiddict/core.svg)](https://travis-ci.org/openiddict/core)
+[![Build status](https://travis-ci.org/openiddict/openiddict-core.svg)](https://travis-ci.org/openiddict/openiddict-core)
 
 
 ### What's OpenIddict?
@@ -48,10 +48,9 @@ dnvm upgrade -u
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
-    <add key="aspnet-contrib" value="https://www.myget.org/F/aspnet-contrib/api/v2" />
-    <add key="AspNetVNext" value="https://www.myget.org/F/aspnetvnext/api/v2" />
-    <add key="AzureAd Nightly" value="http://www.myget.org/F/azureadwebstacknightly/" />
+    <add key="AspNetCiDev" value="https://www.myget.org/F/aspnetcidev/api/v3/index.json" />
     <add key="NuGet" value="https://api.nuget.org/v3/index.json" />
+    <add key="aspnet-contrib" value="https://www.myget.org/F/aspnet-contrib/api/v3/index.json" />
   </packageSources>
 </configuration>
 ```
