@@ -1,8 +1,8 @@
 using System.Linq;
-using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -126,12 +126,14 @@ namespace Mvc.Server {
                     //     Secret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd"
                     // });
 
+                    var hasher = new PasswordHasher<Application>();
+
                     context.Applications.Add(new Application {
                         Id = "myClient",
                         DisplayName = "My client application",
                         RedirectUri = "http://localhost:53507/signin-oidc",
                         LogoutRedirectUri = "http://localhost:53507/",
-                        Secret = Crypto.HashPassword("secret_secret_secret"),
+                        Secret = hasher.HashPassword(null, "secret_secret_secret"),
                         Type = OpenIddictConstants.ApplicationTypes.Confidential
                     });
 

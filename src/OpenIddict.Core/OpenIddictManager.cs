@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
-using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -204,7 +203,8 @@ namespace OpenIddict {
                 return false;
             }
 
-            if (!Crypto.VerifyHashedPassword(hash, secret)) {
+            var hasher = new PasswordHasher<TApplication>();
+            if (hasher.VerifyHashedPassword(application, hash, secret) == PasswordVerificationResult.Failed) {
                 Logger.LogWarning("Client authentication failed for {Client}.", await GetDisplayNameAsync(application));
 
                 return false;
