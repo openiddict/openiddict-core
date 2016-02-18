@@ -7,6 +7,7 @@
 using System;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.Infrastructure;
 using OpenIddict.Models;
 
 namespace OpenIddict {
@@ -16,9 +17,24 @@ namespace OpenIddict {
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey> {
         public DbSet<TApplication> Applications { get; set; }
+
+        public OpenIddictContext() {}
+        public OpenIddictContext(DbContextOptions options) : base(options) {}
+        public OpenIddictContext(IServiceProvider serviceProvider) : base(serviceProvider) {}
+        public OpenIddictContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) {}
     }
 
-    public class OpenIddictContext<TUser> : OpenIddictContext<TUser, Application, IdentityRole, string> where TUser : IdentityUser { }
+    public class OpenIddictContext<TUser> : OpenIddictContext<TUser, Application, IdentityRole, string> where TUser : IdentityUser {
+        public OpenIddictContext() { }
+        public OpenIddictContext(DbContextOptions options) : base(options) { }
+        public OpenIddictContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
+        public OpenIddictContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
+    }
 
-    public class OpenIddictContext : OpenIddictContext<IdentityUser> { }
+    public class OpenIddictContext : OpenIddictContext<IdentityUser> {
+        public OpenIddictContext() { }
+        public OpenIddictContext(DbContextOptions options) : base(options) { }
+        public OpenIddictContext(IServiceProvider serviceProvider) : base(serviceProvider) { }
+        public OpenIddictContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) { }
+    }
 }
