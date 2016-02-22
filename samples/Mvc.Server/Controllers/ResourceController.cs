@@ -11,7 +11,7 @@ namespace Mvc.Server.Controllers {
         public IActionResult GetMessage() {
             var identity = User.Identity as ClaimsIdentity;
             if (identity == null) {
-                return HttpBadRequest();
+                return BadRequest();
             }
 
             return Content($"{identity.Name} has been successfully authenticated.");
