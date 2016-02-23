@@ -6,15 +6,19 @@ using Microsoft.EntityFrameworkCore;
 using OpenIddict.Models;
 
 namespace OpenIddict {
-    public class OpenIddictStore<TUser, TApplication, TRole, TContext, TKey> : UserStore<TUser, TRole, TContext, TKey>, IOpenIddictStore<TUser, TApplication>
+    public class OpenIddictStore<TUser, TApplication, TContext, TKey> : IOpenIddictStore<TUser, TApplication>
         where TUser : IdentityUser<TKey>
         where TApplication : Application
-        where TRole : IdentityRole<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey> {
-        public OpenIddictStore(TContext context)
-            : base(context) {
+        public OpenIddictStore(TContext context) {
+            Context = context;
         }
+
+        /// <summary>
+        /// Gets the database context associated with the current store.
+        /// </summary>
+        public virtual TContext Context { get; }
 
         public DbSet<TApplication> Applications {
             get { return Context.Set<TApplication>(); }

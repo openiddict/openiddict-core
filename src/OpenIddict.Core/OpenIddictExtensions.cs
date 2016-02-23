@@ -6,6 +6,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Hosting;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder {
     public static class OpenIddictExtensions {
         public static IdentityBuilder AddOpenIddictCore<TApplication>(
             [NotNull] this IdentityBuilder builder,
-            [NotNull] Action<OpenIddictServices> configuration)
+            [NotNull] Action<OpenIddictConfiguration> configuration)
             where TApplication : class {
             if (builder == null) {
                 throw new ArgumentNullException(nameof(builder));
@@ -40,17 +41,53 @@ namespace Microsoft.AspNetCore.Builder {
                 typeof(OpenIddictManager<,>).MakeGenericType(
                     builder.UserType, typeof(TApplication)));
 
-            var services = new OpenIddictServices(builder.Services) {
+            builder.Services.TryAddTransient(
+                typeof(OpenIddictServices<,>).MakeGenericType(
+                    builder.UserType, typeof(TApplication)));
+
+            var instance = new OpenIddictConfiguration(builder.Services) {
                 ApplicationType = typeof(TApplication),
                 RoleType = builder.RoleType,
                 UserType = builder.UserType
             };
 
-            builder.Services.TryAddSingleton(services);
+            builder.Services.TryAddSingleton(instance);
 
-            configuration(services);
+            configuration(instance);
 
             return builder;
+        }
+
+        public static OpenIddictConfiguration UseManager<TManager>([NotNull] this OpenIddictConfiguration configuration) {
+            if (configuration == null) {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            var contract = typeof(OpenIddictManager<,>).MakeGenericType(configuration.UserType,
+                                                                        configuration.ApplicationType);
+            if (!contract.IsAssignableFrom(typeof(TManager))) {
+                throw new InvalidOperationException("Custom managers must be derived from OpenIddictManager.");
+            }
+
+            configuration.Services.Replace(ServiceDescriptor.Scoped(contract, typeof(TManager)));
+
+            return configuration;
+        }
+
+        public static OpenIddictConfiguration UseStore<TStore>([NotNull] this OpenIddictConfiguration configuration) {
+            if (configuration == null) {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            var contract = typeof(IOpenIddictStore<,>).MakeGenericType(configuration.UserType,
+                                                                       configuration.ApplicationType);
+            if (!contract.IsAssignableFrom(typeof(TStore))) {
+                throw new InvalidOperationException("Custom stores must implement IOpenIddictStore.");
+            }
+
+            configuration.Services.Replace(ServiceDescriptor.Scoped(contract, typeof(TStore)));
+
+            return configuration;
         }
 
         public static OpenIddictBuilder AddModule(

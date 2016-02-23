@@ -18,22 +18,23 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIddict.Mvc {
     // Note: this controller is generic and doesn't need to be marked as internal to prevent MVC from discovering it.
     public class OpenIddictController<TUser, TApplication> : Controller where TUser : class where TApplication : class {
         public OpenIddictController(
-            [NotNull] OpenIddictManager<TUser, TApplication> manager,
-            [NotNull] OpenIddictOptions options) {
-            Manager = manager;
-            Options = options;
+            [NotNull] OpenIddictServices<TUser, TApplication> services,
+            [NotNull] IOptions<OpenIddictOptions> options) {
+            Services = services;
+            Options = options.Value;
         }
 
         /// <summary>
-        /// Gets the OpenIddict manager used by the controller.
+        /// Gets the OpenIddict services used by the controller.
         /// </summary>
-        protected virtual OpenIddictManager<TUser, TApplication> Manager { get; }
+        protected virtual OpenIddictServices<TUser, TApplication> Services { get; }
 
         /// <summary>
         /// Gets the OpenIddict options used by the server.
@@ -71,11 +72,10 @@ namespace OpenIddict.Mvc {
                 });
             }
 
-            // Note: ASOS automatically ensures that an application corresponds to the client_id specified
-            // in the authorization request by calling IOpenIdConnectServerProvider.ValidateAuthorizationRequest.
-            // In theory, this null check shouldn't be needed, but a race condition could occur if you
-            // manually removed the application details from the database after the initial check made by ASOS.
-            var application = await Manager.FindApplicationByIdAsync(request.ClientId);
+            // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
+            // corresponds to the client_id specified in the authorization request using
+            // IOpenIdConnectServerProvider.ValidateClientRedirectUri (see OpenIddictProvider.cs).
+            var application = await Services.Applications.FindApplicationByIdAsync(request.ClientId);
             if (application == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.InvalidClient,
@@ -83,7 +83,7 @@ namespace OpenIddict.Mvc {
                 });
             }
 
-            return View("Authorize", Tuple.Create(request, await Manager.GetDisplayNameAsync(application)));
+            return View("Authorize", Tuple.Create(request, await Services.Applications.GetDisplayNameAsync(application)));
         }
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
@@ -102,7 +102,7 @@ namespace OpenIddict.Mvc {
             }
 
             // Retrieve the user data using the unique identifier.
-            var user = await Manager.GetUserAsync(User);
+            var user = await Services.Users.GetUserAsync(User);
             if (user == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.ServerError,
@@ -112,17 +112,10 @@ namespace OpenIddict.Mvc {
 
             // Create a new ClaimsIdentity containing the claims that
             // will be used to create an id_token, a token or a code.
-            var identity = await Manager.CreateIdentityAsync(user, request.GetScopes());
+            var identity = await Services.Applications.CreateIdentityAsync(user, request.GetScopes());
             Debug.Assert(identity != null);
 
-            // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
-            // corresponds to the client_id specified in the authorization request using
-            // IOpenIdConnectServerProvider.ValidateClientRedirectUri (see OpenIddictProvider.cs).
-            var application = await Manager.FindApplicationByIdAsync(request.ClientId);
-
-            // In theory, this null check is thus not strictly necessary. That said, a race condition
-            // and a null reference exception could appear here if you manually removed the application
-            // details from the database after the initial check made by AspNet.Security.OpenIdConnect.Server.
+            var application = await Services.Applications.FindApplicationByIdAsync(request.ClientId);
             if (application == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.InvalidClient,
@@ -136,7 +129,7 @@ namespace OpenIddict.Mvc {
             identity.Actor = new ClaimsIdentity(Options.AuthenticationScheme);
             identity.Actor.AddClaim(ClaimTypes.NameIdentifier, request.ClientId);
 
-            identity.Actor.AddClaim(ClaimTypes.Name, await Manager.GetDisplayNameAsync(application),
+            identity.Actor.AddClaim(ClaimTypes.Name, await Services.Applications.GetDisplayNameAsync(application),
                 OpenIdConnectConstants.Destinations.AccessToken,
                 OpenIdConnectConstants.Destinations.IdentityToken);
 

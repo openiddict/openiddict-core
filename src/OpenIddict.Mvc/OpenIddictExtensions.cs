@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using OpenIddict;
 using OpenIddict.Mvc;
 
@@ -49,12 +50,12 @@ namespace Microsoft.AspNetCore.Builder {
                     });
                 }
             }), services => {
-                var registration = app.ApplicationServices.GetRequiredService<OpenIddictServices>();
+                var configuration = app.ApplicationServices.GetRequiredService<OpenIddictConfiguration>();
 
                 services.AddMvc()
                     // Register the OpenIddict controller.
                     .AddControllersAsServices(new[] {
-                        typeof(OpenIddictController<,>).MakeGenericType(registration.UserType, registration.ApplicationType)
+                        typeof(OpenIddictController<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType)
                     })
 
                     // Add an OpenIddict-specific convention to ensure that the generic
@@ -69,30 +70,44 @@ namespace Microsoft.AspNetCore.Builder {
                             baseNamespace: typeof(OpenIddictController<,>).Namespace));
                     });
 
-                // Register the sign-in manager in the isolated container.
-                services.AddScoped(typeof(SignInManager<>).MakeGenericType(registration.UserType), provider => {
-                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
-                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null);
-
-                    // Resolve the sign-in manager from the parent container.
-                    return container.GetRequiredService(typeof(SignInManager<>).MakeGenericType(registration.UserType));
-                });
-
                 // Register the user manager in the isolated container.
-                services.AddScoped(typeof(OpenIddictManager<,>).MakeGenericType(registration.UserType, registration.ApplicationType), provider => {
+                services.AddScoped(typeof(OpenIddictManager<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
                     Debug.Assert(container != null);
 
                     // Resolve the user manager from the parent container.
-                    return container.GetRequiredService(typeof(OpenIddictManager<,>).MakeGenericType(registration.UserType, registration.ApplicationType));
+                    return container.GetRequiredService(typeof(OpenIddictManager<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType));
+                });
+
+                // Register the services context in the isolated container.
+                services.AddScoped(typeof(OpenIddictServices<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType), provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null);
+
+                    // Resolve the services context from the parent container.
+                    return container.GetRequiredService(typeof(OpenIddictServices<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType));
+                });
+
+                // Register the sign-in manager in the isolated container.
+                services.AddScoped(typeof(SignInManager<>).MakeGenericType(configuration.UserType), provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null);
+
+                    // Resolve the sign-in manager from the parent container.
+                    return container.GetRequiredService(typeof(SignInManager<>).MakeGenericType(configuration.UserType));
                 });
 
                 // Register the user manager in the isolated container.
-                services.AddScoped(typeof(UserManager<>).MakeGenericType(registration.UserType), provider => {
-                    return provider.GetRequiredService(typeof(OpenIddictManager<,>)
-                        .MakeGenericType(registration.UserType, registration.ApplicationType));
+                services.AddScoped(typeof(UserManager<>).MakeGenericType(configuration.UserType), provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null);
+
+                    // Resolve the user manager from the parent container.
+                    return container.GetRequiredService(typeof(UserManager<>).MakeGenericType(configuration.UserType));
                 });
 
                 // Register the assembly provider in the isolated container.
@@ -116,7 +131,7 @@ namespace Microsoft.AspNetCore.Builder {
                 });
 
                 // Register the options in the isolated container.
-                services.AddScoped(provider => builder.Options);
+                services.AddSingleton(Options.Create(builder.Options));
             }));
         }
 

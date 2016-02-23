@@ -13,32 +13,37 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict;
+using OpenIddict.Models;
 
 namespace Microsoft.AspNetCore.Builder {
     public static class OpenIddictExtensions {
-        public static OpenIddictServices UseEntityFramework([NotNull] this OpenIddictServices services) {
-            if (services == null) {
-                throw new ArgumentNullException(nameof(services));
+        public static OpenIddictConfiguration UseEntityFramework([NotNull] this OpenIddictConfiguration configuration) {
+            if (configuration == null) {
+                throw new ArgumentNullException(nameof(configuration));
             }
 
-            services.Services.AddScoped(
-                typeof(IOpenIddictStore<,>).MakeGenericType(services.UserType, services.ApplicationType),
-                typeof(OpenIddictStore<,,,,>).MakeGenericType(
-                    /* TUser: */ services.UserType,
-                    /* TApplication: */ services.ApplicationType,
-                    /* TRole: */ services.RoleType,
-                    /* TContext: */ ResolveContextType(services),
-                    /* TKey: */ ResolveKeyType(services)));
+            if (!IsSubclassOf(configuration.ApplicationType, typeof(Application<>))) {
+                throw new InvalidOperationException("The default store cannot be used with application " +
+                                                    "entities that are not derived from Application<TKey>.");
+            }
 
-            return services;
+            configuration.Services.AddScoped(
+                typeof(IOpenIddictStore<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType),
+                typeof(OpenIddictStore<,,,>).MakeGenericType(
+                    /* TUser: */ configuration.UserType,
+                    /* TApplication: */ configuration.ApplicationType,
+                    /* TContext: */ ResolveContextType(configuration),
+                    /* TKey: */ ResolveKeyType(configuration)));
+
+            return configuration;
         }
 
-        private static Type ResolveContextType([NotNull] OpenIddictServices services) {
-            var service = (from registration in services.Services
+        private static Type ResolveContextType([NotNull] OpenIddictConfiguration configuration) {
+            var service = (from registration in configuration.Services
                            where registration.ServiceType.IsConstructedGenericType
                            let definition = registration.ServiceType.GetGenericTypeDefinition()
                            where definition == typeof(IUserStore<>)
-                           select registration.ImplementationType).SingleOrDefault();
+                           select registration.ImplementationType).FirstOrDefault();
 
             if (service == null) {
                 throw new InvalidOperationException(
@@ -69,9 +74,9 @@ namespace Microsoft.AspNetCore.Builder {
             throw new InvalidOperationException("The type of the database context cannot be automatically inferred.");
         }
 
-        private static Type ResolveKeyType([NotNull] OpenIddictServices services) {
+        private static Type ResolveKeyType([NotNull] OpenIddictConfiguration configuration) {
             TypeInfo type;
-            for (type = services.UserType.GetTypeInfo(); type != null; type = type.BaseType?.GetTypeInfo()) {
+            for (type = configuration.UserType.GetTypeInfo(); type != null; type = type.BaseType?.GetTypeInfo()) {
                 if (!type.IsGenericType) {
                     continue;
                 }
@@ -90,7 +95,23 @@ namespace Microsoft.AspNetCore.Builder {
 
             throw new InvalidOperationException(
                 "The type of the key identifier used by the user " +
-               $"entity '{services.UserType}' cannot be automatically inferred.");
+               $"entity '{configuration.UserType}' cannot be automatically inferred.");
+        }
+
+        private static bool IsSubclassOf([NotNull] Type type, [NotNull] Type generic) {
+            while (type != null && type != typeof(object)) {
+                var current = type.GetTypeInfo().IsGenericType ?
+                    type.GetGenericTypeDefinition() :
+                    type;
+
+                if (current == generic) {
+                    return true;
+                }
+
+                type = type.GetTypeInfo().BaseType;
+            }
+
+            return false;
         }
     }
 }

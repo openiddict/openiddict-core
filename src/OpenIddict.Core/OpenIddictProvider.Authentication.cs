@@ -20,7 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace OpenIddict {
     public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
 
             // Note: redirect_uri is not required for pure OAuth2 requests
             // but this provider uses a stricter policy making it mandatory,
@@ -35,7 +35,7 @@ namespace OpenIddict {
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await manager.FindApplicationByIdAsync(context.ClientId);
+            var application = await services.Applications.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -44,7 +44,7 @@ namespace OpenIddict {
                 return;
             }
 
-            if (!await manager.ValidateRedirectUriAsync(application, context.RedirectUri)) {
+            if (!await services.Applications.ValidateRedirectUriAsync(application, context.RedirectUri)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid redirect_uri.");
@@ -56,7 +56,7 @@ namespace OpenIddict {
             // flow are rejected if the client identifier corresponds to a confidential application.
             // Note: when using the authorization code grant, ValidateClientAuthentication is responsible of
             // rejecting the token request if the client_id corresponds to an unauthenticated confidential client.
-            if (await manager.IsConfidentialApplicationAsync(application) && !context.Request.IsAuthorizationCodeFlow()) {
+            if (await services.Applications.IsConfidentialApplicationAsync(application) && !context.Request.IsAuthorizationCodeFlow()) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Confidential clients can only use response_type=code.");
@@ -68,7 +68,7 @@ namespace OpenIddict {
             // the appropriate set of scopes is requested to prevent personal data leakage.
             if (context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
                 // Ensure the user profile still exists in the database.
-                var user = await manager.GetUserAsync(context.HttpContext.User);
+                var user = await services.Users.GetUserAsync(context.HttpContext.User);
                 if (user == null) {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.ServerError,
@@ -81,8 +81,8 @@ namespace OpenIddict {
                 // email address and if the "email" scope has not been requested.
                 if (context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
                    !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email) &&
-                    string.Equals(await manager.GetUserNameAsync(user),
-                                  await manager.GetEmailAsync(user),
+                    string.Equals(await services.Users.GetUserNameAsync(user),
+                                  await services.Users.GetEmailAsync(user),
                                   StringComparison.OrdinalIgnoreCase)) {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -136,7 +136,7 @@ namespace OpenIddict {
                 return;
             }
 
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
 
             // Note: principal is guaranteed to be non-null since ValidateAuthorizationRequest
             // rejects prompt=none requests missing or having an invalid id_token_hint.
@@ -147,7 +147,7 @@ namespace OpenIddict {
             // the initial check made by ValidateAuthorizationRequest.
             // In this case, ignore the prompt=none request and
             // continue to the next middleware in the pipeline.
-            var user = await manager.GetUserAsync(principal);
+            var user = await services.Users.GetUserAsync(principal);
             if (user == null) {
                 return;
             }
@@ -155,7 +155,7 @@ namespace OpenIddict {
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
             // don't include the "email" scope if the username corresponds to the registed email address.
-            var identity = await manager.CreateIdentityAsync(user, context.Request.GetScopes());
+            var identity = await services.Applications.CreateIdentityAsync(user, context.Request.GetScopes());
             Debug.Assert(identity != null);
 
             // Create a new authentication ticket holding the user identity.

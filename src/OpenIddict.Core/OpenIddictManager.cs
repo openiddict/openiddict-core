@@ -7,54 +7,48 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using CryptoHelper;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict {
-    public class OpenIddictManager<TUser, TApplication> : UserManager<TUser> where TUser : class where TApplication : class {
-        public OpenIddictManager(
-            IOpenIddictStore<TUser, TApplication> store,
-            IOptions<IdentityOptions> optionsAccessor,
-            IPasswordHasher<TUser> passwordHasher,
-            IEnumerable<IUserValidator<TUser>> userValidators,
-            IEnumerable<IPasswordValidator<TUser>> passwordValidators,
-            ILookupNormalizer keyNormalizer,
-            IdentityErrorDescriber errors,
-            IServiceProvider services,
-            ILogger<UserManager<TUser>> logger)
-            : base(store, optionsAccessor,
-                   passwordHasher, userValidators,
-                   passwordValidators, keyNormalizer,
-                   errors, services, logger) {
-            Context = services.GetService<IHttpContextAccessor>()?.HttpContext;
-            Options = optionsAccessor.Value;
+    public class OpenIddictManager<TUser, TApplication> where TUser : class where TApplication : class {
+        public OpenIddictManager([NotNull] OpenIddictServices<TUser, TApplication> services) {
+            Services = services;
         }
 
         /// <summary>
         /// Gets the HTTP context associated with the current manager.
         /// </summary>
-        public virtual HttpContext Context { get; }
+        protected virtual HttpContext Context => Services.Context;
 
         /// <summary>
         /// Gets the cancellation token used to abort async operations.
         /// </summary>
-        public virtual CancellationToken CancellationToken => Context?.RequestAborted ?? CancellationToken.None;
+        protected virtual CancellationToken CancellationToken => Context?.RequestAborted ?? CancellationToken.None;
 
         /// <summary>
-        /// Gets the Identity options associated with the current manager.
+        /// Gets the logger associated with the current manager.
         /// </summary>
-        public virtual IdentityOptions Options { get; }
+        protected virtual ILogger Logger => Services.Logger;
+
+        /// <summary>
+        /// Gets the options associated with the current manager.
+        /// </summary>
+        protected virtual IdentityOptions Options => Services.Services.GetRequiredService<IOptions<IdentityOptions>>().Value;
+
+        /// <summary>
+        /// Gets the servuces associated with the current manager.
+        /// </summary>
+        protected virtual OpenIddictServices<TUser, TApplication> Services { get; }
 
         /// <summary>
         /// Gets the store associated with the current manager.
         /// </summary>
-        public virtual new IOpenIddictStore<TUser, TApplication> Store {
-            get { return base.Store as IOpenIddictStore<TUser, TApplication>; }
-        }
+        protected virtual IOpenIddictStore<TUser, TApplication> Store => Services.Store;
 
         public virtual async Task<ClaimsIdentity> CreateIdentityAsync(TUser user, IEnumerable<string> scopes) {
             if (user == null) {
@@ -72,11 +66,11 @@ namespace OpenIddict {
 
             // Note: the name identifier is always included in both identity and
             // access tokens, even if an explicit destination is not specified.
-            identity.AddClaim(ClaimTypes.NameIdentifier, await GetUserIdAsync(user));
+            identity.AddClaim(ClaimTypes.NameIdentifier, await Services.Users.GetUserIdAsync(user));
 
             // Resolve the username and the email address associated with the user.
-            var username = await GetUserNameAsync(user);
-            var email = await GetEmailAsync(user);
+            var username = await Services.Users.GetUserNameAsync(user);
+            var email = await Services.Users.GetEmailAsync(user);
 
             // Only add the name claim if the "profile" scope was granted.
             if (scopes.Contains(OpenIdConnectConstants.Scopes.Profile)) {
@@ -99,16 +93,16 @@ namespace OpenIddict {
                     OpenIdConnectConstants.Destinations.IdentityToken);
             }
 
-            if (SupportsUserRole && scopes.Contains(OpenIddictConstants.Scopes.Roles)) {
-                foreach (var role in await GetRolesAsync(user)) {
+            if (Services.Users.SupportsUserRole && scopes.Contains(OpenIddictConstants.Scopes.Roles)) {
+                foreach (var role in await Services.Users.GetRolesAsync(user)) {
                     identity.AddClaim(identity.RoleClaimType, role,
                     OpenIdConnectConstants.Destinations.AccessToken,
                     OpenIdConnectConstants.Destinations.IdentityToken);
                 }
             }
 
-            if (SupportsUserSecurityStamp) {
-                var identifier = await GetSecurityStampAsync(user);
+            if (Services.Users.SupportsUserSecurityStamp) {
+                var identifier = await Services.Users.GetSecurityStampAsync(user);
 
                 if (!string.IsNullOrEmpty(identifier)) {
                     identity.AddClaim(Options.ClaimsIdentity.SecurityStampClaimType, identifier,
@@ -126,23 +120,6 @@ namespace OpenIddict {
 
         public virtual Task<TApplication> FindApplicationByLogoutRedirectUri(string url) {
             return Store.FindApplicationByLogoutRedirectUri(url, CancellationToken);
-        }
-
-        public virtual async Task<string> FindClaimAsync(TUser user, string type) {
-            if (user == null) {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            if (string.IsNullOrEmpty(type)) {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            // Note: GetClaimsAsync will automatically throw an exception
-            // if the underlying store doesn't support custom claims.
-
-            return (from claim in await GetClaimsAsync(user)
-                    where string.Equals(claim.Type, type, StringComparison.Ordinal)
-                    select claim.Value).FirstOrDefault();
         }
 
         public virtual async Task<string> GetApplicationTypeAsync(TApplication application) {

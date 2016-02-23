@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 namespace OpenIddict {
     public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context) {
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
 
             // Note: ASOS supports both GET and POST introspection requests but OpenIddict only accepts POST requests.
             if (!string.Equals(context.HttpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase)) {
@@ -41,7 +41,7 @@ namespace OpenIddict {
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await manager.FindApplicationByIdAsync(context.ClientId);
+            var application = await services.Applications.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -51,7 +51,7 @@ namespace OpenIddict {
             }
 
             // Reject non-confidential applications.
-            if (await manager.IsPublicApplicationAsync(application)) {
+            if (await services.Applications.IsPublicApplicationAsync(application)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Public applications are not allowed to use the introspection endpoint.");
@@ -60,7 +60,7 @@ namespace OpenIddict {
             }
 
             // Validate the client credentials.
-            if (!await manager.ValidateSecretAsync(application, context.ClientSecret)) {
+            if (!await services.Applications.ValidateSecretAsync(application, context.ClientSecret)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid credentials: ensure that you specified a correct client_secret.");
@@ -72,19 +72,19 @@ namespace OpenIddict {
         }
 
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context) {
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
 
             // If the user manager doesn't support security
             // stamps, skip the additional validation logic.
-            if (!manager.SupportsUserSecurityStamp) {
+            if (!services.Users.SupportsUserSecurityStamp) {
                 return;
             }
 
             var principal = context.Ticket?.Principal;
             Debug.Assert(principal != null);
 
-            var user = await manager.GetUserAsync(principal);
+            var user = await services.Users.GetUserAsync(principal);
             if (user == null) {
                 context.Active = false;
 
@@ -93,7 +93,7 @@ namespace OpenIddict {
 
             var identifier = principal.GetClaim(options.Value.ClaimsIdentity.SecurityStampClaimType);
             if (!string.IsNullOrEmpty(identifier) &&
-                !string.Equals(identifier, await manager.GetSecurityStampAsync(user), StringComparison.Ordinal)) {
+                !string.Equals(identifier, await services.Users.GetSecurityStampAsync(user), StringComparison.Ordinal)) {
                 context.Active = false;
 
                 return;

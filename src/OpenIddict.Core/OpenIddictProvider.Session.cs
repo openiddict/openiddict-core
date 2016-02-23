@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace OpenIddict {
     public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context) {
-            var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
 
             // Skip validation if the optional post_logout_redirect_uri
             // parameter was missing from the logout request.
@@ -23,7 +23,7 @@ namespace OpenIddict {
                 return;
             }
 
-            var application = await manager.FindApplicationByLogoutRedirectUri(context.PostLogoutRedirectUri);
+            var application = await services.Applications.FindApplicationByLogoutRedirectUri(context.PostLogoutRedirectUri);
             if (application == null) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,

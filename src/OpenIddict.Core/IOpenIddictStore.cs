@@ -1,9 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 
 namespace OpenIddict {
-    public interface IOpenIddictStore<TUser, TApplication> : IUserStore<TUser> where TUser : class where TApplication : class {
+    public interface IOpenIddictStore<TUser, TApplication> where TApplication : class {
         Task<TApplication> FindApplicationByIdAsync(string identifier, CancellationToken cancellationToken);
         Task<TApplication> FindApplicationByLogoutRedirectUri(string url, CancellationToken cancellationToken);
         Task<string> GetApplicationTypeAsync(TApplication application, CancellationToken cancellationToken);
