@@ -11,6 +11,8 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using OpenIddict;
@@ -91,6 +93,26 @@ namespace Microsoft.AspNetCore.Builder {
                 services.AddScoped(typeof(UserManager<>).MakeGenericType(registration.UserType), provider => {
                     return provider.GetRequiredService(typeof(OpenIddictManager<,>)
                         .MakeGenericType(registration.UserType, registration.ApplicationType));
+                });
+
+                // Register the assembly provider in the isolated container.
+                services.AddScoped(provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null);
+
+                    // Resolve the assembly provider from the parent container.
+                    return container.GetRequiredService<IAssemblyProvider>();
+                });
+
+                // Register the compilation service in the isolated container.
+                services.AddScoped(provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null);
+
+                    // Resolve the compilation service from the parent container.
+                    return container.GetRequiredService<ICompilationService>();
                 });
 
                 // Register the options in the isolated container.

@@ -35,6 +35,7 @@ namespace Mvc.Server {
                 .Build();
 
             services.AddMvc();
+            services.AddMvcDnx();
 
             services.AddEntityFramework()
                 .AddSqlServer()
