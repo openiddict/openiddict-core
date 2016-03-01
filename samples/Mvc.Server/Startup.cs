@@ -1,4 +1,5 @@
 using System.Linq;
+using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -134,7 +135,7 @@ namespace Mvc.Server {
                         DisplayName = "My client application",
                         RedirectUri = "http://localhost:53507/signin-oidc",
                         LogoutRedirectUri = "http://localhost:53507/",
-                        Secret = hasher.HashPassword(null, "secret_secret_secret"),
+                        Secret = Crypto.HashPassword("secret_secret_secret"),
                         Type = OpenIddictConstants.ApplicationTypes.Confidential
                     });
 
