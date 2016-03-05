@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -199,11 +200,11 @@ namespace OpenIddict.Mvc {
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public virtual async Task Logout(CancellationToken cancellationToken) {
+        public virtual async Task Logout([FromServices] SignInManager<TUser> manager, CancellationToken cancellationToken) {
             // Instruct the cookies middleware to delete the local cookie created
             // when the user agent is redirected from the external identity provider
             // after a successful authentication flow (e.g Google or Facebook).
-            await HttpContext.Authentication.SignOutAsync("Microsoft.AspNetCore.Identity.Application");
+            await manager.SignOutAsync();
 
             // Redirect the user agent to the post_logout_redirect_uri specified by the client application.
             await HttpContext.Authentication.SignOutAsync(Options.AuthenticationScheme);

@@ -62,7 +62,7 @@ namespace Mvc.Client {
 
                 RequireHttpsMetadata = false,
                 GetClaimsFromUserInfoEndpoint = true,
-                SaveTokensAsClaims = true,
+                SaveTokens = true,
 
                 // Use the authorization code flow.
                 ResponseType = OpenIdConnectResponseTypes.Code,
