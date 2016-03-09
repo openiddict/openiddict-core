@@ -1,5 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using NWebsec.Middleware;
 
 namespace Microsoft.AspNetCore.Builder {
@@ -47,17 +48,18 @@ namespace Microsoft.AspNetCore.Builder {
             });
         }
 
-        public static OpenIddictBuilder UseCors([NotNull] this OpenIddictBuilder builder) {
+        public static OpenIddictBuilder UseCors(
+            [NotNull] this OpenIddictBuilder builder,
+            [NotNull] Action<CorsPolicyBuilder> configuration) {
             if (builder == null) {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.AddModule("CORS", -10, map => map.UseCors(options => {
-                options.AllowAnyHeader();
-                options.AllowAnyMethod();
-                options.AllowAnyOrigin();
-                options.AllowCredentials();
-            }));
+            if (configuration == null) {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            builder.AddModule("CORS", -10, map => map.UseCors(configuration));
 
             return builder;
         }

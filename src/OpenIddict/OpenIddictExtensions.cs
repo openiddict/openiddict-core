@@ -51,7 +51,6 @@ namespace Microsoft.AspNetCore.Builder {
 
             return app.UseOpenIddictCore(builder => {
                 builder.UseAssets();
-                builder.UseCors();
                 builder.UseNWebsec();
                 builder.UseMvc();
 
