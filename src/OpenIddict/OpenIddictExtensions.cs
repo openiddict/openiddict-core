@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         public static IdentityBuilder AddOpenIddict<TApplication>([NotNull] this IdentityBuilder builder)
-            where TApplication : Application {
+            where TApplication : class {
             if (builder == null) {
                 throw new ArgumentNullException(nameof(builder));
             }

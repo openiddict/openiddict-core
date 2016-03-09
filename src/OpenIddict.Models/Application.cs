@@ -4,9 +4,13 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
+
 namespace OpenIddict.Models {
-    public class Application {
-        public string Id { get; set; }
+    public class Application : Application<string> { }
+
+    public class Application<TKey> where TKey : IEquatable<TKey> {
+        public TKey Id { get; set; }
         public string DisplayName { get; set; }
         public string RedirectUri { get; set; }
         public string LogoutRedirectUri { get; set; }

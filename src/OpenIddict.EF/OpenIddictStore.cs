@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -8,7 +9,7 @@ using OpenIddict.Models;
 namespace OpenIddict {
     public class OpenIddictStore<TUser, TApplication, TContext, TKey> : IOpenIddictStore<TUser, TApplication>
         where TUser : IdentityUser<TKey>
-        where TApplication : Application
+        where TApplication : Application<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey> {
         public OpenIddictStore(TContext context) {
@@ -25,7 +26,9 @@ namespace OpenIddict {
         }
 
         public virtual Task<TApplication> FindApplicationByIdAsync(string identifier, CancellationToken cancellationToken) {
-            return Applications.SingleOrDefaultAsync(application => application.Id == identifier, cancellationToken);
+            var key = (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+
+            return Applications.SingleOrDefaultAsync(application => application.Id.Equals(key), cancellationToken);
         }
 
         public virtual Task<TApplication> FindApplicationByLogoutRedirectUri(string url, CancellationToken cancellationToken) {

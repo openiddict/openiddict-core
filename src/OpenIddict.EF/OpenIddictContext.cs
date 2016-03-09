@@ -13,7 +13,7 @@ using OpenIddict.Models;
 namespace OpenIddict {
     public class OpenIddictContext<TUser, TApplication, TRole, TKey> : IdentityDbContext<TUser, TRole, TKey>
         where TUser : IdentityUser<TKey>
-        where TApplication : Application
+        where TApplication : Application<TKey>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey> {
         public OpenIddictContext() { }
