@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Builder {
             }
 
             builder.Services.AddAuthentication();
-            builder.Services.AddCaching();
+            builder.Services.AddDistributedMemoryCache();
 
             builder.Services.TryAddSingleton(
                 typeof(IOpenIdConnectServerProvider),
