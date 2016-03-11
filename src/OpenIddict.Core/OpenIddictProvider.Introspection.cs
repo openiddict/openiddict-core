@@ -71,7 +71,7 @@ namespace OpenIddict {
             context.Validate();
         }
 
-        public override async Task IntrospectionEndpoint([NotNull] IntrospectionEndpointContext context) {
+        public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context) {
             var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
 

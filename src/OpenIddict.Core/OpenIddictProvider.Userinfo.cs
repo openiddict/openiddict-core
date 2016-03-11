@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 
 namespace OpenIddict {
     public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
-        public override async Task UserinfoEndpoint([NotNull] UserinfoEndpointContext context) {
+        public override async Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context) {
             var manager = context.HttpContext.RequestServices.GetRequiredService<OpenIddictManager<TUser, TApplication>>();
 
             var principal = context.Ticket?.Principal;

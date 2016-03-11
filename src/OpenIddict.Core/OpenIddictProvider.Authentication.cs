@@ -130,7 +130,7 @@ namespace OpenIddict {
             context.Validate();
         }
 
-        public override async Task AuthorizationEndpoint([NotNull] AuthorizationEndpointContext context) {
+        public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context) {
             // Only handle prompt=none requests at this stage.
             if (!string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
                 return;
