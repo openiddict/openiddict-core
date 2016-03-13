@@ -181,6 +181,15 @@ namespace OpenIddict {
                 return;
             }
 
+            // Ensure the user is allowed to sign in.
+            if (!await services.SignIn.CanSignInAsync(user)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidGrant,
+                    description: "The user is not allowed to sign in.");
+
+                return;
+            }
+
             // Ensure the user is not already locked out.
             if (services.Users.SupportsUserLockout && await services.Users.IsLockedOutAsync(user)) {
                 context.Reject(
@@ -212,6 +221,15 @@ namespace OpenIddict {
 
             if (services.Users.SupportsUserLockout) { 
                 await services.Users.ResetAccessFailedCountAsync(user);
+            }
+
+            // Reject the token request if two-factor authentication has been enabled by the user.
+            if (services.Users.SupportsUserTwoFactor && await services.Users.GetTwoFactorEnabledAsync(user)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidGrant,
+                    description: "Two-factor authentication is required for this account.");
+
+                return;
             }
 
             // Return an error if the username corresponds to the registered
