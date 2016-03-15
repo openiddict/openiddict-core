@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,7 +40,7 @@ namespace Mvc.Server {
             services.AddMvcDnx();
 
             services.AddEntityFramework()
-                .AddSqlServer()
+                .AddEntityFrameworkSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]));
 
