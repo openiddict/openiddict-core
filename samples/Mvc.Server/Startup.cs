@@ -53,8 +53,7 @@ namespace Mvc.Server {
             services.AddTransient<ISmsSender, AuthMessageSender>();
         }
 
-        public void Configure(IApplicationBuilder app) {
-            var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+        public void Configure(IApplicationBuilder app, ILoggerFactory factory) {
             factory.AddConsole();
             factory.AddDebug();
 

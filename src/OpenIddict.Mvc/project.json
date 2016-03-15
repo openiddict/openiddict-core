@@ -11,11 +11,20 @@
         "Microsoft.AspNetCore.Mvc": "1.0.0-*",
         "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
         "Microsoft.Extensions.FileProviders.Composite": "1.0.0-*",
-        "OpenIddict.Core": "1.0.0-*"
+        "OpenIddict.Core": "1.0.0-*",
+
+        "System.Reflection": "4.1.0-*"
     },
 
     "frameworks": {
-        "net451": { },
+        "net451": {
+            "frameworkAssemblies": {
+                "System.Reflection": {
+                    "type": "build",
+                    "version": "4.0.0.0"
+                }
+            }
+        },
 
         "netstandard1.5": {
             "imports": [

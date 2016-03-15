@@ -15,11 +15,15 @@
         "Microsoft.Extensions.Logging.Console": "1.0.0-*",
         "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
         "Microsoft.NETCore.Platforms": "1.0.1-*",
-        "OpenIddict": "1.0.0-*"
+        "OpenIddict": "1.0.0-*",
+
+        "System.ComponentModel": "4.0.1-*",
+        "System.IO": "4.1.0-*",
+        "System.Runtime": "4.1.0-*"
     },
 
     "frameworks": {
-        "dnx451": { },
+        "net451": { },
 
         "netstandardapp1.5": {
             "imports": [

@@ -30,8 +30,7 @@ namespace Mvc.Client {
             services.AddMvcDnx();
         }
 
-        public void Configure(IApplicationBuilder app) {
-            var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+        public void Configure(IApplicationBuilder app, ILoggerFactory factory) {
             factory.AddConsole();
             factory.AddDebug();
 
