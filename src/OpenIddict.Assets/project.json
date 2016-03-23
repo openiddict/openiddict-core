@@ -22,7 +22,16 @@
     "security"
   ],
 
-  "resource": [ "fonts/*", "scripts/*", "stylesheets/*" ],
+  "compilationOptions": {
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
+  },
+
+  "resource": [
+    "fonts/*",
+    "scripts/*",
+    "stylesheets/*"
+  ],
 
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },

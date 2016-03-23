@@ -22,6 +22,11 @@
     "security"
   ],
 
+  "compilationOptions": {
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
+  },
+
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
     "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-*",

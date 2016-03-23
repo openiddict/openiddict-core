@@ -22,6 +22,11 @@
     "security"
   ],
 
+  "compilationOptions": {
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
+  },
+
   "dependencies": {
     "NWebsec": { "type": "build", "version": "1.0.0-internal-*" },
     "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },

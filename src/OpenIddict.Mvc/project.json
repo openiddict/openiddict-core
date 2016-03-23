@@ -22,6 +22,11 @@
     "security"
   ],
 
+  "compilationOptions": {
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
+  },
+
   "resource": "Views/**",
 
   "dependencies": {
