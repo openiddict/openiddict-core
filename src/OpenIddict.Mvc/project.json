@@ -1,36 +1,55 @@
 ﻿{
-    "version": "1.0.0-*",
+  "version": "1.0.0-alpha2-*",
 
-    "description": "MVC 6 module for OpenIddict.",
+  "description": "ASP.NET Core MVC module for OpenIddict.",
+  "authors": [ "Kévin Chalet" ],
+  "owners": [ "Kévin Chalet" ],
 
-    "resource": "Views/**",
+  "projectUrl": "https://github.com/openiddict/openiddict-core",
+  "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
 
-    "dependencies": {
-        "AspNet.Hosting.Extensions": "1.0.0-*",
-        "JetBrains.Annotations": "10.1.2-eap",
-        "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-        "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
-        "Microsoft.Extensions.FileProviders.Composite": "1.0.0-*",
-        "OpenIddict.Core": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/openiddict/openiddict-core"
+  },
 
-        "System.Reflection": "4.1.0-*"
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "jwt",
+    "openidconnect",
+    "openiddict",
+    "security"
+  ],
+
+  "resource": "Views/**",
+
+  "dependencies": {
+    "AspNet.Hosting.Extensions": "1.0.0-*",
+    "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
+    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Composite": "1.0.0-*",
+    "OpenIddict.Core": "1.0.0-*",
+
+    "System.Reflection": "4.1.0-*"
+  },
+
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Reflection": {
+          "type": "build",
+          "version": "4.0.0.0"
+        }
+      }
     },
 
-    "frameworks": {
-        "net451": {
-            "frameworkAssemblies": {
-                "System.Reflection": {
-                    "type": "build",
-                    "version": "4.0.0.0"
-                }
-            }
-        },
-
-        "netstandard1.5": {
-            "imports": [
-                "dotnet5.6",
-                "portable-net451+win8"
-            ]
-        }
+    "netstandard1.5": {
+      "imports": [
+        "dotnet5.6",
+        "portable-net451+win8"
+      ]
     }
+  }
 }

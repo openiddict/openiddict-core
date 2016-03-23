@@ -1,23 +1,42 @@
 ﻿{
-    "version": "1.0.0-*",
+  "version": "1.0.0-alpha2-*",
 
-    "description": "Entity Framework adapter for OpenIddict.",
+  "description": "Entity Framework adapter for OpenIddict.",
+  "authors": [ "Kévin Chalet" ],
+  "owners": [ "Kévin Chalet" ],
 
-    "dependencies": {
-        "JetBrains.Annotations": "10.1.2-eap",
-        "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-*",
-        "OpenIddict.Core": "1.0.0-*",
-        "OpenIddict.Models": "1.0.0-*"
-    },
+  "projectUrl": "https://github.com/openiddict/openiddict-core",
+  "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
 
-    "frameworks": {
-        "net451": { },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/openiddict/openiddict-core"
+  },
 
-        "netstandard1.3": {
-            "imports": [
-                "dotnet5.4",
-                "portable-net451+win8"
-            ]
-        }
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "jwt",
+    "openidconnect",
+    "openiddict",
+    "security"
+  ],
+
+  "dependencies": {
+    "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
+    "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-*",
+    "OpenIddict.Core": "1.0.0-*",
+    "OpenIddict.Models": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "net451": { },
+
+    "netstandard1.3": {
+      "imports": [
+        "dotnet5.4",
+        "portable-net451+win8"
+      ]
     }
+  }
 }

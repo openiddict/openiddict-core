@@ -1,26 +1,41 @@
 ﻿{
-    "version": "1.0.0-*",
+  "version": "1.0.0-alpha2-*",
 
-    "description": "Security headers module for OpenIddict.",
+  "description": "Security headers module for OpenIddict.",
+  "authors": [ "Kévin Chalet" ],
+  "owners": [ "Kévin Chalet" ],
 
-    "dependencies": {
-        "JetBrains.Annotations": "10.1.2-eap",
-        "OpenIddict.Core": "1.0.0-*",
+  "projectUrl": "https://github.com/openiddict/openiddict-core",
+  "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
 
-        "NWebsec": {
-            "type": "build",
-            "version": "1.0.0-internal-*"
-        }
-    },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/openiddict/openiddict-core"
+  },
 
-    "frameworks": {
-        "net451": { },
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "jwt",
+    "openidconnect",
+    "openiddict",
+    "security"
+  ],
 
-        "netstandard1.3": {
-            "imports": [
-                "dotnet5.4",
-                "portable-net451+win8"
-            ]
-        }
+  "dependencies": {
+    "NWebsec": { "type": "build", "version": "1.0.0-internal-*" },
+    "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
+    "OpenIddict.Core": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "net451": { },
+
+    "netstandard1.3": {
+      "imports": [
+        "dotnet5.4",
+        "portable-net451+win8"
+      ]
     }
+  }
 }

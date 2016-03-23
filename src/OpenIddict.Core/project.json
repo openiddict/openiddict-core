@@ -1,38 +1,50 @@
-{
-    "version": "1.0.0-*",
+﻿{
+  "version": "1.0.0-alpha2-*",
 
-    "description": "Core components of OpenIddict.",
+  "description": "Core components of OpenIddict.",
+  "authors": [ "Kévin Chalet" ],
+  "owners": [ "Kévin Chalet" ],
 
-    "dependencies": {
-        "AspNet.Security.OpenIdConnect.Server": "1.0.0-*",
-        "CryptoHelper": "1.0.0-rc2-build03",
-        "JetBrains.Annotations": "10.1.2-eap",
-        "Microsoft.AspNetCore.Cors": "1.0.0-*",
-        "Microsoft.AspNetCore.Identity": "1.0.0-*",
-        "Microsoft.Extensions.Configuration": "1.0.0-*",
-        "Microsoft.Extensions.Caching.Memory": "1.0.0-*"
+  "projectUrl": "https://github.com/openiddict/openiddict-core",
+  "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/openiddict/openiddict-core"
+  },
+
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "jwt",
+    "openidconnect",
+    "openiddict",
+    "security"
+  ],
+
+  "dependencies": {
+    "AspNet.Security.OpenIdConnect.Server": "1.0.0-*",
+    "CryptoHelper": "1.0.0-rc2-build03",
+    "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
+    "Microsoft.AspNetCore.Cors": "1.0.0-*",
+    "Microsoft.AspNetCore.Identity": "1.0.0-*",
+    "Microsoft.Extensions.Configuration": "1.0.0-*",
+    "Microsoft.Extensions.Caching.Memory": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.ComponentModel": { "type": "build", "version": "4.0.0.0" },
+        "System.Runtime": { "type": "build", "version": "4.0.10.0" }
+      }
     },
 
-    "frameworks": {
-        "net451": {
-            "frameworkAssemblies": {
-                "System.ComponentModel": {
-                    "type": "build",
-                    "version": "4.0.0.0"
-                },
-
-                "System.Runtime": {
-                    "type": "build",
-                    "version": "4.0.10.0"
-                }
-            }
-        },
-
-        "netstandard1.3": {
-            "imports": [
-                "dotnet5.4",
-                "portable-net451+win8"
-            ]
-        }
+    "netstandard1.3": {
+      "imports": [
+        "dotnet5.4",
+        "portable-net451+win8"
+      ]
     }
+  }
 }

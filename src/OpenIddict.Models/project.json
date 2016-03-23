@@ -1,20 +1,39 @@
 ﻿{
-    "version": "1.0.0-*",
+  "version": "1.0.0-alpha2-*",
 
-    "description": "Contains the default models used by OpenIddict.",
+  "description": "Contains the default models used by OpenIddict.",
+  "authors": [ "Kévin Chalet" ],
+  "owners": [ "Kévin Chalet" ],
 
-    "frameworks": {
-        "net451": { },
+  "projectUrl": "https://github.com/openiddict/openiddict-core",
+  "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
 
-        "netstandard1.3": {
-            "dependencies": {
-                "System.Runtime": "4.1.0-*"
-            },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/openiddict/openiddict-core"
+  },
 
-            "imports": [
-                "dotnet5.4",
-                "portable-net451+win8"
-            ]
-        }
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "jwt",
+    "openidconnect",
+    "openiddict",
+    "security"
+  ],
+
+  "frameworks": {
+    "net451": { },
+
+    "netstandard1.3": {
+      "dependencies": {
+        "System.Runtime": "4.1.0-*"
+      },
+
+      "imports": [
+        "dotnet5.4",
+        "portable-net451+win8"
+      ]
     }
+  }
 }

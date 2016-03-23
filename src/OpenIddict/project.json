@@ -1,24 +1,43 @@
-{
-    "version": "1.0.0-*",
+﻿{
+  "version": "1.0.0-alpha2-*",
 
-    "description": "Easy-to-use OpenID Connect server for ASP.NET 5.",
+  "description": "Easy-to-use OpenID Connect server for ASP.NET Core.",
+  "authors": [ "Kévin Chalet" ],
+  "owners": [ "Kévin Chalet" ],
 
-    "dependencies": {
-        "JetBrains.Annotations": "10.1.2-eap",
-        "OpenIddict.Assets": "1.0.0-*",
-        "OpenIddict.EF": "1.0.0-*",
-        "OpenIddict.Mvc": "1.0.0-*",
-        "OpenIddict.Security": "1.0.0-*"
-    },
+  "projectUrl": "https://github.com/openiddict/openiddict-core",
+  "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
 
-    "frameworks": {
-        "net451": { },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/openiddict/openiddict-core"
+  },
 
-        "netstandard1.5": {
-            "imports": [
-                "dotnet5.6",
-                "portable-net451+win8"
-            ]
-        }
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "jwt",
+    "openidconnect",
+    "openiddict",
+    "security"
+  ],
+
+  "dependencies": {
+    "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
+    "OpenIddict.Assets": "1.0.0-*",
+    "OpenIddict.EF": "1.0.0-*",
+    "OpenIddict.Mvc": "1.0.0-*",
+    "OpenIddict.Security": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "net451": { },
+
+    "netstandard1.5": {
+      "imports": [
+        "dotnet5.6",
+        "portable-net451+win8"
+      ]
     }
+  }
 }
