@@ -1,13 +1,13 @@
 # OpenIddict
 ### The OpenID Connect server you'll be addicted to.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/d0d8git3o6lqkvbm?svg=true)](https://ci.appveyor.com/project/aspnet-contrib/core) 
+[![Build status](https://ci.appveyor.com/api/projects/status/46ofo2eusje0hcw2?svg=true)](https://ci.appveyor.com/project/openiddict/openiddict-core)
 [![Build status](https://travis-ci.org/openiddict/openiddict-core.svg)](https://travis-ci.org/openiddict/openiddict-core)
 
 
 ### What's OpenIddict?
 
-OpenIddict aims at providing a **simple and easy-to-use solution** to implement an **OpenID Connect server in any ASP.NET 5 application**.
+OpenIddict aims at providing a **simple and easy-to-use solution** to implement an **OpenID Connect server in any ASP.NET Core application**.
 
 
 ### Why an OpenID Connect server?
@@ -20,7 +20,7 @@ with the power to control who can access your API and the information that is ex
 
 ### How does it work?
 
-OpenIddict is based on **[ASP.NET Identity 3](https://github.com/aspnet/Identity)** (for user management) and relies on
+OpenIddict is based on **[ASP.NET Core Identity](https://github.com/aspnet/Identity)** (for user management) and relies on
 **[AspNet.Security.OpenIdConnect.Server](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server)** to control the OpenID Connect authentication flow. It comes with a built-in MVC 6 controller and native views that you can easily replace by your own ones to fully customize your login experience:
 
 ![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
@@ -35,12 +35,13 @@ Note: OpenIddict uses **[EntityFramework 7](https://github.com/aspnet/EntityFram
 
 To use OpenIddict, you need to:
 
-  - **Update your DNX runtime and your ASP.NET 5 packages to use the latest RC2 nightly builds**:
+  - **Install [.NET CLI](https://github.com/dotnet/cli/) or the latest DNX runtime and update your packages to reference the RC2 nightly builds** (make sure to run these commands in a good old console, not in a PowerShell instance, as it doesn't support the SET command):
 ```
+set DNX_UNSTABLE_FEED=https://www.myget.org/F/aspnetcidev/
 dnvm upgrade -u
 ```
 
-  - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET 5 template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
+  - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
   - **Add the appropriate MyGet repositories to your NuGet sources**. This can be done by adding a new `NuGet.Config` file at the root of your solution:
 
@@ -85,7 +86,7 @@ public void ConfigureServices(IServiceCollection services) {
 [Configuration and options](https://github.com/openiddict/core/wiki/Configuration-and-options)
 in the project wiki.
 
-  - **Add the OpenIddict middleware in your ASP.NET 5 pipeline** by calling `app.UseOpenIddict()` after `app.UseIdentity()`:
+  - **Add the OpenIddict middleware in your ASP.NET Core pipeline** by calling `app.UseOpenIddict()` after `app.UseIdentity()`:
 
 ```csharp
 public void Configure(IApplicationBuilder app) {
@@ -151,7 +152,7 @@ using (var context = app.ApplicationServices.GetRequiredService<ApplicationDbCon
 **Need help or wanna share your thoughts? Don't hesitate to join our dedicated chat rooms:**
 
 - **JabbR: [https://jabbr.net/#/rooms/aspnet-contrib](https://jabbr.net/#/rooms/aspnet-contrib)**
-- **Gitter: [https://gitter.im/openiddict/core](https://gitter.im/openiddict/core)**
+- **Gitter: [https://gitter.im/openiddict/openiddict-core](https://gitter.im/openiddict/openiddict-core)**
 
 ## Contributors
 
