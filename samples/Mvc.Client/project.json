@@ -11,11 +11,7 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
-
-    "System.ComponentModel": "4.0.1-*",
-    "System.IO": "4.1.0-*",
-    "System.Runtime": "4.1.0-*"
+    "Microsoft.Extensions.Logging.Debug": "1.0.0-*"
   },
 
   "frameworks": {
