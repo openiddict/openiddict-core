@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "AspNet.Security.OAuth.GitHub": "1.0.0-*",
     "AspNet.Security.OAuth.Introspection": "1.0.0-*",
     "AspNet.Security.OAuth.Validation": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Google": "1.0.0-*",

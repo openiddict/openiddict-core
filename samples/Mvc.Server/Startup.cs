@@ -1,4 +1,5 @@
 using System.Linq;
+using AspNet.Security.OAuth.GitHub;
 using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -94,6 +95,12 @@ namespace Mvc.Server {
             app.UseTwitterAuthentication(new TwitterOptions {
                 ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
                 ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
+            });
+
+            app.UseGitHubAuthentication(new GitHubAuthenticationOptions {
+                ClientId = "49e302895d8b09ea5656",
+                ClientSecret = "98f1bf028608901e9df91d64ee61536fe562064b",
+                Scope = { "user:email" }
             });
 
             // Note: OpenIddict must be added after
