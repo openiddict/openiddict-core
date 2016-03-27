@@ -2,7 +2,6 @@ using System.Linq;
 using AspNet.Security.OAuth.GitHub;
 using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -10,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
 using NWebsec.Middleware;
@@ -19,17 +17,6 @@ using OpenIddict.Models;
 
 namespace Mvc.Server {
     public class Startup {
-        public static void Main(string[] args) {
-            var application = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
-                .UseIISPlatformHandlerUrl()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
-                .UseStartup<Startup>()
-                .Build();
-
-            application.Run();
-        }
-
         public void ConfigureServices(IServiceCollection services) {
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("config.json")
@@ -53,10 +40,7 @@ namespace Mvc.Server {
             services.AddTransient<ISmsSender, AuthMessageSender>();
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory factory) {
-            factory.AddConsole();
-            factory.AddDebug();
-
+        public void Configure(IApplicationBuilder app) {
             app.UseIISPlatformHandler();
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions {
