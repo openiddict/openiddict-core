@@ -29,7 +29,7 @@
 
   "dependencies": {
     "AspNet.Security.OpenIdConnect.Server": "1.0.0-*",
-    "CryptoHelper": "1.0.0-rc2-build03",
+    "CryptoHelper": "1.0.0-rc2-build04",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
     "Microsoft.AspNetCore.Cors": "1.0.0-*",
     "Microsoft.AspNetCore.Identity": "1.0.0-*",
