@@ -65,7 +65,7 @@ namespace OpenIddict.Mvc {
             // To work around this limitation, the OpenID Connect request is automatically saved in the cache and will be
             // restored by the OpenID Connect server middleware after the external authentication process has been completed.
             if (!User.Identities.Any(identity => identity.IsAuthenticated)) {
-                return new ChallengeResult(new AuthenticationProperties {
+                return Challenge(new AuthenticationProperties {
                     RedirectUri = Url.Action(nameof(Authorize), new {
                         request_id = request.GetRequestIdentifier()
                     })
@@ -123,31 +123,23 @@ namespace OpenIddict.Mvc {
                 });
             }
 
-            // Create a new ClaimsIdentity containing the claims associated with the application.
-            // Note: setting identity.Actor is not mandatory but can be useful to access
-            // the whole delegation chain from the resource server (see ResourceController.cs).
-            identity.Actor = new ClaimsIdentity(Options.AuthenticationScheme);
-            identity.Actor.AddClaim(ClaimTypes.NameIdentifier, request.ClientId);
-
-            identity.Actor.AddClaim(ClaimTypes.Name, await Services.Applications.GetDisplayNameAsync(application),
-                OpenIdConnectConstants.Destinations.AccessToken,
-                OpenIdConnectConstants.Destinations.IdentityToken);
-
             // Create a new authentication ticket holding the user identity.
-            var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), null, Options.AuthenticationScheme);
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(identity),
+                new AuthenticationProperties(),
+                Options.AuthenticationScheme);
+
             ticket.SetResources(request.GetResources());
             ticket.SetScopes(request.GetScopes());
 
-            // This call will ask ASOS to serialize the specified identity to build appropriate tokens.
+            // Returning a SignInResult will ask ASOS to serialize the specified identity to build appropriate tokens.
             // Note: you should always make sure the identities you return contain ClaimTypes.NameIdentifier claim.
             // In this sample, the identity always contains the name identifier returned by the external provider.
-            await HttpContext.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
-
-            return new EmptyResult();
+            return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
         }
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
-        public virtual async Task<IActionResult> Deny() {
+        public virtual IActionResult Deny() {
             var response = HttpContext.GetOpenIdConnectResponse();
             if (response != null) {
                 return View("Error", response);
@@ -164,13 +156,11 @@ namespace OpenIddict.Mvc {
             // Notify ASOS that the authorization grant has been denied by the resource owner.
             // Note: OpenIdConnectServerHandler will automatically take care of redirecting
             // the user agent to the client application using the appropriate response_mode.
-            await HttpContext.Authentication.ForbidAsync(Options.AuthenticationScheme);
-
-            return new EmptyResult();
+            return Forbid(Options.AuthenticationScheme);
         }
 
         [HttpGet]
-        public virtual async Task<ActionResult> Logout() {
+        public virtual async Task<IActionResult> Logout() {
             var response = HttpContext.GetOpenIdConnectResponse();
             if (response != null) {
                 return View("Error", response);
@@ -193,14 +183,15 @@ namespace OpenIddict.Mvc {
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public virtual async Task Logout([FromServices] SignInManager<TUser> manager, CancellationToken cancellationToken) {
+        public virtual async Task<IActionResult> Logout([FromServices] SignInManager<TUser> manager) {
             // Instruct the cookies middleware to delete the local cookie created
             // when the user agent is redirected from the external identity provider
             // after a successful authentication flow (e.g Google or Facebook).
             await manager.SignOutAsync();
 
-            // Redirect the user agent to the post_logout_redirect_uri specified by the client application.
-            await HttpContext.Authentication.SignOutAsync(Options.AuthenticationScheme);
+            // Returning a SignOutResult will ask ASOS to redirect the user agent
+            // to the post_logout_redirect_uri specified by the client application.
+            return SignOut(Options.AuthenticationScheme);
         }
     }
 }
