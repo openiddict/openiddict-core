@@ -9,7 +9,7 @@ namespace Mvc.Client {
                 .ConfigureLogging(options => options.AddDebug())
                 .UseDefaultHostingConfiguration(args)
                 .UseIISPlatformHandlerUrl()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseStartup<Startup>()
                 .Build();
 
