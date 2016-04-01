@@ -11,10 +11,11 @@ addons:
     - libunwind8
     - zlib1g
 mono:
-  - 4.0.5
+  - alpha
+  - latest
 os:
   - linux
   - osx
 osx_image: xcode7.1
 script:
-  - ./build.sh verify
+  - ./build.sh --quiet verify
