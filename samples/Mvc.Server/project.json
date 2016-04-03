@@ -19,7 +19,11 @@
   },
 
   "frameworks": {
-    "net451": { },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.ComponentModel": { "type": "build" }
+      }
+    },
 
     "netstandardapp1.5": {
       "dependencies": {
