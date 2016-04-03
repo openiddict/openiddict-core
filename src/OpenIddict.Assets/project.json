@@ -43,8 +43,8 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Reflection": { "type": "build", "version": "4.0.0.0" },
-        "System.Runtime": { "type": "build", "version": "4.0.10.0" }
+        "System.Reflection": { "type": "build" },
+        "System.Runtime": { "type": "build" }
       }
     },
 
