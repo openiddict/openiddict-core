@@ -52,11 +52,16 @@ namespace Microsoft.AspNetCore.Builder {
             }), services => {
                 var configuration = app.ApplicationServices.GetRequiredService<OpenIddictConfiguration>();
 
+                var controllerType = typeof(OpenIddictController<,>).MakeGenericType(
+                    configuration.UserType,
+                    configuration.ApplicationType);
+
                 services.AddMvc()
+                    .ConfigureApplicationPartManager(manager => manager.ApplicationParts.Clear())
+                    .ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(new TypesPart(
+                        controllerType)))
                     // Register the OpenIddict controller.
-                    .AddControllersAsServices(new[] {
-                        typeof(OpenIddictController<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType)
-                    })
+                    .AddControllersAsServices()
 
                     // Add an OpenIddict-specific convention to ensure that the generic
                     // OpenIddictController gets an appropriate controller name.
@@ -110,15 +115,15 @@ namespace Microsoft.AspNetCore.Builder {
                     return container.GetRequiredService(typeof(UserManager<>).MakeGenericType(configuration.UserType));
                 });
 
-                // Register the assembly provider in the isolated container.
-                services.AddScoped(provider => {
-                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
-                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null);
+                //// Register the assembly provider in the isolated container.
+                //services.AddScoped(provider => {
+                //    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                //    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                //    Debug.Assert(container != null);
 
-                    // Resolve the assembly provider from the parent container.
-                    return container.GetRequiredService<IAssemblyProvider>();
-                });
+                //    // Resolve the assembly provider from the parent container.
+                //    return container.GetRequiredService<IAssemblyProvider>();
+                //});
 
                 // Register the compilation service in the isolated container.
                 services.AddScoped(provider => {
