@@ -5,13 +5,14 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -53,10 +54,14 @@ namespace Microsoft.AspNetCore.Builder {
                 var configuration = app.ApplicationServices.GetRequiredService<OpenIddictConfiguration>();
 
                 services.AddMvc()
-                    // Register the OpenIddict controller.
-                    .AddControllersAsServices(new[] {
-                        typeof(OpenIddictController<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType)
+                    // Note: ConfigureApplicationPartManager() must be
+                    // called before AddControllersAsServices().
+                    .ConfigureApplicationPartManager(manager => {
+                        manager.ApplicationParts.Clear();
+                        manager.ApplicationParts.Add(new OpenIddictPart(configuration));
                     })
+
+                    .AddControllersAsServices()
 
                     // Add an OpenIddict-specific convention to ensure that the generic
                     // OpenIddictController gets an appropriate controller name.
@@ -110,16 +115,6 @@ namespace Microsoft.AspNetCore.Builder {
                     return container.GetRequiredService(typeof(UserManager<>).MakeGenericType(configuration.UserType));
                 });
 
-                // Register the assembly provider in the isolated container.
-                services.AddScoped(provider => {
-                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
-                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null);
-
-                    // Resolve the assembly provider from the parent container.
-                    return container.GetRequiredService<IAssemblyProvider>();
-                });
-
                 // Register the compilation service in the isolated container.
                 services.AddScoped(provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
@@ -146,6 +141,21 @@ namespace Microsoft.AspNetCore.Builder {
                 // to remove the ending markers added to the generic type name.
                 controller.ControllerName = "OpenIddict";
             }
+        }
+
+        private class OpenIddictPart : ApplicationPart, IApplicationPartTypeProvider {
+            public OpenIddictPart(OpenIddictConfiguration configuration) {
+                Types = new[] {
+                    typeof(OpenIddictController<,>)
+                        .MakeGenericType(configuration.UserType,
+                                         configuration.ApplicationType)
+                        .GetTypeInfo()
+                };
+            }
+
+            public override string Name { get; } = "OpenIddict.Mvc";
+
+            public IEnumerable<TypeInfo> Types { get; }
         }
     }
 }
