@@ -48,7 +48,8 @@
 
   "content": [
     "wwwroot",
-    "Views"
+    "Views",
+    "config.json"
   ],
 
   "exclude": [
