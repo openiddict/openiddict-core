@@ -13,12 +13,9 @@ namespace Mvc.Client {
             });
 
             services.AddMvc();
-            services.AddMvcDnx();
         }
 
         public void Configure(IApplicationBuilder app) {
-            app.UseIISPlatformHandler();
-
             app.UseForwardedHeaders(new ForwardedHeadersOptions {
                 ForwardedHeaders = ForwardedHeaders.All
             });

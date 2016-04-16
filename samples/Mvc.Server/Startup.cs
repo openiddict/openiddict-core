@@ -24,7 +24,6 @@ namespace Mvc.Server {
                 .Build();
 
             services.AddMvc();
-            services.AddMvcDnx();
 
             services.AddEntityFramework()
                 .AddEntityFrameworkSqlServer()
@@ -41,8 +40,6 @@ namespace Mvc.Server {
         }
 
         public void Configure(IApplicationBuilder app) {
-            app.UseIISPlatformHandler();
-
             app.UseForwardedHeaders(new ForwardedHeadersOptions {
                 ForwardedHeaders = ForwardedHeaders.All
             });

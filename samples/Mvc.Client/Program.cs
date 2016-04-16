@@ -8,7 +8,7 @@ namespace Mvc.Client {
                 .ConfigureLogging(options => options.AddConsole())
                 .ConfigureLogging(options => options.AddDebug())
                 .UseDefaultHostingConfiguration(args)
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()
                 .UseKestrel()
                 .UseStartup<Startup>()
                 .Build();

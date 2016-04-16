@@ -1,4 +1,10 @@
 {
+  "compilationOptions": {
+    "debugType": "portable",
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
+  },
+
   "dependencies": {
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
@@ -7,7 +13,7 @@
     "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
     "Microsoft.AspNetCore.Hosting": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Dnx": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
@@ -15,11 +21,15 @@
   },
 
   "frameworks": {
-    "net451": { },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" }
+      }
+    },
 
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-*"
+        "Microsoft.NETCore.App": { "type": "platform", "version": "1.0.0-*" }
       },
 
       "imports": [
@@ -29,18 +39,10 @@
     }
   },
 
-  "compilationOptions": {
-    "emitEntryPoint": true,
-    "preserveCompilationContext": true
-  },
-
-  "commands": {
-    "web": "Mvc.Client"
-  },
-
   "content": [
     "wwwroot",
-    "Views"
+    "Views",
+    "web.config"
   ],
 
   "exclude": [
