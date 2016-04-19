@@ -31,11 +31,11 @@
   "resource": "Views/**",
 
   "dependencies": {
-    "AspNet.Hosting.Extensions": "1.0.0-*",
+    "AspNet.Hosting.Extensions": "1.0.0-alpha2-*",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
-    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
-    "Microsoft.Extensions.FileProviders.Composite": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-*",
+    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-rc2-*",
+    "Microsoft.Extensions.FileProviders.Composite": "1.0.0-rc2-*",
     "OpenIddict.Core": "1.0.0-*"
   },
 

@@ -35,11 +35,7 @@ Note: OpenIddict uses **[EntityFramework 7](https://github.com/aspnet/EntityFram
 
 To use OpenIddict, you need to:
 
-  - **Install [.NET CLI](https://github.com/dotnet/cli/) or the latest DNX runtime and update your packages to reference the RC2 nightly builds** (make sure to run these commands in a good old console, not in a PowerShell instance, as it doesn't support the SET command):
-```
-set DNX_UNSTABLE_FEED=https://www.myget.org/F/aspnetcidev/
-dnvm upgrade -u
-```
+  - **Install the latest [.NET CLI](https://github.com/dotnet/cli/) bits and update your packages to reference the RC2 release builds**.
 
   - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
@@ -49,7 +45,7 @@ dnvm upgrade -u
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
-    <add key="AspNetCiDev" value="https://www.myget.org/F/aspnetcidev/api/v3/index.json" />
+    <add key="AspNetCiRelease" value="https://www.myget.org/F/aspnetcirelease/api/v3/index.json" />
     <add key="NuGet" value="https://api.nuget.org/v3/index.json" />
     <add key="aspnet-contrib" value="https://www.myget.org/F/aspnet-contrib/api/v3/index.json" />
   </packageSources>

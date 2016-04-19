@@ -6,21 +6,21 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OAuth.GitHub": "1.0.0-*",
-    "AspNet.Security.OAuth.Introspection": "1.0.0-*",
-    "AspNet.Security.OAuth.Validation": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.Google": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-*",
-    "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
-    "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
+    "AspNet.Security.OAuth.GitHub": "1.0.0-alpha4-*",
+    "AspNet.Security.OAuth.Introspection": "1.0.0-alpha1-*",
+    "AspNet.Security.OAuth.Validation": "1.0.0-alpha1-*",
+    "Microsoft.AspNetCore.Authentication.Google": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.Diagnostics": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.HttpOverrides": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0-rc2-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-rc2-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-rc2-*",
+    "Microsoft.Extensions.Logging.Debug": "1.0.0-rc2-*",
     "OpenIddict": "1.0.0-*"
   },
 
@@ -33,7 +33,7 @@
 
     "netcoreapp1.0": {
       "dependencies": {
-        "Microsoft.NETCore.App": { "type": "platform", "version": "1.0.0-*" }
+        "Microsoft.NETCore.App": { "type": "platform", "version": "1.0.0-rc2-*" }
       },
 
       "imports": [
