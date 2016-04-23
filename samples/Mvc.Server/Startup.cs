@@ -81,6 +81,8 @@ namespace Mvc.Server {
             // Note: OpenIddict must be added after
             // ASP.NET Identity and the external providers.
             app.UseOpenIddict(builder => {
+                builder.Options.AllowInsecureHttp = true;
+
                 // You can customize the default Content Security Policy (CSP) by calling UseNWebsec explicitly.
                 // This can be useful to allow your HTML views to reference remote scripts/images/styles.
                 builder.UseNWebsec(directives => {

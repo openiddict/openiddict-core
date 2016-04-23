@@ -117,7 +117,7 @@ namespace OpenIddict {
 
                 // Ensure the client application is listed as a valid audience in the identity token
                 // and that the identity token corresponds to the authenticated user.
-                if (!principal.HasClaim(JwtRegisteredClaimNames.Aud, context.Request.ClientId) ||
+                if (!principal.HasClaim(OpenIdConnectConstants.Claims.Audience, context.Request.ClientId) ||
                     !principal.HasClaim(ClaimTypes.NameIdentifier, context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier))) {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,

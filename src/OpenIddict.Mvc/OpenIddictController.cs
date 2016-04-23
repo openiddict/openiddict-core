@@ -8,7 +8,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using JetBrains.Annotations;
@@ -16,30 +15,20 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIddict.Mvc {
     // Note: this controller is generic and doesn't need to be marked as internal to prevent MVC from discovering it.
     public class OpenIddictController<TUser, TApplication> : Controller where TUser : class where TApplication : class {
-        public OpenIddictController(
-            [NotNull] OpenIddictServices<TUser, TApplication> services,
-            [NotNull] IOptions<OpenIddictOptions> options) {
+        public OpenIddictController([NotNull] OpenIddictServices<TUser, TApplication> services) {
             Services = services;
-            Options = options.Value;
         }
 
         /// <summary>
         /// Gets the OpenIddict services used by the controller.
         /// </summary>
         protected virtual OpenIddictServices<TUser, TApplication> Services { get; }
-
-        /// <summary>
-        /// Gets the OpenIddict options used by the server.
-        /// </summary>
-        protected virtual OpenIddictOptions Options { get; }
 
         [HttpGet, HttpPost]
         public virtual async Task<IActionResult> Authorize() {
@@ -127,7 +116,7 @@ namespace OpenIddict.Mvc {
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                Options.AuthenticationScheme);
+                Services.Options.AuthenticationScheme);
 
             ticket.SetResources(request.GetResources());
             ticket.SetScopes(request.GetScopes());
@@ -139,59 +128,54 @@ namespace OpenIddict.Mvc {
         }
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
-        public virtual IActionResult Deny() {
+        public virtual Task<IActionResult> Deny() {
             var response = HttpContext.GetOpenIdConnectResponse();
             if (response != null) {
-                return View("Error", response);
+                return Task.FromResult<IActionResult>(View("Error", response));
             }
 
             var request = HttpContext.GetOpenIdConnectRequest();
             if (request == null) {
-                return View("Error", new OpenIdConnectMessage {
+                return Task.FromResult<IActionResult>(View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.ServerError,
                     ErrorDescription = "An internal error has occurred"
-                });
+                }));
             }
 
             // Notify ASOS that the authorization grant has been denied by the resource owner.
             // Note: OpenIdConnectServerHandler will automatically take care of redirecting
             // the user agent to the client application using the appropriate response_mode.
-            return Forbid(Options.AuthenticationScheme);
+            return Task.FromResult<IActionResult>(Forbid(Services.Options.AuthenticationScheme));
         }
 
         [HttpGet]
-        public virtual async Task<IActionResult> Logout() {
+        public virtual Task<IActionResult> Logout() {
             var response = HttpContext.GetOpenIdConnectResponse();
             if (response != null) {
-                return View("Error", response);
+                return Task.FromResult<IActionResult>(View("Error", response));
             }
-
-            // When invoked, the logout endpoint might receive an unauthenticated request if the server cookie has expired.
-            // When the client application sends an id_token_hint parameter, the corresponding identity can be retrieved
-            // using AuthenticateAsync or using User when the authorization server is declared as AuthenticationMode.Active.
-            var identity = await HttpContext.Authentication.AuthenticateAsync(Options.AuthenticationScheme);
 
             var request = HttpContext.GetOpenIdConnectRequest();
             if (request == null) {
-                return View("Error", new OpenIdConnectMessage {
+                return Task.FromResult<IActionResult>(View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.ServerError,
                     ErrorDescription = "An internal error has occurred"
-                });
+                }));
             }
 
-            return View("Logout", Tuple.Create(request, identity));
+            return Task.FromResult<IActionResult>(View("Logout", request));
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public virtual async Task<IActionResult> Logout([FromServices] SignInManager<TUser> manager) {
+        public virtual async Task<IActionResult> Signout() {
             // Instruct the cookies middleware to delete the local cookie created
             // when the user agent is redirected from the external identity provider
             // after a successful authentication flow (e.g Google or Facebook).
-            await manager.SignOutAsync();
+            await Services.SignIn.SignOutAsync();
 
             // Returning a SignOutResult will ask ASOS to redirect the user agent
             // to the post_logout_redirect_uri specified by the client application.
-            return SignOut(Options.AuthenticationScheme);
+            return SignOut(Services.Options.AuthenticationScheme);
         }
     }
 }

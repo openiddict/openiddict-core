@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace OpenIddict {
     /// <summary>
@@ -39,6 +40,13 @@ namespace OpenIddict {
         /// </summary>
         public virtual ILogger Logger {
             get { return Services.GetRequiredService<ILogger<OpenIddictManager<TUser, TApplication>>>(); }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="OpenIddictOptions"/>.
+        /// </summary>
+        public virtual OpenIddictOptions Options {
+            get { return Services.GetRequiredService<IOptions<OpenIddictOptions>>().Value; }
         }
 
         /// <summary>
