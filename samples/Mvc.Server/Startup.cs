@@ -2,7 +2,6 @@ using System.Linq;
 using AspNet.Security.OAuth.GitHub;
 using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -40,10 +39,6 @@ namespace Mvc.Server {
         }
 
         public void Configure(IApplicationBuilder app) {
-            app.UseForwardedHeaders(new ForwardedHeadersOptions {
-                ForwardedHeaders = ForwardedHeaders.All
-            });
-
             app.UseDeveloperExceptionPage();
 
             app.UseStaticFiles();
