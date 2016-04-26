@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.NETCore.App": "1.0.0-rc2-*"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {}
+  },
+  "tools": {
+    "dotnet-watch": {
+      "version": "1.0.0-*",
+      "imports": "portable-net45+win8+dnxcore50"
+    }
+  },
+  "runtimes": {
+    "win10-x64": {}
+  }
+}
