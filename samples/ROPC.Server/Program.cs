@@ -2,7 +2,6 @@
 {
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -34,10 +33,9 @@
 
         public void Configure(IApplicationBuilder app, MyDbContext dbContext)
         {
+            // test adding to a normal DbSet.
             dbContext.Sandboxes.Add(new Sandbox());
             dbContext.SaveChangesAsync();
-
-            var sandbox = dbContext.Sandboxes.FirstAsync();
 
             app.UseOpenIddictCore(builder =>
             {
@@ -57,7 +55,6 @@
             builder.Run();
         }
     }
-
 }
 
 namespace Application.Models
@@ -76,12 +73,10 @@ namespace Application.Models
 
     public class MyUser : IdentityUser
     {
-
     }
 
     public class MyRole : IdentityRole
     {
-
     }
 
     public class Sandbox
