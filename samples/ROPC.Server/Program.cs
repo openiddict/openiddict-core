@@ -39,7 +39,7 @@
         {
             // test adding to a normal DbSet.
             dbContext.Sandboxes.Add(new Sandbox());
-            dbContext.SaveChangesAsync();
+            dbContext.SaveChangesAsync().Wait();
             
             // seed a user
             var user = new MyUser {
@@ -47,7 +47,7 @@
                 Email = "test@test.com"
             };
             
-            userManager.CreateAsync(user, "Testing123!");
+            userManager.CreateAsync(user, "Testing123!").Wait();
 
             app.UseOpenIddictCore(builder =>
             {
