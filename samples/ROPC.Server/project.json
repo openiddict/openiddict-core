@@ -7,15 +7,16 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "OpenIddict.Core": "1.0.0-*",
     "OpenIddict.EF": "1.0.0-*",
+    "Microsoft.AspNetCore.Identity": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.InMemory": "1.0.0-*",
     "Microsoft.NETCore.App": "1.0.0-rc2-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": [ 
+      "imports": [
         "dnxcore50",
-        "portable-net45" 
-        ]
+        "portable-net45"
+      ]
     }
   },
   "tools": {

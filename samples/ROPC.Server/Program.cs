@@ -6,7 +6,8 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Infrastructure;
-    using Application.Database;
+    using Application.Models;
+    using OpenIddict.Models;
 
     public class Program
     {
@@ -19,16 +20,30 @@
                 {
                     options.UseInMemoryDatabase();
                 });
+
+            services
+                .AddIdentity<MyUser, MyRole>()
+                .AddEntityFrameworkStores<MyDbContext>()
+                .AddDefaultTokenProviders()
+                .AddOpenIddictCore<Application>(configuration =>
+                {
+                    // Use the EF adapter by default.
+                    configuration.UseEntityFramework();
+                });
         }
 
-        public void Configure(IApplicationBuilder builder, MyDbContext dbContext)
+        public void Configure(IApplicationBuilder app, MyDbContext dbContext)
         {
-            // dbContext.Sandboxes.Add(new Sandbox());
-            // dbContext.SaveChangesAsync();
-            
-            builder.Run(context =>
+            dbContext.Sandboxes.Add(new Sandbox());
+            dbContext.SaveChangesAsync();
+
+            var sandbox = dbContext.Sandboxes.FirstAsync();
+
+            app.UseOpenIddictCore(builder =>
             {
-                return context.Response.WriteAsync("Hello.");
+                builder.Options.UseJwtTokens();
+                builder.Options.AllowInsecureHttp = true;
+                builder.Options.ApplicationCanDisplayErrors = true;
             });
         }
 
@@ -45,20 +60,28 @@
 
 }
 
-namespace Application.Database
+namespace Application.Models
 {
+    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
+    using OpenIddict;
 
-    public class MyDbContext : DbContext
+    public class MyDbContext : OpenIddictContext<MyUser>
     {
         public DbSet<Sandbox> Sandboxes { get; set; }
-
-        public MyDbContext()
-        { }
-
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
         {
         }
+    }
+
+    public class MyUser : IdentityUser
+    {
+
+    }
+
+    public class MyRole : IdentityRole
+    {
+
     }
 
     public class Sandbox
