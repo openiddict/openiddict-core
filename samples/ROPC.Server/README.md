@@ -1,6 +1,6 @@
 # Usuage
 
-Run `dotnet watch` in the `ROPC.Server` directory. Then run the following POST in Fiddler or your favorite web debugging proxy.
+Run `dotnet watch` in the `ROPC.Server` directory. Then make the following request your favorite web debugging proxy (e.g. Fiddler / Postman.)
 
 ## Request
 
