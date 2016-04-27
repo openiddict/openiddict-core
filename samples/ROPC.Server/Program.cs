@@ -7,6 +7,7 @@
     using Microsoft.EntityFrameworkCore.Infrastructure;
     using Application.Models;
     using OpenIddict.Models;
+    using Microsoft.AspNetCore.Identity;
 
     public class Program
     {
@@ -31,11 +32,22 @@
                 });
         }
 
-        public void Configure(IApplicationBuilder app, MyDbContext dbContext)
+        public void Configure(
+            IApplicationBuilder app, 
+            MyDbContext dbContext, 
+            UserManager<MyUser> userManager)
         {
             // test adding to a normal DbSet.
             dbContext.Sandboxes.Add(new Sandbox());
             dbContext.SaveChangesAsync();
+            
+            // seed a user
+            var user = new MyUser {
+                UserName = "test@test.com", 
+                Email = "test@test.com"
+            };
+            
+            userManager.CreateAsync(user, "Testing123!");
 
             app.UseOpenIddictCore(builder =>
             {
