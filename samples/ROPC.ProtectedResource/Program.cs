@@ -29,7 +29,7 @@ namespace Application
                 options.AutomaticChallenge = true;
                 options.Authority = "http://localhost:5001/";
                 options.ClientId = "resource_server";
-                options.ClientSecret = "abc123";
+                options.ClientSecret = "secret_secret_secret";
             });
 
             app.UseMvc();
@@ -37,19 +37,9 @@ namespace Application
 
         public static void Main(string[] args)
         {
-            var port = 5000;
-            for (var i = 0; i < args.Length; ++i)
-            {
-                if (args[i] == "--port")
-                {
-                    int.TryParse(args[i + 1], out port);
-                    break;
-                }
-            }
-
             var host = new WebHostBuilder()
                         .UseKestrel()
-                        .UseUrls($"http://localhost:{port}")
+                        .UseUrls($"http://localhost:5002")
                         .UseStartup<Program>()
                         .Build();
 

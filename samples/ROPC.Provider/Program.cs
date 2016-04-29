@@ -10,6 +10,7 @@
     using Microsoft.AspNetCore.Identity;
     using Microsoft.Extensions.Logging;
     using System.Linq;
+    using CryptoHelper;
 
     public class Program
     {
@@ -49,7 +50,7 @@
                 dbContext.Applications.Add(new Application {
                     Id = "resource_server", 
                     DisplayName = "Resource Server", 
-                    Secret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd",
+                    Secret = Crypto.HashPassword("secret_secret_secret"),
                     Type = OpenIddict.OpenIddictConstants.ApplicationTypes.Confidential,
                     RedirectUri = string.Empty, 
                     LogoutRedirectUri = string.Empty
@@ -76,19 +77,9 @@
 
         public static void Main(string[] args)
         {
-            var port = 5000;
-            for (var i = 0; i < args.Length; ++i)
-            {
-                if (args[i] == "--port")
-                {
-                    int.TryParse(args[i + 1], out port);
-                    break;
-                }
-            }
-
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://localhost:{port}")
+                .UseUrls($"http://localhost:5001")
                 .UseStartup<Program>()
                 .Build();
 
