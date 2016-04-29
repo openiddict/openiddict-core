@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "AspNet.Security.OAuth.Introspection": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
+    "Microsoft.NETCore.App": "1.0.0-rc2-3002520"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "dnxcore50"
+    }
+  },
+  "runtimes": {
+    "win8-x64": {}
+  },
+  "tools": {
+    "dotnet-watch": {
+      "version": "1.0.0-*",
+      "imports": "portable-net45+win8+dnxcore50"
+    }
+  }
+}
