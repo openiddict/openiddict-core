@@ -11,7 +11,12 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Builder {
     public static class OpenIddictExtensions {
-        public static OpenIddictBuilder UseAssets([NotNull] this OpenIddictBuilder builder) {
+        /// <summary>
+        /// Registers the assets module, including the default HTML/CSS files used by the MVC module.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder AddAssets([NotNull] this OpenIddictBuilder builder) {
             if (builder == null) {
                 throw new ArgumentNullException(nameof(builder));
             }

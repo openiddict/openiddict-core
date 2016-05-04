@@ -12,10 +12,11 @@ using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace OpenIddict {
-    public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
+namespace OpenIddict.Infrastructure {
+    public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
+        where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             // Skip validation if the optional post_logout_redirect_uri
             // parameter was missing from the logout request.
@@ -25,7 +26,7 @@ namespace OpenIddict {
                 return;
             }
 
-            var application = await services.Applications.FindApplicationByLogoutRedirectUri(context.PostLogoutRedirectUri);
+            var application = await services.Applications.FindByLogoutRedirectUri(context.PostLogoutRedirectUri);
             if (application == null) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -38,7 +39,7 @@ namespace OpenIddict {
         }
 
         public override async Task HandleLogoutRequest([NotNull] HandleLogoutRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             // Only validate the id_token_hint if the user is still logged in.
             // If the authentication cookie doesn't exist or is no longer valid,

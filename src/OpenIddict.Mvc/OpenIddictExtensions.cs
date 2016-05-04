@@ -8,12 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
@@ -22,43 +22,67 @@ using OpenIddict.Mvc;
 
 namespace Microsoft.AspNetCore.Builder {
     public static class OpenIddictExtensions {
-        public static OpenIddictBuilder UseMvc([NotNull] this OpenIddictBuilder builder) {
+        /// <summary>
+        /// Registers the MVC module, including the built-in
+        /// authorization controller and the default consent views.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder AddMvc([NotNull] this OpenIddictBuilder builder) {
             if (builder == null) {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            // Run MVC in an isolated environment.
+            builder.Services.AddMvc();
+
+            builder.Configure(options => {
+                // Set ApplicationCanDisplayErrors to true to allow OpenIddictController 
+                // to intercept the error responses returned by the OpenID Connect server.
+                options.ApplicationCanDisplayErrors = true;
+
+                if (!options.AuthorizationEndpointPath.HasValue) {
+                    // Restore the default authorization endpoint path in the OpenIddict options.
+                    options.AuthorizationEndpointPath = OpenIdConnectServerDefaults.AuthorizationEndpointPath;
+                }
+
+                if (!options.LogoutEndpointPath.HasValue) {
+                    // Restore the default logout endpoint path in the OpenIddict options.
+                    options.LogoutEndpointPath = OpenIdConnectServerDefaults.LogoutEndpointPath;
+                }
+            });
+
+            // Run the MVC module in an isolated environment.
             return builder.AddModule("MVC", 10, app => app.Isolate(map => map.UseMvc(routes => {
+                var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictOptions>>().Value;
+
                 // Register the actions corresponding to the authorization endpoint.
-                if (builder.Options.AuthorizationEndpointPath.HasValue) {
-                    routes.MapRoute("{D97891B4}", builder.Options.AuthorizationEndpointPath.Value.Substring(1), new {
-                        controller = "OpenIddict", action = nameof(OpenIddictController<object, object>.Authorize)
+                if (options.AuthorizationEndpointPath.HasValue) {
+                    routes.MapRoute("{D97891B4}", options.AuthorizationEndpointPath.Value.Substring(1), new {
+                        controller = "OpenIddict", action = nameof(OpenIddictController<object, object, object, object>.Authorize)
                     });
 
-                    routes.MapRoute("{7148DB83}", builder.Options.AuthorizationEndpointPath.Value.Substring(1) + "/accept", new {
-                        controller = "OpenIddict", action = nameof(OpenIddictController<object, object>.Accept)
+                    routes.MapRoute("{7148DB83}", options.AuthorizationEndpointPath.Value.Substring(1) + "/accept", new {
+                        controller = "OpenIddict", action = nameof(OpenIddictController<object, object, object, object>.Accept)
                     });
 
-                    routes.MapRoute("{23438BCC}", builder.Options.AuthorizationEndpointPath.Value.Substring(1) + "/deny", new {
-                        controller = "OpenIddict", action = nameof(OpenIddictController<object, object>.Deny)
+                    routes.MapRoute("{23438BCC}", options.AuthorizationEndpointPath.Value.Substring(1) + "/deny", new {
+                        controller = "OpenIddict", action = nameof(OpenIddictController<object, object, object, object>.Deny)
                     });
                 }
 
                 // Register the action corresponding to the logout endpoint.
-                if (builder.Options.LogoutEndpointPath.HasValue) {
-                    routes.MapRoute("{C7DB102A}", builder.Options.LogoutEndpointPath.Value.Substring(1), new {
-                        controller = "OpenIddict", action = nameof(OpenIddictController<object, object>.Logout)
+                if (options.LogoutEndpointPath.HasValue) {
+                    routes.MapRoute("{C7DB102A}", options.LogoutEndpointPath.Value.Substring(1), new {
+                        controller = "OpenIddict", action = nameof(OpenIddictController<object, object, object, object>.Logout)
                     });
                 }
             }), services => {
-                var configuration = app.ApplicationServices.GetRequiredService<OpenIddictConfiguration>();
-
                 services.AddMvc()
                     // Note: ConfigureApplicationPartManager() must be
                     // called before AddControllersAsServices().
                     .ConfigureApplicationPartManager(manager => {
                         manager.ApplicationParts.Clear();
-                        manager.ApplicationParts.Add(new OpenIddictPart(configuration));
+                        manager.ApplicationParts.Add(new OpenIddictPart(builder));
                     })
 
                     .AddControllersAsServices()
@@ -71,62 +95,72 @@ namespace Microsoft.AspNetCore.Builder {
                         // Update the Razor options to also use an embedded file provider that
                         // falls back to the current assembly when searching for views.
                         options.FileProviders.Add(new EmbeddedFileProvider(
-                            assembly: typeof(OpenIddictController<,>).GetTypeInfo().Assembly,
-                            baseNamespace: typeof(OpenIddictController<,>).Namespace));
+                            assembly: typeof(OpenIddictController<,,,>).GetTypeInfo().Assembly,
+                            baseNamespace: typeof(OpenIddictController<,,,>).Namespace));
                     });
 
-                // Register the user manager in the isolated container.
-                services.AddScoped(typeof(OpenIddictManager<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType), provider => {
+                // Register the application manager in the isolated container.
+                services.AddScoped(typeof(OpenIddictApplicationManager<>).MakeGenericType(builder.ApplicationType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null);
+                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
 
-                    // Resolve the user manager from the parent container.
-                    return container.GetRequiredService(typeof(OpenIddictManager<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType));
+                    // Resolve the application manager from the parent container.
+                    return container.GetRequiredService(typeof(OpenIddictApplicationManager<>).MakeGenericType(builder.ApplicationType));
                 });
 
-                // Register the services context in the isolated container.
-                services.AddScoped(typeof(OpenIddictServices<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType), provider => {
+                // Register the authorization manager in the isolated container.
+                services.AddScoped(typeof(OpenIddictAuthorizationManager<>).MakeGenericType(builder.AuthorizationType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null);
+                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
 
-                    // Resolve the services context from the parent container.
-                    return container.GetRequiredService(typeof(OpenIddictServices<,>).MakeGenericType(configuration.UserType, configuration.ApplicationType));
+                    // Resolve the authorization manager from the parent container.
+                    return container.GetRequiredService(typeof(OpenIddictAuthorizationManager<>).MakeGenericType(builder.AuthorizationType));
                 });
 
                 // Register the sign-in manager in the isolated container.
-                services.AddScoped(typeof(SignInManager<>).MakeGenericType(configuration.UserType), provider => {
+                services.AddScoped(typeof(SignInManager<>).MakeGenericType(builder.UserType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null);
+                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
 
                     // Resolve the sign-in manager from the parent container.
-                    return container.GetRequiredService(typeof(SignInManager<>).MakeGenericType(configuration.UserType));
+                    return container.GetRequiredService(typeof(SignInManager<>).MakeGenericType(builder.UserType));
+                });
+
+                // Register the token manager in the isolated container.
+                services.AddScoped(typeof(OpenIddictTokenManager<,>).MakeGenericType(
+                    /* TToken: */ builder.TokenType,
+                    /* TUser: */ builder.UserType), provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
+
+                    // Resolve the token manager from the parent container.
+                    return container.GetRequiredService(typeof(OpenIddictTokenManager<,>).MakeGenericType(
+                        /* TToken: */ builder.TokenType, /* TUser: */ builder.UserType));
                 });
 
                 // Register the user manager in the isolated container.
-                services.AddScoped(typeof(UserManager<>).MakeGenericType(configuration.UserType), provider => {
+                services.AddScoped(typeof(UserManager<>).MakeGenericType(builder.UserType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
                     var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null);
+                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
 
                     // Resolve the user manager from the parent container.
-                    return container.GetRequiredService(typeof(UserManager<>).MakeGenericType(configuration.UserType));
-                });
-
-                // Register the compilation service in the isolated container.
-                services.AddScoped(provider => {
-                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
-                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null);
-
-                    // Resolve the compilation service from the parent container.
-                    return container.GetRequiredService<ICompilationService>();
+                    return container.GetRequiredService(typeof(UserManager<>).MakeGenericType(builder.UserType));
                 });
 
                 // Register the options in the isolated container.
-                services.AddSingleton(Options.Create(builder.Options));
+                services.AddSingleton(provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
+
+                    // Resolve the user manager from the parent container.
+                    return container.GetRequiredService<IOptions<OpenIddictOptions>>();
+                });
             }));
         }
 
@@ -135,7 +169,7 @@ namespace Microsoft.AspNetCore.Builder {
                 // Ensure the convention is only applied to the intended controller.
                 Debug.Assert(controller.ControllerType != null);
                 Debug.Assert(controller.ControllerType.IsGenericType);
-                Debug.Assert(controller.ControllerType.GetGenericTypeDefinition() == typeof(OpenIddictController<,>));
+                Debug.Assert(controller.ControllerType.GetGenericTypeDefinition() == typeof(OpenIddictController<,,,>));
 
                 // Note: manually updating the controller name is required
                 // to remove the ending markers added to the generic type name.
@@ -144,12 +178,13 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         private class OpenIddictPart : ApplicationPart, IApplicationPartTypeProvider {
-            public OpenIddictPart(OpenIddictConfiguration configuration) {
+            public OpenIddictPart(OpenIddictBuilder builder) {
                 Types = new[] {
-                    typeof(OpenIddictController<,>)
-                        .MakeGenericType(configuration.UserType,
-                                         configuration.ApplicationType)
-                        .GetTypeInfo()
+                    typeof(OpenIddictController<,,,>).MakeGenericType(
+                        /* TUser: */ builder.UserType,
+                        /* TApplication: */ builder.ApplicationType,
+                        /* TAuthorization: */ builder.AuthorizationType,
+                        /* TToken: */ builder.TokenType).GetTypeInfo()
                 };
             }
 

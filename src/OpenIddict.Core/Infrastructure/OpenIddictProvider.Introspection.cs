@@ -10,14 +10,13 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
-namespace OpenIddict {
-    public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
+namespace OpenIddict.Infrastructure {
+    public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
+        where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             // Note: ASOS supports both GET and POST introspection requests but OpenIddict only accepts POST requests.
             if (!string.Equals(context.HttpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase)) {
@@ -41,7 +40,7 @@ namespace OpenIddict {
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await services.Applications.FindApplicationByIdAsync(context.ClientId);
+            var application = await services.Applications.FindByIdAsync(context.ClientId);
             if (application == null) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -51,7 +50,8 @@ namespace OpenIddict {
             }
 
             // Reject non-confidential applications.
-            if (await services.Applications.IsPublicApplicationAsync(application)) {
+            var type = await services.Applications.GetClientTypeAsync(application);
+            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Public applications are not allowed to use the introspection endpoint.");
@@ -72,14 +72,7 @@ namespace OpenIddict {
         }
 
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
-
-            // If the user manager doesn't support security
-            // stamps, skip the additional validation logic.
-            if (!services.Users.SupportsUserSecurityStamp) {
-                return;
-            }
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             var principal = context.Ticket?.Principal;
             Debug.Assert(principal != null);
@@ -91,12 +84,16 @@ namespace OpenIddict {
                 return;
             }
 
-            var identifier = principal.GetClaim(options.Value.ClaimsIdentity.SecurityStampClaimType);
-            if (!string.IsNullOrEmpty(identifier) &&
-                !string.Equals(identifier, await services.Users.GetSecurityStampAsync(user), StringComparison.Ordinal)) {
-                context.Active = false;
+            // When the received ticket is a refresh token, ensure it is still valid.
+            if (context.Ticket.IsRefreshToken()) {
+                // Retrieve the token from the database using the unique identifier stored in the refresh token:
+                // if the corresponding entry cannot be found, return Active = false to indicate that is is no longer valid.
+                var token = await services.Tokens.FindByIdAsync(context.Ticket.GetTicketId());
+                if (token == null) {
+                    context.Active = false;
 
-                return;
+                    return;
+                }
             }
         }
     }

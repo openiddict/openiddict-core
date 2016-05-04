@@ -13,10 +13,11 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
-namespace OpenIddict {
-    public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
+namespace OpenIddict.Infrastructure {
+    public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
+        where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             var principal = context.Ticket?.Principal;
             Debug.Assert(principal != null);

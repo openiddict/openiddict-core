@@ -1,6 +1,5 @@
 {
   "buildOptions": {
-    "debugType": "portable",
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "preserveCompilationContext": true,

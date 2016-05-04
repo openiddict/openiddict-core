@@ -1,9 +1,7 @@
 using System.Linq;
-using System.Reflection;
 using AspNet.Security.OAuth.GitHub;
 using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -13,7 +11,6 @@ using Mvc.Server.Models;
 using Mvc.Server.Services;
 using NWebsec.AspNetCore.Middleware;
 using OpenIddict;
-using OpenIddict.Models;
 
 namespace Mvc.Server {
     public class Startup {
@@ -30,10 +27,60 @@ namespace Mvc.Server {
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]));
 
+            // Register the Identity services.
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders()
-                .AddOpenIddict();
+                .AddDefaultTokenProviders();
+
+            // Register the OpenIddict services, including the default Entity Framework stores.
+            services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+                // Register the HTML/CSS assets and MVC modules to handle the interactive flows.
+                // Note: these modules are not necessary when using your own authorization controller
+                // or when using non-interactive flows-only like the resource owner password credentials grant.
+                .AddAssets()
+                .AddMvc()
+
+                // Register the NWebsec module. Note: you can replace the default Content Security Policy (CSP)
+                // by calling UseNWebsec with a custom delegate instead of using the parameterless extension.
+                // This can be useful to allow your HTML views to reference remote scripts/images/styles.
+                .AddNWebsec(options => options.DefaultSources(directive => directive.Self())
+                    .ImageSources(directive => directive.Self()
+                        .CustomSources("*"))
+                    .ScriptSources(directive => directive.Self()
+                        .UnsafeInline()
+                        .CustomSources("https://my.custom.url/"))
+                    .StyleSources(directive => directive.Self()
+                        .UnsafeInline()))
+
+                // During development, you can disable the HTTPS requirement.
+                .DisableHttpsRequirement();
+
+            // When using your own authorization controller instead of using the
+            // MVC module, you need to configure the authorization/logout paths:
+            // services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+            //     .SetAuthorizationEndpointPath("/connect/authorize")
+            //     .SetLogoutEndpointPath("/connect/logout");
+
+            // Note: if you don't explicitly register a signing key, one is automatically generated and
+            // persisted on the disk. If the key cannot be persisted, an in-memory key is used instead:
+            // when the application shuts down, the key is definitely lost and the access/identity tokens
+            // will be considered as invalid by client applications/resource servers when validating them.
+            // 
+            // On production, using a X.509 certificate stored in the machine store is recommended.
+            // You can generate a self-signed certificate using Pluralsight's self-cert utility:
+            // https://s3.amazonaws.com/pluralsight-free/keith-brown/samples/SelfCert.zip
+            // 
+            // services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+            //     .AddSigningCertificate("7D2A741FE34CC2C7369237A5F2078988E17A6A75");
+            // 
+            // Alternatively, you can also store the certificate as an embedded .pfx resource
+            // directly in this assembly or in a file published alongside this project:
+            // 
+            // services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+            //     .AddSigningCertificate(
+            //          assembly: typeof(Startup).GetTypeInfo().Assembly,
+            //          resource: "Mvc.Server.Certificate.pfx",
+            //          password: "OpenIddict");
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
@@ -79,46 +126,12 @@ namespace Mvc.Server {
                 Scope = { "user:email" }
             });
 
-            // Note: OpenIddict must be added after
-            // ASP.NET Identity and the external providers.
-            app.UseOpenIddict(builder => {
-                builder.Options.AllowInsecureHttp = true;
-
-                // Note: if you don't explicitly register a signing key, one is automatically generated and
-                // persisted on the disk. If the key cannot be persisted, an in-memory key is used instead:
-                // when the application shuts down, the key is definitely lost and the access/identity tokens
-                // will be considered as invalid by client applications/resource servers when validating them.
-                // 
-                // On production, using a X.509 certificate stored in the machine store is recommended.
-                // You can generate a self-signed certificate using Pluralsight's self-cert utility:
-                // https://s3.amazonaws.com/pluralsight-free/keith-brown/samples/SelfCert.zip
-                // 
-                // builder.UseSigningCertificate("7D2A741FE34CC2C7369237A5F2078988E17A6A75");
-                // 
-                // Alternatively, you can also store the certificate as an embedded .pfx resource
-                // directly in this assembly or in a file published alongside this project:
-                // 
-                // builder.UseSigningCertificate(
-                //     assembly: typeof(Startup).GetTypeInfo().Assembly,
-                //     resource: "Nancy.Server.Certificate.pfx",
-                //     password: "Owin.Security.OpenIdConnect.Server");
-
-                // You can customize the default Content Security Policy (CSP) by calling UseNWebsec explicitly.
-                // This can be useful to allow your HTML views to reference remote scripts/images/styles.
-                builder.UseNWebsec(directives => {
-                    directives.DefaultSources(directive => directive.Self())
-                        .ImageSources(directive => directive.Self().CustomSources("*"))
-                        .ScriptSources(directive => directive
-                            .Self()
-                            .UnsafeInline()
-                            .CustomSources("https://my.custom.url"))
-                        .StyleSources(directive => directive.Self().UnsafeInline());
-                });
-            });
+            app.UseOpenIddict();
 
             app.UseMvcWithDefaultRoute();
 
-            using (var context = app.ApplicationServices.GetRequiredService<ApplicationDbContext>()) {
+            using (var context = new ApplicationDbContext(
+                app.ApplicationServices.GetRequiredService<DbContextOptions<ApplicationDbContext>>())) {
                 context.Database.EnsureCreated();
 
                 // Add Mvc.Client to the known applications.
@@ -126,21 +139,20 @@ namespace Mvc.Server {
                     // Note: when using the introspection middleware, your resource server
                     // MUST be registered as an OAuth2 client and have valid credentials.
                     // 
-                    // context.Applications.Add(new Application {
+                    // context.Applications.Add(new OpenIddictApplication {
                     //     Id = "resource_server",
                     //     DisplayName = "Main resource server",
-                    //     Secret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd"
+                    //     Secret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd",
+                    //     Type = OpenIddictConstants.ClientTypes.Confidential
                     // });
 
-                    var hasher = new PasswordHasher<Application>();
-
-                    context.Applications.Add(new Application {
+                    context.Applications.Add(new OpenIddictApplication {
                         Id = "myClient",
                         DisplayName = "My client application",
                         RedirectUri = "http://localhost:53507/signin-oidc",
                         LogoutRedirectUri = "http://localhost:53507/",
                         Secret = Crypto.HashPassword("secret_secret_secret"),
-                        Type = OpenIddictConstants.ApplicationTypes.Confidential
+                        Type = OpenIddictConstants.ClientTypes.Confidential
                     });
 
                     // To test this sample with Postman, use the following settings:
@@ -152,11 +164,11 @@ namespace Mvc.Server {
                     // * Scope: openid email profile roles
                     // * Grant type: authorization code
                     // * Request access token locally: yes
-                    context.Applications.Add(new Application {
+                    context.Applications.Add(new OpenIddictApplication {
                         Id = "postman",
                         DisplayName = "Postman",
                         RedirectUri = "https://www.getpostman.com/oauth2/callback",
-                        Type = OpenIddictConstants.ApplicationTypes.Public
+                        Type = OpenIddictConstants.ClientTypes.Public
                     });
 
                     context.SaveChanges();

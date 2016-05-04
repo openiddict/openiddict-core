@@ -1,6 +1,5 @@
 {
   "buildOptions": {
-    "debugType": "portable",
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "preserveCompilationContext": true,
@@ -36,7 +35,10 @@
     "Microsoft.Extensions.Configuration.Json": "1.0.0-rc2-final",
     "Microsoft.Extensions.Logging.Console": "1.0.0-rc2-final",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-rc2-final",
-    "OpenIddict": { "target": "project" }
+    "OpenIddict": { "target": "project" },
+    "OpenIddict.Assets": { "target": "project" },
+    "OpenIddict.Mvc": { "target": "project" },
+    "OpenIddict.Security": { "target": "project" }
   },
 
   "frameworks": {

@@ -34,18 +34,15 @@
 
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
-    "OpenIddict.Assets": { "target": "project" },
-    "OpenIddict.EF": { "target": "project" },
-    "OpenIddict.Mvc": { "target": "project" },
-    "OpenIddict.Security": { "target": "project" }
+    "OpenIddict.EntityFramework": { "target": "project" }
   },
 
   "frameworks": {
     "net451": { },
 
-    "netstandard1.5": {
+    "netstandard1.4": {
       "imports": [
-        "dotnet5.6",
+        "dotnet5.5",
         "portable-net451+win8"
       ]
     }

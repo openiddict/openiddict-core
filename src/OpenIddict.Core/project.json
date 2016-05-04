@@ -37,7 +37,6 @@
     "CryptoHelper": "1.0.0-rc2-final",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "Microsoft.AspNetCore.Identity": "1.0.0-rc2-final",
-    "Microsoft.Extensions.Configuration": "1.0.0-rc2-final",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-rc2-final"
   },
 

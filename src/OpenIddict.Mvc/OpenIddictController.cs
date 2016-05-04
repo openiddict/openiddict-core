@@ -10,30 +10,23 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIddict.Mvc {
     // Note: this controller is generic and doesn't need to be marked as internal to prevent MVC from discovering it.
-    public class OpenIddictController<TUser, TApplication> : Controller where TUser : class where TApplication : class {
-        public OpenIddictController([NotNull] OpenIddictServices<TUser, TApplication> services) {
-            Services = services;
-        }
-
-        /// <summary>
-        /// Gets the OpenIddict services used by the controller.
-        /// </summary>
-        protected virtual OpenIddictServices<TUser, TApplication> Services { get; }
-
+    public class OpenIddictController<TUser, TApplication, TAuthorization, TToken> : Controller
+        where TUser : class where TApplication : class where TAuthorization : class where TToken : class {
         [HttpGet, HttpPost]
-        public virtual async Task<IActionResult> Authorize() {
+        public virtual async Task<IActionResult> Authorize([FromServices] OpenIddictApplicationManager<TApplication> applications) {
             // Note: when a fatal error occurs during the request processing, an OpenID Connect response
-            // is prematurely forged and added to the ASP.NET context by OpenIdConnectServerHandler.
+            // is prematurely forged and added to the ASP.NET Core context by OpenIdConnectServerHandler.
             var response = HttpContext.GetOpenIdConnectResponse();
             if (response != null) {
                 return View("Error", response);
@@ -63,8 +56,8 @@ namespace OpenIddict.Mvc {
 
             // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
             // corresponds to the client_id specified in the authorization request using
-            // IOpenIdConnectServerProvider.ValidateClientRedirectUri (see OpenIddictProvider.cs).
-            var application = await Services.Applications.FindApplicationByIdAsync(request.ClientId);
+            // IOpenIdConnectServerProvider.ValidateAuthorizationRequest (see OpenIddictProvider.cs).
+            var application = await applications.FindByIdAsync(request.ClientId);
             if (application == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.InvalidClient,
@@ -72,11 +65,15 @@ namespace OpenIddict.Mvc {
                 });
             }
 
-            return View("Authorize", Tuple.Create(request, await Services.Applications.GetDisplayNameAsync(application)));
+            return View("Authorize", Tuple.Create(request, await applications.GetDisplayNameAsync(application)));
         }
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
-        public virtual async Task<IActionResult> Accept() {
+        public virtual async Task<IActionResult> Accept(
+            [FromServices] UserManager<TUser> users,
+            [FromServices] OpenIddictApplicationManager<TApplication> applications,
+            [FromServices] OpenIddictTokenManager<TToken, TUser> tokens,
+            [FromServices] IOptions<OpenIddictOptions> options) {
             var response = HttpContext.GetOpenIdConnectResponse();
             if (response != null) {
                 return View("Error", response);
@@ -91,7 +88,7 @@ namespace OpenIddict.Mvc {
             }
 
             // Retrieve the user data using the unique identifier.
-            var user = await Services.Users.GetUserAsync(User);
+            var user = await users.GetUserAsync(User);
             if (user == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.ServerError,
@@ -101,10 +98,10 @@ namespace OpenIddict.Mvc {
 
             // Create a new ClaimsIdentity containing the claims that
             // will be used to create an id_token, a token or a code.
-            var identity = await Services.Applications.CreateIdentityAsync(user, request.GetScopes());
+            var identity = await tokens.CreateIdentityAsync(user, request.GetScopes());
             Debug.Assert(identity != null);
 
-            var application = await Services.Applications.FindApplicationByIdAsync(request.ClientId);
+            var application = await applications.FindByIdAsync(request.ClientId);
             if (application == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.InvalidClient,
@@ -116,7 +113,7 @@ namespace OpenIddict.Mvc {
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                Services.Options.AuthenticationScheme);
+                options.Value.AuthenticationScheme);
 
             ticket.SetResources(request.GetResources());
             ticket.SetScopes(request.GetScopes());
@@ -128,7 +125,7 @@ namespace OpenIddict.Mvc {
         }
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
-        public virtual Task<IActionResult> Deny() {
+        public virtual Task<IActionResult> Deny([FromServices] IOptions<OpenIddictOptions> options) {
             var response = HttpContext.GetOpenIdConnectResponse();
             if (response != null) {
                 return Task.FromResult<IActionResult>(View("Error", response));
@@ -145,7 +142,7 @@ namespace OpenIddict.Mvc {
             // Notify ASOS that the authorization grant has been denied by the resource owner.
             // Note: OpenIdConnectServerHandler will automatically take care of redirecting
             // the user agent to the client application using the appropriate response_mode.
-            return Task.FromResult<IActionResult>(Forbid(Services.Options.AuthenticationScheme));
+            return Task.FromResult<IActionResult>(Forbid(options.Value.AuthenticationScheme));
         }
 
         [HttpGet]
@@ -167,15 +164,17 @@ namespace OpenIddict.Mvc {
         }
 
         [ActionName(nameof(Logout)), HttpPost, ValidateAntiForgeryToken]
-        public virtual async Task<IActionResult> Signout() {
+        public virtual async Task<IActionResult> Signout(
+            [FromServices] SignInManager<TUser> signin,
+            [FromServices] IOptions<OpenIddictOptions> options) {
             // Instruct the cookies middleware to delete the local cookie created
             // when the user agent is redirected from the external identity provider
             // after a successful authentication flow (e.g Google or Facebook).
-            await Services.SignIn.SignOutAsync();
+            await signin.SignOutAsync();
 
             // Returning a SignOutResult will ask ASOS to redirect the user agent
             // to the post_logout_redirect_uri specified by the client application.
-            return SignOut(Services.Options.AuthenticationScheme);
+            return SignOut(options.Value.AuthenticationScheme);
         }
     }
 }

@@ -6,56 +6,96 @@
 
 using System;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Identity;
-using OpenIddict.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using OpenIddict;
 
 namespace Microsoft.AspNetCore.Builder {
     public static class OpenIddictExtensions {
-        public static IdentityBuilder AddOpenIddict([NotNull] this IdentityBuilder builder) {
-            if (builder == null) {
-                throw new ArgumentNullException(nameof(builder));
+        /// <summary>
+        /// Registers the default OpenIddict services in the DI container,
+        /// including the Entity Framework stores and the built-in entities.
+        /// </summary>
+        /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
+        /// <param name="services">The services collection.</param>
+        /// <remarks>
+        /// Note: the core services include native support for the non-interactive flows
+        /// (resource owner password credentials, client credentials, refresh token).
+        /// To support interactive flows like authorization code or implicit/hybrid,
+        /// consider adding the MVC module or creating your own authorization controller.
+        /// </remarks>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder AddOpenIddict<TContext>([NotNull] this IServiceCollection services)
+            where TContext : DbContext {
+            if (services == null) {
+                throw new ArgumentNullException(nameof(services));
             }
 
-            return builder.AddOpenIddictCore<Application>(configuration => {
-                // Use the EF adapter by default.
-                configuration.UseEntityFramework();
-            });
+            return services.AddOpenIddict<OpenIddictUser, TContext>();
         }
 
-        public static IdentityBuilder AddOpenIddict<TApplication>([NotNull] this IdentityBuilder builder)
-            where TApplication : class {
-            if (builder == null) {
-                throw new ArgumentNullException(nameof(builder));
+        /// <summary>
+        /// Registers the default OpenIddict services in the DI container,
+        /// including the Entity Framework stores and the specified entities.
+        /// </summary>
+        /// <typeparam name="TUser">The type of the User entity.</typeparam>
+        /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
+        /// <param name="services">The services collection.</param>
+        /// <remarks>
+        /// Note: the core services include native support for the non-interactive flows
+        /// (resource owner password credentials, client credentials, refresh token).
+        /// To support interactive flows like authorization code or implicit/hybrid,
+        /// consider adding the MVC module or creating your own authorization controller.
+        /// </remarks>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder AddOpenIddict<TUser, TContext>([NotNull] this IServiceCollection services)
+            where TUser : OpenIddictUser
+            where TContext : DbContext {
+            if (services == null) {
+                throw new ArgumentNullException(nameof(services));
             }
 
-            return builder.AddOpenIddictCore<TApplication>(configuration => {
-                // Use the EF adapter by default.
-                configuration.UseEntityFramework();
-            });
+            return services.AddOpenIddict<TUser, OpenIddictApplication,
+                                                 OpenIddictAuthorization,
+                                                 OpenIddictScope,
+                                                 OpenIddictToken, TContext, string>();
         }
 
-        public static IApplicationBuilder UseOpenIddict([NotNull] this IApplicationBuilder app) {
-            return app.UseOpenIddict(options => { });
-        }
-
-        public static IApplicationBuilder UseOpenIddict(
-            [NotNull] this IApplicationBuilder app,
-            [NotNull] Action<OpenIddictBuilder> configuration) {
-            if (app == null) {
-                throw new ArgumentNullException(nameof(app));
+        /// <summary>
+        /// Registers the default OpenIddict services in the DI container,
+        /// including the Entity Framework stores and the specified entities.
+        /// </summary>
+        /// <typeparam name="TUser">The type of the User entity.</typeparam>
+        /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
+        /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+        /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
+        /// <typeparam name="TToken">The type of the Token entity.</typeparam>
+        /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
+        /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+        /// <param name="services">The services collection.</param>
+        /// <remarks>
+        /// Note: the core services include native support for the non-interactive flows
+        /// (resource owner password credentials, client credentials, refresh token).
+        /// To support interactive flows like authorization code or implicit/hybrid,
+        /// consider adding the MVC module or creating your own authorization controller.
+        /// </remarks>
+        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        public static OpenIddictBuilder AddOpenIddict<TUser, TApplication, TAuthorization, TScope, TToken, TContext, TKey>(
+            [NotNull] this IServiceCollection services)
+            where TUser : OpenIddictUser<TAuthorization, TToken, TKey>
+            where TApplication : OpenIddictApplication<TKey>
+            where TAuthorization : OpenIddictAuthorization<TToken, TKey>
+            where TScope : OpenIddictScope<TKey>
+            where TToken : OpenIddictToken<TKey>
+            where TContext : DbContext
+            where TKey : IEquatable<TKey> {
+            if (services == null) {
+                throw new ArgumentNullException(nameof(services));
             }
 
-            if (configuration == null) {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
-            return app.UseOpenIddictCore(builder => {
-                builder.UseAssets();
-                builder.UseNWebsec();
-                builder.UseMvc();
-
-                configuration(builder);
-            });
+            // Register the OpenIddict core services and the default EntityFramework stores.
+            return services.AddOpenIddict<TUser, TApplication, TAuthorization, TScope, TToken>()
+                           .AddEntityFramework<TContext, TKey>();
         }
     }
 }

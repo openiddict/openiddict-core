@@ -12,42 +12,38 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace OpenIddict {
+namespace OpenIddict.Infrastructure {
     /// <summary>
     /// Exposes the common services used by OpenIddict.
     /// </summary>
-    public class OpenIddictServices<TUser, TApplication> where TUser : class where TApplication : class {
+    public class OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>
+        where TUser : class where TApplication : class where TAuthorization : class
+        where TScope : class where TToken : class {
         public OpenIddictServices([NotNull] IServiceProvider services) {
             Services = services;
         }
 
         /// <summary>
-        /// Gets the <see cref="OpenIddictManager{TUser, TApplication}"/>.
+        /// Gets the <see cref="OpenIddictApplicationManager{TApplication}"/>.
         /// </summary>
-        public virtual OpenIddictManager<TUser, TApplication> Applications {
-            get { return Services.GetRequiredService<OpenIddictManager<TUser, TApplication>>(); }
-        }
+        public virtual OpenIddictApplicationManager<TApplication> Applications =>
+            Services.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
 
         /// <summary>
         /// Gets the optional <see cref="HttpContext"/>.
         /// </summary>
-        public virtual HttpContext Context {
-            get { return Services.GetService<IHttpContextAccessor>()?.HttpContext; }
-        }
+        public virtual HttpContext Context => Services.GetService<IHttpContextAccessor>()?.HttpContext;
 
         /// <summary>
         /// Gets the <see cref="ILogger"/>.
         /// </summary>
-        public virtual ILogger Logger {
-            get { return Services.GetRequiredService<ILogger<OpenIddictManager<TUser, TApplication>>>(); }
-        }
+        public virtual ILogger Logger =>
+            Services.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken>>>();
 
         /// <summary>
         /// Gets the <see cref="OpenIddictOptions"/>.
         /// </summary>
-        public virtual OpenIddictOptions Options {
-            get { return Services.GetRequiredService<IOptions<OpenIddictOptions>>().Value; }
-        }
+        public virtual OpenIddictOptions Options => Services.GetRequiredService<IOptions<OpenIddictOptions>>().Value;
 
         /// <summary>
         /// Gets the <see cref="IServiceProvider"/> used to resolve services.
@@ -57,22 +53,17 @@ namespace OpenIddict {
         /// <summary>
         /// Gets the <see cref="SignInManager{TUser}"/>.
         /// </summary>
-        public virtual SignInManager<TUser> SignIn {
-            get { return Services.GetRequiredService<SignInManager<TUser>>(); }
-        }
+        public virtual SignInManager<TUser> SignIn => Services.GetRequiredService<SignInManager<TUser>>();
 
         /// <summary>
-        /// Gets the <see cref="IOpenIddictStore{TUser, TApplication}"/>.
+        /// Gets the <see cref="OpenIddictTokenManager{TToken, TUser}"/>.
         /// </summary>
-        public virtual IOpenIddictStore<TUser, TApplication> Store {
-            get { return Services.GetRequiredService<IOpenIddictStore<TUser, TApplication>>(); }
-        }
+        public virtual OpenIddictTokenManager<TToken, TUser> Tokens =>
+            Services.GetRequiredService<OpenIddictTokenManager<TToken, TUser>>();
 
         /// <summary>
         /// Gets the <see cref="UserManager{TUser}"/>.
         /// </summary>
-        public virtual UserManager<TUser> Users {
-            get { return Services.GetRequiredService<UserManager<TUser>>(); }
-        }
+        public virtual UserManager<TUser> Users => Services.GetRequiredService<UserManager<TUser>>();
     }
 }

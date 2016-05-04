@@ -6,7 +6,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -17,10 +16,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace OpenIddict {
-    public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
+namespace OpenIddict.Infrastructure {
+    public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
+        where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             // Note: redirect_uri is not required for pure OAuth2 requests
             // but this provider uses a stricter policy making it mandatory,
@@ -35,7 +35,7 @@ namespace OpenIddict {
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await services.Applications.FindApplicationByIdAsync(context.ClientId);
+            var application = await services.Applications.FindByIdAsync(context.ClientId);
             if (application == null) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -54,9 +54,11 @@ namespace OpenIddict {
 
             // To prevent downgrade attacks, ensure that authorization requests using the hybrid/implicit
             // flow are rejected if the client identifier corresponds to a confidential application.
-            // Note: when using the authorization code grant, ValidateClientAuthentication is responsible of
+            // Note: when using the authorization code grant, ValidateTokenRequest is responsible of
             // rejecting the token request if the client_id corresponds to an unauthenticated confidential client.
-            if (await services.Applications.IsConfidentialApplicationAsync(application) && !context.Request.IsAuthorizationCodeFlow()) {
+            var type = await services.Applications.GetClientTypeAsync(application);
+            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase) &&
+                !context.Request.IsAuthorizationCodeFlow()) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Confidential clients can only use response_type=code.");
@@ -144,12 +146,12 @@ namespace OpenIddict {
         }
 
         public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context) {
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+
             // Only handle prompt=none requests at this stage.
             if (!string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
                 return;
             }
-
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
 
             // Note: principal is guaranteed to be non-null since ValidateAuthorizationRequest
             // rejects prompt=none requests missing or having an invalid id_token_hint.
@@ -168,7 +170,7 @@ namespace OpenIddict {
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
             // don't include the "email" scope if the username corresponds to the registed email address.
-            var identity = await services.Applications.CreateIdentityAsync(user, context.Request.GetScopes());
+            var identity = await services.Tokens.CreateIdentityAsync(user, context.Request.GetScopes());
             Debug.Assert(identity != null);
 
             // Create a new authentication ticket holding the user identity.
