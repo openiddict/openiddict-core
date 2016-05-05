@@ -50,7 +50,7 @@ namespace OpenIddict {
             }
 
             // Only add the email address details if the "email" scope was present in the access token.
-            if (context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Email)) {
+            if (services.Users.SupportsUserEmail && context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Email)) {
                 context.Email = await services.Users.GetEmailAsync(user);
 
                 // Only add the "email_verified" claim
@@ -61,7 +61,8 @@ namespace OpenIddict {
             };
 
             // Only add the phone number details if the "phone" scope was present in the access token.
-            if (context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Phone)) {
+            if (services.Users.SupportsUserPhoneNumber &&
+                context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Phone)) {
                 context.PhoneNumber = await services.Users.GetPhoneNumberAsync(user);
 
                 // Only add the "phone_number_verified"

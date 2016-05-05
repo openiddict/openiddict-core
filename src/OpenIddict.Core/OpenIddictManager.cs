@@ -68,15 +68,17 @@ namespace OpenIddict {
             // access tokens, even if an explicit destination is not specified.
             identity.AddClaim(ClaimTypes.NameIdentifier, await Services.Users.GetUserIdAsync(user));
 
-            // Resolve the username and the email address associated with the user.
-            var username = await Services.Users.GetUserNameAsync(user);
-            var email = await Services.Users.GetEmailAsync(user);
+            // Resolve the email address associated with the user if the underlying store supports it.
+            var email = Services.Users.SupportsUserEmail ? await Services.Users.GetEmailAsync(user) : null;
 
             // Only add the name claim if the "profile" scope was granted.
             if (scopes.Contains(OpenIdConnectConstants.Scopes.Profile)) {
+                var username = await Services.Users.GetUserNameAsync(user);
+
                 // Throw an exception if the username corresponds to the registered
                 // email address and if the "email" scope has not been requested.
                 if (!scopes.Contains(OpenIdConnectConstants.Scopes.Email) &&
+                    !string.IsNullOrEmpty(email) &&
                      string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
                     throw new InvalidOperationException("The 'email' scope is required.");
                 }
@@ -87,7 +89,7 @@ namespace OpenIddict {
             }
 
             // Only add the email address if the "email" scope was granted.
-            if (scopes.Contains(OpenIdConnectConstants.Scopes.Email)) {
+            if (!string.IsNullOrEmpty(email) && scopes.Contains(OpenIdConnectConstants.Scopes.Email)) {
                 identity.AddClaim(ClaimTypes.Email, email,
                     OpenIdConnectConstants.Destinations.AccessToken,
                     OpenIdConnectConstants.Destinations.IdentityToken);
@@ -96,8 +98,8 @@ namespace OpenIddict {
             if (Services.Users.SupportsUserRole && scopes.Contains(OpenIddictConstants.Scopes.Roles)) {
                 foreach (var role in await Services.Users.GetRolesAsync(user)) {
                     identity.AddClaim(identity.RoleClaimType, role,
-                    OpenIdConnectConstants.Destinations.AccessToken,
-                    OpenIdConnectConstants.Destinations.IdentityToken);
+                        OpenIdConnectConstants.Destinations.AccessToken,
+                        OpenIdConnectConstants.Destinations.IdentityToken);
                 }
             }
 

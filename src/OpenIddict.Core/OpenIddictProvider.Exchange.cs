@@ -234,16 +234,19 @@ namespace OpenIddict {
 
             // Return an error if the username corresponds to the registered
             // email address and if the "email" scope has not been requested.
-            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
-               !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email) &&
-                string.Equals(await services.Users.GetUserNameAsync(user),
-                              await services.Users.GetEmailAsync(user),
-                              StringComparison.OrdinalIgnoreCase)) {
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The 'email' scope is required.");
+            if (services.Users.SupportsUserEmail && context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
+                                                   !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email)) {
+                // Retrieve the username and the email address associated with the user.
+                var username = await services.Users.GetUserNameAsync(user);
+                var email = await services.Users.GetEmailAsync(user);
 
-                return;
+                if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The 'email' scope is required.");
+
+                    return;
+                }
             }
 
             var identity = await services.Applications.CreateIdentityAsync(user, context.Request.GetScopes());
