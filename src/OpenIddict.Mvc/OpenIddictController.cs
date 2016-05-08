@@ -166,7 +166,7 @@ namespace OpenIddict.Mvc {
             return Task.FromResult<IActionResult>(View("Logout", request));
         }
 
-        [HttpPost, ValidateAntiForgeryToken]
+        [ActionName(nameof(Logout)), HttpPost, ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Signout() {
             // Instruct the cookies middleware to delete the local cookie created
             // when the user agent is redirected from the external identity provider

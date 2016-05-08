@@ -107,6 +107,16 @@ namespace OpenIddict {
                     return;
                 }
 
+                // Ensure that the authentication cookie contains the required NameIdentifier claim.
+                var identifier = context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(identifier)) {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.ServerError,
+                        description: "The authorization request cannot be processed.");
+
+                    return;
+                }
+
                 // Extract the principal contained in the id_token_hint parameter.
                 // If no principal can be extracted, an error is returned to the client application.
                 var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
@@ -121,7 +131,7 @@ namespace OpenIddict {
                 // Ensure the client application is listed as a valid audience in the identity token
                 // and that the identity token corresponds to the authenticated user.
                 if (!principal.HasClaim(OpenIdConnectConstants.Claims.Audience, context.Request.ClientId) ||
-                    !principal.HasClaim(ClaimTypes.NameIdentifier, context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier))) {
+                    !principal.HasClaim(ClaimTypes.NameIdentifier, identifier)) {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The id_token_hint parameter is invalid.");
