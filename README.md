@@ -27,7 +27,7 @@ OpenIddict is based on **[ASP.NET Core Identity](https://github.com/aspnet/Ident
 
 OpenIddict fully supports the **code/implicit/hybrid flows** and the **client credentials/resource owner password grants**. For more information about these terms, please visit the **[OpenID website](http://openid.net/specs/openid-connect-core-1_0.html)** and read the **[OAuth2 specification](https://tools.ietf.org/html/rfc6749)**.
 
-Note: OpenIddict uses **[EntityFramework 7](https://github.com/aspnet/EntityFramework)** by default, but you can also provide your own store.
+Note: OpenIddict uses **[EntityFramework Core](https://github.com/aspnet/EntityFramework)** by default, but you can also provide your own store.
 
 --------------
 
@@ -101,13 +101,21 @@ public void Configure(IApplicationBuilder app) {
   - **Update your EntityFramework context to inherit from `OpenIddictContext`**:
 
 ```csharp
-public class ApplicationDbContext : OpenIddictContext<ApplicationUser> { }
+public class ApplicationDbContext : OpenIddictContext<ApplicationUser> {
+    public ApplicationDbContext(DbContextOptions options)
+        : base(options) {
+    }
+}
 ```
 
 > **Note:** although recommended, inheriting from `OpenIddictContext` is not mandatory. Alternatively, you can also create your own context and manually add the entity sets needed by OpenIddict:
 
 ```csharp
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
+    public ApplicationDbContext(DbContextOptions options)
+        : base(options) {
+    }
+
     public DbSet<Application> Applications { get; set; }
 }
 ```
