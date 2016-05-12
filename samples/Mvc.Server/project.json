@@ -3,7 +3,16 @@
     "debugType": "portable",
     "emitEntryPoint": true,
     "warningsAsErrors": true,
-    "preserveCompilationContext": true
+    "preserveCompilationContext": true,
+
+    "copyToOutput": {
+      "include": [
+        "wwwroot",
+        "Views",
+        "config.json",
+        "web.config"
+      ]
+    }
   },
 
   "dependencies": {
