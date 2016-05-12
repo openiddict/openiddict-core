@@ -28,6 +28,10 @@
 
   "frameworks": {
     "net451": {
+      "dependencies": {
+        "Microsoft.NETCore.Platforms": "1.0.1-rc2-*"
+      },
+
       "frameworkAssemblies": {
         "System.ComponentModel": { "type": "build" }
       }
