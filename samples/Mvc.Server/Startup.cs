@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Reflection;
 using AspNet.Security.OAuth.GitHub;
 using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
@@ -82,6 +83,25 @@ namespace Mvc.Server {
             // ASP.NET Identity and the external providers.
             app.UseOpenIddict(builder => {
                 builder.Options.AllowInsecureHttp = true;
+
+                // Note: if you don't explicitly register a signing key, one is automatically generated and
+                // persisted on the disk. If the key cannot be persisted, an in-memory key is used instead:
+                // when the application shuts down, the key is definitely lost and the access/identity tokens
+                // will be considered as invalid by client applications/resource servers when validating them.
+                // 
+                // On production, using a X.509 certificate stored in the machine store is recommended.
+                // You can generate a self-signed certificate using Pluralsight's self-cert utility:
+                // https://s3.amazonaws.com/pluralsight-free/keith-brown/samples/SelfCert.zip
+                // 
+                // builder.UseSigningCertificate("7D2A741FE34CC2C7369237A5F2078988E17A6A75");
+                // 
+                // Alternatively, you can also store the certificate as an embedded .pfx resource
+                // directly in this assembly or in a file published alongside this project:
+                // 
+                // builder.UseSigningCertificate(
+                //     assembly: typeof(Startup).GetTypeInfo().Assembly,
+                //     resource: "Nancy.Server.Certificate.pfx",
+                //     password: "Owin.Security.OpenIdConnect.Server");
 
                 // You can customize the default Content Security Policy (CSP) by calling UseNWebsec explicitly.
                 // This can be useful to allow your HTML views to reference remote scripts/images/styles.

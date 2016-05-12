@@ -5,14 +5,17 @@
  */
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict;
 
 namespace Microsoft.AspNetCore.Builder {
@@ -145,13 +148,14 @@ namespace Microsoft.AspNetCore.Builder {
             var environment = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
             builder.Options.AllowInsecureHttp = environment.IsDevelopment() || environment.IsEnvironment("Testing");
 
-            configuration(builder);
+            // Run the configuration delegate
+            // provided by the application.
+            configuration.Invoke(builder);
 
-
-            // Add OpenIdConnectServerMiddleware to the ASP.NET 5 pipeline.
+            // Add OpenIdConnectServerMiddleware to the ASP.NET Core pipeline.
             builder.AddModule("ASOS", 0, map => map.UseOpenIdConnectServer(builder.Options));
 
-            // Register the OpenIddict modules in the ASP.NET 5 pipeline.
+            // Register the OpenIddict modules in the ASP.NET Core pipeline.
             foreach (var module in builder.Modules.OrderBy(module => module.Position)) {
                 if (module.Registration == null) {
                     throw new InvalidOperationException("The registration delegate cannot be null.");
@@ -161,6 +165,130 @@ namespace Microsoft.AspNetCore.Builder {
             }
 
             return app;
+        }
+
+        /// <summary>
+        /// Registers a <see cref="X509Certificate2"/> used to sign the tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="builder">The builder used to configure OpenIddict.</param>
+        /// <param name="certificate">The certificate used to sign the security tokens issued by the server.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder UseSigningCertificate(
+            [NotNull] this OpenIddictBuilder builder, [NotNull] X509Certificate2 certificate) {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            // Register the certificate in the ASOS/OpenIddict options.
+            builder.Options.SigningCredentials.AddCertificate(certificate);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Registers a <see cref="X509Certificate2"/> retrieved from
+        /// an embedded resource to sign the tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="builder">The builder used to configure OpenIddict.</param>
+        /// <param name="assembly">The assembly containing the certificate.</param>
+        /// <param name="resource">The name of the embedded resource.</param>
+        /// <param name="password">The password used to open the certificate.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder UseSigningCertificate(
+            [NotNull] this OpenIddictBuilder builder, [NotNull] Assembly assembly,
+            [NotNull] string resource, [NotNull] string password) {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            // Register the certificate in the ASOS/OpenIddict options.
+            builder.Options.SigningCredentials.AddCertificate(assembly, resource, password);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Registers a <see cref="X509Certificate2"/> extracted
+        /// from a stream to sign the tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="builder">The builder used to configure OpenIddict.</param>
+        /// <param name="stream">The stream containing the certificate.</param>
+        /// <param name="password">The password used to open the certificate.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder UseSigningCertificate(
+            [NotNull] this OpenIddictBuilder builder,
+            [NotNull] Stream stream, [NotNull] string password) {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            // Register the certificate in the ASOS/OpenIddict options.
+            builder.Options.SigningCredentials.AddCertificate(stream, password);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Registers a <see cref="X509Certificate2"/> extracted
+        /// from a stream to sign the tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="builder">The builder used to configure OpenIddict.</param>
+        /// <param name="stream">The stream containing the certificate.</param>
+        /// <param name="password">The password used to open the certificate.</param>
+        /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder UseSigningCertificate(
+            [NotNull] this OpenIddictBuilder builder, [NotNull] Stream stream,
+            [NotNull] string password, X509KeyStorageFlags flags) {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            // Register the certificate in the ASOS/OpenIddict options.
+            builder.Options.SigningCredentials.AddCertificate(stream,  password, flags);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Registers a <see cref="X509Certificate2"/> retrieved from the
+        /// X.509 machine store to sign the tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="builder">The builder used to configure OpenIddict.</param>
+        /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder UseSigningCertificate(
+            [NotNull] this OpenIddictBuilder builder, [NotNull] string thumbprint) {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            // Register the certificate in the ASOS/OpenIddict options.
+            builder.Options.SigningCredentials.AddCertificate(thumbprint);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Registers a <see cref="X509Certificate2"/> retrieved from the
+        /// given X.509 store to sign the tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="builder">The builder used to configure OpenIddict.</param>
+        /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+        /// <param name="name">The name of the X.509 store.</param>
+        /// <param name="location">The location of the X.509 store.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder UseSigningCertificate(
+            [NotNull] this OpenIddictBuilder builder,
+            [NotNull] string thumbprint, StoreName name, StoreLocation location) {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            // Register the certificate in the ASOS/OpenIddict options.
+            builder.Options.SigningCredentials.AddCertificate(thumbprint, name, location);
+
+            return builder;
         }
     }
 }
