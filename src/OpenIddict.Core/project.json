@@ -23,7 +23,8 @@
     "security"
   ],
 
-  "compilationOptions": {
+  "buildOptions": {
+    "warningsAsErrors": true,
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },

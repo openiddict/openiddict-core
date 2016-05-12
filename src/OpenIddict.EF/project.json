@@ -1,29 +1,32 @@
 ﻿{
   "version": "1.0.0-alpha2-*",
 
-  "description": "Entity Framework adapter for OpenIddict.",
-  "authors": [ "Kévin Chalet" ],
-  "owners": [ "Kévin Chalet" ],
+  "packOptions": {
+    "description": "Entity Framework adapter for OpenIddict.",
+    "authors": [ "Kévin Chalet" ],
+    "owners": [ "Kévin Chalet" ],
 
-  "projectUrl": "https://github.com/openiddict/openiddict-core",
-  "iconUrl": "https://avatars3.githubusercontent.com/u/13908567?s=64",
-  "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+    "projectUrl": "https://github.com/openiddict/openiddict-core",
+    "iconUrl": "https://avatars3.githubusercontent.com/u/13908567?s=64",
+    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
 
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/openiddict/openiddict-core"
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/openiddict/openiddict-core"
+    },
+
+    "tags": [
+      "aspnetcore",
+      "authentication",
+      "jwt",
+      "openidconnect",
+      "openiddict",
+      "security"
+    ]
   },
 
-  "tags": [
-    "aspnetcore",
-    "authentication",
-    "jwt",
-    "openidconnect",
-    "openiddict",
-    "security"
-  ],
-
-  "compilationOptions": {
+  "buildOptions": {
+    "warningsAsErrors": true,
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },

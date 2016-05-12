@@ -1,15 +1,18 @@
 ﻿{
   "version": "1.0.0-internal-*",
-  "title": "NWebsec.Middleware (ASP.NET 5)",
-  "description": "NWebsec middleware for ASP.NET 5 applications. NWebsec helps you set important security headers and detect potentially dangerous redirects. See project website for documentation.",
-  "releaseNotes": "This release includes core functions for the NWebsec security libaries.",
-  "authors": [ "André N. Klingsheim" ],
-  "owners": [ "André N. Klingsheim" ],
-  "copyright": "Copyright © 2014 - 2015",
-  "tags": [ "NWebsec Security AspNet AppSec" ],
-  "projectUrl": "https://docs.nwebsec.com/en/latest/",
-  "licenseUrl": "https://github.com/NWebsec/NWebsec/blob/master/LICENSE",
-  "iconUrl": "https://klings.blob.core.windows.net/nwebsecicon/nwebsec_nuget.png",
+
+  "packOptions": {
+    "title": "NWebsec.Middleware (ASP.NET 5)",
+    "description": "NWebsec middleware for ASP.NET 5 applications. NWebsec helps you set important security headers and detect potentially dangerous redirects. See project website for documentation.",
+    "releaseNotes": "This release includes core functions for the NWebsec security libaries.",
+    "authors": [ "André N. Klingsheim" ],
+    "owners": [ "André N. Klingsheim" ],
+    "copyright": "Copyright © 2014 - 2015",
+    "tags": [ "NWebsec Security AspNet AppSec" ],
+    "projectUrl": "https://docs.nwebsec.com/en/latest/",
+    "licenseUrl": "https://github.com/NWebsec/NWebsec/blob/master/LICENSE",
+    "iconUrl": "https://klings.blob.core.windows.net/nwebsecicon/nwebsec_nuget.png",
+  },
 
   "shared": "**/**.cs",
 
@@ -30,6 +33,6 @@
   },
 
   "dependencies": {
-    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*"
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-rc2-*"
   }
 }

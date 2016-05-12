@@ -1,7 +1,8 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "debugType": "portable",
     "emitEntryPoint": true,
+    "warningsAsErrors": true,
     "preserveCompilationContext": true
   },
 
@@ -9,7 +10,6 @@
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-rc2-*",
     "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0-rc2-*",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-rc2-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-rc2-*",
     "Microsoft.AspNetCore.Hosting": "1.0.0-rc2-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-rc2-*",
@@ -51,23 +51,11 @@
     "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
   },
 
-  "content": [
-    "wwwroot",
-    "Views",
-    "web.config"
-  ],
-
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ],
-
-  "publishExclude": [
-    "node_modules",
-    "bower_components",
-    "**.xproj",
-    "**.user",
-    "**.vspscc"
-  ]
+  "publishOptions": {
+    "include": [
+      "wwwroot",
+      "Views",
+      "web.config"
+    ]
+  }
 }
