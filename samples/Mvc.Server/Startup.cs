@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Reflection;
 using AspNet.Security.OAuth.GitHub;
 using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
@@ -82,6 +83,15 @@ namespace Mvc.Server {
             // ASP.NET Identity and the external providers.
             app.UseOpenIddict(builder => {
                 builder.Options.AllowInsecureHttp = true;
+
+                // Register the embedded X509 certificate used to sign the JWT tokens.
+                // Note: this certificate is a TEST certificate: NEVER USE IT ON PRODUCTION.
+                // Instead, generate a self-signed certificate using Pluralsight's self-cert utility:
+                // https://s3.amazonaws.com/pluralsight-free/keith-brown/samples/SelfCert.zip
+                builder.UseSigningCertificate(
+                    assembly: typeof(Startup).GetTypeInfo().Assembly,
+                    resource: "Mvc.Server.Certificate.pfx",
+                    password: "OpenIddict");
 
                 // You can customize the default Content Security Policy (CSP) by calling UseNWebsec explicitly.
                 // This can be useful to allow your HTML views to reference remote scripts/images/styles.

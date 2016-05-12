@@ -5,6 +5,10 @@
     "warningsAsErrors": true,
     "preserveCompilationContext": true,
 
+    "embed": {
+      "include": [ "Certificate.pfx" ]
+    },
+
     "copyToOutput": {
       "include": [
         "wwwroot",
