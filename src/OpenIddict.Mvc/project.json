@@ -45,11 +45,7 @@
   },
 
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Reflection": { "type": "build" }
-      }
-    },
+    "net451": { },
 
     "netstandard1.5": {
       "imports": [

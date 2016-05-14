@@ -41,12 +41,7 @@
   },
 
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.ComponentModel": { "type": "build" },
-        "System.Runtime": { "type": "build" }
-      }
-    },
+    "net451": { },
 
     "netstandard1.4": {
       "imports": [
