@@ -26,7 +26,15 @@ namespace OpenIddict {
         }
 
         public virtual Task<TApplication> FindApplicationByIdAsync(string identifier, CancellationToken cancellationToken) {
-            var key = (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+            var converter = TypeDescriptor.GetConverter(typeof(TKey));
+
+            // If the string key cannot be converted to TKey, return null
+            // to indicate that the requested application doesn't exist.
+            if (!converter.CanConvertFrom(typeof(string))) {
+                return Task.FromResult<TApplication>(null);
+            }
+
+            var key = (TKey) converter.ConvertFromInvariantString(identifier);
 
             return Applications.SingleOrDefaultAsync(application => application.Id.Equals(key), cancellationToken);
         }
