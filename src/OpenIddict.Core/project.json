@@ -34,7 +34,7 @@
   "dependencies": {
     "AspNet.Security.OpenIdConnect.Server": "1.0.0-beta5-*",
     "CryptoHelper": "1.0.0-rc2-build04",
-    "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
+    "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "Microsoft.AspNetCore.Identity": "1.0.0-rc2-*",
     "Microsoft.Extensions.Configuration": "1.0.0-rc2-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-rc2-*"

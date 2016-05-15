@@ -32,7 +32,7 @@
   },
 
   "dependencies": {
-    "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
+    "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "OpenIddict.Assets": "1.0.0-*",
     "OpenIddict.EF": "1.0.0-*",
     "OpenIddict.Mvc": "1.0.0-*",
