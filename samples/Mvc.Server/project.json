@@ -32,7 +32,7 @@
     "Microsoft.Extensions.Configuration.Json": "1.0.0-rc2-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-rc2-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-rc2-*",
-    "OpenIddict": "1.0.0-*"
+    "OpenIddict": { "target": "project" }
   },
 
   "frameworks": {

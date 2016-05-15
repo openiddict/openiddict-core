@@ -34,8 +34,8 @@
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-rc2-*",
-    "OpenIddict.Core": "1.0.0-*",
-    "OpenIddict.Models": "1.0.0-*"
+    "OpenIddict.Core": { "target": "project" },
+    "OpenIddict.Models": { "target": "project" }
   },
 
   "frameworks": {

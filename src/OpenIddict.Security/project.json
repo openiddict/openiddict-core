@@ -34,8 +34,8 @@
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "Microsoft.AspNetCore.Cors": "1.0.0-rc2-*",
-    "NWebsec": { "type": "build", "version": "1.0.0-internal-*" },
-    "OpenIddict.Core": "1.0.0-*"
+    "NWebsec": { "target": "project", "type": "build" },
+    "OpenIddict.Core": { "target": "project" }
   },
 
   "frameworks": {
