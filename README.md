@@ -21,7 +21,7 @@ with the power to control who can access your API and the information that is ex
 ### How does it work?
 
 OpenIddict is based on **[ASP.NET Core Identity](https://github.com/aspnet/Identity)** (for user management) and relies on
-**[AspNet.Security.OpenIdConnect.Server](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server)** to control the OpenID Connect authentication flow. It comes with a built-in MVC 6 controller and native views that you can easily replace by your own ones to fully customize your login experience:
+**[AspNet.Security.OpenIdConnect.Server](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server)** to control the OpenID Connect authentication flow. It comes with a built-in ASP.NET Core MVC controller and native views that you can easily replace by your own ones to fully customize your login experience:
 
 ![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
 
@@ -35,7 +35,7 @@ Note: OpenIddict uses **[EntityFramework Core](https://github.com/aspnet/EntityF
 
 To use OpenIddict, you need to:
 
-  - **Install the latest [.NET CLI](https://github.com/dotnet/cli/) bits and update your packages to reference the RC2 release builds**.
+  - **Install the latest [.NET Core tooling](https://www.microsoft.com/net/download) and update your packages to reference the RC2 final packages**.
 
   - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
@@ -45,7 +45,6 @@ To use OpenIddict, you need to:
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
-    <add key="AspNetCiRelease" value="https://www.myget.org/F/aspnetcirelease/api/v3/index.json" />
     <add key="NuGet" value="https://api.nuget.org/v3/index.json" />
     <add key="aspnet-contrib" value="https://www.myget.org/F/aspnet-contrib/api/v3/index.json" />
   </packageSources>
