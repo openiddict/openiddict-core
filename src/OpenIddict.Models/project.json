@@ -36,7 +36,7 @@
 
     "netstandard1.3": {
       "dependencies": {
-        "System.Runtime": "4.1.0-rc2-*"
+        "System.Runtime": "4.1.0-rc2-24027"
       },
 
       "imports": [

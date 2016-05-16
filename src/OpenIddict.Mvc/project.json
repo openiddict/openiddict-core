@@ -36,11 +36,11 @@
   },
 
   "dependencies": {
-    "AspNet.Hosting.Extensions": "1.0.0-alpha2-*",
+    "AspNet.Hosting.Extensions": "1.0.0-alpha2-final",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
-    "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-*",
-    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-rc2-*",
-    "Microsoft.Extensions.FileProviders.Composite": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-final",
+    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-rc2-final",
+    "Microsoft.Extensions.FileProviders.Composite": "1.0.0-rc2-final",
     "OpenIddict.Core": { "target": "project" }
   },
 
