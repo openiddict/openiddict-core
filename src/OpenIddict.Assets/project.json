@@ -1,9 +1,10 @@
 ﻿{
   "version": "1.0.0-alpha2-*",
 
+  "description": "Contains the default assets used by OpenIddict.",
+  "authors": [ "Kévin Chalet" ],
+
   "packOptions": {
-    "description": "Contains the default assets used by OpenIddict.",
-    "authors": [ "Kévin Chalet" ],
     "owners": [ "Kévin Chalet" ],
 
     "projectUrl": "https://github.com/openiddict/openiddict-core",

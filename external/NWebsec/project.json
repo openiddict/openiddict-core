@@ -1,11 +1,12 @@
 ﻿{
   "version": "1.0.0-internal-*",
 
+  "description": "NWebsec middleware for ASP.NET 5 applications. NWebsec helps you set important security headers and detect potentially dangerous redirects. See project website for documentation.",
+  "authors": [ "André N. Klingsheim" ],
+
   "packOptions": {
     "title": "NWebsec.Middleware (ASP.NET 5)",
-    "description": "NWebsec middleware for ASP.NET 5 applications. NWebsec helps you set important security headers and detect potentially dangerous redirects. See project website for documentation.",
     "releaseNotes": "This release includes core functions for the NWebsec security libaries.",
-    "authors": [ "André N. Klingsheim" ],
     "owners": [ "André N. Klingsheim" ],
     "copyright": "Copyright © 2014 - 2015",
     "tags": [ "NWebsec Security AspNet AppSec" ],

@@ -1,9 +1,10 @@
 ﻿{
   "version": "1.0.0-alpha2-*",
 
+  "description": "Entity Framework adapter for OpenIddict.",
+  "authors": [ "Kévin Chalet" ],
+
   "packOptions": {
-    "description": "Entity Framework adapter for OpenIddict.",
-    "authors": [ "Kévin Chalet" ],
     "owners": [ "Kévin Chalet" ],
 
     "projectUrl": "https://github.com/openiddict/openiddict-core",

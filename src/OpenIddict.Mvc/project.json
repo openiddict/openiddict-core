@@ -1,9 +1,10 @@
 ﻿{
   "version": "1.0.0-alpha2-*",
 
+  "description": "ASP.NET Core MVC module for OpenIddict.",
+  "authors": [ "Kévin Chalet" ],
+
   "packOptions": {
-    "description": "ASP.NET Core MVC module for OpenIddict.",
-    "authors": [ "Kévin Chalet" ],
     "owners": [ "Kévin Chalet" ],
 
     "projectUrl": "https://github.com/openiddict/openiddict-core",

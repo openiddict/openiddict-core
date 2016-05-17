@@ -1,9 +1,10 @@
 ﻿{
   "version": "1.0.0-alpha2-*",
 
+  "description": "Easy-to-use OpenID Connect server for ASP.NET Core.",
+  "authors": [ "Kévin Chalet" ],
+
   "packOptions": {
-    "description": "Easy-to-use OpenID Connect server for ASP.NET Core.",
-    "authors": [ "Kévin Chalet" ],
     "owners": [ "Kévin Chalet" ],
 
     "projectUrl": "https://github.com/openiddict/openiddict-core",
