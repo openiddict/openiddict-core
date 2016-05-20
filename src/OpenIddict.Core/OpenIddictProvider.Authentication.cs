@@ -152,13 +152,16 @@ namespace OpenIddict
                 }
             }
 
-            logger.LogInformation("ValidateAuthorizationRequestContext is validated succesfully.");
             context.Validate();
+            logger.LogInformation("ValidateAuthorizationRequestContext is validated succesfully.");
         }
 
         public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context) {
             // Only handle prompt=none requests at this stage.
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication>>>();
+
             if (!string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
+                logger.LogDebug($"The current prompt is '{context.Request.Prompt}' so skipping HandleAuthorizationRequest.");
                 return;
             }
 
@@ -175,6 +178,7 @@ namespace OpenIddict
             // continue to the next middleware in the pipeline.
             var user = await services.Users.GetUserAsync(principal);
             if (user == null) {
+                logger.LogWarning("Unable to retrieve user from the current principal.");
                 return;
             }
 
@@ -193,12 +197,17 @@ namespace OpenIddict
             ticket.SetResources(context.Request.GetResources());
             ticket.SetScopes(context.Request.GetScopes());
 
+            logger.LogDebug("AuthenticationTicket generated.");
+
             // Call SignInAsync to create and return a new OpenID Connect response containing the serialized code/tokens.
             await context.HttpContext.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
+
+            logger.LogDebug("SignInAsync called.");
 
             // Mark the response as handled
             // to skip the rest of the pipeline.
             context.HandleResponse();
+            logger.LogInformation("HandleAuthorizationRequestContext handled the response succesfully.");
         }
     }
 }
