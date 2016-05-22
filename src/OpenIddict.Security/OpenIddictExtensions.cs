@@ -1,7 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using NWebsec.Middleware;
+using NWebsec.AspNetCore.Middleware;
 
 namespace Microsoft.AspNetCore.Builder {
     public static class OpenIddictExtensions {

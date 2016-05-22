@@ -35,16 +35,16 @@
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "Microsoft.AspNetCore.Cors": "1.0.0-rc2-final",
-    "NWebsec": { "target": "project", "type": "build" },
+    "NWebsec.AspNetCore.Middleware": "1.0.0-gamma-5",
     "OpenIddict.Core": { "target": "project" }
   },
 
   "frameworks": {
     "net451": { },
 
-    "netstandard1.4": {
+    "netstandard1.5": {
       "imports": [
-        "dotnet5.5",
+        "dotnet5.6",
         "portable-net451+win8"
       ]
     }

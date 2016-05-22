@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
-using NWebsec.Middleware;
+using NWebsec.AspNetCore.Middleware;
 using OpenIddict;
 using OpenIddict.Models;
 
