@@ -92,7 +92,7 @@ namespace OpenIddict {
                     var email = await services.Users.GetEmailAsync(user);
 
                     if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                        logger.LogWarning("The username correspond to the email address and we carefully avoid leaking the user email if the 'email' scope is not requested.");
+                        logger.LogWarning("The username '{UserName}' correspond to the email address and we carefully avoid leaking the user email if the 'email' scope is not requested.", username);
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidRequest,
                             description: "The 'email' scope is required.");
@@ -156,11 +156,11 @@ namespace OpenIddict {
         }
 
         public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context) {
-            // Only handle prompt=none requests at this stage.
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication>>>();
 
+            // Only handle prompt=none requests at this stage.
             if (!string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
-                logger.LogDebug($"The current prompt is '{context.Request.Prompt}' so skipping HandleAuthorizationRequest.");
+                logger.LogDebug("The current prompt is '{Prompt}', skipping the current request.", context.Request.Prompt);
                 return;
             }
 
@@ -169,7 +169,10 @@ namespace OpenIddict {
             // Note: principal is guaranteed to be non-null since ValidateAuthorizationRequest
             // rejects prompt=none requests missing or having an invalid id_token_hint.
             var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
-            Debug.Assert(principal != null);
+            if (principal == null) {
+                logger.LogDebug("The current principal is null, throwing exception.");
+                throw new InvalidOperationException("The current principal is null");
+            }
 
             // Note: user may be null if the user was removed after
             // the initial check made by ValidateAuthorizationRequest.
@@ -177,7 +180,7 @@ namespace OpenIddict {
             // continue to the next middleware in the pipeline.
             var user = await services.Users.GetUserAsync(principal);
             if (user == null) {
-                logger.LogWarning("Unable to retrieve user from the current principal.");
+                logger.LogWarning("Unable to retrieve user from the current principal, ensure the user was not removed from the database.");
                 return;
             }
 
@@ -185,13 +188,10 @@ namespace OpenIddict {
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
             // don't include the "email" scope if the username corresponds to the registed email address.
             var identity = await services.Applications.CreateIdentityAsync(user, context.Request.GetScopes());
-
             if (identity == null) {
-                logger.LogDebug("There was an error during identity creation for user {User}, the current identity is null.", user);
-                // TODO should we fail here witha gracefoul exception other than ArgumentNullException?
-                // http://referencesource.microsoft.com/#mscorlib/system/security/claims/ClaimsPrincipal.cs,194
+                logger.LogDebug("There was an error during identity creation for user '{NameIdentifier}', the current identity is null, throwing exception.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                throw new InvalidOperationException("There was an error during identity creation.");
             }
-            Debug.Assert(identity != null);
 
             // Create a new authentication ticket holding the user identity.
             var ticket = new AuthenticationTicket(
@@ -202,12 +202,10 @@ namespace OpenIddict {
             ticket.SetResources(context.Request.GetResources());
             ticket.SetScopes(context.Request.GetScopes());
 
-            logger.LogDebug("AuthenticationTicket generated succesfully.");
+            logger.LogDebug("An authentication ticket was successfully generated for user '{NameIdentifier}'.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
             // Call SignInAsync to create and return a new OpenID Connect response containing the serialized code/tokens.
             await context.HttpContext.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
-
-            logger.LogDebug("SignInAsync called.");
 
             // Mark the response as handled
             // to skip the rest of the pipeline.

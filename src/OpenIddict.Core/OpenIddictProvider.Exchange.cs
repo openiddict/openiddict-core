@@ -29,7 +29,7 @@ namespace OpenIddict {
             // but this authorization server uses a stricter policy rejecting custom grant types.
             if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType() &&
                 !context.Request.IsPasswordGrantType() && !context.Request.IsClientCredentialsGrantType()) {
-                logger.LogWarning("The following grant {Grant} is not supported.", context.Request.GrantType);
+                logger.LogWarning("The following grant '{Grant}' is not supported.", context.Request.GrantType);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
                     description: "Only authorization code, refresh token, client credentials " +
@@ -69,7 +69,7 @@ namespace OpenIddict {
 
             // Reject tokens requests containing a client_secret if the client application is not confidential.
             if (await services.Applications.IsPublicApplicationAsync(application) && !string.IsNullOrEmpty(context.ClientSecret)) {
-                logger.LogWarning("Public application {ClientId} are not allowed to send a client secret.", context.ClientId);
+                logger.LogWarning("Public application '{ClientId}' is not allowed to send a client secret.", context.ClientId);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Public clients are not allowed to send a client_secret.");
@@ -81,7 +81,7 @@ namespace OpenIddict {
             // to protect them from impersonation attacks.
             else if (await services.Applications.IsConfidentialApplicationAsync(application)) {
                 if (string.IsNullOrEmpty(context.ClientSecret)) {
-                    logger.LogWarning("Confidential application {ClientId} must specify a client secret.", context.ClientId);
+                    logger.LogWarning("Confidential application '{ClientId}' must specify a client secret.", context.ClientId);
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidClient,
                         description: "Missing credentials: ensure that you specified a client_secret.");
@@ -90,7 +90,7 @@ namespace OpenIddict {
                 }
 
                 if (!await services.Applications.ValidateSecretAsync(application, context.ClientSecret)) {
-                    logger.LogWarning("Confidential application {ClientId} must specify a valid client secret.", context.ClientId);
+                    logger.LogWarning("Confidential application '{ClientId}' must specify a valid client secret.", context.ClientId);
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidClient,
                         description: "Invalid credentials: ensure that you specified a correct client_secret.");
@@ -110,11 +110,10 @@ namespace OpenIddict {
             // Retrieve the application details corresponding to the requested client_id.
             var application = await services.Applications.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
-                logger.LogDebug("There was an error finding application for client_id {ClientId}, the current application is null.", context.ClientId);
+                logger.LogDebug("There was an error finding application for client_id '{ClientId}', the current application is null, throwing exception.", context.ClientId);
+                throw new InvalidOperationException("There was an error finding application.");
                 // TODO should we actually fail gracefully here instead of potentially throw a ArgumentNullException in services.Applications.GetDisplayNameAsync(application)?
             }
-
-            Debug.Assert(application != null);
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
 
@@ -133,24 +132,29 @@ namespace OpenIddict {
                 new AuthenticationProperties(),
                 context.Options.AuthenticationScheme);
 
-            logger.LogDebug("AuthenticationTicket generated succesfully.");
+            logger.LogDebug("An authentication ticket was successfully generated for application {ClientId}.", context.ClientId);
 
             ticket.SetResources(context.Request.GetResources());
             ticket.SetScopes(context.Request.GetScopes());
 
             context.Validate(ticket);
-            logger.LogInformation("The grant client credentials request was successfully handled.");
+            logger.LogInformation("The grant client credentials request was successfully validated.");
         }
 
         public override async Task GrantRefreshToken([NotNull] GrantRefreshTokenContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication>>>();
 
             var principal = context.Ticket?.Principal;
-            Debug.Assert(principal != null);
+            if (principal == null) {
+                logger.LogDebug("The current principal is null, throwing exception.");
+                throw new InvalidOperationException("The current principal is null");
+            }
 
             var user = await services.Users.GetUserAsync(principal);
             if (user == null) {
+                logger.LogWarning("There was an error finding the user '{NameIdentifier}'.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "The refresh token is no longer valid.");
@@ -164,6 +168,7 @@ namespace OpenIddict {
                 var identifier = principal.GetClaim(options.Value.ClaimsIdentity.SecurityStampClaimType);
                 if (!string.IsNullOrEmpty(identifier) &&
                     !string.Equals(identifier, await services.Users.GetSecurityStampAsync(user), StringComparison.Ordinal)) {
+                    logger.LogWarning("Security stamp does not match for the user '{NameIdentifier}'.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
                         description: "The refresh token is no longer valid.");
@@ -175,7 +180,10 @@ namespace OpenIddict {
             // Note: the "scopes" property stored in context.AuthenticationTicket is automatically
             // updated by ASOS when the client application requests a restricted scopes collection.
             var identity = await services.Applications.CreateIdentityAsync(user, context.Ticket.GetScopes());
-            Debug.Assert(identity != null);
+            if (identity == null) {
+                logger.LogDebug("There was an error during identity creation for user '{NameIdentifier}', the current identity is null.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                throw new InvalidOperationException("There was an error during identity creation.");
+            }
 
             // Create a new authentication ticket holding the user identity but
             // reuse the authentication properties stored in the refresh token.
@@ -184,14 +192,19 @@ namespace OpenIddict {
                 context.Ticket.Properties,
                 context.Options.AuthenticationScheme);
 
+            logger.LogDebug("An authentication ticket was successfully generated for user '{NameIdentifier}'.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
             context.Validate(ticket);
+            logger.LogInformation("The refresh token request was successfully validated.");
         }
 
         public override async Task GrantResourceOwnerCredentials([NotNull] GrantResourceOwnerCredentialsContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication>>>();
 
             var user = await services.Users.FindByNameAsync(context.UserName);
             if (user == null) {
+                logger.LogWarning("No user found with name '{UserName}'.", context.UserName);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "Invalid credentials.");
@@ -201,6 +214,7 @@ namespace OpenIddict {
 
             // Ensure the user is allowed to sign in.
             if (!await services.SignIn.CanSignInAsync(user)) {
+                logger.LogWarning("The user '{UserName}' is not allowed to sign in.", context.UserName);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "The user is not allowed to sign in.");
@@ -210,6 +224,7 @@ namespace OpenIddict {
 
             // Ensure the user is not already locked out.
             if (services.Users.SupportsUserLockout && await services.Users.IsLockedOutAsync(user)) {
+                logger.LogWarning("The user '{UserName}' is locked out.", context.UserName);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "Account locked out.");
@@ -219,15 +234,18 @@ namespace OpenIddict {
             
             // Ensure the password is valid.
             if (!await services.Users.CheckPasswordAsync(user, context.Password)) {
+                logger.LogWarning("The user '{UserName}' provided password does not match.", context.UserName);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "Invalid credentials.");
 
                 if (services.Users.SupportsUserLockout) {
+                    logger.LogDebug("Increment user '{UserName}' failed access count.", context.UserName);
                     await services.Users.AccessFailedAsync(user);
 
                     // Ensure the user is not locked out.
                     if (await services.Users.IsLockedOutAsync(user)) {
+                        logger.LogWarning("The user '{UserName}' is locked out.", context.UserName);
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
                             description: "Account locked out.");
@@ -237,12 +255,14 @@ namespace OpenIddict {
                 return;
             }
 
-            if (services.Users.SupportsUserLockout) { 
+            if (services.Users.SupportsUserLockout) {
+                logger.LogDebug("Reset user '{UserName}' failed access count.", context.UserName);
                 await services.Users.ResetAccessFailedCountAsync(user);
             }
 
             // Reject the token request if two-factor authentication has been enabled by the user.
             if (services.Users.SupportsUserTwoFactor && await services.Users.GetTwoFactorEnabledAsync(user)) {
+                logger.LogWarning("Two-factor authentication is required for the user '{UserName}'.", context.UserName);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "Two-factor authentication is required for this account.");
@@ -259,6 +279,7 @@ namespace OpenIddict {
                 var email = await services.Users.GetEmailAsync(user);
 
                 if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
+                    logger.LogWarning("The username '{UserName}' correspond to the email address and we carefully avoid leaking the user email if the 'email' scope is not requested.", username);
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The 'email' scope is required.");
@@ -268,7 +289,10 @@ namespace OpenIddict {
             }
 
             var identity = await services.Applications.CreateIdentityAsync(user, context.Request.GetScopes());
-            Debug.Assert(identity != null);
+            if (identity == null) {
+                logger.LogDebug("There was an error during identity creation for user '{UserName}', the current identity is null, throwing exception.", context.UserName);
+                throw new InvalidOperationException("There was an error during identity creation.");
+            }
 
             // Create a new authentication ticket holding the user identity.
             var ticket = new AuthenticationTicket(
@@ -279,7 +303,10 @@ namespace OpenIddict {
             ticket.SetResources(context.Request.GetResources());
             ticket.SetScopes(context.Request.GetScopes());
 
+            logger.LogDebug("An authentication ticket was successfully generated for user '{UserName}'.", context.UserName);
+
             context.Validate(ticket);
+            logger.LogInformation("The resource owner password credentials request was successfully validated.");
         }
     }
 }
