@@ -16,17 +16,20 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace OpenIddict {
     public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication>>>();
 
             // Note: OpenIdConnectServerHandler supports authorization code, refresh token,
             // client credentials, resource owner password credentials and custom grants
             // but this authorization server uses a stricter policy rejecting custom grant types.
             if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType() &&
                 !context.Request.IsPasswordGrantType() && !context.Request.IsClientCredentialsGrantType()) {
+                logger.LogWarning("The following grant {Grant} is not supported.", context.Request.GrantType);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
                     description: "Only authorization code, refresh token, client credentials " +
@@ -47,6 +50,7 @@ namespace OpenIddict {
             // cannot use an authorization code or a refresh token if it's not
             // the intended audience, even if client authentication was skipped.
             if (string.IsNullOrEmpty(context.ClientId)) {
+                logger.LogDebug("The client_id is missing, skipping client authentication");
                 context.Skip();
 
                 return;
@@ -55,6 +59,7 @@ namespace OpenIddict {
             // Retrieve the application details corresponding to the requested client_id.
             var application = await services.Applications.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
+                logger.LogWarning("Application not found in the database with client_id '{ClientId}'.", context.ClientId);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Application not found in the database: ensure that your client_id is correct.");
@@ -64,6 +69,7 @@ namespace OpenIddict {
 
             // Reject tokens requests containing a client_secret if the client application is not confidential.
             if (await services.Applications.IsPublicApplicationAsync(application) && !string.IsNullOrEmpty(context.ClientSecret)) {
+                logger.LogWarning("Public application {ClientId} are not allowed to send a client secret.", context.ClientId);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Public clients are not allowed to send a client_secret.");
@@ -75,6 +81,7 @@ namespace OpenIddict {
             // to protect them from impersonation attacks.
             else if (await services.Applications.IsConfidentialApplicationAsync(application)) {
                 if (string.IsNullOrEmpty(context.ClientSecret)) {
+                    logger.LogWarning("Confidential application {ClientId} must specify a client secret.", context.ClientId);
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidClient,
                         description: "Missing credentials: ensure that you specified a client_secret.");
@@ -83,6 +90,7 @@ namespace OpenIddict {
                 }
 
                 if (!await services.Applications.ValidateSecretAsync(application, context.ClientSecret)) {
+                    logger.LogWarning("Confidential application {ClientId} must specify a valid client secret.", context.ClientId);
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidClient,
                         description: "Invalid credentials: ensure that you specified a correct client_secret.");
@@ -91,14 +99,21 @@ namespace OpenIddict {
                 }
             }
 
+            logger.LogInformation("The token request was successfully validated.");
             context.Validate();
         }
 
         public override async Task GrantClientCredentials([NotNull] GrantClientCredentialsContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication>>>();
 
             // Retrieve the application details corresponding to the requested client_id.
             var application = await services.Applications.FindApplicationByIdAsync(context.ClientId);
+            if (application == null) {
+                logger.LogDebug("There was an error finding application for client_id {ClientId}, the current application is null.", context.ClientId);
+                // TODO should we actually fail gracefully here instead of potentially throw a ArgumentNullException in services.Applications.GetDisplayNameAsync(application)?
+            }
+
             Debug.Assert(application != null);
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
@@ -118,10 +133,13 @@ namespace OpenIddict {
                 new AuthenticationProperties(),
                 context.Options.AuthenticationScheme);
 
+            logger.LogDebug("AuthenticationTicket generated succesfully.");
+
             ticket.SetResources(context.Request.GetResources());
             ticket.SetScopes(context.Request.GetScopes());
 
             context.Validate(ticket);
+            logger.LogInformation("The grant client credentials request was successfully handled.");
         }
 
         public override async Task GrantRefreshToken([NotNull] GrantRefreshTokenContext context) {
