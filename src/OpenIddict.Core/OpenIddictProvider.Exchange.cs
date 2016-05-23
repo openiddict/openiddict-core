@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -99,8 +98,8 @@ namespace OpenIddict {
                 }
             }
 
-            logger.LogInformation("The token request was successfully validated.");
             context.Validate();
+            logger.LogInformation("The token request was successfully validated.");
         }
 
         public override async Task GrantClientCredentials([NotNull] GrantClientCredentialsContext context) {
@@ -112,7 +111,6 @@ namespace OpenIddict {
             if (application == null) {
                 logger.LogDebug("There was an error finding application for client_id '{ClientId}', the current application is null, throwing exception.", context.ClientId);
                 throw new InvalidOperationException("There was an error finding application.");
-                // TODO should we actually fail gracefully here instead of potentially throw a ArgumentNullException in services.Applications.GetDisplayNameAsync(application)?
             }
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
@@ -148,13 +146,13 @@ namespace OpenIddict {
 
             var principal = context.Ticket?.Principal;
             if (principal == null) {
-                logger.LogDebug("The current principal is null, throwing exception.");
+                logger.LogDebug("The AuthenticationTicket's principal is null, throwing exception.");
                 throw new InvalidOperationException("The current principal is null");
             }
 
             var user = await services.Users.GetUserAsync(principal);
             if (user == null) {
-                logger.LogWarning("There was an error finding the user '{NameIdentifier}'.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                logger.LogWarning("There was an error finding the user '{NameIdentifier}'.", principal.FindFirstValue(ClaimTypes.NameIdentifier));
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
                     description: "The refresh token is no longer valid.");
@@ -168,7 +166,7 @@ namespace OpenIddict {
                 var identifier = principal.GetClaim(options.Value.ClaimsIdentity.SecurityStampClaimType);
                 if (!string.IsNullOrEmpty(identifier) &&
                     !string.Equals(identifier, await services.Users.GetSecurityStampAsync(user), StringComparison.Ordinal)) {
-                    logger.LogWarning("Security stamp does not match for the user '{NameIdentifier}'.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                    logger.LogWarning("Security stamp does not match for the user '{NameIdentifier}'.", principal.FindFirstValue(ClaimTypes.NameIdentifier));
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
                         description: "The refresh token is no longer valid.");
@@ -181,7 +179,7 @@ namespace OpenIddict {
             // updated by ASOS when the client application requests a restricted scopes collection.
             var identity = await services.Applications.CreateIdentityAsync(user, context.Ticket.GetScopes());
             if (identity == null) {
-                logger.LogDebug("There was an error during identity creation for user '{NameIdentifier}', the current identity is null.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                logger.LogDebug("CreateIdentityAsync returned null for user '{NameIdentifier}', throwing exception", principal.FindFirstValue(ClaimTypes.NameIdentifier));
                 throw new InvalidOperationException("There was an error during identity creation.");
             }
 
@@ -192,7 +190,7 @@ namespace OpenIddict {
                 context.Ticket.Properties,
                 context.Options.AuthenticationScheme);
 
-            logger.LogDebug("An authentication ticket was successfully generated for user '{NameIdentifier}'.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            logger.LogDebug("An authentication ticket was successfully generated for user '{NameIdentifier}'.", principal.FindFirstValue(ClaimTypes.NameIdentifier));
 
             context.Validate(ticket);
             logger.LogInformation("The refresh token request was successfully validated.");
@@ -290,7 +288,7 @@ namespace OpenIddict {
 
             var identity = await services.Applications.CreateIdentityAsync(user, context.Request.GetScopes());
             if (identity == null) {
-                logger.LogDebug("There was an error during identity creation for user '{UserName}', the current identity is null, throwing exception.", context.UserName);
+                logger.LogDebug("CreateIdentityAsync returned null for user '{UserName}', throwing exception", context.UserName);
                 throw new InvalidOperationException("There was an error during identity creation.");
             }
 

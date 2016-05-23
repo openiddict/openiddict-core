@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -130,7 +129,7 @@ namespace OpenIddict {
                 // If no principal can be extracted, an error is returned to the client application.
                 var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
                 if (principal == null) {
-                    // Logged by ASOS
+                    logger.LogDebug("AuthenticateAsync returned a null principal.");
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The required id_token_hint parameter is missing.");
@@ -170,7 +169,7 @@ namespace OpenIddict {
             // rejects prompt=none requests missing or having an invalid id_token_hint.
             var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
             if (principal == null) {
-                logger.LogDebug("The current principal is null, throwing exception.");
+                logger.LogDebug("AuthenticateAsync returned a null principal, throwing exception.");
                 throw new InvalidOperationException("The current principal is null");
             }
 
@@ -189,7 +188,7 @@ namespace OpenIddict {
             // don't include the "email" scope if the username corresponds to the registed email address.
             var identity = await services.Applications.CreateIdentityAsync(user, context.Request.GetScopes());
             if (identity == null) {
-                logger.LogDebug("There was an error during identity creation for user '{NameIdentifier}', the current identity is null, throwing exception.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                logger.LogDebug("CreateIdentityAsync returned null for user '{NameIdentifier}', throwing exception", principal.FindFirstValue(ClaimTypes.NameIdentifier));
                 throw new InvalidOperationException("There was an error during identity creation.");
             }
 
@@ -202,7 +201,7 @@ namespace OpenIddict {
             ticket.SetResources(context.Request.GetResources());
             ticket.SetScopes(context.Request.GetScopes());
 
-            logger.LogDebug("An authentication ticket was successfully generated for user '{NameIdentifier}'.", principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            logger.LogDebug("An authentication ticket was successfully generated for user '{NameIdentifier}'.", principal.FindFirstValue(ClaimTypes.NameIdentifier));
 
             // Call SignInAsync to create and return a new OpenID Connect response containing the serialized code/tokens.
             await context.HttpContext.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);

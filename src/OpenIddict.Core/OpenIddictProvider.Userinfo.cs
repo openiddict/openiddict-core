@@ -4,27 +4,33 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Diagnostics;
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace OpenIddict {
     public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
         public override async Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication>>>();
 
             var principal = context.Ticket?.Principal;
-            Debug.Assert(principal != null);
+            if (principal == null) {
+                logger.LogDebug("The AuthenticationTicket's principal is null, throwing exception.");
+                throw new InvalidOperationException("The current principal is null");
+            }
 
             // Note: user may be null if the user has been removed.
             // In this case, return a 400 response.
             var user = await services.Users.GetUserAsync(principal);
             if (user == null) {
+                logger.LogWarning("Unable to retrieve user from the current principal '{NameIdentifier}', ensure the user was not removed from the database.", principal.FindFirstValue(ClaimTypes.NameIdentifier));
                 context.Response.StatusCode = 400;
                 context.HandleResponse();
 
@@ -38,7 +44,7 @@ namespace OpenIddict {
             // Only add the "preferred_username" claim if the "profile" scope was present in the access token.
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
-            // don't include the "email" scope if the username corresponds to the registed email address.
+            // don't include the "email" scope if the username corresponds to the registered email address.
             if (context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Profile)) {
                 context.PreferredUsername = await services.Users.GetUserNameAsync(user);
 
@@ -79,6 +85,8 @@ namespace OpenIddict {
                     context.Claims[OpenIddictConstants.Claims.Roles] = JArray.FromObject(roles);
                 }
             }
+
+            logger.LogInformation("The user info request was successfully handled.");
         }
     }
 }
