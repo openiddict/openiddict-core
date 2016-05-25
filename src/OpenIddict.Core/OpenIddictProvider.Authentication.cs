@@ -5,8 +5,6 @@
  */
 
 using System;
-using System.Diagnostics;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -16,17 +14,20 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace OpenIddict {
     public partial class OpenIddictProvider<TUser, TApplication> : OpenIdConnectServerProvider where TUser : class where TApplication : class {
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication>>>();
 
             // Note: redirect_uri is not required for pure OAuth2 requests
             // but this provider uses a stricter policy making it mandatory,
             // as required by the OpenID Connect core specification.
             // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest.
             if (string.IsNullOrEmpty(context.RedirectUri)) {
+                // Do not log anything because ASOS will already log messages when we call context.Reject();
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "The required redirect_uri parameter was missing.");
@@ -37,6 +38,7 @@ namespace OpenIddict {
             // Retrieve the application details corresponding to the requested client_id.
             var application = await services.Applications.FindApplicationByIdAsync(context.ClientId);
             if (application == null) {
+                logger.LogWarning("Application not found in the database with client_id '{ClientId}'.", context.ClientId);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Application not found in the database: ensure that your client_id is correct.");
@@ -45,6 +47,7 @@ namespace OpenIddict {
             }
 
             if (!await services.Applications.ValidateRedirectUriAsync(application, context.RedirectUri)) {
+                logger.LogWarning("Validation for redirect_uri {RedirectUri} failed.", context.RedirectUri);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid redirect_uri.");
@@ -57,6 +60,7 @@ namespace OpenIddict {
             // Note: when using the authorization code grant, ValidateClientAuthentication is responsible of
             // rejecting the token request if the client_id corresponds to an unauthenticated confidential client.
             if (await services.Applications.IsConfidentialApplicationAsync(application) && !context.Request.IsAuthorizationCodeFlow()) {
+                logger.LogWarning("Confidential clients cannot use response_type '{ResponseType}'.", context.Request.ResponseType);
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Confidential clients can only use response_type=code.");
@@ -70,6 +74,7 @@ namespace OpenIddict {
                 // Ensure the user profile still exists in the database.
                 var user = await services.Users.GetUserAsync(context.HttpContext.User);
                 if (user == null) {
+                    logger.LogWarning("Unable to retrieve the logged user from the store.");
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.ServerError,
                         description: "An internal error has occurred.");
@@ -86,6 +91,7 @@ namespace OpenIddict {
                     var email = await services.Users.GetEmailAsync(user);
 
                     if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
+                        logger.LogWarning("The username '{UserName}' correspond to the email address and we carefully avoid leaking the user email if the 'email' scope is not requested.", username);
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidRequest,
                             description: "The 'email' scope is required.");
@@ -100,6 +106,7 @@ namespace OpenIddict {
                 // If the user is not authenticated, return an error to the client application.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#Authenticates
                 if (!context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
+                    logger.LogWarning("Unable to silently authenticate the user and none already authenticated was found.");
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.LoginRequired,
                         description: "The user must be authenticated.");
@@ -110,6 +117,7 @@ namespace OpenIddict {
                 // Ensure that the authentication cookie contains the required NameIdentifier claim.
                 var identifier = context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(identifier)) {
+                    logger.LogWarning("The authenticated user is invalid, it doesn't have a claim of type '{NameIdentifier}'.", ClaimTypes.NameIdentifier);
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.ServerError,
                         description: "The authorization request cannot be processed.");
@@ -121,6 +129,7 @@ namespace OpenIddict {
                 // If no principal can be extracted, an error is returned to the client application.
                 var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
                 if (principal == null) {
+                    logger.LogDebug("AuthenticateAsync returned a null principal.");
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The required id_token_hint parameter is missing.");
@@ -132,6 +141,7 @@ namespace OpenIddict {
                 // and that the identity token corresponds to the authenticated user.
                 if (!principal.HasClaim(OpenIdConnectConstants.Claims.Audience, context.Request.ClientId) ||
                     !principal.HasClaim(ClaimTypes.NameIdentifier, identifier)) {
+                    // Logged by ASOS
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The id_token_hint parameter is invalid.");
@@ -141,11 +151,15 @@ namespace OpenIddict {
             }
 
             context.Validate();
+            logger.LogInformation("The authorization request was successfully validated.");
         }
 
         public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context) {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication>>>();
+
             // Only handle prompt=none requests at this stage.
             if (!string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
+                logger.LogDebug("The current prompt is '{Prompt}', skipping the current request.", context.Request.Prompt);
                 return;
             }
 
@@ -154,7 +168,10 @@ namespace OpenIddict {
             // Note: principal is guaranteed to be non-null since ValidateAuthorizationRequest
             // rejects prompt=none requests missing or having an invalid id_token_hint.
             var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
-            Debug.Assert(principal != null);
+            if (principal == null) {
+                logger.LogDebug("AuthenticateAsync returned a null principal, throwing exception.");
+                throw new InvalidOperationException("The current principal is null");
+            }
 
             // Note: user may be null if the user was removed after
             // the initial check made by ValidateAuthorizationRequest.
@@ -162,6 +179,7 @@ namespace OpenIddict {
             // continue to the next middleware in the pipeline.
             var user = await services.Users.GetUserAsync(principal);
             if (user == null) {
+                logger.LogWarning("Unable to retrieve user from the current principal, ensure the user was not removed from the database.");
                 return;
             }
 
@@ -169,7 +187,10 @@ namespace OpenIddict {
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
             // don't include the "email" scope if the username corresponds to the registed email address.
             var identity = await services.Applications.CreateIdentityAsync(user, context.Request.GetScopes());
-            Debug.Assert(identity != null);
+            if (identity == null) {
+                logger.LogDebug("CreateIdentityAsync returned null for user '{NameIdentifier}', throwing exception", principal.FindFirstValue(ClaimTypes.NameIdentifier));
+                throw new InvalidOperationException("There was an error during identity creation.");
+            }
 
             // Create a new authentication ticket holding the user identity.
             var ticket = new AuthenticationTicket(
@@ -180,12 +201,15 @@ namespace OpenIddict {
             ticket.SetResources(context.Request.GetResources());
             ticket.SetScopes(context.Request.GetScopes());
 
+            logger.LogDebug("An authentication ticket was successfully generated for user '{NameIdentifier}'.", principal.FindFirstValue(ClaimTypes.NameIdentifier));
+
             // Call SignInAsync to create and return a new OpenID Connect response containing the serialized code/tokens.
             await context.HttpContext.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
 
             // Mark the response as handled
             // to skip the rest of the pipeline.
             context.HandleResponse();
+            logger.LogInformation("The authorization request was successfully handled.");
         }
     }
 }
