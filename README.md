@@ -21,13 +21,11 @@ with the power to control who can access your API and the information that is ex
 ### How does it work?
 
 OpenIddict is based on **[ASP.NET Core Identity](https://github.com/aspnet/Identity)** (for user management) and relies on
-**[AspNet.Security.OpenIdConnect.Server](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server)** to control the OpenID Connect authentication flow. It comes with a built-in ASP.NET Core MVC controller and native views that you can easily replace by your own ones to fully customize your login experience:
-
-![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
+**[AspNet.Security.OpenIdConnect.Server (codenamed ASOS)](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server)** to control the OpenID Connect authentication flow.
 
 OpenIddict fully supports the **code/implicit/hybrid flows** and the **client credentials/resource owner password grants**. For more information about these terms, please visit the **[OpenID website](http://openid.net/specs/openid-connect-core-1_0.html)** and read the **[OAuth2 specification](https://tools.ietf.org/html/rfc6749)**.
 
-Note: OpenIddict uses **[EntityFramework Core](https://github.com/aspnet/EntityFramework)** by default, but you can also provide your own store.
+Note: OpenIddict uses **[Entity Framework Core](https://github.com/aspnet/EntityFramework)** by default, but you can also provide your own store.
 
 --------------
 
@@ -55,8 +53,8 @@ To use OpenIddict, you need to:
 
 ```json
 "dependencies": {
-    "OpenIddict": "1.0.0-*"
-},
+  "OpenIddict": "1.0.0-*"
+}
 ```
 
   - **Configure the OpenIddict services** in `Startup.ConfigureServices`:
@@ -70,10 +68,15 @@ public void ConfigureServices(IServiceCollection services) {
         .AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
 
-    services.AddIdentity<ApplicationUser, IdentityRole>()
-        .AddEntityFrameworkStores<ApplicationDbContext>()
-        .AddDefaultTokenProviders()
-        .AddOpenIddict(); // Add the OpenIddict services after registering the Identity services.
+    // Register the Identity services.
+	services.AddIdentity<ApplicationUser, IdentityRole>()
+	    .AddEntityFrameworkStores<ApplicationDbContext>()
+	    .AddDefaultTokenProviders();
+	
+	// Register the OpenIddict services, including the default Entity Framework stores.
+	services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+	    // During development, you can disable the HTTPS requirement.
+	    .DisableHttpsRequirement();
 }
 ```
 
@@ -87,17 +90,19 @@ in the project wiki.
 public void Configure(IApplicationBuilder app) {
     app.UseIdentity();
     
-    // Add all the external providers you need before registering OpenIddict:
-    app.UseGoogleAuthentication();
-    app.UseFacebookAuthentication();
-    
     app.UseOpenIddict();
 }
 ```
 
-> **Note:** `UseOpenIddict()` must be registered ***after*** `app.UseIdentity()` and the external providers.
+> **Note:** `UseOpenIddict()` must be registered ***after*** `app.UseIdentity()` and the external social providers.
 
-  - **Update your EntityFramework context to inherit from `OpenIddictContext`**:
+  - **Update your `ApplicationUser` entity model to inherit from `OpenIddictUser`**:
+
+```csharp
+public class ApplicationUser : OpenIddictUser { }
+```
+
+  - **Update your Entity Framework context to inherit from `OpenIddictContext`**:
 
 ```csharp
 public class ApplicationDbContext : OpenIddictContext<ApplicationUser> {
@@ -115,23 +120,76 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
         : base(options) {
     }
 
-    public DbSet<Application> Applications { get; set; }
+    public DbSet<OpenIddictApplication> Applications { get; set; }
+
+    public DbSet<OpenIddictAuthorization> Authorizations { get; set; }
+
+    public DbSet<OpenIddictScope> Scopes { get; set; }
+
+    public DbSet<OpenIddictToken> Tokens { get; set; }
 }
+```
+
+## Enabling interactive flows support
+
+Out-the-box, **OpenIddict only enables non-interactive flows** (resource owner password credentials, client credentials, refresh token).
+
+To enable authorization code/implicit flows support, OpenIddict offers **an optional ASP.NET Core MVC module** that includes an authorization controller and a few native views that you can easily replace by your own ones to fully customize your login experience.
+
+![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
+
+  - **Reference the necessary modules**:
+
+```json
+"dependencies": {
+  "OpenIddict": "1.0.0-*",
+  "OpenIddict.Assets": "1.0.0-*",
+  "OpenIddict.Mvc": "1.0.0-*",
+  "OpenIddict.Security": "1.0.0-*"
+}
+```
+
+  - **Register the modules in `ConfigureServices`**:
+
+```csharp
+// Register the OpenIddict services, including the default Entity Framework stores.
+services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+    // Register the HTML/CSS assets and MVC modules to handle the interactive flows.
+    // Note: these modules are not necessary when using your own authorization controller
+    // or when using non-interactive flows-only like the resource owner password credentials grant.
+    .AddAssets()
+    .AddMvc()
+
+    // Register the NWebsec module. Note: you can replace the default Content Security Policy (CSP)
+    // by calling UseNWebsec with a custom delegate instead of using the parameterless extension.
+    // This can be useful to allow your HTML views to reference remote scripts/images/styles.
+    .AddNWebsec(options => options.DefaultSources(directive => directive.Self())
+        .ImageSources(directive => directive.Self()
+            .CustomSources("*"))
+        .ScriptSources(directive => directive.Self()
+            .UnsafeInline()
+            .CustomSources("https://my.custom.url/"))
+        .StyleSources(directive => directive.Self()
+            .UnsafeInline()))
+
+    // During development, you can disable the HTTPS requirement.
+    .DisableHttpsRequirement();
 ```
 
   - **Register your client application**:
 
 ```csharp
-using (var context = app.ApplicationServices.GetRequiredService<ApplicationDbContext>()) {
+using (var context = new ApplicationDbContext(
+    app.ApplicationServices.GetRequiredService<DbContextOptions<ApplicationDbContext>>())) {
     context.Database.EnsureCreated();
 
     if (!context.Applications.Any()) {
-        context.Applications.Add(new Application {
+        context.Applications.Add(new OpenIddictApplication {
             // Assign a unique identifier to your client app:
             Id = "48BF1BC3-CE01-4787-BBF2-0426EAD21342",
 
             // Assign a display named used in the consent form page:
-            DisplayName = "MVC6 client application",
+            DisplayName = "MVC Core client application",
 
             // Register the appropriate redirect_uri and post_logout_redirect_uri:
             RedirectUri = "http://localhost:53507/signin-oidc",
@@ -142,7 +200,7 @@ using (var context = app.ApplicationServices.GetRequiredService<ApplicationDbCon
 
             // Note: use "public" for JS/mobile/desktop applications
             // and "confidential" for server-side applications.
-            Type = OpenIddictConstants.ApplicationTypes.Confidential
+            Type = OpenIddictConstants.ClientTypes.Confidential
         });
 
         context.SaveChanges();
