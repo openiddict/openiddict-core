@@ -16,7 +16,7 @@ namespace OpenIddict {
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
     public class OpenIddictAuthorizationStore<TAuthorization, TToken, TContext, TKey> : IOpenIddictAuthorizationStore<TAuthorization>
-        where TAuthorization : OpenIddictAuthorization<TToken, TKey>
+        where TAuthorization : OpenIddictAuthorization<TKey, TToken>
         where TToken : OpenIddictToken<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey> {

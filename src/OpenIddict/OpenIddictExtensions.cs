@@ -66,6 +66,35 @@ namespace Microsoft.AspNetCore.Builder {
         /// including the Entity Framework stores and the specified entities.
         /// </summary>
         /// <typeparam name="TUser">The type of the User entity.</typeparam>
+        /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
+        /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+        /// <param name="services">The services collection.</param>
+        /// <remarks>
+        /// Note: the core services include native support for the non-interactive flows
+        /// (resource owner password credentials, client credentials, refresh token).
+        /// To support interactive flows like authorization code or implicit/hybrid,
+        /// consider adding the MVC module or creating your own authorization controller.
+        /// </remarks>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder AddOpenIddict<TUser, TContext, TKey>([NotNull] this IServiceCollection services)
+            where TUser : OpenIddictUser<TKey>
+            where TContext : DbContext
+            where TKey : IEquatable<TKey> {
+            if (services == null) {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            return services.AddOpenIddict<TUser, OpenIddictApplication<TKey>,
+                                                 OpenIddictAuthorization<TKey>,
+                                                 OpenIddictScope<TKey>,
+                                                 OpenIddictToken<TKey>, TContext, TKey>();
+        }
+
+        /// <summary>
+        /// Registers the default OpenIddict services in the DI container,
+        /// including the Entity Framework stores and the specified entities.
+        /// </summary>
+        /// <typeparam name="TUser">The type of the User entity.</typeparam>
         /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
         /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
         /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
@@ -82,9 +111,9 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static OpenIddictBuilder AddOpenIddict<TUser, TApplication, TAuthorization, TScope, TToken, TContext, TKey>(
             [NotNull] this IServiceCollection services)
-            where TUser : OpenIddictUser<TAuthorization, TToken, TKey>
+            where TUser : OpenIddictUser<TKey, TAuthorization, TToken>
             where TApplication : OpenIddictApplication<TKey>
-            where TAuthorization : OpenIddictAuthorization<TToken, TKey>
+            where TAuthorization : OpenIddictAuthorization<TKey, TToken>
             where TScope : OpenIddictScope<TKey>
             where TToken : OpenIddictToken<TKey>
             where TContext : DbContext

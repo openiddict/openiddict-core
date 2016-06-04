@@ -10,7 +10,12 @@ namespace OpenIddict {
     /// <summary>
     /// Represents an OpenIddict scope.
     /// </summary>
-    public class OpenIddictScope : OpenIddictScope<string> { }
+    public class OpenIddictScope : OpenIddictScope<string> {
+        public OpenIddictScope() {
+            // Generate a new string identifier.
+            Id = Guid.NewGuid().ToString();
+        }
+    }
 
     /// <summary>
     /// Represents an OpenIddict scope.

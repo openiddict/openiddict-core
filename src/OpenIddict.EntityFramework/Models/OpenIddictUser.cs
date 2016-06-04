@@ -12,12 +12,7 @@ namespace OpenIddict {
     /// <summary>
     /// Represents an OpenIddict user.
     /// </summary>
-    public class OpenIddictUser : OpenIddictUser<OpenIddictAuthorization, OpenIddictToken> { }
-
-    /// <summary>
-    /// Represents an OpenIddict user.
-    /// </summary>
-    public class OpenIddictUser<TAuthorization, TToken> : OpenIddictUser<TAuthorization, TToken, string> {
+    public class OpenIddictUser : OpenIddictUser<string, OpenIddictAuthorization, OpenIddictToken> {
         public OpenIddictUser() {
             // Generate a new string identifier.
             Id = Guid.NewGuid().ToString();
@@ -27,7 +22,13 @@ namespace OpenIddict {
     /// <summary>
     /// Represents an OpenIddict user.
     /// </summary>
-    public class OpenIddictUser<TAuthorization, TToken, TKey> : IdentityUser<TKey> where TKey : IEquatable<TKey> {
+    public class OpenIddictUser<TKey> : OpenIddictUser<TKey, OpenIddictAuthorization<TKey>, OpenIddictToken<TKey>>
+        where TKey : IEquatable<TKey> { }
+
+    /// <summary>
+    /// Represents an OpenIddict user.
+    /// </summary>
+    public class OpenIddictUser<TKey, TAuthorization, TToken> : IdentityUser<TKey> where TKey : IEquatable<TKey> {
         /// <summary>
         /// Gets the list of the authorizations associated with this user profile.
         /// </summary>

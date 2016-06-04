@@ -11,12 +11,7 @@ namespace OpenIddict {
     /// <summary>
     /// Represents an OpenIddict authorization.
     /// </summary>
-    public class OpenIddictAuthorization : OpenIddictAuthorization<OpenIddictToken> { }
-
-    /// <summary>
-    /// Represents an OpenIddict authorization.
-    /// </summary>
-    public class OpenIddictAuthorization<TToken> : OpenIddictAuthorization<TToken, string> {
+    public class OpenIddictAuthorization : OpenIddictAuthorization<string, OpenIddictToken> {
         public OpenIddictAuthorization() {
             // Generate a new string identifier.
             Id = Guid.NewGuid().ToString();
@@ -26,7 +21,13 @@ namespace OpenIddict {
     /// <summary>
     /// Represents an OpenIddict authorization.
     /// </summary>
-    public class OpenIddictAuthorization<TToken, TKey> where TKey : IEquatable<TKey> {
+    public class OpenIddictAuthorization<TKey> : OpenIddictAuthorization<TKey, OpenIddictToken<TKey>>
+        where TKey : IEquatable<TKey> { }
+
+    /// <summary>
+    /// Represents an OpenIddict authorization.
+    /// </summary>
+    public class OpenIddictAuthorization<TKey, TToken> where TKey : IEquatable<TKey> {
         /// <summary>
         /// Gets or sets the unique identifier
         /// associated with the current authorization.
