@@ -26,9 +26,13 @@ namespace OpenIddict.Infrastructure {
             Debug.Assert(!context.Request.IsClientCredentialsGrantType(),
                 "A refresh token should not be issued when using grant_type=client_credentials.");
 
+            // Note: a null value could be returned by FindByIdAsync if the user was removed after the initial
+            // check made by GrantAuthorizationCode/GrantRefreshToken/GrantResourceOwnerCredentials.
+            // In this case, throw an exception to abort the token request.
             var user = await services.Users.FindByIdAsync(context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier));
             if (user == null) {
-                throw new InvalidOperationException("The user cannot be retrieved from the database.");
+                throw new InvalidOperationException("The token request was aborted because the user associated " +
+                                                    "with the refresh token was not found in the database.");
             }
 
             string identifier;

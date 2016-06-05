@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -19,17 +20,13 @@ namespace OpenIddict.Infrastructure {
         public override async Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            var principal = context.Ticket?.Principal;
-            Debug.Assert(principal != null);
-
-            // Note: user may be null if the user has been removed.
-            // In this case, return a 400 response.
-            var user = await services.Users.GetUserAsync(principal);
+            // Note: user may be null if the user was removed after
+            // the initial check made by ValidateUserinfoRequest.
+            // In this case, throw an exception to abort the request.
+            var user = await services.Users.GetUserAsync(context.Ticket.Principal);
             if (user == null) {
-                context.Response.StatusCode = 400;
-                context.HandleResponse();
-
-                return;
+                throw new InvalidOperationException("The userinfo request was aborted because the user profile " +
+                                                    "corresponding to the access token was not found in the database.");
             }
 
             // Note: "sub" is a mandatory claim.
@@ -39,7 +36,7 @@ namespace OpenIddict.Infrastructure {
             // Only add the "preferred_username" claim if the "profile" scope was present in the access token.
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
-            // don't include the "email" scope if the username corresponds to the registed email address.
+            // don't include the "email" scope if the username corresponds to the registered email address.
             if (context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Profile)) {
                 context.PreferredUsername = await services.Users.GetUserNameAsync(user);
 

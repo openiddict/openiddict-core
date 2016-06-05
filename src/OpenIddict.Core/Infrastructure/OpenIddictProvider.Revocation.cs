@@ -36,6 +36,9 @@ namespace OpenIddict.Infrastructure {
             // cannot revoke a refresh token if it's not the intended audience,
             // even if client authentication was skipped.
             if (string.IsNullOrEmpty(context.ClientId)) {
+                services.Logger.LogInformation("The revocation request validation process was skipped " +
+                                               "because the client_id parameter was missing or empty.");
+
                 context.Skip();
 
                 return;
@@ -97,7 +100,7 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            // Extract the token identifier from the authentication ticket.
+            // Extract the token identifier from the refresh token.
             var identifier = context.Ticket.GetTicketId();
             Debug.Assert(!string.IsNullOrEmpty(identifier),
                 "The refresh token should contain a ticket identifier.");
@@ -116,7 +119,7 @@ namespace OpenIddict.Infrastructure {
             // Revoke the refresh token.
             await services.Tokens.RevokeAsync(token);
 
-            services.Logger.LogInformation("The refresh token '{Identifier}' was revoked.", identifier);
+            services.Logger.LogInformation("The refresh token '{Identifier}' was successfully revoked.", identifier);
 
             context.Revoked = true;
         }
