@@ -22,13 +22,6 @@ namespace OpenIddict {
     /// </summary>
     public class OpenIddictToken<TKey> where TKey : IEquatable<TKey> {
         /// <summary>
-        /// Gets or sets the identifier of the authorization attached with the current token.
-        /// This property may be null if the token was issued without
-        /// requiring the user consent or is bound to a client application.
-        /// </summary>
-        public virtual TKey AuthorizationId { get; set; }
-
-        /// <summary>
         /// Gets or sets the unique identifier
         /// associated with the current token.
         /// </summary>
@@ -38,11 +31,5 @@ namespace OpenIddict {
         /// Gets or sets the type of the current token.
         /// </summary>
         public virtual string Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the identifier of the user attached with the current token.
-        /// This property is null if the token represents a client application.
-        /// </summary>
-        public virtual TKey UserId { get; set; }
     }
 }

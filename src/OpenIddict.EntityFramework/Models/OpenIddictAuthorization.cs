@@ -45,11 +45,5 @@ namespace OpenIddict {
         /// associated with the current authorization.
         /// </summary>
         public virtual IList<TToken> Tokens { get; } = new List<TToken>();
-
-        /// <summary>
-        /// Gets or sets the identifier of the user profile
-        /// associated with the current authorization.
-        /// </summary>
-        public virtual TKey UserId { get; set; }
     }
 }

@@ -127,6 +127,10 @@ namespace OpenIddict {
         protected override void OnModelCreating(ModelBuilder builder) {
             base.OnModelCreating(builder);
 
+            // Warning: optional foreign keys MUST NOT be added as CLR properties because
+            // Entity Framework would throw an exception due to the TKey generic parameter
+            // being non-nullable when using value types like short, int, long or Guid.
+
             // Configure the TApplication entity.
             builder.Entity<TApplication>(entity => {
                 entity.HasKey(application => application.Id);
@@ -140,7 +144,7 @@ namespace OpenIddict {
 
                 entity.HasMany(authorization => authorization.Tokens)
                       .WithOne()
-                      .HasForeignKey(token => token.AuthorizationId)
+                      .HasForeignKey("AuthorizationId")
                       .IsRequired(required: false);
 
                 entity.ToTable("OpenIddictAuthorizations");
@@ -164,12 +168,12 @@ namespace OpenIddict {
             builder.Entity<TUser>(entity => {
                 entity.HasMany(user => user.Authorizations)
                       .WithOne()
-                      .HasForeignKey(authorization => authorization.UserId)
+                      .HasForeignKey("UserId")
                       .IsRequired(required: false);
 
                 entity.HasMany(user => user.Tokens)
                       .WithOne()
-                      .HasForeignKey(token => token.UserId)
+                      .HasForeignKey("UserId")
                       .IsRequired(required: false);
             });
         }
