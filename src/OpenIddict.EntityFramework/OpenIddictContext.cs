@@ -29,11 +29,10 @@ namespace OpenIddict {
     /// Represents an OpenIddict-powered Entity Framework context.
     /// </summary>
     /// <typeparam name="TUser">The type of the User entity.</typeparam>
-    public class OpenIddictContext<TUser> : OpenIddictContext<TUser, OpenIddictApplication,
-                                                                     OpenIddictAuthorization,
-                                                                     OpenIddictScope,
-                                                                     OpenIddictToken,
-                                                                     IdentityRole, string>
+    public class OpenIddictContext<TUser> : OpenIddictContext<TUser, IdentityRole, OpenIddictApplication,
+                                                                                   OpenIddictAuthorization,
+                                                                                   OpenIddictScope,
+                                                                                   OpenIddictToken, string>
         where TUser : OpenIddictUser {
         /// <summary>
         /// Initializes a new OpenIddict context without configuring the Entity Framework options.
@@ -52,11 +51,10 @@ namespace OpenIddict {
     /// </summary>
     /// <typeparam name="TUser">The type of the User entity.</typeparam>
     /// <typeparam name="TKey">The type of the primary key used by the Identity/OpenIddict entities.</typeparam>
-    public class OpenIddictContext<TUser, TKey> : OpenIddictContext<TUser, OpenIddictApplication<TKey>,
-                                                                           OpenIddictAuthorization<TKey>,
-                                                                           OpenIddictScope<TKey>,
-                                                                           OpenIddictToken<TKey>,
-                                                                           IdentityRole<TKey>, TKey>
+    public class OpenIddictContext<TUser, TKey> : OpenIddictContext<TUser, IdentityRole<TKey>, OpenIddictApplication<TKey>,
+                                                                                               OpenIddictAuthorization<TKey>,
+                                                                                               OpenIddictScope<TKey>,
+                                                                                               OpenIddictToken<TKey>, TKey>
         where TUser : OpenIddictUser<TKey>
         where TKey : IEquatable<TKey> {
         /// <summary>
@@ -75,19 +73,44 @@ namespace OpenIddict {
     /// Represents an OpenIddict-powered Entity Framework context.
     /// </summary>
     /// <typeparam name="TUser">The type of the User entity.</typeparam>
+    /// <typeparam name="TRole">The type of the Role entity.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key used by the Identity/OpenIddict entities.</typeparam>
+    public class OpenIddictContext<TUser, TRole, TKey> : OpenIddictContext<TUser, TRole, OpenIddictApplication<TKey>,
+                                                                                         OpenIddictAuthorization<TKey>,
+                                                                                         OpenIddictScope<TKey>,
+                                                                                         OpenIddictToken<TKey>, TKey>
+        where TUser : OpenIddictUser<TKey>
+        where TRole : IdentityRole<TKey>
+        where TKey : IEquatable<TKey> {
+        /// <summary>
+        /// Initializes a new OpenIddict context without configuring the Entity Framework options.
+        /// </summary>
+        protected OpenIddictContext() { }
+
+        /// <summary>
+        /// Initializes a new OpenIddict context.
+        /// </summary>
+        /// <param name="options">The options used to configure the Entity Framework context.</param>
+        public OpenIddictContext(DbContextOptions options) : base(options) { }
+    }
+
+    /// <summary>
+    /// Represents an OpenIddict-powered Entity Framework context.
+    /// </summary>
+    /// <typeparam name="TUser">The type of the User entity.</typeparam>
+    /// <typeparam name="TRole">The type of the Role entity.</typeparam>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
     /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    /// <typeparam name="TRole">The type of the Role entity.</typeparam>
     /// <typeparam name="TKey">The type of the primary key used by the Identity/OpenIddict entities.</typeparam>
-    public class OpenIddictContext<TUser, TApplication, TAuthorization, TScope, TToken, TRole, TKey> : IdentityDbContext<TUser, TRole, TKey>
+    public class OpenIddictContext<TUser, TRole, TApplication, TAuthorization, TScope, TToken, TKey> : IdentityDbContext<TUser, TRole, TKey>
         where TUser : OpenIddictUser<TKey, TAuthorization, TToken>
+        where TRole : IdentityRole<TKey>
         where TApplication : OpenIddictApplication<TKey>
         where TAuthorization : OpenIddictAuthorization<TKey, TToken>
         where TScope : OpenIddictScope<TKey>
         where TToken : OpenIddictToken<TKey>
-        where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey> {
         /// <summary>
         /// Initializes a new OpenIddict context without configuring the Entity Framework options.
