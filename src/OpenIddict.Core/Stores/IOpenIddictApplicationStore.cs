@@ -18,15 +18,21 @@ namespace OpenIddict {
         /// </summary>
         /// <param name="application">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        Task CreateAsync(TApplication application, CancellationToken cancellationToken);
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the application.
+        /// </returns>
+        Task<string> CreateAsync(TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an application using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
         Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
@@ -34,7 +40,10 @@ namespace OpenIddict {
         /// </summary>
         /// <param name="url">The post_logout_redirect_uri associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
+        /// returns the client application corresponding to the post_logout_redirect_uri.
+        /// </returns>
         Task<TApplication> FindByLogoutRedirectUri(string url, CancellationToken cancellationToken);
 
         /// <summary>
@@ -42,7 +51,10 @@ namespace OpenIddict {
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client type of the application (by default, "public").
+        /// </returns>
         Task<string> GetClientTypeAsync(TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
@@ -50,7 +62,10 @@ namespace OpenIddict {
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the display name associated with the application.
+        /// </returns>
         Task<string> GetDisplayNameAsync(TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
@@ -58,7 +73,10 @@ namespace OpenIddict {
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the redirect_uri associated with the application.
+        /// </returns>
         Task<string> GetRedirectUriAsync(TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
@@ -66,7 +84,10 @@ namespace OpenIddict {
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the hashed secret associated with the application.
+        /// </returns>
         Task<string> GetHashedSecretAsync(TApplication application, CancellationToken cancellationToken);
     }
 }

@@ -5,11 +5,13 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
@@ -88,24 +90,24 @@ namespace OpenIddict.Infrastructure {
             // If the received token is not a refresh token, set Revoked
             // to false to indicate that the token cannot be revoked.
             if (!context.Ticket.IsRefreshToken()) {
+                services.Logger.LogError("The revocation request was rejected because the token was not a refresh token.");
+
                 context.Revoked = false;
 
                 return;
             }
 
             // Extract the token identifier from the authentication ticket.
-            // If the identifier cannot be extracted, abort the revocation.
             var identifier = context.Ticket.GetTicketId();
-            if (string.IsNullOrEmpty(identifier)) {
-                context.Revoked = true;
-
-                return;
-            }
+            Debug.Assert(!string.IsNullOrEmpty(identifier),
+                "The refresh token should contain a ticket identifier.");
 
             // Retrieve the token from the database. If the token cannot be found,
             // assume it is invalid and consider the revocation as successful.
             var token = await services.Tokens.FindByIdAsync(identifier);
             if (token == null) {
+                services.Logger.LogInformation("The refresh token '{Identifier}' was already revoked.", identifier);
+
                 context.Revoked = true;
 
                 return;
@@ -113,6 +115,8 @@ namespace OpenIddict.Infrastructure {
 
             // Revoke the refresh token.
             await services.Tokens.RevokeAsync(token);
+
+            services.Logger.LogInformation("The refresh token '{Identifier}' was revoked.", identifier);
 
             context.Revoked = true;
         }

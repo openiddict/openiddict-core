@@ -55,6 +55,6 @@ namespace OpenIddict {
         /// Gets or sets the application type
         /// associated with the current application.
         /// </summary>
-        public virtual string Type { get; set; }
+        public virtual string Type { get; set; } = OpenIddictConstants.ClientTypes.Public;
     }
 }

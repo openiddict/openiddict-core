@@ -75,7 +75,10 @@ namespace OpenIddict {
         /// </summary>
         /// <param name="user">The user corresponding to the identity.</param>
         /// <param name="scopes">The scopes granted by the resource owner.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the <see cref="ClaimsIdentity"/> corresponding to the user.
+        /// </returns>
         public virtual async Task<ClaimsIdentity> CreateIdentityAsync(TUser user, IEnumerable<string> scopes) {
             if (user == null) {
                 throw new ArgumentNullException(nameof(user));
@@ -145,26 +148,27 @@ namespace OpenIddict {
         /// <summary>
         /// Creates a new token, defined by a unique identifier and a token type.
         /// </summary>
-        /// <param name="identifier">The unique identifier associated with the token to create.</param>
         /// <param name="type">The token type.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual Task CreateAsync(string identifier, string type) {
-            if (string.IsNullOrEmpty(identifier)) {
-                throw new ArgumentException("The identifier cannot be null or empty", nameof(identifier));
-            }
-
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the token.
+        /// </returns>
+        public virtual Task<string> CreateAsync(string type) {
             if (string.IsNullOrEmpty(type)) {
                 throw new ArgumentException("The token type cannot be null or empty", nameof(type));
             }
 
-            return Store.CreateAsync(identifier, type, CancellationToken);
+            return Store.CreateAsync(type, CancellationToken);
         }
 
         /// <summary>
-        /// Retrieves an token using its unique identifier.
+        /// Retrieves a token using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the token.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the token corresponding to the unique identifier.
+        /// </returns>
         public virtual Task<TToken> FindByIdAsync(string identifier) {
             if (string.IsNullOrEmpty(identifier)) {
                 throw new ArgumentException("The identifier cannot be null or empty", nameof(identifier));

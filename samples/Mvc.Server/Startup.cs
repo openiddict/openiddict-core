@@ -142,7 +142,7 @@ namespace Mvc.Server {
                     // context.Applications.Add(new OpenIddictApplication {
                     //     Id = "resource_server",
                     //     DisplayName = "Main resource server",
-                    //     Secret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd",
+                    //     Secret = Crypto.HashPassword("secret_secret_secret"),
                     //     Type = OpenIddictConstants.ClientTypes.Confidential
                     // });
 

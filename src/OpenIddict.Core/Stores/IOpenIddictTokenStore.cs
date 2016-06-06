@@ -16,18 +16,23 @@ namespace OpenIddict {
         /// <summary>
         /// Creates a new token, defined by a unique identifier and a token type.
         /// </summary>
-        /// <param name="identifier">The unique identifier associated with the token to create.</param>
         /// <param name="type">The token type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        Task CreateAsync(string identifier, string type, CancellationToken cancellationToken);
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the token.
+        /// </returns>
+        Task<string> CreateAsync(string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an token using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the token corresponding to the unique identifier.
+        /// </returns>
         Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>

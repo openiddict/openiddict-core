@@ -38,24 +38,25 @@ namespace OpenIddict {
         /// <summary>
         /// Creates a new token, defined by a unique identifier and a token type.
         /// </summary>
-        /// <param name="identifier">The unique identifier associated with the token to create.</param>
         /// <param name="type">The token type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual Task CreateAsync(string identifier, string type, CancellationToken cancellationToken) {
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the token.
+        /// </returns>
+        public virtual async Task<string> CreateAsync(string type, CancellationToken cancellationToken) {
+            // Ensure that the key type can be serialized.
             var converter = TypeDescriptor.GetConverter(typeof(TKey));
-
-            // Ensure that the key type is compatible with string keys.
-            if (!converter.CanConvertFrom(typeof(string))) {
-                return Task.FromResult(0);
+            if (!converter.CanConvertTo(typeof(string))) {
+                throw new InvalidOperationException($"The '{typeof(TKey).Name}' key type is not supported.");
             }
 
-            var key = (TKey) converter.ConvertFromInvariantString(identifier);
-
-            var token = new TToken { Id = key, Type = type };
+            var token = new TToken { Type = type };
             Tokens.Add(token);
 
-            return Context.SaveChangesAsync(cancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
+
+            return converter.ConvertToInvariantString(token.Id);
         }
 
         /// <summary>
@@ -63,12 +64,14 @@ namespace OpenIddict {
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the token corresponding to the unique identifier.
+        /// </returns>
         public virtual Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken) {
-            var converter = TypeDescriptor.GetConverter(typeof(TKey));
-
             // If the string key cannot be converted to TKey, return null
             // to indicate that the requested token doesn't exist.
+            var converter = TypeDescriptor.GetConverter(typeof(TKey));
             if (!converter.CanConvertFrom(typeof(string))) {
                 return Task.FromResult<TToken>(null);
             }

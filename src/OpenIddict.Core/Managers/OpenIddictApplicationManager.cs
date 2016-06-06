@@ -52,8 +52,11 @@ namespace OpenIddict {
         /// Creates a new application.
         /// </summary>
         /// <param name="application">The application to create.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual Task CreateAsync(TApplication application) {
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the application.
+        /// </returns>
+        public virtual Task<string> CreateAsync(TApplication application) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -65,7 +68,10 @@ namespace OpenIddict {
         /// Retrieves an application using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the application.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
         public virtual Task<TApplication> FindByIdAsync(string identifier) {
             return Store.FindByIdAsync(identifier, CancellationToken);
         }
@@ -74,7 +80,10 @@ namespace OpenIddict {
         /// Retrieves an application using its post_logout_redirect_uri.
         /// </summary>
         /// <param name="url">The post_logout_redirect_uri associated with the application.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
+        /// returns the client application corresponding to the post_logout_redirect_uri.
+        /// </returns>
         public virtual Task<TApplication> FindByLogoutRedirectUri(string url) {
             return Store.FindByLogoutRedirectUri(url, CancellationToken);
         }
@@ -83,7 +92,10 @@ namespace OpenIddict {
         /// Retrieves the client type associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client type of the application (by default, "public").
+        /// </returns>
         public virtual async Task<string> GetClientTypeAsync(TApplication application) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
@@ -105,7 +117,10 @@ namespace OpenIddict {
         /// Retrieves the display name associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the display name associated with the application.
+        /// </returns>
         public virtual Task<string> GetDisplayNameAsync(TApplication application) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
@@ -119,7 +134,10 @@ namespace OpenIddict {
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="address">The address that should be compared to the redirect_uri stored in the database.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns a boolean indicating whether the redirect_uri was valid.
+        /// </returns>
         public virtual async Task<bool> ValidateRedirectUriAsync(TApplication application, string address) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
@@ -141,6 +159,10 @@ namespace OpenIddict {
         /// <param name="application">The application.</param>
         /// <param name="secret">The secret that should be compared to the client_secret stored in the database.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns a boolean indicating whether the client secret was valid.
+        /// </returns>
         public virtual async Task<bool> ValidateSecretAsync(TApplication application, string secret) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
