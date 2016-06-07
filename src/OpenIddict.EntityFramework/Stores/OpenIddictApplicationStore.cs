@@ -5,7 +5,9 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +17,12 @@ namespace OpenIddict {
     /// Provides methods allowing to manage the applications stored in a database.
     /// </summary>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
+    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-    public class OpenIddictApplicationStore<TApplication, TContext, TKey> : IOpenIddictApplicationStore<TApplication>
-        where TApplication : OpenIddictApplication<TKey>
+    public class OpenIddictApplicationStore<TApplication, TToken, TContext, TKey> : IOpenIddictApplicationStore<TApplication>
+        where TApplication : OpenIddictApplication<TKey, TToken>
+        where TToken : OpenIddictToken<TKey>, new()
         where TContext : DbContext
         where TKey : IEquatable<TKey> {
         public OpenIddictApplicationStore(TContext context) {
@@ -130,6 +134,23 @@ namespace OpenIddict {
         }
 
         /// <summary>
+        /// Retrieves the hashed secret associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the hashed secret associated with the application.
+        /// </returns>
+        public virtual Task<string> GetHashedSecretAsync(TApplication application, CancellationToken cancellationToken) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.Secret);
+        }
+
+        /// <summary>
         /// Retrieves the callback address associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -147,20 +168,37 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Retrieves the hashed secret associated with an application.
+        /// Retrieves the token identifiers associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the hashed secret associated with the application.
+        /// whose result returns the tokens associated with the application.
         /// </returns>
-        public virtual Task<string> GetHashedSecretAsync(TApplication application, CancellationToken cancellationToken) {
+        public virtual async Task<IEnumerable<string>> GetTokensAsync(TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(application.Secret);
+            // Ensure that the key type can be serialized.
+            var converter = TypeDescriptor.GetConverter(typeof(TKey));
+            if (!converter.CanConvertTo(typeof(string))) {
+                throw new InvalidOperationException($"The '{typeof(TKey).Name}' key type is not supported.");
+            }
+
+            var query = from entity in Applications
+                        where entity.Id.Equals(application.Id)
+                        from token in entity.Tokens
+                        select token.Id;
+
+            var tokens = new List<string>();
+
+            foreach (var identifier in await query.ToArrayAsync()) {
+                tokens.Add(converter.ConvertToInvariantString(identifier));
+            }
+
+            return tokens;
         }
     }
 }

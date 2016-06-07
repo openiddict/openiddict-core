@@ -70,9 +70,8 @@ namespace OpenIddict.Mvc {
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Accept(
-            [FromServices] UserManager<TUser> users,
+            [FromServices] OpenIddictUserManager<TUser> users,
             [FromServices] OpenIddictApplicationManager<TApplication> applications,
-            [FromServices] OpenIddictTokenManager<TToken, TUser> tokens,
             [FromServices] IOptions<OpenIddictOptions> options) {
             var response = HttpContext.GetOpenIdConnectResponse();
             if (response != null) {
@@ -98,7 +97,7 @@ namespace OpenIddict.Mvc {
 
             // Create a new ClaimsIdentity containing the claims that
             // will be used to create an id_token, a token or a code.
-            var identity = await tokens.CreateIdentityAsync(user, request.GetScopes());
+            var identity = await users.CreateIdentityAsync(user, request.GetScopes());
             Debug.Assert(identity != null);
 
             var application = await applications.FindByIdAsync(request.ClientId);

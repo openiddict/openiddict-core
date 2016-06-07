@@ -56,14 +56,13 @@ namespace OpenIddict.Infrastructure {
         public virtual SignInManager<TUser> SignIn => Services.GetRequiredService<SignInManager<TUser>>();
 
         /// <summary>
-        /// Gets the <see cref="OpenIddictTokenManager{TToken, TUser}"/>.
+        /// Gets the <see cref="OpenIddictTokenManager{TToken}"/>.
         /// </summary>
-        public virtual OpenIddictTokenManager<TToken, TUser> Tokens =>
-            Services.GetRequiredService<OpenIddictTokenManager<TToken, TUser>>();
+        public virtual OpenIddictTokenManager<TToken> Tokens => Services.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
         /// <summary>
-        /// Gets the <see cref="UserManager{TUser}"/>.
+        /// Gets the <see cref="OpenIddictUserManager{TUser}"/>.
         /// </summary>
-        public virtual UserManager<TUser> Users => Services.GetRequiredService<UserManager<TUser>>();
+        public virtual OpenIddictUserManager<TUser> Users => Services.GetRequiredService<OpenIddictUserManager<TUser>>();
     }
 }

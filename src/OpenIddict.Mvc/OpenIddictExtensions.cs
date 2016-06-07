@@ -119,6 +119,26 @@ namespace Microsoft.AspNetCore.Builder {
                     return container.GetRequiredService(typeof(OpenIddictAuthorizationManager<>).MakeGenericType(builder.AuthorizationType));
                 });
 
+                // Register the token manager in the isolated container.
+                services.AddScoped(typeof(OpenIddictTokenManager<>).MakeGenericType(builder.TokenType), provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
+
+                    // Resolve the token manager from the parent container.
+                    return container.GetRequiredService(typeof(OpenIddictTokenManager<>).MakeGenericType(builder.TokenType));
+                });
+
+                // Register the user manager in the isolated container.
+                services.AddScoped(typeof(OpenIddictUserManager<>).MakeGenericType(builder.UserType), provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
+
+                    // Resolve the user manager from the parent container.
+                    return container.GetRequiredService(typeof(OpenIddictUserManager<>).MakeGenericType(builder.UserType));
+                });
+
                 // Register the sign-in manager in the isolated container.
                 services.AddScoped(typeof(SignInManager<>).MakeGenericType(builder.UserType), provider => {
                     var accessor = provider.GetRequiredService<IHttpContextAccessor>();
@@ -129,27 +149,9 @@ namespace Microsoft.AspNetCore.Builder {
                     return container.GetRequiredService(typeof(SignInManager<>).MakeGenericType(builder.UserType));
                 });
 
-                // Register the token manager in the isolated container.
-                services.AddScoped(typeof(OpenIddictTokenManager<,>).MakeGenericType(
-                    /* TToken: */ builder.TokenType,
-                    /* TUser: */ builder.UserType), provider => {
-                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
-                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
-
-                    // Resolve the token manager from the parent container.
-                    return container.GetRequiredService(typeof(OpenIddictTokenManager<,>).MakeGenericType(
-                        /* TToken: */ builder.TokenType, /* TUser: */ builder.UserType));
-                });
-
                 // Register the user manager in the isolated container.
                 services.AddScoped(typeof(UserManager<>).MakeGenericType(builder.UserType), provider => {
-                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
-                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
-                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
-
-                    // Resolve the user manager from the parent container.
-                    return container.GetRequiredService(typeof(UserManager<>).MakeGenericType(builder.UserType));
+                    return provider.GetRequiredService(typeof(OpenIddictUserManager<>).MakeGenericType(builder.UserType));
                 });
 
                 // Register the options in the isolated container.

@@ -170,7 +170,7 @@ namespace OpenIddict.Infrastructure {
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
             // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
             // don't include the "email" scope if the username corresponds to the registed email address.
-            var identity = await services.Tokens.CreateIdentityAsync(user, context.Request.GetScopes());
+            var identity = await services.Users.CreateIdentityAsync(user, context.Request.GetScopes());
             Debug.Assert(identity != null);
 
             // Create a new authentication ticket holding the user identity.

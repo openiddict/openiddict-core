@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CryptoHelper;
@@ -127,6 +128,22 @@ namespace OpenIddict {
             }
 
             return Store.GetDisplayNameAsync(application, CancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the token identifiers associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens associated with the application.
+        /// </returns>
+        public virtual Task<IEnumerable<string>> GetTokensAsync(TApplication application) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Store.GetTokensAsync(application, CancellationToken);
         }
 
         /// <summary>

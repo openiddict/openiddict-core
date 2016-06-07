@@ -5,12 +5,13 @@
  */
 
 using System;
+using System.Collections.Generic;
 
 namespace OpenIddict {
     /// <summary>
     /// Represents an OpenIddict application.
     /// </summary>
-    public class OpenIddictApplication : OpenIddictApplication<string> {
+    public class OpenIddictApplication : OpenIddictApplication<string, OpenIddictToken> {
         public OpenIddictApplication() {
             // Generate a new string identifier.
             Id = Guid.NewGuid().ToString();
@@ -20,7 +21,13 @@ namespace OpenIddict {
     /// <summary>
     /// Represents an OpenIddict application.
     /// </summary>
-    public class OpenIddictApplication<TKey> where TKey : IEquatable<TKey> {
+    public class OpenIddictApplication<TKey> : OpenIddictApplication<TKey, OpenIddictToken<TKey>>
+        where TKey : IEquatable<TKey> { }
+
+    /// <summary>
+    /// Represents an OpenIddict application.
+    /// </summary>
+    public class OpenIddictApplication<TKey, TToken> where TKey : IEquatable<TKey> {
         /// <summary>
         /// Gets or sets the display name
         /// associated with the current application.
@@ -50,6 +57,11 @@ namespace OpenIddict {
         /// associated with the current application.
         /// </summary>
         public virtual string Secret { get; set; }
+
+        /// <summary>
+        /// Gets the list of the tokens associated with this application.
+        /// </summary>
+        public virtual IList<TToken> Tokens { get; } = new List<TToken>();
 
         /// <summary>
         /// Gets or sets the application type

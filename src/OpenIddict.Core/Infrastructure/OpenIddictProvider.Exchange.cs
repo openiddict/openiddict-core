@@ -36,7 +36,7 @@ namespace OpenIddict.Infrastructure {
             // Note: the OpenID Connect server middleware allows returning a refresh token with grant_type=client_credentials,
             // though it's usually not recommended by the OAuth2 specification. To encourage developers to make a new
             // grant_type=client_credentials request instead of using refresh tokens, OpenIddict uses a stricter policy
-            // that rejects grant_type=client_credentials requests containg the 'offline_access' scope.
+            // that rejects grant_type=client_credentials requests containing the 'offline_access' scope.
             // See https://tools.ietf.org/html/rfc6749#section-4.4.3 for more information.
             if (context.Request.IsClientCredentialsGrantType() &&
                 context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess)) {
@@ -182,7 +182,7 @@ namespace OpenIddict.Infrastructure {
 
             // Note: the "scopes" property stored in context.AuthenticationTicket is automatically
             // updated by ASOS when the client application requests a restricted scopes collection.
-            var identity = await services.Tokens.CreateIdentityAsync(user, context.Ticket.GetScopes());
+            var identity = await services.Users.CreateIdentityAsync(user, context.Ticket.GetScopes());
             Debug.Assert(identity != null);
 
             // Create a new authentication ticket holding the user identity but
@@ -275,7 +275,7 @@ namespace OpenIddict.Infrastructure {
                 }
             }
 
-            var identity = await services.Tokens.CreateIdentityAsync(user, context.Request.GetScopes());
+            var identity = await services.Users.CreateIdentityAsync(user, context.Request.GetScopes());
             Debug.Assert(identity != null);
 
             // Create a new authentication ticket holding the user identity.

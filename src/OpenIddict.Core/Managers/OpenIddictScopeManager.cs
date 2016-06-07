@@ -19,7 +19,7 @@ namespace OpenIddict {
     public class OpenIddictScopeManager<TScope> where TScope : class {
         public OpenIddictScopeManager(
             [NotNull] IServiceProvider services,
-            [NotNull] IOpenIddictAuthorizationStore<TScope> store,
+            [NotNull] IOpenIddictScopeStore<TScope> store,
             [NotNull] ILogger<OpenIddictAuthorizationManager<TScope>> logger) {
             Context = services?.GetRequiredService<IHttpContextAccessor>()?.HttpContext;
             Logger = logger;
@@ -44,6 +44,6 @@ namespace OpenIddict {
         /// <summary>
         /// Gets the store associated with the current manager.
         /// </summary>
-        protected IOpenIddictAuthorizationStore<TScope> Store { get; }
+        protected IOpenIddictScopeStore<TScope> Store { get; }
     }
 }

@@ -5,11 +5,14 @@
  */
 
 using System;
+using System.Diagnostics;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
@@ -17,8 +20,40 @@ namespace OpenIddict.Infrastructure {
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            // Persist a new token entry in the database.
-            var identifier = await services.Tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken);
+            Debug.Assert(context.Request.RequestType == OpenIdConnectRequestType.TokenRequest,
+                "The request should be a token request.");
+
+            Debug.Assert(!context.Request.IsClientCredentialsGrantType(),
+                "A refresh token should not be issued when using grant_type=client_credentials.");
+
+            var user = await services.Users.FindByIdAsync(context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier));
+            if (user == null) {
+                throw new InvalidOperationException("The user cannot be retrieved from the database.");
+            }
+
+            string identifier;
+
+            // If the client application sending the token request is known,
+            // ensure the token is attached to the corresponding client entity.
+            if (!string.IsNullOrEmpty(context.Request.ClientId)) {
+                var application = await services.Applications.FindByIdAsync(context.Request.ClientId);
+                if (application == null) {
+                    throw new InvalidOperationException("The application cannot be retrieved from the database.");
+                }
+
+                // Persist a new token entry in the database and attach it
+                // to the user and the client application it is issued to.
+                identifier = await services.Users.CreateTokenAsync(user, context.Request.ClientId,
+                    OpenIdConnectConstants.TokenTypeHints.RefreshToken);
+            }
+
+            else {
+                // Persist a new token entry in the database
+                // and attach it to the user it corresponds to.
+                identifier = await services.Users.CreateTokenAsync(user,
+                    OpenIdConnectConstants.TokenTypeHints.RefreshToken);
+            }
+
             if (string.IsNullOrEmpty(identifier)) {
                 throw new InvalidOperationException("The unique key associated with a refresh token cannot be null or empty.");
             }

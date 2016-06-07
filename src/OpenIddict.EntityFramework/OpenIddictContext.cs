@@ -107,7 +107,7 @@ namespace OpenIddict {
     public class OpenIddictContext<TUser, TRole, TApplication, TAuthorization, TScope, TToken, TKey> : IdentityDbContext<TUser, TRole, TKey>
         where TUser : OpenIddictUser<TKey, TAuthorization, TToken>
         where TRole : IdentityRole<TKey>
-        where TApplication : OpenIddictApplication<TKey>
+        where TApplication : OpenIddictApplication<TKey, TToken>
         where TAuthorization : OpenIddictAuthorization<TKey, TToken>
         where TScope : OpenIddictScope<TKey>
         where TToken : OpenIddictToken<TKey>
@@ -157,6 +157,11 @@ namespace OpenIddict {
             // Configure the TApplication entity.
             builder.Entity<TApplication>(entity => {
                 entity.HasKey(application => application.Id);
+
+                entity.HasMany(application => application.Tokens)
+                      .WithOne()
+                      .HasForeignKey("ApplicationId")
+                      .IsRequired(required: false);
 
                 entity.ToTable("OpenIddictApplications");
             });

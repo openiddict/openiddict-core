@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -69,6 +70,17 @@ namespace OpenIddict {
         Task<string> GetDisplayNameAsync(TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the hashed secret associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the hashed secret associated with the application.
+        /// </returns>
+        Task<string> GetHashedSecretAsync(TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the callback address associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -80,14 +92,14 @@ namespace OpenIddict {
         Task<string> GetRedirectUriAsync(TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves the hashed secret associated with an application.
+        /// Retrieves the token identifiers associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the hashed secret associated with the application.
+        /// whose result returns the tokens associated with the application.
         /// </returns>
-        Task<string> GetHashedSecretAsync(TApplication application, CancellationToken cancellationToken);
+        Task<IEnumerable<string>> GetTokensAsync(TApplication application, CancellationToken cancellationToken);
     }
 }

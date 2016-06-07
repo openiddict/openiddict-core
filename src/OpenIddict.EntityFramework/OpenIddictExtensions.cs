@@ -37,14 +37,16 @@ namespace Microsoft.AspNetCore.Builder {
 
             Debug.Assert(builder.ApplicationType != null &&
                          builder.AuthorizationType != null &&
+                         builder.RoleType != null &&
                          builder.ScopeType != null &&
                          builder.TokenType != null, "The entity types exposed by OpenIddictBuilder shouldn't be null.");
 
             // Register the application store in the DI container.
             builder.Services.TryAddScoped(
                 typeof(IOpenIddictApplicationStore<>).MakeGenericType(builder.ApplicationType),
-                typeof(OpenIddictApplicationStore<,,>).MakeGenericType(
+                typeof(OpenIddictApplicationStore<,,,>).MakeGenericType(
                     /* TApplication: */ builder.ApplicationType,
+                    /* TToken: */ builder.TokenType,
                     /* TContext: */ typeof(TContext),
                     /* TKey: */ typeof(TKey)));
 
@@ -68,7 +70,21 @@ namespace Microsoft.AspNetCore.Builder {
             // Register the token store in the DI container.
             builder.Services.TryAddScoped(
                 typeof(IOpenIddictTokenStore<>).MakeGenericType(builder.TokenType),
-                typeof(OpenIddictTokenStore<,,>).MakeGenericType(
+                typeof(OpenIddictTokenStore<,,,,>).MakeGenericType(
+                    /* TToken: */ builder.TokenType,
+                    /* TAuthorization: */ builder.AuthorizationType,
+                    /* TUser: */ builder.UserType,
+                    /* TContext: */ typeof(TContext),
+                    /* TKey: */ typeof(TKey)));
+
+            // Register the token store in the DI container.
+            builder.Services.TryAddScoped(
+                typeof(IOpenIddictUserStore<>).MakeGenericType(builder.UserType),
+                typeof(OpenIddictUserStore<,,,,,,>).MakeGenericType(
+                    /* TUser: */ builder.UserType,
+                    /* TApplication: */ builder.ApplicationType,
+                    /* TAuthorization: */ builder.AuthorizationType,
+                    /* TRole: */ builder.RoleType,
                     /* TToken: */ builder.TokenType,
                     /* TContext: */ typeof(TContext),
                     /* TKey: */ typeof(TKey)));

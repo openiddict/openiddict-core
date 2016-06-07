@@ -41,6 +41,12 @@ namespace Microsoft.AspNetCore.Builder {
         public Type AuthorizationType { get; set; }
 
         /// <summary>
+        /// Gets or sets the type corresponding to the Role entity.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public Type RoleType { get; set; }
+
+        /// <summary>
         /// Gets or sets the type corresponding to the Scope entity.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -182,7 +188,7 @@ namespace Microsoft.AspNetCore.Builder {
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder AddTokenManager<TManager>() {
-            var contract = typeof(OpenIddictTokenManager<,>).MakeGenericType(TokenType, UserType);
+            var contract = typeof(OpenIddictTokenManager<>).MakeGenericType(TokenType);
             if (!contract.IsAssignableFrom(typeof(TManager))) {
                 throw new InvalidOperationException("Custom managers must be derived from OpenIddictTokenManager.");
             }

@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Builder {
         /// When using this method, custom stores must be manually registered.
         /// </summary>
         /// <typeparam name="TUser">The type of the User entity.</typeparam>
+        /// <typeparam name="TRole">The type of the Role entity.</typeparam>
         /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
         /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
         /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
@@ -32,9 +33,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// consider adding the MVC module or creating your own authorization controller.
         /// </remarks>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddOpenIddict<TUser, TApplication, TAuthorization, TScope, TToken>(
+        public static OpenIddictBuilder AddOpenIddict<TUser, TRole, TApplication, TAuthorization, TScope, TToken>(
             [NotNull] this IServiceCollection services)
             where TUser : class
+            where TRole : class
             where TApplication : class
             where TAuthorization : class
             where TScope : class
@@ -46,6 +48,7 @@ namespace Microsoft.AspNetCore.Builder {
             var builder = new OpenIddictBuilder(services) {
                 ApplicationType = typeof(TApplication),
                 AuthorizationType = typeof(TAuthorization),
+                RoleType = typeof(TRole),
                 ScopeType = typeof(TScope),
                 TokenType = typeof(TToken),
                 UserType = typeof(TUser)
@@ -64,7 +67,8 @@ namespace Microsoft.AspNetCore.Builder {
             builder.Services.TryAddScoped<OpenIddictApplicationManager<TApplication>>();
             builder.Services.TryAddScoped<OpenIddictAuthorizationManager<TAuthorization>>();
             builder.Services.TryAddScoped<OpenIddictScopeManager<TScope>>();
-            builder.Services.TryAddScoped<OpenIddictTokenManager<TToken, TUser>>();
+            builder.Services.TryAddScoped<OpenIddictTokenManager<TToken>>();
+            builder.Services.TryAddScoped<OpenIddictUserManager<TUser>>();
             builder.Services.TryAddScoped<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             return builder;

@@ -14,7 +14,7 @@ namespace OpenIddict {
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
     public interface IOpenIddictTokenStore<TToken> where TToken : class {
         /// <summary>
-        /// Creates a new token, defined by a unique identifier and a token type.
+        /// Creates a new token, which is not associated with a particular user or client.
         /// </summary>
         /// <param name="type">The token type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>

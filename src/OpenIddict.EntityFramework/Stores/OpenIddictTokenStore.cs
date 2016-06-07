@@ -15,10 +15,14 @@ namespace OpenIddict {
     /// Provides methods allowing to manage the tokens stored in a database.
     /// </summary>
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
+    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+    /// <typeparam name="TUser">The type of the User entity.</typeparam>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-    public class OpenIddictTokenStore<TToken, TContext, TKey> : IOpenIddictTokenStore<TToken>
+    public class OpenIddictTokenStore<TToken, TAuthorization, TUser, TContext, TKey> : IOpenIddictTokenStore<TToken>
         where TToken : OpenIddictToken<TKey>, new()
+        where TAuthorization : OpenIddictAuthorization<TKey, TToken>
+        where TUser : OpenIddictUser<TKey, TAuthorization, TToken>
         where TContext : DbContext
         where TKey : IEquatable<TKey> {
         public OpenIddictTokenStore(TContext context) {
@@ -36,7 +40,7 @@ namespace OpenIddict {
         protected DbSet<TToken> Tokens => Context.Set<TToken>();
 
         /// <summary>
-        /// Creates a new token, defined by a unique identifier and a token type.
+        /// Creates a new token, which is not associated with a particular user or client.
         /// </summary>
         /// <param name="type">The token type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -45,6 +49,10 @@ namespace OpenIddict {
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
         public virtual async Task<string> CreateAsync(string type, CancellationToken cancellationToken) {
+            if (string.IsNullOrEmpty(type)) {
+                throw new ArgumentException("The token type cannot be null or empty.");
+            }
+
             // Ensure that the key type can be serialized.
             var converter = TypeDescriptor.GetConverter(typeof(TKey));
             if (!converter.CanConvertTo(typeof(string))) {
