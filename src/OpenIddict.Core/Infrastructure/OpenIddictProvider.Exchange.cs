@@ -21,15 +21,28 @@ namespace OpenIddict.Infrastructure {
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            // Note: OpenIdConnectServerHandler supports authorization code, refresh token,
-            // client credentials, resource owner password credentials and custom grants
-            // but this authorization server uses a stricter policy rejecting custom grant types.
+            // Note: the OpenID Connect server middleware supports authorization code, refresh token, client credentials,
+            // resource owner password credentials and custom grants but OpenIddict uses a stricter policy rejecting custom grants.
             if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType() &&
                 !context.Request.IsPasswordGrantType() && !context.Request.IsClientCredentialsGrantType()) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
                     description: "Only authorization code, refresh token, client credentials " +
                                  "and password grants are accepted by this authorization server.");
+
+                return;
+            }
+
+            // Note: the OpenID Connect server middleware allows returning a refresh token with grant_type=client_credentials,
+            // though it's usually not recommended by the OAuth2 specification. To encourage developers to make a new
+            // grant_type=client_credentials request instead of using refresh tokens, OpenIddict uses a stricter policy
+            // that rejects grant_type=client_credentials requests containg the 'offline_access' scope.
+            // See https://tools.ietf.org/html/rfc6749#section-4.4.3 for more information.
+            if (context.Request.IsClientCredentialsGrantType() &&
+                context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The 'offline_access' scope is not allowed when using grant_type=client_credentials.");
 
                 return;
             }
