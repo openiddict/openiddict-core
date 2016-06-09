@@ -161,6 +161,25 @@ namespace OpenIddict.Infrastructure {
             context.Validate(ticket);
         }
 
+        public override async Task GrantAuthorizationCode([NotNull] GrantAuthorizationCodeContext context) {
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+
+            var user = await services.Users.GetUserAsync(context.Ticket.Principal);
+            if (user == null) {
+                services.Logger.LogError("The token request was rejected because the user profile associated " +
+                                         "with the authorization code was not found in the database: '{Identifier}'.",
+                                         context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier));
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidGrant,
+                    description: "The authorization code is no longer valid.");
+
+                return;
+            }
+
+            context.Validate(context.Ticket);
+        }
+
         public override async Task GrantRefreshToken([NotNull] GrantRefreshTokenContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 

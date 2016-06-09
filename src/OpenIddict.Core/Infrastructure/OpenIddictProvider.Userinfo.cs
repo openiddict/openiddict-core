@@ -12,11 +12,36 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
+        public override async Task ValidateUserinfoRequest([NotNull] ValidateUserinfoRequestContext context) {
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+
+            // Note: the principal returned by AuthenticateAsync cannot be null as the OpenID Connect server
+            // middleware always ensures the ticket is valid before invoking the ValidateUserinfoRequest event.
+            var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
+            Debug.Assert(principal != null, "The principal extracted from the access token shouldn't be null.");
+
+            // Ensure the user was not removed from the database.
+            var user = await services.Users.GetUserAsync(principal);
+            if (user == null) {
+                services.Logger.LogError("The userinfo request was rejected because the user profile " +
+                                         "corresponding to the access token was not found in the database.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidGrant,
+                    description: "The access token is no longer valid.");
+
+                return;
+            }
+
+            context.Validate();
+        }
+
         public override async Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
