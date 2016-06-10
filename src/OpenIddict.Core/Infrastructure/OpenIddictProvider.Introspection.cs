@@ -6,7 +6,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
@@ -20,7 +19,8 @@ namespace OpenIddict.Infrastructure {
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            // Note: ASOS supports both GET and POST introspection requests but OpenIddict only accepts POST requests.
+            // Note: the OpenID Connect server middleware supports both GET and POST
+            // introspection requests but OpenIddict only accepts POST requests.
             if (!string.Equals(context.HttpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -29,10 +29,10 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            // Note: ASOS supports unauthenticated introspection requests but OpenIddict uses
-            // a stricter policy preventing unauthenticated/public applications from using
-            // the introspection endpoint, as required by the specifications.
-            // See https://tools.ietf.org/html/rfc7662 for more information.
+            // Note: the OpenID Connect server middleware supports unauthenticated introspection requests
+            // but OpenIddict uses a stricter policy preventing unauthenticated/public applications
+            // from using the introspection endpoint, as required by the specifications.
+            // See https://tools.ietf.org/html/rfc7662#section-2.1 for more information.
             if (string.IsNullOrEmpty(context.ClientId) || string.IsNullOrEmpty(context.ClientSecret)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -85,6 +85,21 @@ namespace OpenIddict.Infrastructure {
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
+            Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client_id parameter shouldn't be null.");
+
+            // Note: the OpenID Connect server middleware allows authorized presenters (e.g relying parties) to introspect access tokens
+            // but OpenIddict uses a stricter policy that only allows resource servers to use the introspection endpoint, unless the ticket
+            // doesn't have any audience: in this case, the caller is allowed to introspect the token even if it's not listed as a valid audience.
+            if (context.Ticket.IsAccessToken() && context.Ticket.HasAudience() && !context.Ticket.HasAudience(context.Request.ClientId)) {
+                services.Logger.LogWarning("The client application '{ClientId}' is not allowed to introspect the access " +
+                                           "token '{Identifier}' because it's not listed as a valid audience.",
+                                           context.Request.ClientId, context.Ticket.GetTicketId());
+
+                context.Active = false;
+
+                return;
+            }
+
             var user = await services.Users.GetUserAsync(context.Ticket.Principal);
             if (user == null) {
                 services.Logger.LogInformation("The token {Identifier} was declared as inactive because the " +
@@ -97,6 +112,8 @@ namespace OpenIddict.Infrastructure {
             }
 
             // When the received ticket is a refresh token, ensure it is still valid.
+            // Note: the OpenID Connect server middleware automatically ensures only
+            // authorized presenters are allowed to introspect refresh tokens.
             if (context.Ticket.IsRefreshToken()) {
                 // Retrieve the token from the database using the unique identifier stored in the refresh token:
                 // if the corresponding entry cannot be found, return Active = false to indicate that is is no longer valid.
