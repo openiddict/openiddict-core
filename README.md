@@ -130,6 +130,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
 }
 ```
 
+> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure to register your Entity Framework context using the overload accepting a `TKey` generic argument:
+
+```csharp
+services.AddOpenIddict<ApplicationUser, IdentityRole<int>, ApplicationDbContext, int>()
+```
+
 ## Enabling interactive flows support
 
 Out-the-box, **OpenIddict only enables non-interactive flows** (resource owner password credentials, client credentials, refresh token).
