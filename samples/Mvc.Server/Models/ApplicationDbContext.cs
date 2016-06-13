@@ -2,7 +2,7 @@
 using OpenIddict;
 
 namespace Mvc.Server.Models {
-    public class ApplicationDbContext : OpenIddictContext<ApplicationUser> {
+    public class ApplicationDbContext : OpenIddictDbContext<ApplicationUser> {
         public ApplicationDbContext(DbContextOptions options)
             : base(options) { }
 
