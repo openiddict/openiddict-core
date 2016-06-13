@@ -9,12 +9,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenIddict {
     /// <summary>
-    /// Provides methods allowing to manage the authorizations stored in a database.
+    /// Represents a new instance of a persistence store for the specified authorization and token types.
     /// </summary>
-    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+    /// <typeparam name="TAuthorization">The type representing an authorization.</typeparam>
+    /// <typeparam name="TToken">The type representing a token.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for an authorization and a token.</typeparam>
     public class OpenIddictAuthorizationStore<TAuthorization, TToken, TContext, TKey> : IOpenIddictAuthorizationStore<TAuthorization>
         where TAuthorization : OpenIddictAuthorization<TKey, TToken>
         where TToken : OpenIddictToken<TKey>
@@ -25,7 +25,7 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Gets the database context associated with the current store.
+        /// Gets the database context for this store.
         /// </summary>
         protected virtual TContext Context { get; }
 

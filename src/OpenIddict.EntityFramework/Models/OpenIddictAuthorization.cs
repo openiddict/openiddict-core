@@ -25,24 +25,21 @@ namespace OpenIddict {
         where TKey : IEquatable<TKey> { }
 
     /// <summary>
-    /// Represents an OpenIddict authorization.
+    /// Represents an authorization in the OpenIddict system.
     /// </summary>
     public class OpenIddictAuthorization<TKey, TToken> where TKey : IEquatable<TKey> {
         /// <summary>
-        /// Gets or sets the unique identifier
-        /// associated with the current authorization.
+        /// Gets or sets the primary key for this authorization.
         /// </summary>
         public virtual TKey Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the space-delimited scopes
-        /// associated with the current authorization.
+        /// Gets or sets the space-delimited scopes for this authorization.
         /// </summary>
         public virtual string Scope { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of tokens
-        /// associated with the current authorization.
+        /// Navigation property for the tokens associated with this authorization.
         /// </summary>
         public virtual IList<TToken> Tokens { get; } = new List<TToken>();
     }
