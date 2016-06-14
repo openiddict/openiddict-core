@@ -54,7 +54,7 @@ namespace OpenIddict.Mvc {
                 });
             }
 
-            // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
+            // Note: the OpenID Connect server middleware automatically ensures an application
             // corresponds to the client_id specified in the authorization request using
             // IOpenIdConnectServerProvider.ValidateAuthorizationRequest (see OpenIddictProvider.cs).
             var application = await applications.FindByClientIdAsync(request.ClientId);
@@ -117,7 +117,7 @@ namespace OpenIddict.Mvc {
             ticket.SetResources(request.GetResources());
             ticket.SetScopes(request.GetScopes());
 
-            // Returning a SignInResult will ask ASOS to serialize the specified identity to build appropriate tokens.
+            // Returning a SignInResult will ask the OpenID Connect server middleware to issue the appropriate tokens.
             // Note: you should always make sure the identities you return contain ClaimTypes.NameIdentifier claim.
             // In this sample, the identity always contains the name identifier returned by the external provider.
             return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
@@ -138,9 +138,9 @@ namespace OpenIddict.Mvc {
                 }));
             }
 
-            // Notify ASOS that the authorization grant has been denied by the resource owner.
-            // Note: OpenIdConnectServerHandler will automatically take care of redirecting
-            // the user agent to the client application using the appropriate response_mode.
+            // Notify the OpenID Connect server middleware that the authorization grant
+            // has been denied by the resource owner to redirect user agent to
+            // the client application using the appropriate response_mode.
             return Task.FromResult<IActionResult>(Forbid(options.Value.AuthenticationScheme));
         }
 
@@ -171,8 +171,8 @@ namespace OpenIddict.Mvc {
             // after a successful authentication flow (e.g Google or Facebook).
             await signin.SignOutAsync();
 
-            // Returning a SignOutResult will ask ASOS to redirect the user agent
-            // to the post_logout_redirect_uri specified by the client application.
+            // Returning a SignOutResult will ask the OpenID Connect server middleware to redirect
+            // the user agent to the post_logout_redirect_uri specified by the client application.
             return SignOut(options.Value.AuthenticationScheme);
         }
     }

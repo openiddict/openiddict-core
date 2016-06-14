@@ -32,9 +32,9 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Skip client authentication if the client identifier is missing.
-            // Note: ASOS will automatically ensure that the calling application
-            // cannot revoke a refresh token if it's not the intended audience,
-            // even if client authentication was skipped.
+            // Note: the OpenID Connect server middleware will automatically ensure that
+            // the calling application cannot revoke a refresh token if it's not
+            // the intended audience, even if client authentication was skipped.
             if (string.IsNullOrEmpty(context.ClientId)) {
                 services.Logger.LogInformation("The revocation request validation process was skipped " +
                                                "because the client_id parameter was missing or empty.");

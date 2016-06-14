@@ -30,6 +30,7 @@
     "warningsAsErrors": true,
     "nowarn": [ "CS1591" ],
     "xmlDoc": true,
+    "preserveCompilationContext": true,
 
     "embed": {
       "include": [ "Views/**" ]
@@ -37,20 +38,20 @@
   },
 
   "dependencies": {
-    "AspNet.Hosting.Extensions": "1.0.0-alpha2-final",
+    "AspNet.Hosting.Extensions": "1.0.0-alpha3-final",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
-    "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-final",
-    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-rc2-final",
-    "Microsoft.Extensions.FileProviders.Composite": "1.0.0-rc2-final",
+    "Microsoft.AspNetCore.Mvc": "1.0.0",
+    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0",
+    "Microsoft.Extensions.FileProviders.Composite": "1.0.0",
     "OpenIddict.Core": { "target": "project" }
   },
 
   "frameworks": {
     "net451": { },
 
-    "netstandard1.5": {
+    "netstandard1.6": {
       "imports": [
-        "dotnet5.6",
+        "dotnet5.7",
         "portable-net451+win8"
       ]
     }

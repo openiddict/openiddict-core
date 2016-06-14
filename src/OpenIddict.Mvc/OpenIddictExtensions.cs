@@ -7,14 +7,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using OpenIddict;
@@ -81,8 +84,10 @@ namespace Microsoft.AspNetCore.Builder {
                     // Note: ConfigureApplicationPartManager() must be
                     // called before AddControllersAsServices().
                     .ConfigureApplicationPartManager(manager => {
+                        var parts = manager.ApplicationParts.ToArray();
+
                         manager.ApplicationParts.Clear();
-                        manager.ApplicationParts.Add(new OpenIddictPart(builder));
+                        manager.ApplicationParts.Add(new OpenIddictPart(builder, parts));
                     })
 
                     .AddControllersAsServices()
@@ -169,30 +174,64 @@ namespace Microsoft.AspNetCore.Builder {
         private class OpenIddictConvention : IControllerModelConvention {
             public void Apply(ControllerModel controller) {
                 // Ensure the convention is only applied to the intended controller.
-                Debug.Assert(controller.ControllerType != null);
-                Debug.Assert(controller.ControllerType.IsGenericType);
-                Debug.Assert(controller.ControllerType.GetGenericTypeDefinition() == typeof(OpenIddictController<,,,>));
-
-                // Note: manually updating the controller name is required
-                // to remove the ending markers added to the generic type name.
-                controller.ControllerName = "OpenIddict";
+                if (controller.ControllerType != null &&
+                    controller.ControllerType.IsGenericType &&
+                    controller.ControllerType.GetGenericTypeDefinition() == typeof(OpenIddictController<,,,>)) {
+                    // Note: manually updating the controller name is required
+                    // to remove the ending markers added to the generic type name.
+                    controller.ControllerName = "OpenIddict";
+                }
             }
         }
 
-        private class OpenIddictPart : ApplicationPart, IApplicationPartTypeProvider {
-            public OpenIddictPart(OpenIddictBuilder builder) {
-                Types = new[] {
+        private class OpenIddictPart : ApplicationPart, IApplicationPartTypeProvider, ICompilationReferencesProvider {
+            public OpenIddictPart(OpenIddictBuilder builder, IEnumerable<ApplicationPart> parts) {
+                var types = new List<TypeInfo> {
                     typeof(OpenIddictController<,,,>).MakeGenericType(
                         /* TUser: */ builder.UserType,
                         /* TApplication: */ builder.ApplicationType,
                         /* TAuthorization: */ builder.AuthorizationType,
                         /* TToken: */ builder.TokenType).GetTypeInfo()
                 };
+
+                var assemblies = new List<Assembly>();
+
+                foreach (var part in parts.OfType<AssemblyPart>()) {
+                    assemblies.Add(part.Assembly);
+
+                    foreach (var type in part.Types) {
+                        if (typeof(ControllerBase).GetTypeInfo().IsAssignableFrom(type)) {
+                            continue;
+                        }
+
+                        types.Add(type);
+                    }
+                }
+
+                Assemblies = assemblies;
+                Types = types;
             }
 
             public override string Name { get; } = "OpenIddict.Mvc";
 
+            public IEnumerable<Assembly> Assemblies { get; }
+
             public IEnumerable<TypeInfo> Types { get; }
+
+            public IEnumerable<string> GetReferencePaths() {
+                foreach (var assembly in Assemblies) {
+                    var context = DependencyContext.Load(assembly);
+                    if (context == null) {
+                        continue;
+                    }
+
+                    foreach (var library in context.CompileLibraries) {
+                        foreach (var path in library.ResolveReferencePaths()) {
+                            yield return path;
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -4,8 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -18,18 +16,13 @@ using Newtonsoft.Json.Linq;
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
-        public override async Task ValidateUserinfoRequest([NotNull] ValidateUserinfoRequestContext context) {
+        public override async Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            // Note: the principal returned by AuthenticateAsync cannot be null as the OpenID Connect server
-            // middleware always ensures the ticket is valid before invoking the ValidateUserinfoRequest event.
-            var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
-            Debug.Assert(principal != null, "The principal extracted from the access token shouldn't be null.");
-
-            // Ensure the user was not removed from the database.
-            var user = await services.Users.GetUserAsync(principal);
+            // Note: user may be null if the user was removed after the access token was issued.
+            var user = await services.Users.GetUserAsync(context.Ticket.Principal);
             if (user == null) {
-                services.Logger.LogError("The userinfo request was rejected because the user profile " +
+                services.Logger.LogError("The userinfo request was aborted because the user profile " +
                                          "corresponding to the access token was not found in the database.");
 
                 context.Reject(
@@ -39,29 +32,14 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            context.Validate();
-        }
-
-        public override async Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
-
-            // Note: user may be null if the user was removed after
-            // the initial check made by ValidateUserinfoRequest.
-            // In this case, throw an exception to abort the request.
-            var user = await services.Users.GetUserAsync(context.Ticket.Principal);
-            if (user == null) {
-                throw new InvalidOperationException("The userinfo request was aborted because the user profile " +
-                                                    "corresponding to the access token was not found in the database.");
-            }
-
             // Note: "sub" is a mandatory claim.
             // See http://openid.net/specs/openid-connect-core-1_0.html#UserInfoResponse
             context.Subject = await services.Users.GetUserIdAsync(user);
 
             // Only add the "preferred_username" claim if the "profile" scope was present in the access token.
             // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
-            // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
-            // don't include the "email" scope if the username corresponds to the registered email address.
+            // and OpenIddictProvider.HandleTokenRequest are expected to reject requests that don't
+            // include the "email" scope if the username corresponds to the registed email address.
             if (context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Profile)) {
                 context.PreferredUsername = await services.Users.GetUserNameAsync(user);
 
@@ -84,8 +62,7 @@ namespace OpenIddict.Infrastructure {
             };
 
             // Only add the phone number details if the "phone" scope was present in the access token.
-            if (services.Users.SupportsUserPhoneNumber &&
-                context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Phone)) {
+            if (services.Users.SupportsUserPhoneNumber && context.Ticket.HasScope(OpenIdConnectConstants.Scopes.Phone)) {
                 context.PhoneNumber = await services.Users.GetPhoneNumberAsync(user);
 
                 // Only add the "phone_number_verified"

@@ -20,7 +20,7 @@ namespace OpenIddict.Infrastructure {
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            Debug.Assert(context.Request.RequestType == OpenIdConnectRequestType.TokenRequest,
+            Debug.Assert(context.Request.RequestType == OpenIdConnectRequestType.Token,
                 "The request should be a token request.");
 
             Debug.Assert(!context.Request.IsClientCredentialsGrantType(),

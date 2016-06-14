@@ -19,22 +19,21 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OAuth.GitHub": "1.0.0-alpha4-final",
-    "AspNet.Security.OAuth.Introspection": "1.0.0-alpha1-final",
-    "AspNet.Security.OAuth.Validation": "1.0.0-alpha1-final",
-    "Microsoft.AspNetCore.Authentication.Google": "1.0.0-rc2-final",
-    "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-rc2-final",
-    "Microsoft.AspNetCore.Diagnostics": "1.0.0-rc2-final",
-    "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-final",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-rc2-final",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-rc2-final",
-    "Microsoft.AspNetCore.StaticFiles": "1.0.0-rc2-final",
-    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-rc2-final",
-    "Microsoft.Extensions.Configuration.CommandLine": "1.0.0-rc2-final",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-rc2-final",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0-rc2-final",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-rc2-final",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0-rc2-final",
+    "AspNet.Security.OAuth.Introspection": "1.0.0-alpha2-final",
+    "AspNet.Security.OAuth.Validation": "1.0.0-alpha2-final",
+    "Microsoft.AspNetCore.Authentication.Google": "1.0.0",
+    "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0",
+    "Microsoft.AspNetCore.Diagnostics": "1.0.0",
+    "Microsoft.AspNetCore.Mvc": "1.0.0",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0",
+    "Microsoft.Extensions.Configuration.CommandLine": "1.0.0",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
+    "Microsoft.Extensions.Logging.Console": "1.0.0",
+    "Microsoft.Extensions.Logging.Debug": "1.0.0",
     "OpenIddict": { "target": "project" },
     "OpenIddict.Assets": { "target": "project" },
     "OpenIddict.Mvc": { "target": "project" },
@@ -44,13 +43,13 @@
   "frameworks": {
     "net451": {
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1-rc2-24027"
+        "Microsoft.NETCore.Platforms": "1.0.1"
       }
     },
 
     "netcoreapp1.0": {
       "dependencies": {
-        "Microsoft.NETCore.App": { "type": "platform", "version": "1.0.0-rc2-3002702" }
+        "Microsoft.NETCore.App": { "type": "platform", "version": "1.0.0" }
       },
 
       "imports": [
@@ -61,10 +60,7 @@
   },
 
   "tools": {
-    "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
-      "version": "1.0.0-preview1-final",
-      "imports": "portable-net45+wp80+win8+wpa81+dnxcore50"
-    }
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-preview2-final"
   },
 
   "scripts": {

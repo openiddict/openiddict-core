@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using AspNet.Security.OAuth.GitHub;
 using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -63,9 +62,7 @@ namespace Mvc.Server {
             //     .SetLogoutEndpointPath("/connect/logout");
 
             // Note: if you don't explicitly register a signing key, one is automatically generated and
-            // persisted on the disk. If the key cannot be persisted, an in-memory key is used instead:
-            // when the application shuts down, the key is definitely lost and the access/identity tokens
-            // will be considered as invalid by client applications/resource servers when validating them.
+            // persisted on the disk. If the key cannot be persisted, an exception is thrown.
             // 
             // On production, using a X.509 certificate stored in the machine store is recommended.
             // You can generate a self-signed certificate using Pluralsight's self-cert utility:
@@ -121,11 +118,7 @@ namespace Mvc.Server {
                 ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
             });
 
-            app.UseGitHubAuthentication(new GitHubAuthenticationOptions {
-                ClientId = "49e302895d8b09ea5656",
-                ClientSecret = "98f1bf028608901e9df91d64ee61536fe562064b",
-                Scope = { "user:email" }
-            });
+            app.UseSession();
 
             app.UseOpenIddict();
 

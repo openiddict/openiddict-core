@@ -6,6 +6,7 @@
 
 using System;
 using System.ComponentModel;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -431,7 +432,7 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder UseJsonWebTokens() {
-            return Configure(options => options.UseJwtTokens());
+            return Configure(options => options.AccessTokenHandler = new JwtSecurityTokenHandler());
         }
     }
 }

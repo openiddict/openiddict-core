@@ -33,11 +33,11 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OpenIdConnect.Server": "1.0.0-beta5-final",
-    "CryptoHelper": "1.0.0-rc2-final",
+    "AspNet.Security.OpenIdConnect.Server": "1.0.0-beta6-final",
+    "CryptoHelper": "2.0.0",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
-    "Microsoft.AspNetCore.Identity": "1.0.0-rc2-final",
-    "Microsoft.Extensions.Caching.Memory": "1.0.0-rc2-final"
+    "Microsoft.AspNetCore.Identity": "1.0.0",
+    "Microsoft.Extensions.Caching.Memory": "1.0.0"
   },
 
   "frameworks": {

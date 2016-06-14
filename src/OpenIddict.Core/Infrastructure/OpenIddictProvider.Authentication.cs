@@ -100,8 +100,8 @@ namespace OpenIddict.Infrastructure {
 
                     if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
                         services.Logger.LogError("The authorization request was rejected because the 'email' scope was not requested: " +
-                                                 "to prevent data leakage, the 'email' scope must be granted when the username" +
-                                                 "is identical to the email address associated with the user ({Username}).", username);
+                                                 "to prevent data leakage, the 'email' scope must be granted when the username " +
+                                                 "is identical to the email address associated with the user profile.");
 
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -178,19 +178,25 @@ namespace OpenIddict.Infrastructure {
 
                 // Note: user may be null if the user was removed after
                 // the initial check made by ValidateAuthorizationRequest.
-                // In this case, throw an exception to abort the request.
                 var user = await services.Users.GetUserAsync(principal);
                 if (user == null) {
-                    throw new InvalidOperationException("The prompt=none authorization request was aborted because the profile " +
-                                                        "corresponding to the logged in user was not found in the database.");
+                    services.Logger.LogError("The authorization request was aborted because the profile corresponding " +
+                                             "to the logged in user was not found in the database: {Identifier}.",
+                                             context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier));
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.ServerError,
+                        description: "An internal error has occurred.");
+
+                    return;
                 }
 
                 // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
-                // and OpenIddictProvider.GrantResourceOwnerCredentials are expected to reject requests that
-                // don't include the "email" scope if the username corresponds to the registed email address.
+                // and OpenIddictProvider.HandleTokenRequest are expected to reject requests that don't
+                // include the "email" scope if the username corresponds to the registed email address.
                 var identity = await services.Users.CreateIdentityAsync(user, context.Request.GetScopes());
                 if (identity == null) {
-                    throw new InvalidOperationException("The authorization request failed because the user manager returned a null " +
+                    throw new InvalidOperationException("The authorization request was aborted because the user manager returned a null " +
                                                        $"identity for user '{await services.Users.GetUserNameAsync(user)}'.");
                 }
 
