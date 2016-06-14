@@ -60,13 +60,13 @@ namespace OpenIddict {
 
             await Context.SaveChangesAsync(cancellationToken);
 
-            return converter.ConvertToInvariantString(application.ApplicationId);
+            return converter.ConvertToInvariantString(application.ClientId);
         }
 
         /// <summary>
         /// Finds and returns an application, if any, which has the specified <paramref name="id"/>.
         /// </summary>
-        /// <param name="id">The ID of application to search for.</param>
+        /// <param name="id">The ID of application entity to search for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
@@ -87,17 +87,17 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Finds and returns an application, if any, which has the specified <paramref name="applicationId"/>.
+        /// Finds and returns an application, if any, which has the specified <paramref name="clientId"/>.
         /// </summary>
-        /// <param name="applicationId">The application ID of application to search for.</param>
+        /// <param name="clientId">The ID of client application to search for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual Task<TApplication> FindByApplicationIdAsync(string applicationId, CancellationToken cancellationToken)
+        public virtual Task<TApplication> FindByClientIdAsync(string clientId, CancellationToken cancellationToken)
         {
-            return Applications.SingleOrDefaultAsync(application => application.ApplicationId.Equals(applicationId), cancellationToken);
+            return Applications.SingleOrDefaultAsync(application => application.ClientId.Equals(clientId), cancellationToken);
         }
 
         /// <summary>

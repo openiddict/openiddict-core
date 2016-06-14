@@ -42,7 +42,7 @@ namespace OpenIddict {
         /// <summary>
         /// Gets or sets the unique identifier for this application.
         /// </summary>
-        public virtual string ApplicationId { get; set; }
+        public virtual string ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the secret for this application.

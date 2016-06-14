@@ -66,15 +66,28 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Retrieves an application using its unique identifier.
+        /// Finds and returns an application, if any, which has the specified <paramref name="id"/>.
         /// </summary>
-        /// <param name="identifier">The unique identifier associated with the application.</param>
+        /// <param name="id">The ID of application entity to search for.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual Task<TApplication> FindByIdAsync(string identifier) {
-            return Store.FindByIdAsync(identifier, CancellationToken);
+        public virtual Task<TApplication> FindByIdAsync(string id) {
+            return Store.FindByIdAsync(id, CancellationToken);
+        }
+
+        /// <summary>
+        /// Finds and returns an application, if any, which has the specified client_id.
+        /// </summary>
+        /// <param name="clientId">The ID of client application to search for.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
+        public virtual Task<TApplication> FindByClientIdAsync(string clientId)
+        {
+            return Store.FindByClientIdAsync(clientId, CancellationToken);
         }
 
         /// <summary>

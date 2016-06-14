@@ -147,7 +147,7 @@ namespace Mvc.Server {
                     // });
 
                     context.Applications.Add(new OpenIddictApplication {
-                        ApplicationId = "myClient",
+                        ClientId = "myClient",
                         DisplayName = "My client application",
                         RedirectUri = "http://localhost:53507/signin-oidc",
                         LogoutRedirectUri = "http://localhost:53507/",
@@ -165,7 +165,7 @@ namespace Mvc.Server {
                     // * Grant type: authorization code
                     // * Request access token locally: yes
                     context.Applications.Add(new OpenIddictApplication {
-                        ApplicationId = "postman",
+                        ClientId = "postman",
                         DisplayName = "Postman",
                         RedirectUri = "https://www.getpostman.com/oauth2/callback",
                         Type = OpenIddictConstants.ClientTypes.Public

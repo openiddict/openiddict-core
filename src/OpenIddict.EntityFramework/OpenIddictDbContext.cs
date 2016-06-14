@@ -167,8 +167,8 @@ namespace OpenIddict {
             builder.Entity<TApplication>(e => {
                 e.HasKey(app => app.Id);
 
-                e.HasAlternateKey(app => app.ApplicationId);
-                e.HasIndex(app => app.ApplicationId).HasName("ApplicationApplicationIdIndex");
+                e.HasAlternateKey(app => app.ClientId);
+                e.HasIndex(app => app.ClientId).HasName("ApplicationClientIdIndex");
 
                 e.HasMany(app => app.Tokens)
                  .WithOne()
@@ -177,7 +177,7 @@ namespace OpenIddict {
 
                 e.ToTable("OpenIddictApplications");
 
-                e.Property(app => app.ApplicationId).IsRequired();
+                e.Property(app => app.ClientId).IsRequired();
                 e.Property(app => app.RedirectUri).IsRequired();
                 e.Property(app => app.Type).IsRequired();
             });

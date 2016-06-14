@@ -42,7 +42,7 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await services.Applications.FindByIdAsync(context.ClientId);
+            var application = await services.Applications.FindByClientIdAsync(context.ClientId);
             if (application == null) {
                 services.Logger.LogError("The introspection request was rejected because the client " +
                                          "application was not found: '{ClientId}'.", context.ClientId);

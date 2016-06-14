@@ -57,7 +57,7 @@ namespace OpenIddict.Mvc {
             // Note: AspNet.Security.OpenIdConnect.Server automatically ensures an application
             // corresponds to the client_id specified in the authorization request using
             // IOpenIdConnectServerProvider.ValidateAuthorizationRequest (see OpenIddictProvider.cs).
-            var application = await applications.FindByIdAsync(request.ClientId);
+            var application = await applications.FindByClientIdAsync(request.ClientId);
             if (application == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.InvalidClient,
@@ -100,7 +100,7 @@ namespace OpenIddict.Mvc {
             var identity = await users.CreateIdentityAsync(user, request.GetScopes());
             Debug.Assert(identity != null);
 
-            var application = await applications.FindByIdAsync(request.ClientId);
+            var application = await applications.FindByClientIdAsync(request.ClientId);
             if (application == null) {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.InvalidClient,
