@@ -182,6 +182,11 @@ services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
     .DisableHttpsRequirement();
 ```
 
+> **Note:** if you plan to change the default entity primary key using e.g. `int` make sure to register your context in this way
+```csharp
+services.AddOpenIddict<ApplicationUser, IdentityRole<int>, ApplicationDbContext, int>()
+```
+
   - **Register your client application**:
 
 ```csharp
