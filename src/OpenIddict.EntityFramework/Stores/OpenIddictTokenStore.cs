@@ -14,11 +14,13 @@ namespace OpenIddict {
     /// <summary>
     /// Provides methods allowing to manage the tokens stored in a database.
     /// </summary>
-    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    /// <typeparam name="TUser">The type of the User entity.</typeparam>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+    /// <typeparam name="TToken">The type representing a token.</typeparam>
+    /// <typeparam name="TAuthorization">The type representing an authorization.</typeparam>
+    /// <typeparam name="TUser">The type representing a user entity.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">
+    /// The type of the primary key for a token, an authorization and a user.
+    /// </typeparam>
     public class OpenIddictTokenStore<TToken, TAuthorization, TUser, TContext, TKey> : IOpenIddictTokenStore<TToken>
         where TToken : OpenIddictToken<TKey>, new()
         where TAuthorization : OpenIddictAuthorization<TKey, TToken>
@@ -30,7 +32,7 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Gets the database context associated with the current store.
+        /// Gets the database context for this store.
         /// </summary>
         protected virtual TContext Context { get; }
 

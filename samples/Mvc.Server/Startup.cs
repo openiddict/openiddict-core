@@ -98,7 +98,7 @@ namespace Mvc.Server {
             // Alternatively, you can also use the introspection middleware.
             // Using it is recommended if your resource server is in a
             // different application/separated from the authorization server.
-            // 
+            //
             // app.UseOAuthIntrospection(options => {
             //     options.AutomaticAuthenticate = true;
             //     options.AutomaticChallenge = true;
@@ -138,7 +138,7 @@ namespace Mvc.Server {
                 if (!context.Applications.Any()) {
                     // Note: when using the introspection middleware, your resource server
                     // MUST be registered as an OAuth2 client and have valid credentials.
-                    // 
+                    //
                     // context.Applications.Add(new OpenIddictApplication {
                     //     Id = "resource_server",
                     //     DisplayName = "Main resource server",
@@ -147,7 +147,7 @@ namespace Mvc.Server {
                     // });
 
                     context.Applications.Add(new OpenIddictApplication {
-                        Id = "myClient",
+                        ClientId = "myClient",
                         DisplayName = "My client application",
                         RedirectUri = "http://localhost:53507/signin-oidc",
                         LogoutRedirectUri = "http://localhost:53507/",
@@ -156,7 +156,7 @@ namespace Mvc.Server {
                     });
 
                     // To test this sample with Postman, use the following settings:
-                    // 
+                    //
                     // * Authorization URL: http://localhost:54540/connect/authorize
                     // * Access token URL: http://localhost:54540/connect/token
                     // * Client ID: postman
@@ -165,7 +165,7 @@ namespace Mvc.Server {
                     // * Grant type: authorization code
                     // * Request access token locally: yes
                     context.Applications.Add(new OpenIddictApplication {
-                        Id = "postman",
+                        ClientId = "postman",
                         DisplayName = "Postman",
                         RedirectUri = "https://www.getpostman.com/oauth2/callback",
                         Type = OpenIddictConstants.ClientTypes.Public

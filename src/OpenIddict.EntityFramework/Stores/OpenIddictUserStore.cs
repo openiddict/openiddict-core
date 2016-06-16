@@ -17,13 +17,15 @@ namespace OpenIddict {
     /// <summary>
     /// Provides methods allowing to manage the users stored in a database.
     /// </summary>
-    /// <typeparam name="TUser">The type of the User entity.</typeparam>
-    /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    /// <typeparam name="TRole">The type of the Role entity.</typeparam>
-    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+    /// <typeparam name="TUser">The type representing a user.</typeparam>
+    /// <typeparam name="TApplication">The type representing an application.</typeparam>
+    /// <typeparam name="TAuthorization">The type representing an authorization.</typeparam>
+    /// <typeparam name="TRole">The type representing a role.</typeparam>
+    /// <typeparam name="TToken">The type representing a token.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">
+    /// The type of the primary key for a user, an application, an authorization, a role and a token.
+    /// </typeparam>
     public class OpenIddictUserStore<TUser, TApplication, TAuthorization, TRole, TToken, TContext, TKey> :
         UserStore<TUser, TRole, TContext, TKey>, IOpenIddictUserStore<TUser>
         where TUser : OpenIddictUser<TKey, TAuthorization, TToken>, new()

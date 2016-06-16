@@ -8,7 +8,8 @@ using System;
 
 namespace OpenIddict {
     /// <summary>
-    /// Represents an OpenIddict token.
+    /// The default implementation of <see cref="OpenIddictToken{TKey}"/>
+    /// which uses a string as a primary key.
     /// </summary>
     public class OpenIddictToken : OpenIddictToken<string> {
         public OpenIddictToken() {
@@ -18,17 +19,16 @@ namespace OpenIddict {
     }
 
     /// <summary>
-    /// Represents an OpenIddict token.
+    /// Represents a token in the OpenIddict system.
     /// </summary>
     public class OpenIddictToken<TKey> where TKey : IEquatable<TKey> {
         /// <summary>
-        /// Gets or sets the unique identifier
-        /// associated with the current token.
+        /// Gets or sets the primary key for this token.
         /// </summary>
         public virtual TKey Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the current token.
+        /// Gets or sets the token type for this token.
         /// </summary>
         public virtual string Type { get; set; }
     }

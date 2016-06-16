@@ -26,20 +26,31 @@ namespace OpenIddict {
         Task<string> CreateAsync(TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves an application using its unique identifier.
+        /// Finds and returns an application, if any, which has the specified <paramref name="id"/>.
         /// </summary>
-        /// <param name="identifier">The unique identifier associated with the application.</param>
+        /// <param name="id">The ID of application entity to search for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken);
+        Task<TApplication> FindByIdAsync(string id, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves an application using its post_logout_redirect_uri.
+        /// Finds and returns an application, if any, which has the specified client_id.
         /// </summary>
-        /// <param name="url">The post_logout_redirect_uri associated with the application.</param>
+        /// <param name="clientId">The ID of client application to search for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
+        Task<TApplication> FindByClientIdAsync(string clientId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Finds and returns an application, if any, which has the specified post_logout_redirect_uri.
+        /// </summary>
+        /// <param name="url">The post_logout_redirect_uri of application to search for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result

@@ -14,12 +14,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenIddict {
     /// <summary>
-    /// Provides methods allowing to manage the applications stored in a database.
+    /// Represents a new instance of a persistence store for the specified application and token types.
     /// </summary>
-    /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+    /// <typeparam name="TApplication">The type representing an application.</typeparam>
+    /// <typeparam name="TToken">The type representing a token.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for an application and a token.</typeparam>
     public class OpenIddictApplicationStore<TApplication, TToken, TContext, TKey> : IOpenIddictApplicationStore<TApplication>
         where TApplication : OpenIddictApplication<TKey, TToken>
         where TToken : OpenIddictToken<TKey>, new()
@@ -30,7 +30,7 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Gets the database context associated with the current store.
+        /// Gets the database context for this store.
         /// </summary>
         protected virtual TContext Context { get; }
 
@@ -60,19 +60,19 @@ namespace OpenIddict {
 
             await Context.SaveChangesAsync(cancellationToken);
 
-            return converter.ConvertToInvariantString(application.Id);
+            return converter.ConvertToInvariantString(application.ClientId);
         }
 
         /// <summary>
-        /// Retrieves an application using its unique identifier.
+        /// Finds and returns an application, if any, which has the specified <paramref name="id"/>.
         /// </summary>
-        /// <param name="identifier">The unique identifier associated with the application.</param>
+        /// <param name="id">The ID of application entity to search for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken) {
+        public virtual Task<TApplication> FindByIdAsync(string id, CancellationToken cancellationToken) {
             var converter = TypeDescriptor.GetConverter(typeof(TKey));
 
             // If the string key cannot be converted to TKey, return null
@@ -81,26 +81,40 @@ namespace OpenIddict {
                 return Task.FromResult<TApplication>(null);
             }
 
-            var key = (TKey) converter.ConvertFromInvariantString(identifier);
+            var key = (TKey) converter.ConvertFromInvariantString(id);
 
             return Applications.SingleOrDefaultAsync(application => application.Id.Equals(key), cancellationToken);
         }
 
         /// <summary>
-        /// Retrieves an application using its post_logout_redirect_uri.
+        /// Finds and returns an application, if any, which has the specified <paramref name="clientId"/>.
+        /// </summary>
+        /// <param name="clientId">The ID of client application to search for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
+        public virtual Task<TApplication> FindByClientIdAsync(string clientId, CancellationToken cancellationToken)
+        {
+            return Applications.SingleOrDefaultAsync(application => application.ClientId.Equals(clientId), cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves an application using its logout redirect URI.
         /// </summary>
         /// <param name="url">The post_logout_redirect_uri associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns the client application corresponding to the post_logout_redirect_uri.
+        /// returns the client application corresponding to the logout redirect URI.
         /// </returns>
         public virtual Task<TApplication> FindByLogoutRedirectUri(string url, CancellationToken cancellationToken) {
             return Applications.SingleOrDefaultAsync(application => application.LogoutRedirectUri == url, cancellationToken);
         }
 
         /// <summary>
-        /// Retrieves the client type associated with an application.
+        /// Retrieves the client type associated with the specified <paramref name="application"/> as an asynchronous operation.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -117,7 +131,7 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Retrieves the display name associated with an application.
+        /// Retrieves the display name associated with the specified <paramref name="application"/> as an asynchronous operation.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -134,7 +148,7 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Retrieves the hashed secret associated with an application.
+        /// Retrieves the hashed secret associated with the specified <paramref name="application"/> as an asynchronous operation.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -151,7 +165,7 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Retrieves the callback address associated with an application.
+        /// Retrieves the callback address associated with the specified <paramref name="application"/> as an asynchronous operation.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -168,7 +182,7 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Retrieves the token identifiers associated with an application.
+        /// Retrieves the token identifiers associated with the specified <paramref name="application"/> as an asynchronous operation.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>

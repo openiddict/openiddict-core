@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenIddict {
     /// <summary>
-    /// Provides methods allowing to manage the scopes stored in a database.
+    /// Represents a new instance of a persistence store for the specified scope type.
     /// </summary>
-    /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+    /// <typeparam name="TScope">The type representing a scope.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for a scope.</typeparam>
     public class OpenIddictScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
         where TScope : OpenIddictScope<TKey>
         where TContext : DbContext
@@ -23,7 +23,7 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Gets the database context associated with the current store.
+        /// Gets the database context for this store.
         /// </summary>
         protected virtual TContext Context { get; }
 

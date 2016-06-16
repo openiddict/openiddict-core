@@ -9,7 +9,8 @@ using System.Collections.Generic;
 
 namespace OpenIddict {
     /// <summary>
-    /// Represents an OpenIddict application.
+    /// The default implementation of <see cref="OpenIddictApplication{TKey}"/>
+    /// which uses a string as a primary key.
     /// </summary>
     public class OpenIddictApplication : OpenIddictApplication<string, OpenIddictToken> {
         public OpenIddictApplication() {
@@ -19,54 +20,57 @@ namespace OpenIddict {
     }
 
     /// <summary>
-    /// Represents an OpenIddict application.
+    /// The default implementation of <see cref="OpenIddictApplication{TKey}"/>.
     /// </summary>
     public class OpenIddictApplication<TKey> : OpenIddictApplication<TKey, OpenIddictToken<TKey>>
         where TKey : IEquatable<TKey> { }
 
     /// <summary>
-    /// Represents an OpenIddict application.
+    /// Represents an application in the OpenIddict system.
     /// </summary>
     public class OpenIddictApplication<TKey, TToken> where TKey : IEquatable<TKey> {
         /// <summary>
-        /// Gets or sets the display name
-        /// associated with the current application.
-        /// </summary>
-        public virtual string DisplayName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier
-        /// associated with the current application.
+        /// Gets or sets the primary key for this application.
         /// </summary>
         public virtual TKey Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the logout callback URL
-        /// associated with the current application.
+        /// Gets or sets the friendly name used in a UI for this application.
         /// </summary>
-        public virtual string LogoutRedirectUri { get; set; }
+        public virtual string DisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the callback URL
-        /// associated with the current application.
+        /// Gets or sets the unique identifier for this application.
+        /// </summary>
+        public virtual string ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the secret for this application.
+        /// </summary>
+        /// <remarks>Use hash of the secret for security purposes.</remarks>
+        public virtual string Secret { get; set; }
+
+        /// <summary>
+        /// Gets or sets the callback URL for this application.
         /// </summary>
         public virtual string RedirectUri { get; set; }
 
         /// <summary>
-        /// Gets or sets the hashed secret
-        /// associated with the current application.
+        /// Gets or sets the logout callback URL for this application.
         /// </summary>
-        public virtual string Secret { get; set; }
+        public virtual string LogoutRedirectUri { get; set; }
 
         /// <summary>
-        /// Gets the list of the tokens associated with this application.
-        /// </summary>
-        public virtual IList<TToken> Tokens { get; } = new List<TToken>();
-
-        /// <summary>
-        /// Gets or sets the application type
-        /// associated with the current application.
+        /// Gets or sets the application type for this application.
+        /// <para>Can be:</para>
+        /// <para><see cref="P:OpenIddict.OpenIddictConstants.ApplicationTypes.Public"/></para>
+        /// <para><see cref="P:OpenIddict.OpenIddictConstants.ApplicationTypes.Confidential"/></para>
         /// </summary>
         public virtual string Type { get; set; } = OpenIddictConstants.ClientTypes.Public;
+
+        /// <summary>
+        /// Navigation property for the tokens associated with this application.
+        /// </summary>
+        public virtual IList<TToken> Tokens { get; } = new List<TToken>();
     }
 }
