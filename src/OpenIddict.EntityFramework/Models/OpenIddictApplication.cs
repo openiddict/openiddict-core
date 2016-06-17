@@ -29,6 +29,18 @@ namespace OpenIddict {
     /// </summary>
     public class OpenIddictApplication<TKey, TToken> where TKey : IEquatable<TKey> {
         /// <summary>
+        /// Gets or sets the client identifier
+        /// associated with the current application.
+        /// </summary>
+        public virtual string ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the hashed client secret
+        /// associated with the current application.
+        /// </summary>
+        public virtual string ClientSecret { get; set; }
+
+        /// <summary>
         /// Gets or sets the display name
         /// associated with the current application.
         /// </summary>
@@ -51,12 +63,6 @@ namespace OpenIddict {
         /// associated with the current application.
         /// </summary>
         public virtual string RedirectUri { get; set; }
-
-        /// <summary>
-        /// Gets or sets the hashed secret
-        /// associated with the current application.
-        /// </summary>
-        public virtual string Secret { get; set; }
 
         /// <summary>
         /// Gets the list of the tokens associated with this application.

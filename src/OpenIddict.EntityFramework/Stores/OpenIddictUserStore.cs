@@ -103,13 +103,11 @@ namespace OpenIddict {
 
             // Ensure that the key type can be serialized.
             var converter = TypeDescriptor.GetConverter(typeof(TKey));
-            if (!converter.CanConvertTo(typeof(string)) || !converter.CanConvertFrom(typeof(string))) {
+            if (!converter.CanConvertTo(typeof(string))) {
                 throw new InvalidOperationException($"The '{typeof(TKey).Name}' key type is not supported.");
             }
 
-            var key = (TKey) converter.ConvertFromInvariantString(client);
-
-            var application = await Applications.FirstOrDefaultAsync(entity => entity.Id.Equals(key), cancellationToken);
+            var application = await Applications.FirstOrDefaultAsync(entity => entity.ClientId.Equals(client), cancellationToken);
             if (application == null) {
                 throw new InvalidOperationException("The application cannot be found in the database.");
             }

@@ -78,6 +78,18 @@ namespace OpenIddict {
         }
 
         /// <summary>
+        /// Retrieves an application using its client identifier.
+        /// </summary>
+        /// <param name="identifier">The client identifier associated with the application.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
+        public virtual Task<TApplication> FindByClientIdAsync(string identifier) {
+            return Store.FindByClientIdAsync(identifier, CancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves an application using its post_logout_redirect_uri.
         /// </summary>
         /// <param name="url">The post_logout_redirect_uri associated with the application.</param>

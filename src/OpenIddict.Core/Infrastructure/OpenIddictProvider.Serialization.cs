@@ -40,7 +40,7 @@ namespace OpenIddict.Infrastructure {
             // If the client application sending the token request is known,
             // ensure the token is attached to the corresponding client entity.
             if (!string.IsNullOrEmpty(context.Request.ClientId)) {
-                var application = await services.Applications.FindByIdAsync(context.Request.ClientId);
+                var application = await services.Applications.FindByClientIdAsync(context.Request.ClientId);
                 if (application == null) {
                     throw new InvalidOperationException("The application cannot be retrieved from the database.");
                 }

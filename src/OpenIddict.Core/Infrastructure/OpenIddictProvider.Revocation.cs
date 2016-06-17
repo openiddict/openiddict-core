@@ -45,7 +45,7 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await services.Applications.FindByIdAsync(context.ClientId);
+            var application = await services.Applications.FindByClientIdAsync(context.ClientId);
             if (application == null) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,

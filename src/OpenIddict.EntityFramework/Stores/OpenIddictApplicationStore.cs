@@ -87,6 +87,19 @@ namespace OpenIddict {
         }
 
         /// <summary>
+        /// Retrieves an application using its client identifier.
+        /// </summary>
+        /// <param name="identifier">The client identifier associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
+        public virtual Task<TApplication> FindByClientIdAsync(string identifier, CancellationToken cancellationToken) {
+            return Applications.SingleOrDefaultAsync(application => application.ClientId.Equals(identifier), cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves an application using its post_logout_redirect_uri.
         /// </summary>
         /// <param name="url">The post_logout_redirect_uri associated with the application.</param>
@@ -147,7 +160,7 @@ namespace OpenIddict {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(application.Secret);
+            return Task.FromResult(application.ClientSecret);
         }
 
         /// <summary>

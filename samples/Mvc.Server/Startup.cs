@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using AspNet.Security.OAuth.GitHub;
 using CryptoHelper;
@@ -28,12 +29,12 @@ namespace Mvc.Server {
                     options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]));
 
             // Register the Identity services.
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+            services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
+                .AddEntityFrameworkStores<ApplicationDbContext, Guid>()
                 .AddDefaultTokenProviders();
 
             // Register the OpenIddict services, including the default Entity Framework stores.
-            services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+            services.AddOpenIddict<ApplicationUser, IdentityRole<Guid>, ApplicationDbContext, Guid>()
                 // Register the HTML/CSS assets and MVC modules to handle the interactive flows.
                 // Note: these modules are not necessary when using your own authorization controller
                 // or when using non-interactive flows-only like the resource owner password credentials grant.
@@ -146,12 +147,12 @@ namespace Mvc.Server {
                     //     Type = OpenIddictConstants.ClientTypes.Confidential
                     // });
 
-                    context.Applications.Add(new OpenIddictApplication {
-                        Id = "myClient",
+                    context.Applications.Add(new OpenIddictApplication<Guid> {
+                        ClientId = "myClient",
+                        ClientSecret = Crypto.HashPassword("secret_secret_secret"),
                         DisplayName = "My client application",
-                        RedirectUri = "http://localhost:53507/signin-oidc",
                         LogoutRedirectUri = "http://localhost:53507/",
-                        Secret = Crypto.HashPassword("secret_secret_secret"),
+                        RedirectUri = "http://localhost:53507/signin-oidc",
                         Type = OpenIddictConstants.ClientTypes.Confidential
                     });
 
@@ -164,8 +165,8 @@ namespace Mvc.Server {
                     // * Scope: openid email profile roles
                     // * Grant type: authorization code
                     // * Request access token locally: yes
-                    context.Applications.Add(new OpenIddictApplication {
-                        Id = "postman",
+                    context.Applications.Add(new OpenIddictApplication<Guid> {
+                        ClientId = "postman",
                         DisplayName = "Postman",
                         RedirectUri = "https://www.getpostman.com/oauth2/callback",
                         Type = OpenIddictConstants.ClientTypes.Public
