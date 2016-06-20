@@ -85,6 +85,7 @@ namespace OpenIddict.Infrastructure {
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
+            Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
             Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client_id parameter shouldn't be null.");
 
             // Note: the OpenID Connect server middleware allows authorized presenters (e.g relying parties) to introspect access tokens
@@ -111,11 +112,9 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            // When the received ticket is a refresh token, ensure it is still valid.
-            // Note: the OpenID Connect server middleware automatically ensures only
-            // authorized presenters are allowed to introspect refresh tokens.
-            if (context.Ticket.IsRefreshToken()) {
-                // Retrieve the token from the database using the unique identifier stored in the refresh token:
+            // When the received ticket is revocable, ensure it is still valid.
+            if (context.Ticket.IsAuthorizationCode() || context.Ticket.IsRefreshToken()) {
+                // Retrieve the token from the database using the unique identifier stored in the authentication ticket:
                 // if the corresponding entry cannot be found, return Active = false to indicate that is is no longer valid.
                 var token = await services.Tokens.FindByIdAsync(context.Ticket.GetTicketId());
                 if (token == null) {

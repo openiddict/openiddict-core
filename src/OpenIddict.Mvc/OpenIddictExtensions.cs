@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using OpenIddict;
+using OpenIddict.Infrastructure;
 using OpenIddict.Mvc;
 
 namespace Microsoft.AspNetCore.Builder {
@@ -157,6 +158,26 @@ namespace Microsoft.AspNetCore.Builder {
                 // Register the user manager in the isolated container.
                 services.AddScoped(typeof(UserManager<>).MakeGenericType(builder.UserType), provider => {
                     return provider.GetRequiredService(typeof(OpenIddictUserManager<>).MakeGenericType(builder.UserType));
+                });
+
+                // Register the OpenIddict services in the isolated container.
+                services.AddScoped(typeof(OpenIddictServices<,,,,>).MakeGenericType(
+                    /* TUser: */ builder.UserType,
+                    /* TApplication: */ builder.ApplicationType,
+                    /* TAuthorization: */ builder.AuthorizationType,
+                    /* TScope: */ builder.ScopeType,
+                    /* TToken: */ builder.TokenType), provider => {
+                    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                    var container = (IServiceProvider) accessor.HttpContext.Items[typeof(IServiceProvider)];
+                    Debug.Assert(container != null, "The parent DI container cannot be resolved from the HTTP context.");
+
+                    // Resolve the OpenIddict services from the parent container.
+                    return container.GetRequiredService(typeof(OpenIddictServices<,,,,>).MakeGenericType(
+                        /* TUser: */ builder.UserType,
+                        /* TApplication: */ builder.ApplicationType,
+                        /* TAuthorization: */ builder.AuthorizationType,
+                        /* TScope: */ builder.ScopeType,
+                        /* TToken: */ builder.TokenType));
                 });
 
                 // Register the options in the isolated container.

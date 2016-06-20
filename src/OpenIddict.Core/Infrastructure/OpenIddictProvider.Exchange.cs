@@ -138,7 +138,7 @@ namespace OpenIddict.Infrastructure {
             // stored in the authorization code to create a new identity. To ensure the user was not removed
             // after the authorization code was issued, a new check is made before validating the request.
             if (context.Request.IsAuthorizationCodeGrantType()) {
-                Debug.Assert(context.Ticket.Principal != null, "The authentication ticket shouldn't be null.");
+                Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
                 var user = await services.Users.GetUserAsync(context.Ticket.Principal);
                 if (user == null) {
@@ -153,6 +153,26 @@ namespace OpenIddict.Infrastructure {
                     return;
                 }
 
+                // Extract the token identifier from the authorization code.
+                var identifier = context.Ticket.GetTicketId();
+                Debug.Assert(!string.IsNullOrEmpty(identifier),
+                    "The authorization code should contain a ticket identifier.");
+
+                // Retrieve the token from the database and ensure it is still valid.
+                var token = await services.Tokens.FindByIdAsync(identifier);
+                if (token == null) {
+                    services.Logger.LogError("The token request was rejected because the authorization code was revoked.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: "The authorization code is no longer valid.");
+
+                    return;
+                }
+
+                // Revoke the authorization code to prevent token reuse.
+                await services.Tokens.RevokeAsync(token);
+
                 context.Validate(context.Ticket);
             }
 
@@ -160,7 +180,7 @@ namespace OpenIddict.Infrastructure {
             // stored in the refresh token to create a new identity. To ensure the user was not removed
             // after the refresh token was issued, a new check is made before validating the request.
             else if (context.Request.IsRefreshTokenGrantType()) {
-                Debug.Assert(context.Ticket.Principal != null, "The authentication ticket shouldn't be null.");
+                Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
                 var user = await services.Users.GetUserAsync(context.Ticket.Principal);
                 if (user == null) {

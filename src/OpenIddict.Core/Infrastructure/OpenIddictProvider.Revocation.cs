@@ -19,14 +19,14 @@ namespace OpenIddict.Infrastructure {
         public override async Task ValidateRevocationRequest([NotNull] ValidateRevocationRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            // When token_type_hint is specified, reject the request
-            // if token_type_hint is not equal to "refresh_token".
+            // When token_type_hint is specified, reject the request if it doesn't correspond to a revocable token.
             if (!string.IsNullOrEmpty(context.Request.GetTokenTypeHint()) &&
+                !string.Equals(context.Request.GetTokenTypeHint(), OpenIdConnectConstants.TokenTypeHints.AuthorizationCode) &&
                 !string.Equals(context.Request.GetTokenTypeHint(), OpenIdConnectConstants.TokenTypeHints.RefreshToken)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
-                    description: "Only refresh tokens can be revoked. When specifying a token_type_hint " +
-                                 "parameter, its value must be equal to 'refresh_token'.");
+                    description: "Only authorization codes and refresh tokens can be revoked. When specifying a token_type_hint " +
+                                 "parameter, its value must be equal to 'authorization_code' or 'refresh_token'.");
 
                 return;
             }
@@ -90,36 +90,39 @@ namespace OpenIddict.Infrastructure {
         public override async Task HandleRevocationRequest([NotNull] HandleRevocationRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            // If the received token is not a refresh token, set Revoked
-            // to false to indicate that the token cannot be revoked.
-            if (!context.Ticket.IsRefreshToken()) {
-                services.Logger.LogError("The revocation request was rejected because the token was not a refresh token.");
+            Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
-                context.Revoked = false;
+            // If the received token is not an authorization code or a refresh token,
+            // return an error to indicate that the token cannot be revoked.
+            if (!context.Ticket.IsAuthorizationCode() && !context.Ticket.IsRefreshToken()) {
+                services.Logger.LogError("The revocation request was rejected because the token was not revocable.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
+                    description: "Only authorization codes and refresh tokens can be revoked.");
 
                 return;
             }
 
-            // Extract the token identifier from the refresh token.
+            // Extract the token identifier from the authentication ticket.
             var identifier = context.Ticket.GetTicketId();
-            Debug.Assert(!string.IsNullOrEmpty(identifier),
-                "The refresh token should contain a ticket identifier.");
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The token should contain a ticket identifier.");
 
             // Retrieve the token from the database. If the token cannot be found,
             // assume it is invalid and consider the revocation as successful.
             var token = await services.Tokens.FindByIdAsync(identifier);
             if (token == null) {
-                services.Logger.LogInformation("The refresh token '{Identifier}' was already revoked.", identifier);
+                services.Logger.LogInformation("The token '{Identifier}' was already revoked.", identifier);
 
                 context.Revoked = true;
 
                 return;
             }
 
-            // Revoke the refresh token.
+            // Revoke the token.
             await services.Tokens.RevokeAsync(token);
 
-            services.Logger.LogInformation("The refresh token '{Identifier}' was successfully revoked.", identifier);
+            services.Logger.LogInformation("The token '{Identifier}' was successfully revoked.", identifier);
 
             context.Revoked = true;
         }
