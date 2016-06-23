@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,7 @@ namespace Mvc.Client {
 
                 // Use the authorization code flow.
                 ResponseType = OpenIdConnectResponseType.Code,
+                AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet,
 
                 // Note: setting the Authority allows the OIDC client middleware to automatically
                 // retrieve the identity provider's configuration and spare you from setting

@@ -15,6 +15,10 @@ namespace OpenIddict {
             public const string Public = "public";
         }
 
+        public static class Environment {
+            public const string Request = "openiddict-request:";
+        }
+
         public static class Scopes {
             public const string Roles = "roles";
         }

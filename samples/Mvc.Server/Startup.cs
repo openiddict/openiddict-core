@@ -22,6 +22,8 @@ namespace Mvc.Server {
 
             services.AddMvc();
 
+            services.AddSession();
+
             services.AddEntityFramework()
                 .AddEntityFrameworkSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
@@ -117,6 +119,8 @@ namespace Mvc.Server {
                 ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
                 ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
             });
+
+            app.UseSession();
 
             app.UseSession();
 

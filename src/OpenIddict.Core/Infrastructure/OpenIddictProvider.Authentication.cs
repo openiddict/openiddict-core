@@ -13,14 +13,18 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
-        public override Task ExtractAuthorizationRequest([NotNull] ExtractAuthorizationRequestContext context) {
+        public override async Task ExtractAuthorizationRequest([NotNull] ExtractAuthorizationRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             // Reject requests using the unsupported request parameter.
@@ -32,7 +36,7 @@ namespace OpenIddict.Infrastructure {
                     error: OpenIdConnectConstants.Errors.RequestNotSupported,
                     description: "The request parameter is not supported.");
 
-                return Task.FromResult(0);
+                return;
             }
 
             // Reject requests using the unsupported request_uri parameter.
@@ -44,10 +48,43 @@ namespace OpenIddict.Infrastructure {
                     error: OpenIdConnectConstants.Errors.RequestUriNotSupported,
                     description: "The request_uri parameter is not supported.");
 
-                return Task.FromResult(0);
+                return;
             }
 
-            return Task.FromResult(0);
+            // If a request_id parameter can be found in the authorization request,
+            // restore the complete authorization request stored in the user session.
+            if (!string.IsNullOrEmpty(context.Request.GetRequestId())) {
+                // Ensure session support has been enabled for this request.
+                if (context.HttpContext.Features.Get<ISessionFeature>() == null) {
+                    services.Logger.LogError("The authorization request was rejected because the session middleware " +
+                                             "was not correctly registered. Session support must be enabled to allow " +
+                                             "processing authorization requests specifying a request_id parameter.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The request_id parameter is not allowed by this authorization server.");
+
+                    return;
+                }
+
+                // Load the session from the session store.
+                await context.HttpContext.Session.LoadAsync();
+
+                var payload = context.HttpContext.Session.Get(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
+                if (payload == null) {
+                    services.Logger.LogError("The authorization request was rejected because an unknown " +
+                                             "or invalid request_id parameter was specified.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "Invalid request: timeout expired.");
+
+                    return;
+                }
+
+                // Restore the authorization request parameters from the serialized payload.
+                context.Request.Import(payload);
+            }
         }
 
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
@@ -279,7 +316,56 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
+            if (context.HttpContext.Request.Path == context.Options.AuthorizationEndpointPath &&
+                string.Equals(context.HttpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase)) {
+                // Ensure session support has been enabled for this request.
+                if (context.HttpContext.Features.Get<ISessionFeature>() == null) {
+                    services.Logger.LogError("The authorization request was rejected because the session middleware " +
+                                             "was not correctly registered. Session support must be enabled to allow " +
+                                             "processing POST authorization requests.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "POST authorization requests are not allowed by this authorization server.");
+
+                    return;
+                }
+
+                // Generate a request identifier. Note: using a crypto-secure
+                // random number generator is not necessary in this case.
+                var identifier = Guid.NewGuid().ToString();
+
+                // Load the session from the session store.
+                await context.HttpContext.Session.LoadAsync();
+
+                // Store the serialized authorization request parameters in the user session.
+                context.HttpContext.Session.Set(OpenIddictConstants.Environment.Request + identifier, context.Request.Export());
+
+                // Add the request_id to the current URL.
+                var address = QueryHelpers.AddQueryString(
+                    uri: context.HttpContext.Request.GetEncodedUrl(),
+                    name: OpenIdConnectConstants.Parameters.RequestId, value: identifier);
+
+                context.HttpContext.Response.Redirect(address);
+                context.HandleResponse();
+
+                return;
+            }
+
             context.SkipToNextMiddleware();
+        }
+
+        public override Task ApplyAuthorizationResponse([NotNull] ApplyAuthorizationResponseContext context) {
+            // Note: the ApplyAuthorizationResponse event is called for both successful
+            // and errored authorization responses but discrimination is not necessary here,
+            // as the authorization request must be removed from the user session in both cases.
+
+            // Remove the authorization request from the user session.
+            if (!string.IsNullOrEmpty(context.Request.GetRequestId())) {
+                context.HttpContext.Session.Remove(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
+            }
+
+            return Task.FromResult(0);
         }
     }
 }

@@ -5,8 +5,6 @@
  */
 
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -23,7 +21,7 @@ namespace OpenIddict.Mvc {
     // Note: this controller is generic and doesn't need to be marked as internal to prevent MVC from discovering it.
     public class OpenIddictController<TUser, TApplication, TAuthorization, TToken> : Controller
         where TUser : class where TApplication : class where TAuthorization : class where TToken : class {
-        [HttpGet, HttpPost]
+        [Authorize, HttpGet, HttpPost]
         public virtual async Task<IActionResult> Authorize([FromServices] OpenIddictApplicationManager<TApplication> applications) {
             // Note: when a fatal error occurs during the request processing, an OpenID Connect response
             // is prematurely forged and added to the ASP.NET Core context by OpenIdConnectServerHandler.
@@ -38,19 +36,6 @@ namespace OpenIddict.Mvc {
                 return View("Error", new OpenIdConnectMessage {
                     Error = OpenIdConnectConstants.Errors.ServerError,
                     ErrorDescription = "An internal error has occurred"
-                });
-            }
-
-            // Note: authentication could be theorically enforced at the filter level via AuthorizeAttribute
-            // but this authorization endpoint accepts both GET and POST requests while the cookie middleware
-            // only uses 302 responses to redirect the user agent to the login page, making it incompatible with POST.
-            // To work around this limitation, the OpenID Connect request is automatically saved in the cache and will be
-            // restored by the OpenID Connect server middleware after the external authentication process has been completed.
-            if (!User.Identities.Any(identity => identity.IsAuthenticated)) {
-                return Challenge(new AuthenticationProperties {
-                    RedirectUri = Url.Action(nameof(Authorize), new {
-                        request_id = request.GetRequestId()
-                    })
                 });
             }
 
@@ -98,7 +83,10 @@ namespace OpenIddict.Mvc {
             // Create a new ClaimsIdentity containing the claims that
             // will be used to create an id_token, a token or a code.
             var identity = await users.CreateIdentityAsync(user, request.GetScopes());
-            Debug.Assert(identity != null);
+            if (identity == null) {
+                throw new InvalidOperationException("The authorization request was aborted because the user manager returned " +
+                                                   $"a null identity for user '{await users.GetUserNameAsync(user)}'.");
+            }
 
             var application = await applications.FindByClientIdAsync(request.ClientId);
             if (application == null) {
