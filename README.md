@@ -102,17 +102,17 @@ public void Configure(IApplicationBuilder app) {
 public class ApplicationUser : OpenIddictUser { }
 ```
 
-  - **Update your Entity Framework context to inherit from `OpenIddictContext`**:
+  - **Update your Entity Framework context to inherit from `OpenIddictDbContext`**:
 
 ```csharp
-public class ApplicationDbContext : OpenIddictContext<ApplicationUser> {
+public class ApplicationDbContext : OpenIddictDbContext<ApplicationUser> {
     public ApplicationDbContext(DbContextOptions options)
         : base(options) {
     }
 }
 ```
 
-> **Note:** although recommended, inheriting from `OpenIddictContext` is not mandatory. Alternatively, you can also create your own context and manually add the entity sets needed by OpenIddict:
+> **Note:** although recommended, inheriting from `OpenIddictDbContext` is not mandatory. Alternatively, you can also create your own context and manually add the entity sets needed by OpenIddict:
 
 ```csharp
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
