@@ -150,62 +150,77 @@ namespace OpenIddict {
         protected override void OnModelCreating(ModelBuilder builder) {
             base.OnModelCreating(builder);
 
+            // Rename Identity tables.
+            builder.Entity<TUser>(e => e.ToTable("OpenIddictUsers"));
+            builder.Entity<TRole>(e => e.ToTable("OpenIddictRoles"));
+            builder.Entity<IdentityUserClaim<TKey>>(e => e.ToTable("OpenIddictUserClaims"));
+            builder.Entity<IdentityRoleClaim<TKey>>(e => e.ToTable("OpenIddictRoleClaims"));
+            builder.Entity<IdentityUserRole<TKey>>(e => e.ToTable("OpenIddictUserRoles"));
+            builder.Entity<IdentityUserLogin<TKey>>(e => e.ToTable("OpenIddictUserLogins"));
+            builder.Entity<IdentityUserToken<TKey>>(e => e.ToTable("OpenIddictUserTokens"));
+
             // Warning: optional foreign keys MUST NOT be added as CLR properties because
             // Entity Framework would throw an exception due to the TKey generic parameter
             // being non-nullable when using value types like short, int, long or Guid.
 
             // Configure the TApplication entity.
-            builder.Entity<TApplication>(entity => {
-                entity.HasKey(application => application.Id);
+            builder.Entity<TApplication>(e => {
+                e.HasKey(app => app.Id);
 
-                entity.HasIndex(application => application.ClientId)
-                      .IsUnique(unique: true);
+                e.HasAlternateKey(app => app.ClientId);
+                e.HasIndex(app => app.ClientId).HasName("ApplicationClientIdIndex");
 
-                entity.HasMany(application => application.Tokens)
-                      .WithOne()
-                      .HasForeignKey("ApplicationId")
-                      .IsRequired(required: false);
+                e.HasMany(app => app.Tokens)
+                 .WithOne()
+                 .HasForeignKey("ApplicationId")
+                 .IsRequired(false);
 
-                entity.ToTable("OpenIddictApplications");
+                e.ToTable("OpenIddictApplications");
+
+                e.Property(app => app.ClientId).IsRequired();
+                e.Property(app => app.RedirectUri).IsRequired();
+                e.Property(app => app.Type).IsRequired();
             });
 
             // Configure the TAuthorization entity.
-            builder.Entity<TAuthorization>(entity => {
-                entity.HasKey(authorization => authorization.Id);
+            builder.Entity<TAuthorization>(e => {
+                e.HasKey(auth => auth.Id);
 
-                entity.HasMany(authorization => authorization.Tokens)
-                      .WithOne()
-                      .HasForeignKey("AuthorizationId")
-                      .IsRequired(required: false);
+                e.HasMany(auth => auth.Tokens)
+                 .WithOne()
+                 .HasForeignKey("AuthorizationId")
+                 .IsRequired(false);
 
-                entity.ToTable("OpenIddictAuthorizations");
+                e.ToTable("OpenIddictAuthorizations");
             });
 
             // Configure the TScope entity.
-            builder.Entity<TScope>(entity => {
-                entity.HasKey(scope => scope.Id);
+            builder.Entity<TScope>(e => {
+                e.HasKey(scope => scope.Id);
 
-                entity.ToTable("OpenIddictScopes");
+                e.ToTable("OpenIddictScopes");
             });
 
             // Configure the TToken entity.
-            builder.Entity<TToken>(entity => {
-                entity.HasKey(token => token.Id);
+            builder.Entity<TToken>(e => {
+                e.HasKey(token => token.Id);
 
-                entity.ToTable("OpenIddictTokens");
+                e.ToTable("OpenIddictTokens");
+
+                e.Property(token => token.Type).IsRequired();
             });
 
             // Configure the TUser entity.
-            builder.Entity<TUser>(entity => {
-                entity.HasMany(user => user.Authorizations)
-                      .WithOne()
-                      .HasForeignKey("UserId")
-                      .IsRequired(required: false);
+            builder.Entity<TUser>(e => {
+                e.HasMany(user => user.Authorizations)
+                 .WithOne()
+                 .HasForeignKey("UserId")
+                 .IsRequired(false);
 
-                entity.HasMany(user => user.Tokens)
-                      .WithOne()
-                      .HasForeignKey("UserId")
-                      .IsRequired(required: false);
+                e.HasMany(user => user.Tokens)
+                 .WithOne()
+                 .HasForeignKey("UserId")
+                 .IsRequired(false);
             });
         }
     }
