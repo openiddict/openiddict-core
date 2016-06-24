@@ -6,8 +6,8 @@
 
 namespace OpenIddict {
     /// <summary>
-    /// Provides methods allowing to manage the authorizations stored in a database.
+    /// Provides an abstraction for a store which manages authorizations.
     /// </summary>
-    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+    /// <typeparam name="TAuthorization">The type encapsulating a client application authorization.</typeparam>
     public interface IOpenIddictAuthorizationStore<TAuthorization> where TAuthorization : class { }
 }

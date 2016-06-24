@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace OpenIddict {
     /// <summary>
-    /// Provides methods allowing to manage the tokens stored in a database.
+    /// Provides an abstraction for a store which manages authorization tokens.
     /// </summary>
-    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
+    /// <typeparam name="TToken">The type encapsulating an authorization token.</typeparam>
     public interface IOpenIddictTokenStore<TToken> where TToken : class {
         /// <summary>
         /// Creates a new token, which is not associated with a particular user or client.

@@ -15,15 +15,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenIddict {
     /// <summary>
-    /// Provides methods allowing to manage the users stored in a database.
+    /// Creates a new instance of a persistence store for the specified user type.
     /// </summary>
-    /// <typeparam name="TUser">The type of the User entity.</typeparam>
-    /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    /// <typeparam name="TRole">The type of the Role entity.</typeparam>
-    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+    /// <typeparam name="TUser">The type representing a user.</typeparam>
+    /// <typeparam name="TApplication">The type representing an application.</typeparam>
+    /// <typeparam name="TAuthorization">The type representing an authorization.</typeparam>
+    /// <typeparam name="TRole">The type representing a role.</typeparam>
+    /// <typeparam name="TToken">The type representing a token.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">
+    /// The type of the primary key for a user, an application, an authorization, a role and a token.
+    /// </typeparam>
     public class OpenIddictUserStore<TUser, TApplication, TAuthorization, TRole, TToken, TContext, TKey> :
         UserStore<TUser, TRole, TContext, TKey>, IOpenIddictUserStore<TUser>
         where TUser : OpenIddictUser<TKey, TAuthorization, TToken>, new()
@@ -42,15 +44,18 @@ namespace OpenIddict {
         protected DbSet<TApplication> Applications => Context.Set<TApplication>();
 
         /// <summary>
-        /// Creates a new token associated with the given user and defined by a unique identifier and a token type.
+        /// Creates a new token associated with the given user.
         /// </summary>
         /// <param name="user">The user associated with the token.</param>
         /// <param name="type">The token type.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="T:System.Threading.Tasks.Task" /> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
+        /// <exception cref="System.ArgumentNullException"></exception> // TODO: Add reason
+        /// <exception cref="System.ArgumentException">The token type cannot be null or empty.</exception>
+        /// <exception cref="System.InvalidOperationException"></exception> // TODO: Add reason
         public virtual async Task<string> CreateTokenAsync(TUser user, string type, CancellationToken cancellationToken) {
             if (user == null) {
                 throw new ArgumentNullException(nameof(user));
@@ -83,11 +88,20 @@ namespace OpenIddict {
         /// <param name="user">The user.</param>
         /// <param name="client">The application.</param>
         /// <param name="type">The token type.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="T:System.Threading.Tasks.Task" /> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
+        /// <exception cref="System.ArgumentNullException"></exception> // TODO: Add reason
+        /// <exception cref="System.ArgumentException">
+        /// The client identifier cannot be null or empty.
+        /// or
+        /// The token type cannot be null or empty.
+        /// </exception>
+        /// <exception cref="System.InvalidOperationException">
+        /// The application cannot be found in the database.
+        /// </exception>
         public virtual async Task<string> CreateTokenAsync(TUser user, string client, string type, CancellationToken cancellationToken) {
             if (user == null) {
                 throw new ArgumentNullException(nameof(user));
@@ -129,11 +143,13 @@ namespace OpenIddict {
         /// Retrieves the token identifiers associated with a user.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="T:System.Threading.Tasks.Task" /> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens associated with the user.
         /// </returns>
+        /// <exception cref="System.ArgumentNullException"></exception> // TODO: Add reason
+        /// <exception cref="System.InvalidOperationException"></exception> // TODO: Add reason
         public virtual async Task<IEnumerable<string>> GetTokensAsync(TUser user, CancellationToken cancellationToken) {
             if (user == null) {
                 throw new ArgumentNullException(nameof(user));

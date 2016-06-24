@@ -8,7 +8,8 @@ using System;
 
 namespace OpenIddict {
     /// <summary>
-    /// Represents an OpenIddict scope.
+    /// The default implementation of <see cref="OpenIddictScope{TKey}"/>
+    /// which uses a string as a primary key.
     /// </summary>
     public class OpenIddictScope : OpenIddictScope<string> {
         public OpenIddictScope() {
@@ -18,19 +19,17 @@ namespace OpenIddict {
     }
 
     /// <summary>
-    /// Represents an OpenIddict scope.
+    /// Represents a scope in the OpenIddict system.
     /// </summary>
     public class OpenIddictScope<TKey> where TKey : IEquatable<TKey> {
         /// <summary>
-        /// Gets or sets the public description
-        /// associated with the current scope.
-        /// </summary>
-        public virtual string Description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier
-        /// associated with the current scope.
+        /// Gets or sets the primary key for this scope.
         /// </summary>
         public virtual TKey Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the public description for this scope.
+        /// </summary>
+        public virtual string Description { get; set; }
     }
 }

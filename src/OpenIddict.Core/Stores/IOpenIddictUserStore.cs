@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace OpenIddict {
     /// <summary>
-    /// Provides methods allowing to manage the users stored in a database.
+    /// Provides an abstraction for a store which manages users.
     /// </summary>
-    /// <typeparam name="TUser">The type of the User entity.</typeparam>
+    /// <typeparam name="TUser">The type encapsulating a User.</typeparam>
     public interface IOpenIddictUserStore<TUser> : IUserStore<TUser> where TUser : class {
         /// <summary>
         /// Creates a new token associated with the given user.
