@@ -75,4 +75,7 @@ Global
 		{7AE46E2F-E93B-4FF9-B941-6CD7A3E1BF84} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 		{3744B1BC-3498-4958-B020-B2688A78B989} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 	EndGlobalSection
+	GlobalSection(CodealikeProperties) = postSolution
+		SolutionGuid = 6fd0098c-4d4e-47f0-acfd-63c2a37729f8
+	EndGlobalSection
 EndGlobal
