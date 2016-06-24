@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenIddict;
 
 namespace Mvc.Server.Models {
-    public class ApplicationDbContext : OpenIddictContext<ApplicationUser, IdentityRole<Guid>, Guid> {
+    public class ApplicationDbContext : OpenIddictDbContext<ApplicationUser, IdentityRole<Guid>, Guid> {
         public ApplicationDbContext(DbContextOptions options)
             : base(options) { }
 
