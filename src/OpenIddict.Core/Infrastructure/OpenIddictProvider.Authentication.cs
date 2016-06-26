@@ -23,6 +23,36 @@ namespace OpenIddict.Infrastructure {
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
+            // Note: the OpenID Connect server middleware supports authorization code, implicit, hybrid,
+            // none and custom flows but OpenIddict uses a stricter policy rejecting unknown flows.
+            if (!context.Request.IsAuthorizationCodeFlow() && !context.Request.IsHybridFlow() &&
+                !context.Request.IsImplicitFlow() && !context.Request.IsNoneFlow()) {
+                services.Logger.LogError("The authorization request was rejected because the '{ResponseType}' " +
+                                         "response type is not supported.", context.Request.ResponseType);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
+                    description: "The specified response_type parameter is not supported.");
+
+                return;
+            }
+
+            // Note: the OpenID Connect server middleware supports the query, form_post and fragment response modes
+            // and doesn't reject unknown/custom modes until the ApplyAuthorizationResponse event is invoked.
+            // To ensure authorization requests are rejected early enough, an additional check is made by OpenIddict.
+            if (!string.IsNullOrEmpty(context.Request.ResponseMode) && !context.Request.IsFormPostResponseMode() &&
+                                                                       !context.Request.IsFragmentResponseMode() &&
+                                                                       !context.Request.IsQueryResponseMode()) {
+                services.Logger.LogError("The authorization request was rejected because the '{ResponseMode}' " +
+                                         "response mode is not supported.", context.Request.ResponseMode);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The specified response_mode parameter is not supported.");
+
+                return;
+            }
+
             // Note: redirect_uri is not required for pure OAuth2 requests
             // but this provider uses a stricter policy making it mandatory,
             // as required by the OpenID Connect core specification.
