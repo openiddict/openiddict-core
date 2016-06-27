@@ -158,8 +158,7 @@ namespace OpenIddict {
             builder.Entity<TApplication>(entity => {
                 entity.HasKey(application => application.Id);
 
-                entity.HasIndex(application => application.ClientId)
-                      .IsUnique(unique: true);
+                entity.HasAlternateKey(application => application.ClientId);
 
                 entity.HasMany(application => application.Tokens)
                       .WithOne()
