@@ -12,13 +12,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenIddict {
     /// <summary>
-    /// Provides methods allowing to manage the tokens stored in a database.
+    /// Creates a new instance of a persistence store for the specified authorization token type.
     /// </summary>
-    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    /// <typeparam name="TUser">The type of the User entity.</typeparam>
-    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
-    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+    /// <typeparam name="TToken">The type representing a token.</typeparam>
+    /// <typeparam name="TAuthorization">The type representing an authorization.</typeparam>
+    /// <typeparam name="TUser">The type representing a user.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">
+    /// The type of the primary key for a token, an authorization and a user.
+    /// </typeparam>
     public class OpenIddictTokenStore<TToken, TAuthorization, TUser, TContext, TKey> : IOpenIddictTokenStore<TToken>
         where TToken : OpenIddictToken<TKey>, new()
         where TAuthorization : OpenIddictAuthorization<TKey, TToken>
@@ -30,7 +32,7 @@ namespace OpenIddict {
         }
 
         /// <summary>
-        /// Gets the database context associated with the current store.
+        /// Gets the database context for this store.
         /// </summary>
         protected virtual TContext Context { get; }
 
@@ -43,11 +45,13 @@ namespace OpenIddict {
         /// Creates a new token, which is not associated with a particular user or client.
         /// </summary>
         /// <param name="type">The token type.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="T:System.Threading.Tasks.Task" /> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
+        /// <exception cref="System.ArgumentException">The token type cannot be null or empty.</exception>
+        /// <exception cref="System.InvalidOperationException"></exception> // TODO: Add reason
         public virtual async Task<string> CreateAsync(string type, CancellationToken cancellationToken) {
             if (string.IsNullOrEmpty(type)) {
                 throw new ArgumentException("The token type cannot be null or empty.");
@@ -71,9 +75,9 @@ namespace OpenIddict {
         /// Retrieves an token using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="T:System.Threading.Tasks.Task" /> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
         public virtual Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken) {
@@ -93,8 +97,11 @@ namespace OpenIddict {
         /// Revokes a token.
         /// </summary>
         /// <param name="token">The token to revoke.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="T:System.Threading.Tasks.Task" /> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException"></exception> // TODO: Add reason
         public virtual Task RevokeAsync(TToken token, CancellationToken cancellationToken) {
             if (token == null) {
                 throw new ArgumentNullException(nameof(token));

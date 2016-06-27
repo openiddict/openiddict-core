@@ -10,7 +10,8 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace OpenIddict {
     /// <summary>
-    /// Represents an OpenIddict user.
+    /// The default implementation of <see cref="OpenIddictUser{TKey}"/>
+    /// which uses a string as a primary key.
     /// </summary>
     public class OpenIddictUser : OpenIddictUser<string, OpenIddictAuthorization, OpenIddictToken> {
         public OpenIddictUser() {
@@ -20,22 +21,22 @@ namespace OpenIddict {
     }
 
     /// <summary>
-    /// Represents an OpenIddict user.
+    /// The default implementation of <see cref="OpenIddictUser{TKey, TAuthorization, TToken}"/>.
     /// </summary>
     public class OpenIddictUser<TKey> : OpenIddictUser<TKey, OpenIddictAuthorization<TKey>, OpenIddictToken<TKey>>
         where TKey : IEquatable<TKey> { }
 
     /// <summary>
-    /// Represents an OpenIddict user.
+    /// Represents a user in the OpenIddict system.
     /// </summary>
     public class OpenIddictUser<TKey, TAuthorization, TToken> : IdentityUser<TKey> where TKey : IEquatable<TKey> {
         /// <summary>
-        /// Gets the list of the authorizations associated with this user profile.
+        /// Navigation property for the authorizations associated with this user profile.
         /// </summary>
         public virtual IList<TAuthorization> Authorizations { get; } = new List<TAuthorization>();
 
         /// <summary>
-        /// Gets the list of the tokens associated with this user profile.
+        /// Navigation property for the tokens associated with this user profile.
         /// </summary>
         public virtual IList<TToken> Tokens { get; } = new List<TToken>();
     }

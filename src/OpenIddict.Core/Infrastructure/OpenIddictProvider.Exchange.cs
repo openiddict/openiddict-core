@@ -303,7 +303,7 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            if (services.Users.SupportsUserLockout) { 
+            if (services.Users.SupportsUserLockout) {
                 await services.Users.ResetAccessFailedCountAsync(user);
             }
 

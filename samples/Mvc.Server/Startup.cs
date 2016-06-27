@@ -66,17 +66,17 @@ namespace Mvc.Server {
             // persisted on the disk. If the key cannot be persisted, an in-memory key is used instead:
             // when the application shuts down, the key is definitely lost and the access/identity tokens
             // will be considered as invalid by client applications/resource servers when validating them.
-            // 
+            //
             // On production, using a X.509 certificate stored in the machine store is recommended.
             // You can generate a self-signed certificate using Pluralsight's self-cert utility:
             // https://s3.amazonaws.com/pluralsight-free/keith-brown/samples/SelfCert.zip
-            // 
+            //
             // services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
             //     .AddSigningCertificate("7D2A741FE34CC2C7369237A5F2078988E17A6A75");
-            // 
+            //
             // Alternatively, you can also store the certificate as an embedded .pfx resource
             // directly in this assembly or in a file published alongside this project:
-            // 
+            //
             // services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
             //     .AddSigningCertificate(
             //          assembly: typeof(Startup).GetTypeInfo().Assembly,
@@ -99,7 +99,7 @@ namespace Mvc.Server {
             // Alternatively, you can also use the introspection middleware.
             // Using it is recommended if your resource server is in a
             // different application/separated from the authorization server.
-            // 
+            //
             // app.UseOAuthIntrospection(options => {
             //     options.AutomaticAuthenticate = true;
             //     options.AutomaticChallenge = true;
@@ -139,7 +139,7 @@ namespace Mvc.Server {
                 if (!context.Applications.Any()) {
                     // Note: when using the introspection middleware, your resource server
                     // MUST be registered as an OAuth2 client and have valid credentials.
-                    // 
+                    //
                     // context.Applications.Add(new OpenIddictApplication {
                     //     Id = "resource_server",
                     //     DisplayName = "Main resource server",
@@ -151,13 +151,13 @@ namespace Mvc.Server {
                         ClientId = "myClient",
                         ClientSecret = Crypto.HashPassword("secret_secret_secret"),
                         DisplayName = "My client application",
-                        LogoutRedirectUri = "http://localhost:53507/",
                         RedirectUri = "http://localhost:53507/signin-oidc",
+                        LogoutRedirectUri = "http://localhost:53507/",
                         Type = OpenIddictConstants.ClientTypes.Confidential
                     });
 
                     // To test this sample with Postman, use the following settings:
-                    // 
+                    //
                     // * Authorization URL: http://localhost:54540/connect/authorize
                     // * Access token URL: http://localhost:54540/connect/token
                     // * Client ID: postman

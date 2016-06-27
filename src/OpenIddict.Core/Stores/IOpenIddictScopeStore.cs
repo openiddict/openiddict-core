@@ -6,8 +6,8 @@
 
 namespace OpenIddict {
     /// <summary>
-    /// Provides methods allowing to manage the scopes stored in a database.
+    /// Provides an abstraction for a store which manages authorization scopes.
     /// </summary>
-    /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
+    /// <typeparam name="TScope">The type encapsulating an authorization scope.</typeparam>
     public interface IOpenIddictScopeStore<TScope> where TScope : class { }
 }
