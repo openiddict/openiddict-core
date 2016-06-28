@@ -20,6 +20,36 @@ using Microsoft.Extensions.Logging;
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
+        public override Task ExtractAuthorizationRequest([NotNull] ExtractAuthorizationRequestContext context) {
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+
+            // Reject requests using the unsupported request parameter.
+            if (!string.IsNullOrEmpty(context.Request.GetParameter(OpenIdConnectConstants.Parameters.Request))) {
+                services.Logger.LogError("The authorization request was rejected because it contained " +
+                                         "an unsupported parameter: {Parameter}.", "request");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.RequestNotSupported,
+                    description: "The request parameter is not supported.");
+
+                return Task.FromResult(0);
+            }
+
+            // Reject requests using the unsupported request_uri parameter.
+            if (!string.IsNullOrEmpty(context.Request.RequestUri)) {
+                services.Logger.LogError("The authorization request was rejected because it contained " +
+                                         "an unsupported parameter: {Parameter}.", "request_uri");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.RequestUriNotSupported,
+                    description: "The request_uri parameter is not supported.");
+
+                return Task.FromResult(0);
+            }
+
+            return Task.FromResult(0);
+        }
+
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
