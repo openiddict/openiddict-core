@@ -122,8 +122,6 @@ namespace Mvc.Server {
 
             app.UseSession();
 
-            app.UseSession();
-
             app.UseOpenIddict();
 
             app.UseMvcWithDefaultRoute();
