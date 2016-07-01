@@ -33,23 +33,9 @@ namespace Mvc.Server {
 
             // Register the OpenIddict services, including the default Entity Framework stores.
             services.AddOpenIddict<ApplicationUser, IdentityRole<Guid>, ApplicationDbContext, Guid>()
-                // Register the HTML/CSS assets and MVC modules to handle the interactive flows.
-                // Note: these modules are not necessary when using your own authorization controller
-                // or when using non-interactive flows-only like the resource owner password credentials grant.
-                .AddAssets()
-                .AddMvc()
-
-                // Register the NWebsec module. Note: you can replace the default Content Security Policy (CSP)
-                // by calling UseNWebsec with a custom delegate instead of using the parameterless extension.
-                // This can be useful to allow your HTML views to reference remote scripts/images/styles.
-                .AddNWebsec(options => options.DefaultSources(directive => directive.Self())
-                    .ImageSources(directive => directive.Self()
-                        .CustomSources("*"))
-                    .ScriptSources(directive => directive.Self()
-                        .UnsafeInline()
-                        .CustomSources("https://my.custom.url/"))
-                    .StyleSources(directive => directive.Self()
-                        .UnsafeInline()))
+                .SetAuthorizationEndpointPath("/connect/authorize")
+                .SetLogoutEndpointPath("/connect/logout")
+                .SetErrorHandlingPath("/connect/error")
 
                 // During development, you can disable the HTTPS requirement.
                 .DisableHttpsRequirement();
@@ -104,6 +90,20 @@ namespace Mvc.Server {
             //     options.ClientId = "resource_server";
             //     options.ClientSecret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd";
             // });
+
+            app.UseCsp(options => options.DefaultSources(directive => directive.Self())
+                .ImageSources(directive => directive.Self()
+                    .CustomSources("*"))
+                .ScriptSources(directive => directive.Self()
+                    .UnsafeInline())
+                .StyleSources(directive => directive.Self()
+                    .UnsafeInline()));
+
+            app.UseXContentTypeOptions();
+
+            app.UseXfo(options => options.Deny());
+
+            app.UseXXssProtection(options => options.EnabledWithBlockMode());
 
             app.UseIdentity();
 

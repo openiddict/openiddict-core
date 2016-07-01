@@ -35,10 +35,8 @@
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "Microsoft.Extensions.Logging.Console": "1.0.0",
     "Microsoft.Extensions.Logging.Debug": "1.0.0",
-    "OpenIddict": { "target": "project" },
-    "OpenIddict.Assets": { "target": "project" },
-    "OpenIddict.Mvc": { "target": "project" },
-    "OpenIddict.Security": { "target": "project" }
+    "NWebsec.AspNetCore.Middleware": "1.0.0-gamma1-15",
+    "OpenIddict": { "target": "project" }
   },
 
   "frameworks": {

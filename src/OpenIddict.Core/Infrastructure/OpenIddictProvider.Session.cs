@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -104,6 +105,26 @@ namespace OpenIddict.Infrastructure {
             // Mark the response as handled
             // to skip the rest of the pipeline.
             context.HandleResponse();
+        }
+
+        public override Task ApplyLogoutResponse([NotNull] ApplyLogoutResponseContext context) {
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+
+            if (!string.IsNullOrEmpty(context.Response.Error) && services.Options.ErrorHandlingPath.HasValue) {
+                // Rewrite the request path to point to the error handler path.
+                context.HttpContext.Request.Path = services.Options.ErrorHandlingPath;
+
+                // Replace the default status code to return a 400 response.
+                context.HttpContext.Response.StatusCode = 400;
+
+                // Store the OpenID Connect response in the HTTP context to allow retrieving it
+                // from user code (e.g from an ASP.NET Core MVC controller or a Nancy module).
+                context.HttpContext.SetOpenIdConnectResponse(context.Response);
+
+                context.SkipToNextMiddleware();
+            }
+
+            return Task.FromResult(0);
         }
     }
 }

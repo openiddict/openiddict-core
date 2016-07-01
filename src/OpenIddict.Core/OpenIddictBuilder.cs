@@ -386,6 +386,16 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
+        /// Sets the relative path corresponding to the middleware or controller action responsible
+        /// of rendering the OpenID Connect errors occurred during interactive workflows.
+        /// </summary>
+        /// <param name="path">The relative path of the error handler.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder SetErrorHandlingPath(PathString path) {
+            return Configure(options => options.ErrorHandlingPath = path);
+        }
+
+        /// <summary>
         /// Sets the relative path corresponding to the logout endpoint.
         /// </summary>
         /// <param name="path">The relative path of the logout endpoint.</param>

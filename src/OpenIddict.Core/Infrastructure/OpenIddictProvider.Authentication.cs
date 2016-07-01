@@ -13,6 +13,7 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -356,13 +357,28 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override Task ApplyAuthorizationResponse([NotNull] ApplyAuthorizationResponseContext context) {
-            // Note: the ApplyAuthorizationResponse event is called for both successful
-            // and errored authorization responses but discrimination is not necessary here,
-            // as the authorization request must be removed from the user session in both cases.
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             // Remove the authorization request from the user session.
             if (!string.IsNullOrEmpty(context.Request.GetRequestId())) {
+                // Note: the ApplyAuthorizationResponse event is called for both successful
+                // and errored authorization responses but discrimination is not necessary here,
+                // as the authorization request must be removed from the user session in both cases.
                 context.HttpContext.Session.Remove(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
+            }
+
+            if (!string.IsNullOrEmpty(context.Response.Error) && services.Options.ErrorHandlingPath.HasValue) {
+                // Rewrite the request path to point to the error handler path.
+                context.HttpContext.Request.Path = services.Options.ErrorHandlingPath;
+
+                // Replace the default status code to return a 400 response.
+                context.HttpContext.Response.StatusCode = 400;
+
+                // Store the OpenID Connect response in the HTTP context to allow retrieving it
+                // from user code (e.g from an ASP.NET Core MVC controller or a Nancy module).
+                context.HttpContext.SetOpenIdConnectResponse(context.Response);
+
+                context.SkipToNextMiddleware();
             }
 
             return Task.FromResult(0);

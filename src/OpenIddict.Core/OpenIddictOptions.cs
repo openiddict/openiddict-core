@@ -24,6 +24,12 @@ namespace OpenIddict {
         }
 
         /// <summary>
+        /// Gets or sets the path of the middleware responsible of rendering
+        /// the OpenID Connect errors occurred during interactive workflows.
+        /// </summary>
+        public PathString ErrorHandlingPath { get; set; }
+
+        /// <summary>
         /// Gets the list of the OpenIddict modules registered in the application.
         /// </summary>
         public ICollection<OpenIddictModule> Modules { get; } = new List<OpenIddictModule>();
