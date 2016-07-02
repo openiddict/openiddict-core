@@ -51,6 +51,20 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
+            // Note: the OpenID Connect server middleware rejects grant_type=client_credentials requests
+            // when validation is skipped but an early check is made here to avoid making unnecessary
+            // database roundtrips to retrieve the client application corresponding to the client_id.
+            if (context.Request.IsClientCredentialsGrantType() && (string.IsNullOrEmpty(context.Request.ClientId) ||
+                                                                   string.IsNullOrEmpty(context.Request.ClientSecret))) {
+                services.Logger.LogError("The token request was rejected because the client credentials were missing.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "Client applications must be authenticated to use the client credentials grant.");
+
+                return;
+            }
+
             // Note: though required by the OpenID Connect specification for the refresh token grant,
             // client authentication is not mandatory for non-confidential client applications in OAuth2.
             // To avoid breaking OAuth2 scenarios, OpenIddict uses a relaxed policy that allows
@@ -58,7 +72,7 @@ namespace OpenIddict.Infrastructure {
             // See http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken
             // and https://tools.ietf.org/html/rfc6749#section-6 for more information.
 
-            // Skip client authentication if the client identifier is missing.
+            // At this stage, skip client authentication if the client identifier is missing.
             // Note: the OpenID Connect server middleware will automatically ensure that
             // the calling application cannot use an authorization code or a refresh token
             // if it's not the intended audience, even if client authentication was skipped.
@@ -86,6 +100,18 @@ namespace OpenIddict.Infrastructure {
 
             var type = await services.Applications.GetClientTypeAsync(application);
             if (string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase)) {
+                // Note: public applications are not allowed to use the client credentials grant.
+                if (context.Request.IsClientCredentialsGrantType()) {
+                    services.Logger.LogError("The token request was rejected because the public client application '{ClientId}' " +
+                                             "was not allowed to use the client credentials grant.", context.Request.ClientId);
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        description: "Public clients are not allowed to use the client credentials grant.");
+
+                    return;
+                }
+
                 // Reject tokens requests containing a client_secret when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientSecret)) {
                     services.Logger.LogError("The token request was rejected because the public application '{ClientId}' " +
