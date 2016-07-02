@@ -54,34 +54,44 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            // Reject tokens requests containing a client_secret if the client application is not confidential.
+            // Reject revocation requests containing a client_secret if the client application is not confidential.
             var type = await services.Applications.GetClientTypeAsync(application);
-            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                !string.IsNullOrEmpty(context.ClientSecret)) {
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "Public clients are not allowed to send a client_secret.");
+            if (string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase)) {
+                // Reject tokens requests containing a client_secret when the client is a public application.
+                if (!string.IsNullOrEmpty(context.ClientSecret)) {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "Public clients are not allowed to send a client_secret.");
+
+                    return;
+                }
+
+                services.Logger.LogInformation("The revocation request validation process was not fully validated because " +
+                                               "the client '{ClientId}' was a public application.", context.ClientId);
+
+                // If client authentication cannot be enforced, call context.Skip() to inform
+                // the OpenID Connect server middleware that the caller cannot be fully trusted.
+                context.Skip();
 
                 return;
             }
 
-            // Confidential applications MUST authenticate to protect them from impersonation attacks.
-            else if (!string.Equals(type, OpenIddictConstants.ClientTypes.Public)) {
-                if (string.IsNullOrEmpty(context.ClientSecret)) {
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidClient,
-                        description: "Missing credentials: ensure that you specified a client_secret.");
+            // Confidential applications MUST authenticate
+            // to protect them from impersonation attacks.
+            if (string.IsNullOrEmpty(context.ClientSecret)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    description: "Missing credentials: ensure that you specified a client_secret.");
 
-                    return;
-                }
+                return;
+            }
 
-                if (!await services.Applications.ValidateSecretAsync(application, context.ClientSecret)) {
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidClient,
-                        description: "Invalid credentials: ensure that you specified a correct client_secret.");
+            if (!await services.Applications.ValidateSecretAsync(application, context.ClientSecret)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    description: "Invalid credentials: ensure that you specified a correct client_secret.");
 
-                    return;
-                }
+                return;
             }
 
             context.Validate();

@@ -38,7 +38,7 @@ namespace OpenIddict.Infrastructure {
             // Persist a new token entry in the database and attach it to the user and the client application it is issued to.
             var identifier = await services.Users.CreateTokenAsync(user, context.Request.ClientId, OpenIdConnectConstants.TokenTypeHints.AuthorizationCode);
             if (string.IsNullOrEmpty(identifier)) {
-                throw new InvalidOperationException("The unique key associated with a authorization code cannot be null or empty.");
+                throw new InvalidOperationException("The unique key associated with an authorization code cannot be null or empty.");
             }
 
             // Attach the key returned by the underlying store
@@ -54,8 +54,7 @@ namespace OpenIddict.Infrastructure {
             Debug.Assert(!context.Request.IsClientCredentialsGrantType(), "A refresh token should not be issued when using grant_type=client_credentials.");
 
             // Note: a null value could be returned by FindByIdAsync if the user was removed after the initial
-            // check made by GrantAuthorizationCode/GrantRefreshToken/GrantResourceOwnerCredentials.
-            // In this case, throw an exception to abort the token request.
+            // check made by HandleTokenRequest. In this case, throw an exception to abort the token request.
             var user = await services.Users.FindByIdAsync(context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier));
             if (user == null) {
                 throw new InvalidOperationException("The token request was aborted because the user associated " +

@@ -134,7 +134,8 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            // Confidential applications MUST authenticate to protect them from impersonation attacks.
+            // Confidential applications MUST authenticate
+            // to protect them from impersonation attacks.
             if (string.IsNullOrEmpty(context.ClientSecret)) {
                 services.Logger.LogError("The token request was rejected because the confidential application " +
                                          "'{ClientId}' didn't specify a client secret.", context.ClientId);
@@ -158,8 +159,6 @@ namespace OpenIddict.Infrastructure {
             }
 
             context.Validate();
-
-            return;
         }
 
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context) {
