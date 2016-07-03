@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace OpenIddict {
     /// <summary>
@@ -22,6 +23,12 @@ namespace OpenIddict {
             // verification interval used by ASP.NET Core Identity.
             AccessTokenLifetime = TimeSpan.FromMinutes(30);
         }
+
+        /// <summary>
+        /// Gets or sets the distributed cache used by OpenIddict. If no cache is explicitly
+        /// provided, the cache registered in the dependency injection container is used.
+        /// </summary>
+        public IDistributedCache Cache { get; set; }
 
         /// <summary>
         /// Gets or sets the path of the middleware responsible of rendering

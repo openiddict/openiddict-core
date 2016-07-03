@@ -21,8 +21,6 @@ namespace Mvc.Server {
 
             services.AddMvc();
 
-            services.AddSession();
-
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]));
 
@@ -116,8 +114,6 @@ namespace Mvc.Server {
                 ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
                 ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
             });
-
-            app.UseSession();
 
             app.UseOpenIddict();
 

@@ -14,11 +14,9 @@ using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -53,25 +51,9 @@ namespace OpenIddict.Infrastructure {
             }
 
             // If a request_id parameter can be found in the authorization request,
-            // restore the complete authorization request stored in the user session.
+            // restore the complete authorization request stored in the distributed cache.
             if (!string.IsNullOrEmpty(context.Request.GetRequestId())) {
-                // Ensure session support has been enabled for this request.
-                if (context.HttpContext.Features.Get<ISessionFeature>() == null) {
-                    services.Logger.LogError("The authorization request was rejected because the session middleware " +
-                                             "was not correctly registered. Session support must be enabled to allow " +
-                                             "processing authorization requests specifying a request_id parameter.");
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The request_id parameter is not allowed by this authorization server.");
-
-                    return;
-                }
-
-                // Load the session from the session store.
-                await context.HttpContext.Session.LoadAsync();
-
-                var payload = context.HttpContext.Session.Get(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
+                var payload = await services.Options.Cache.GetAsync(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
                 if (payload == null) {
                     services.Logger.LogError("The authorization request was rejected because an unknown " +
                                              "or invalid request_id parameter was specified.");
@@ -317,37 +299,31 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            if (context.HttpContext.Request.Path == context.Options.AuthorizationEndpointPath &&
-                string.Equals(context.HttpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase)) {
-                // Ensure session support has been enabled for this request.
-                if (context.HttpContext.Features.Get<ISessionFeature>() == null) {
-                    services.Logger.LogError("The authorization request was rejected because the session middleware " +
-                                             "was not correctly registered. Session support must be enabled to allow " +
-                                             "processing POST authorization requests.");
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "POST authorization requests are not allowed by this authorization server.");
-
-                    return;
-                }
-
+            // If no request_id parameter can be found in the current request, assume the OpenID Connect request
+            // was not serialized yet and store the entire payload in the distributed cache to make it easier
+            // to flow across requests and internal/external authentication/registration workflows.
+            if (string.IsNullOrEmpty(context.Request.GetRequestId())) {
                 // Generate a request identifier. Note: using a crypto-secure
                 // random number generator is not necessary in this case.
                 var identifier = Guid.NewGuid().ToString();
 
-                // Load the session from the session store.
-                await context.HttpContext.Session.LoadAsync();
+                var options = new DistributedCacheEntryOptions {
+                    AbsoluteExpiration = context.Options.SystemClock.UtcNow + TimeSpan.FromMinutes(30),
+                    SlidingExpiration = TimeSpan.FromMinutes(10)
+                };
 
-                // Store the serialized authorization request parameters in the user session.
-                context.HttpContext.Session.Set(OpenIddictConstants.Environment.Request + identifier, context.Request.Export());
+                // Store the serialized authorization request parameters in the distributed cache.
+                await services.Options.Cache.SetAsync(OpenIddictConstants.Environment.Request + identifier, context.Request.Export(), options);
 
-                // Add the request_id to the current URL.
+                // Create a new authorization request containing only the request_id parameter.
                 var address = QueryHelpers.AddQueryString(
-                    uri: context.HttpContext.Request.GetEncodedUrl(),
+                    uri: context.Options.AuthorizationEndpointPath,
                     name: OpenIdConnectConstants.Parameters.RequestId, value: identifier);
 
                 context.HttpContext.Response.Redirect(address);
+
+                // Mark the response as handled
+                // to skip the rest of the pipeline.
                 context.HandleResponse();
 
                 return;
@@ -356,15 +332,15 @@ namespace OpenIddict.Infrastructure {
             context.SkipToNextMiddleware();
         }
 
-        public override Task ApplyAuthorizationResponse([NotNull] ApplyAuthorizationResponseContext context) {
+        public override async Task ApplyAuthorizationResponse([NotNull] ApplyAuthorizationResponseContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            // Remove the authorization request from the user session.
+            // Remove the authorization request from the distributed cache.
             if (!string.IsNullOrEmpty(context.Request.GetRequestId())) {
                 // Note: the ApplyAuthorizationResponse event is called for both successful
                 // and errored authorization responses but discrimination is not necessary here,
-                // as the authorization request must be removed from the user session in both cases.
-                context.HttpContext.Session.Remove(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
+                // as the authorization request must be removed from the distributed cache in both cases.
+                await services.Options.Cache.RemoveAsync(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
             }
 
             if (!string.IsNullOrEmpty(context.Response.Error) && services.Options.ErrorHandlingPath.HasValue) {
@@ -380,8 +356,6 @@ namespace OpenIddict.Infrastructure {
 
                 context.SkipToNextMiddleware();
             }
-
-            return Task.FromResult(0);
         }
     }
 }

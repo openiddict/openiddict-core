@@ -7,6 +7,7 @@
 using System;
 using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -86,6 +87,10 @@ namespace Microsoft.AspNetCore.Builder {
 
             // Resolve the OpenIddict options from the DI container.
             var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictOptions>>().Value;
+
+            if (options.Cache == null) {
+                options.Cache = app.ApplicationServices.GetRequiredService<IDistributedCache>();
+            }
 
             // Get the modules registered by the application
             // and add the OpenID Connect server middleware.
