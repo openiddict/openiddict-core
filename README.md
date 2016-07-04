@@ -64,10 +64,8 @@ To use OpenIddict, you need to:
 public void ConfigureServices(IServiceCollection services) {
     services.AddMvc();
 
-    services.AddEntityFramework()
-        .AddSqlServer()
-        .AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+    services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));       
 
     // Register the Identity services.
 	services.AddIdentity<ApplicationUser, IdentityRole>()
