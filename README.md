@@ -49,10 +49,11 @@ To use OpenIddict, you need to:
 </configuration>
 ```
 
-  - **Update your `project.json`** to import the `OpenIddict` package:
+  - **Update your `project.json`** to reference `AspNet.Security.OAuth.Validation` and `OpenIddict`:
 
 ```json
 "dependencies": {
+  "AspNet.Security.OAuth.Validation": "1.0.0-alpha2-final",
   "OpenIddict": "1.0.0-*"
 }
 ```
@@ -84,13 +85,17 @@ public void ConfigureServices(IServiceCollection services) {
 [Configuration and options](https://github.com/openiddict/core/wiki/Configuration-and-options)
 in the project wiki.
 
-  - **Add the OpenIddict middleware in your ASP.NET Core pipeline** by calling `app.UseOpenIddict()` after `app.UseIdentity()`:
+  - **Add OpenIddict and the OAuth2 token validation middleware in your ASP.NET Core pipeline** by calling `app.UseOAuthValidation()` and `app.UseOpenIddict()` after `app.UseIdentity()` and before `app.UseMvc()`:
 
 ```csharp
 public void Configure(IApplicationBuilder app) {
     app.UseIdentity();
-    
+
+    app.UseOAuthValidation();
+
     app.UseOpenIddict();
+
+    app.UseMvc();
 }
 ```
 
