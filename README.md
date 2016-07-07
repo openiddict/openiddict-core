@@ -141,49 +141,13 @@ services.AddOpenIddict<ApplicationUser, IdentityRole<int>, ApplicationDbContext,
 
 ## Enabling interactive flows support
 
+  - **Create your own authorization controller and your own views**:
+
 Out-the-box, **OpenIddict only enables non-interactive flows** (resource owner password credentials, client credentials, refresh token).
 
-To enable authorization code/implicit flows support, OpenIddict offers **an optional ASP.NET Core MVC module** that includes an authorization controller and a few native views that you can easily replace by your own ones to fully customize your login experience.
+To **enable authorization code/implicit flows support, you must create your own controller** and your own views/view models. The Mvc.Server sample comes with an [`AuthorizationController` that you can easily reuse in your application](https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs).
 
 ![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
-
-  - **Reference the necessary modules**:
-
-```json
-"dependencies": {
-  "OpenIddict": "1.0.0-*",
-  "OpenIddict.Assets": "1.0.0-*",
-  "OpenIddict.Mvc": "1.0.0-*",
-  "OpenIddict.Security": "1.0.0-*"
-}
-```
-
-  - **Register the modules in `ConfigureServices`**:
-
-```csharp
-// Register the OpenIddict services, including the default Entity Framework stores.
-services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
-    // Register the HTML/CSS assets and MVC modules to handle the interactive flows.
-    // Note: these modules are not necessary when using your own authorization controller
-    // or when using non-interactive flows-only like the resource owner password credentials grant.
-    .AddAssets()
-    .AddMvc()
-
-    // Register the NWebsec module. Note: you can replace the default Content Security Policy (CSP)
-    // by calling UseNWebsec with a custom delegate instead of using the parameterless extension.
-    // This can be useful to allow your HTML views to reference remote scripts/images/styles.
-    .AddNWebsec(options => options.DefaultSources(directive => directive.Self())
-        .ImageSources(directive => directive.Self()
-            .CustomSources("*"))
-        .ScriptSources(directive => directive.Self()
-            .UnsafeInline()
-            .CustomSources("https://my.custom.url/"))
-        .StyleSources(directive => directive.Self()
-            .UnsafeInline()))
-
-    // During development, you can disable the HTTPS requirement.
-    .DisableHttpsRequirement();
-```
 
   - **Register your client application**:
 
