@@ -33,7 +33,6 @@ namespace Mvc.Server {
             services.AddOpenIddict<ApplicationUser, IdentityRole<Guid>, ApplicationDbContext, Guid>()
                 .SetAuthorizationEndpointPath("/connect/authorize")
                 .SetLogoutEndpointPath("/connect/logout")
-                .SetErrorHandlingPath("/connect/error")
 
                 // During development, you can disable the HTTPS requirement.
                 .DisableHttpsRequirement();
@@ -114,6 +113,8 @@ namespace Mvc.Server {
                 ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
                 ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
             });
+
+            app.UseStatusCodePagesWithReExecute("/error");
 
             app.UseOpenIddict();
 

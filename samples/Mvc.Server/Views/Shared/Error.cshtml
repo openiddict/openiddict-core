@@ -1,6 +1,14 @@
-﻿@{
-    ViewData["Title"] = "Error";
-}
+﻿@model ErrorViewModel
+    
+<div class="jumbotron">
+    <h2>Ooooops, something went really bad! :(</h2>
+    <p class="lead text-left">
+        @if (!string.IsNullOrEmpty(Model.Error)) {
+            <strong>@Model.Error</strong>
+        }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+        @if (!string.IsNullOrEmpty(Model.ErrorDescription)) {
+            <small>@Model.ErrorDescription</small>
+        }
+    </p>
+</div>

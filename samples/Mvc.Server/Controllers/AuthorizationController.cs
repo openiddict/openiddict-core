@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Models;
 using Mvc.Server.ViewModels.Authorization;
+using Mvc.Server.ViewModels.Shared;
 using OpenIddict;
 
 namespace Mvc.Server {
@@ -114,21 +115,6 @@ namespace Mvc.Server {
             // Returning a SignOutResult will ask OpenIddict to redirect the user agent
             // to the post_logout_redirect_uri specified by the client application.
             return SignOut(OpenIdConnectServerDefaults.AuthenticationScheme);
-        }
-
-        [HttpGet, HttpPost, Route("~/connect/error")]
-        public IActionResult Error() {
-            var response = HttpContext.GetOpenIdConnectResponse();
-            if (response == null) {
-                return View(new ErrorViewModel {
-                    Error = OpenIdConnectConstants.Errors.InvalidRequest
-                });
-            }
-
-            return View(new ErrorViewModel {
-                Error = response.Error,
-                ErrorDescription = response.ErrorDescription
-            });
         }
     }
 }

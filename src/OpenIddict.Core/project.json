@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-alpha2-*",
 
   "description": "Core components of OpenIddict.",
@@ -36,6 +36,7 @@
     "AspNet.Security.OpenIdConnect.Server": "1.0.0-beta6-final",
     "CryptoHelper": "2.0.0",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
+    "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0",
     "Microsoft.AspNetCore.Identity": "1.0.0",
     "Microsoft.Extensions.Caching.Memory": "1.0.0"
   },

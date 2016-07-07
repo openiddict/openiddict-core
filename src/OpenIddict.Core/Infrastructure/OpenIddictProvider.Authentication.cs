@@ -14,6 +14,7 @@ using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
@@ -343,18 +344,25 @@ namespace OpenIddict.Infrastructure {
                 await services.Options.Cache.RemoveAsync(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
             }
 
-            if (!string.IsNullOrEmpty(context.Response.Error) && services.Options.ErrorHandlingPath.HasValue) {
-                // Rewrite the request path to point to the error handler path.
-                context.HttpContext.Request.Path = services.Options.ErrorHandlingPath;
+            if (!context.Options.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Response.Error) &&
+                                                                 string.IsNullOrEmpty(context.Response.RedirectUri)) {
+                // Determine if the status code pages middleware has been enabled for this request.
+                // If it was not registered or disabled, let the OpenID Connect server middleware render
+                // a default error page instead of delegating the rendering to the status code middleware.
+                var feature = context.HttpContext.Features.Get<IStatusCodePagesFeature>();
+                if (feature != null && feature.Enabled) {
+                    // Replace the default status code to return a 400 response.
+                    context.HttpContext.Response.StatusCode = 400;
 
-                // Replace the default status code to return a 400 response.
-                context.HttpContext.Response.StatusCode = 400;
+                    // Store the OpenID Connect response in the HTTP context to allow retrieving it
+                    // from user code (e.g from an ASP.NET Core MVC controller or a Nancy module).
+                    context.HttpContext.SetOpenIdConnectResponse(context.Response);
 
-                // Store the OpenID Connect response in the HTTP context to allow retrieving it
-                // from user code (e.g from an ASP.NET Core MVC controller or a Nancy module).
-                context.HttpContext.SetOpenIdConnectResponse(context.Response);
-
-                context.SkipToNextMiddleware();
+                    // Mark the request as fully handled to prevent the OpenID Connect server middleware
+                    // from displaying the default error page and to allow the status code pages middleware
+                    // to rewrite the response using the logic defined by the developer when registering it.
+                    context.HandleResponse();
+                }
             }
         }
     }
