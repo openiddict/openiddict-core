@@ -38,6 +38,11 @@ namespace Mvc.Server {
                 .EnableTokenEndpoint("/connect/token")
                 .EnableUserinfoEndpoint("/connect/userinfo")
 
+                // Note: the Mvc.Client sample only uses the authorization code flow but you can enable
+                // the other flows if you need to support implicit, password or client credentials.
+                .AllowAuthorizationCodeFlow()
+                .AllowRefreshTokenFlow()
+
                 // During development, you can disable the HTTPS requirement.
                 .DisableHttpsRequirement();
 

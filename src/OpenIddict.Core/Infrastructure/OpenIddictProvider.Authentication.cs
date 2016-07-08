@@ -88,6 +88,43 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
+            // Reject code flow authorization requests if the authorization code flow is not enabled.
+            if (context.Request.IsAuthorizationCodeFlow() &&
+               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode)) {
+                services.Logger.LogError("The authorization request was rejected because " +
+                                         "the authorization code flow was not enabled.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
+                    description: "The specified response_type parameter is not allowed.");
+
+                return;
+            }
+
+            // Reject implicit flow authorization requests if the implicit flow is not enabled.
+            if (context.Request.IsImplicitFlow() && !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit)) {
+                services.Logger.LogError("The authorization request was rejected because the implicit flow was not enabled.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
+                    description: "The specified response_type parameter is not allowed.");
+
+                return;
+            }
+
+            // Reject hybrid flow authorization requests if the authorization code or the implicit flows are not enabled.
+            if (context.Request.IsHybridFlow() && (!services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
+                                                   !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))) {
+                services.Logger.LogError("The authorization request was rejected because the " +
+                                         "authorization code flow or the implicit flow was not enabled.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
+                    description: "The specified response_type parameter is not allowed.");
+
+                return;
+            }
+
             // Note: the OpenID Connect server middleware supports the query, form_post and fragment response modes
             // and doesn't reject unknown/custom modes until the ApplyAuthorizationResponse event is invoked.
             // To ensure authorization requests are rejected early enough, an additional check is made by OpenIddict.
@@ -112,6 +149,16 @@ namespace OpenIddict.Infrastructure {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "The required redirect_uri parameter was missing.");
+
+                return;
+            }
+
+            // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
+            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
+               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The 'offline_access' scope is not allowed.");
 
                 return;
             }

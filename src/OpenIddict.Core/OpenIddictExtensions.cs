@@ -6,6 +6,7 @@
 
 using System;
 using System.Linq;
+using AspNet.Security.OpenIdConnect.Extensions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
@@ -90,6 +91,41 @@ namespace Microsoft.AspNetCore.Builder {
 
             if (options.Cache == null) {
                 options.Cache = app.ApplicationServices.GetRequiredService<IDistributedCache>();
+            }
+
+            // Ensure at least one flow has been enabled.
+            if (options.GrantTypes.Count == 0) {
+                throw new InvalidOperationException("At least one OAuth2/OpenID Connect flow must be enabled.");
+            }
+
+            // Ensure only supported grant types are listed to prevent
+            // unknown flows from being exposed in the discovery document.
+            if (options.GrantTypes.Any(type => type != OpenIdConnectConstants.GrantTypes.AuthorizationCode &&
+                                               type != OpenIdConnectConstants.GrantTypes.ClientCredentials &&
+                                               type != OpenIdConnectConstants.GrantTypes.Implicit &&
+                                               type != OpenIdConnectConstants.GrantTypes.Password &&
+                                               type != OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+                throw new InvalidOperationException("Only supported flows can be enabled.");
+            }
+
+            // Ensure the authorization endpoint has been enabled when
+            // the authorization code or implicit grants are supported.
+            if (!options.AuthorizationEndpointPath.HasValue &&
+                (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
+                 options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))) {
+                throw new InvalidOperationException("The authorization endpoint must be enabled to use " +
+                                                    "the authorization code and implicit flows.");
+            }
+
+            // Ensure the token endpoint has been enabled when the authorization code,
+            // client credentials, password or refresh token grants are supported.
+            else if (!options.TokenEndpointPath.HasValue && 
+                     (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
+                      options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials) ||
+                      options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password) ||
+                      options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))) {
+                throw new InvalidOperationException("The token endpoint must be enabled to use the authorization code, " +
+                                                    "client credentials, password and refresh token flows.");
             }
 
             // Get the modules registered by the application

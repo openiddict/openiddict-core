@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using AspNet.Security.OpenIdConnect.Extensions;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -389,6 +390,60 @@ namespace Microsoft.AspNetCore.Builder {
             }
 
             return Configure(options => options.SigningCredentials.AddCertificate(thumbprint, name, location));
+        }
+
+        /// <summary>
+        /// Enables authorization code flow support. For more information
+        /// about this specific OAuth2/OpenID Connect flow, visit
+        /// https://tools.ietf.org/html/rfc6749#section-4.1 and
+        /// http://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AllowAuthorizationCodeFlow() {
+            return Configure(options => options.GrantTypes.Add(
+                OpenIdConnectConstants.GrantTypes.AuthorizationCode));
+        }
+
+        /// <summary>
+        /// Enables client credentials flow support. For more information about this
+        /// specific OAuth2 flow, visit https://tools.ietf.org/html/rfc6749#section-4.4.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AllowClientCredentialsFlow() {
+            return Configure(options => options.GrantTypes.Add(
+                OpenIdConnectConstants.GrantTypes.ClientCredentials));
+        }
+
+        /// <summary>
+        /// Enables implicit flow support. For more information
+        /// about this specific OAuth2/OpenID Connect flow, visit
+        /// https://tools.ietf.org/html/rfc6749#section-4.2 and
+        /// http://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AllowImplicitFlow() {
+            return Configure(options => options.GrantTypes.Add(
+                OpenIdConnectConstants.GrantTypes.Implicit));
+        }
+
+        /// <summary>
+        /// Enables password flow support. For more information about this specific
+        /// OAuth2 flow, visit https://tools.ietf.org/html/rfc6749#section-4.3.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AllowPasswordFlow() {
+            return Configure(options => options.GrantTypes.Add(
+                OpenIdConnectConstants.GrantTypes.Password));
+        }
+
+        /// <summary>
+        /// Enables refresh token flow support. For more information about this
+        /// specific OAuth2 flow, visit https://tools.ietf.org/html/rfc6749#section-6.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AllowRefreshTokenFlow() {
+            return Configure(options => options.GrantTypes.Add(
+                OpenIdConnectConstants.GrantTypes.RefreshToken));
         }
 
         /// <summary>

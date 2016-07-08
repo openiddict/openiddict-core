@@ -37,6 +37,69 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
+            // Reject token requests using grant_type=authorization_code
+            // if the authorization code flow support is not enabled.
+            if (context.Request.IsAuthorizationCodeGrantType() &&
+               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode)) {
+                services.Logger.LogError("The token request was rejected because the authorization code flow was not enabled.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
+                    description: "The specified grant_type parameter is not allowed.");
+
+                return;
+            }
+
+            // Reject token requests using grant_type=client_credentials
+            // if the client credentials flow support is not enabled.
+            else if (context.Request.IsClientCredentialsGrantType() &&
+                    !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials)) {
+                services.Logger.LogError("The token request was rejected because the client credentials flow was not enabled.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
+                    description: "The specified grant_type parameter is not allowed.");
+
+                return;
+            }
+
+            // Reject token requests using grant_type=password if the
+            // resource owner password credentials flow support is not enabled.
+            else if (context.Request.IsPasswordGrantType() &&
+                    !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password)) {
+                services.Logger.LogError("The token request was rejected because the resource " +
+                                         "owner password credentials flow was not enabled.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
+                    description: "The specified grant_type parameter is not allowed.");
+
+                return;
+            }
+
+            // Reject token requests using grant_type=refresh_token
+            // if the refresh token flow support is not enabled.
+            else if (context.Request.IsRefreshTokenGrantType() &&
+                    !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+                services.Logger.LogError("The token request was rejected because the refresh token flow was not enabled.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
+                    description: "The specified grant_type parameter is not allowed.");
+
+                return;
+            }
+
+            // Reject token requests that specify scope=offline_access if the refresh token flow is not enabled.
+            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
+               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The 'offline_access' scope is not allowed.");
+
+                return;
+            }
+
             // Note: the OpenID Connect server middleware allows returning a refresh token with grant_type=client_credentials,
             // though it's usually not recommended by the OAuth2 specification. To encourage developers to make a new
             // grant_type=client_credentials request instead of using refresh tokens, OpenIddict uses a stricter policy

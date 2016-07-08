@@ -31,6 +31,11 @@ namespace OpenIddict {
         public IDistributedCache Cache { get; set; }
 
         /// <summary>
+        /// Gets the OAuth2/OpenID Connect flows enabled for this application.
+        /// </summary>
+        public ICollection<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets the list of the OpenIddict modules registered in the application.
         /// </summary>
         public ICollection<OpenIddictModule> Modules { get; } = new List<OpenIddictModule>();

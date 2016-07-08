@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
@@ -15,6 +16,25 @@ namespace OpenIddict.Infrastructure {
         where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+
+            Debug.Assert(services.Options.GrantTypes.Count != 0, "At least one flow should be enabled.");
+
+            // Note: the OpenID Connect server middleware automatically populates grant_types_supported
+            // by determining whether the authorization and token endpoints are enabled or not but
+            // OpenIddict uses a different approach and relies on a configurable "supported list".
+            context.GrantTypes.Clear();
+
+            // Copy the supported grant types list to the discovery document.
+            foreach (var type in services.Options.GrantTypes) {
+                Debug.Assert(type == OpenIdConnectConstants.GrantTypes.AuthorizationCode ||
+                             type == OpenIdConnectConstants.GrantTypes.ClientCredentials ||
+                             type == OpenIdConnectConstants.GrantTypes.Implicit ||
+                             type == OpenIdConnectConstants.GrantTypes.Password ||
+                             type == OpenIdConnectConstants.GrantTypes.RefreshToken,
+                             "Unsupported or non-standard OAuth2/OIDC grant types should not be exposed.");
+
+                context.GrantTypes.Add(type);
+            }
 
             // Note: the "openid" scope is automatically
             // added by the OpenID Connect server middleware.
