@@ -216,6 +216,38 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
+        /// Adds a custom user manager.
+        /// </summary>
+        /// <typeparam name="TManager">The type of the custom manager.</typeparam>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddUserManager<TManager>() {
+            var contract = typeof(OpenIddictUserManager<>).MakeGenericType(UserType);
+            if (!contract.IsAssignableFrom(typeof(TManager))) {
+                throw new InvalidOperationException("Custom managers must be derived from OpenIddictUserManager.");
+            }
+
+            Services.AddScoped(contract, typeof(TManager));
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a custom user store.
+        /// </summary>
+        /// <typeparam name="TStore">The type of the custom store.</typeparam>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddUserStore<TStore>() {
+            var contract = typeof(IOpenIddictTokenStore<>).MakeGenericType(UserType);
+            if (!contract.IsAssignableFrom(typeof(TStore))) {
+                throw new InvalidOperationException("Custom stores must implement IOpenIddictUserStore.");
+            }
+
+            Services.AddScoped(contract, typeof(TStore));
+
+            return this;
+        }
+
+        /// <summary>
         /// Registers a new OpenIddict module. If a module with the same name already
         /// exists, the new instance is ignored and this extension has no effect.
         /// </summary>
