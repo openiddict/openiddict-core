@@ -16,8 +16,8 @@ namespace OpenIddict {
     /// </summary>
     public class OpenIddictOptions : OpenIdConnectServerOptions {
         public OpenIddictOptions() {
-            // By default, disable the authorization and logout endpoints.
-            AuthorizationEndpointPath = LogoutEndpointPath = PathString.Empty;
+            AuthorizationEndpointPath = IntrospectionEndpointPath = LogoutEndpointPath =
+            RevocationEndpointPath = TokenEndpointPath = UserinfoEndpointPath = PathString.Empty;
 
             // Use the same lifespan as the default security stamp
             // verification interval used by ASP.NET Core Identity.

@@ -409,30 +409,57 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Sets the relative path corresponding to the authorization endpoint.
+        /// Enables the authorization endpoint.
         /// </summary>
         /// <param name="path">The relative path of the authorization endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder SetAuthorizationEndpointPath(PathString path) {
+        public virtual OpenIddictBuilder EnableAuthorizationEndpoint(PathString path) {
             return Configure(options => options.AuthorizationEndpointPath = path);
         }
 
         /// <summary>
-        /// Sets the relative path corresponding to the logout endpoint.
+        /// Enables the introspection endpoint.
         /// </summary>
         /// <param name="path">The relative path of the logout endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder SetLogoutEndpointPath(PathString path) {
+        public virtual OpenIddictBuilder EnableIntrospectionEndpoint(PathString path) {
+            return Configure(options => options.IntrospectionEndpointPath = path);
+        }
+
+        /// <summary>
+        /// Enables the logout endpoint.
+        /// </summary>
+        /// <param name="path">The relative path of the logout endpoint.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder EnableLogoutEndpoint(PathString path) {
             return Configure(options => options.LogoutEndpointPath = path);
         }
 
         /// <summary>
-        /// Sets the relative path corresponding to the token endpoint.
+        /// Enables the revocation endpoint.
+        /// </summary>
+        /// <param name="path">The relative path of the revocation endpoint.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder EnableRevocationEndpoint(PathString path) {
+            return Configure(options => options.RevocationEndpointPath = path);
+        }
+
+        /// <summary>
+        /// Enables the token endpoint.
         /// </summary>
         /// <param name="path">The relative path of the token endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder SetTokenEndpointPath(PathString path) {
+        public virtual OpenIddictBuilder EnableTokenEndpoint(PathString path) {
             return Configure(options => options.TokenEndpointPath = path);
+        }
+
+        /// <summary>
+        /// Enables the userinfo endpoint.
+        /// </summary>
+        /// <param name="path">The relative path of the userinfo endpoint.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder EnableUserinfoEndpoint(PathString path) {
+            return Configure(options => options.UserinfoEndpointPath = path);
         }
 
         /// <summary>

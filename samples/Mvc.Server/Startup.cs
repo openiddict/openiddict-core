@@ -31,17 +31,15 @@ namespace Mvc.Server {
 
             // Register the OpenIddict services, including the default Entity Framework stores.
             services.AddOpenIddict<ApplicationUser, IdentityRole<Guid>, ApplicationDbContext, Guid>()
-                .SetAuthorizationEndpointPath("/connect/authorize")
-                .SetLogoutEndpointPath("/connect/logout")
+
+                // Enable the authorization, logout, token and userinfo endpoints.
+                .EnableAuthorizationEndpoint("/connect/authorize")
+                .EnableLogoutEndpoint("/connect/logout")
+                .EnableTokenEndpoint("/connect/token")
+                .EnableUserinfoEndpoint("/connect/userinfo")
 
                 // During development, you can disable the HTTPS requirement.
                 .DisableHttpsRequirement();
-
-            // When using your own authorization controller instead of using the
-            // MVC module, you need to configure the authorization/logout paths:
-            // services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
-            //     .SetAuthorizationEndpointPath("/connect/authorize")
-            //     .SetLogoutEndpointPath("/connect/logout");
 
             // Note: if you don't explicitly register a signing key, one is automatically generated and
             // persisted on the disk. If the key cannot be persisted, an exception is thrown.
@@ -50,13 +48,13 @@ namespace Mvc.Server {
             // You can generate a self-signed certificate using Pluralsight's self-cert utility:
             // https://s3.amazonaws.com/pluralsight-free/keith-brown/samples/SelfCert.zip
             // 
-            // services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+            // services.AddOpenIddict<ApplicationUser, IdentityRole<Guid>, ApplicationDbContext, Guid>()
             //     .AddSigningCertificate("7D2A741FE34CC2C7369237A5F2078988E17A6A75");
             // 
             // Alternatively, you can also store the certificate as an embedded .pfx resource
             // directly in this assembly or in a file published alongside this project:
             // 
-            // services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+            // services.AddOpenIddict<ApplicationUser, IdentityRole<Guid>, ApplicationDbContext, Guid>()
             //     .AddSigningCertificate(
             //          assembly: typeof(Startup).GetTypeInfo().Assembly,
             //          resource: "Mvc.Server.Certificate.pfx",

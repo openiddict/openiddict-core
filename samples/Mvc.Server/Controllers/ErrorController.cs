@@ -16,7 +16,7 @@ namespace Mvc.Server {
             // OIDC request, display a generic error page.
             var response = HttpContext.GetOpenIdConnectResponse();
             if (response == null) {
-                return View();
+                return View(new ErrorViewModel());
             }
 
             return View(new ErrorViewModel {
