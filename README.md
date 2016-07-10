@@ -71,9 +71,15 @@ public void ConfigureServices(IServiceCollection services) {
 	services.AddIdentity<ApplicationUser, IdentityRole>()
 	    .AddEntityFrameworkStores<ApplicationDbContext>()
 	    .AddDefaultTokenProviders();
-	
+
 	// Register the OpenIddict services, including the default Entity Framework stores.
 	services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+        // Enable the token endpoint (required to use the password flow).
+        .EnableTokenEndpoint("/connect/token")
+
+        // Allow client applications to use the grant_type=password flow.
+        .AllowPasswordFlow()
+
 	    // During development, you can disable the HTTPS requirement.
 	    .DisableHttpsRequirement();
 }
@@ -143,11 +149,27 @@ services.AddOpenIddict<ApplicationUser, IdentityRole<int>, ApplicationDbContext,
 
   - **Create your own authorization controller and your own views**:
 
-Out-the-box, **OpenIddict only enables non-interactive flows** (resource owner password credentials, client credentials, refresh token).
-
 To **enable authorization code/implicit flows support, you must create your own controller** and your own views/view models. The Mvc.Server sample comes with an [`AuthorizationController` that you can easily reuse in your application](https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs).
 
 ![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
+
+  - **Enable the corresponding flows in the OpenIddict options**:
+
+```csharp
+public void ConfigureServices(IServiceCollection services) {
+	// Register the OpenIddict services, including the default Entity Framework stores.
+	services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+        // Enable the authorization and token endpoints (required to use the code flow).
+        .EnableAuthorizationEndpoint("/connect/authorize")
+        .EnableTokenEndpoint("/connect/token")
+
+        // Allow client applications to use the code flow.
+        .AllowAuthorizationCodeFlow()
+
+	    // During development, you can disable the HTTPS requirement.
+	    .DisableHttpsRequirement();
+}
+```
 
   - **Register your client application**:
 
