@@ -530,6 +530,27 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
+        /// Sets the authorization code lifetime, after which client applications
+        /// are unable to send a grant_type=authorization_code token request.
+        /// Using short-lived authorization codes is strongly recommended.
+        /// </summary>
+        /// <param name="lifetime">The authorization code lifetime.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder SetAuthorizationCodeLifetime(TimeSpan lifetime) {
+            return Configure(options => options.AuthorizationCodeLifetime = lifetime);
+        }
+
+        /// <summary>
+        /// Sets the identity token lifetime, after which client
+        /// applications should refuse processing identity tokens.
+        /// </summary>
+        /// <param name="lifetime">The identity token lifetime.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder SetIdentityTokenLifetime(TimeSpan lifetime) {
+            return Configure(options => options.IdentityTokenLifetime = lifetime);
+        }
+
+        /// <summary>
         /// Sets the refresh token lifetime, after which client applications must get
         /// a new authorization from the user. When sliding expiration is enabled,
         /// a new refresh token is always issued to the client application,
