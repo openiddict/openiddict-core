@@ -1,4 +1,4 @@
-# Run the Sample
+# Run the Sample with the CLI
 
 Clone this repo. Then restore and build OpenIddict-Core. 
 
@@ -12,8 +12,10 @@ Start the Mvc Client Sample.
     dotnet restore
     dotnet run --server.urls="http://localhost:54540"
     
-In a second command prompt, start the Mvc Server Sample
+In a second command prompt, start the Mvc Server Sample.
 
     cd /samples/Mvc.Server   
     dotnet restore`
     dotnet run --server.urls="http://localhost:53507"
+    
+For the server to work, you will need either to install SQL Server Express or to use the ASP.NET Core in memory datastore.
