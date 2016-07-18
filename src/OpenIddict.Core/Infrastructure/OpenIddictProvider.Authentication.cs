@@ -359,7 +359,7 @@ namespace OpenIddict.Infrastructure {
 
                 // Create a new authorization request containing only the request_id parameter.
                 var address = QueryHelpers.AddQueryString(
-                    uri: context.Options.AuthorizationEndpointPath,
+                    uri: context.HttpContext.Request.PathBase + context.HttpContext.Request.Path,
                     name: OpenIdConnectConstants.Parameters.RequestId, value: identifier);
 
                 context.HttpContext.Response.Redirect(address);
