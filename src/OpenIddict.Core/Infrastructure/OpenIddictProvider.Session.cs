@@ -112,16 +112,12 @@ namespace OpenIddict.Infrastructure {
             if (!context.Options.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Response.Error) &&
                                                                  string.IsNullOrEmpty(context.Response.PostLogoutRedirectUri)) {
                 // Determine if the status code pages middleware has been enabled for this request.
-                // If it was not registered or disabled, let the OpenID Connect server middleware render
+                // If it was not registered or enabled, let the OpenID Connect server middleware render
                 // a default error page instead of delegating the rendering to the status code middleware.
                 var feature = context.HttpContext.Features.Get<IStatusCodePagesFeature>();
                 if (feature != null && feature.Enabled) {
-                    // Replace the default status code to return a 400 response.
+                    // Replace the default status code by a 400 response.
                     context.HttpContext.Response.StatusCode = 400;
-
-                    // Store the OpenID Connect response in the HTTP context to allow retrieving it
-                    // from user code (e.g from an ASP.NET Core MVC controller or a Nancy module).
-                    context.HttpContext.SetOpenIdConnectResponse(context.Response);
 
                     // Mark the request as fully handled to prevent the OpenID Connect server middleware
                     // from displaying the default error page and to allow the status code pages middleware

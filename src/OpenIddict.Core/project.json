@@ -33,7 +33,7 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OpenIdConnect.Server": "1.0.0-beta6-final",
+    "AspNet.Security.OpenIdConnect.Server": "1.0.0-beta7-*",
     "CryptoHelper": "2.0.0",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0",

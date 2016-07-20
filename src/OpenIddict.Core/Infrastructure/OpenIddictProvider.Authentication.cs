@@ -6,6 +6,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -20,6 +21,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
@@ -28,7 +31,7 @@ namespace OpenIddict.Infrastructure {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             // Reject requests using the unsupported request parameter.
-            if (!string.IsNullOrEmpty(context.Request.GetParameter(OpenIdConnectConstants.Parameters.Request))) {
+            if (!string.IsNullOrEmpty(context.Request.Request)) {
                 services.Logger.LogError("The authorization request was rejected because it contained " +
                                          "an unsupported parameter: {Parameter}.", "request");
 
@@ -53,8 +56,8 @@ namespace OpenIddict.Infrastructure {
 
             // If a request_id parameter can be found in the authorization request,
             // restore the complete authorization request stored in the distributed cache.
-            if (!string.IsNullOrEmpty(context.Request.GetRequestId())) {
-                var payload = await services.Options.Cache.GetAsync(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
+            if (!string.IsNullOrEmpty(context.Request.RequestId)) {
+                var payload = await services.Options.Cache.GetAsync(OpenIddictConstants.Environment.Request + context.Request.RequestId);
                 if (payload == null) {
                     services.Logger.LogError("The authorization request was rejected because an unknown " +
                                              "or invalid request_id parameter was specified.");
@@ -67,7 +70,14 @@ namespace OpenIddict.Infrastructure {
                 }
 
                 // Restore the authorization request parameters from the serialized payload.
-                context.Request.Import(payload);
+                using (var reader = new BsonReader(new MemoryStream(payload))) {
+                    var serializer = JsonSerializer.CreateDefault();
+
+                    // Note: JsonSerializer.Populate() automatically preserves
+                    // the original request parameters resolved from the cache
+                    // when parameters with the same names are specified.
+                    serializer.Populate(reader, context.Request);
+                }
             }
         }
 
@@ -344,18 +354,26 @@ namespace OpenIddict.Infrastructure {
             // If no request_id parameter can be found in the current request, assume the OpenID Connect request
             // was not serialized yet and store the entire payload in the distributed cache to make it easier
             // to flow across requests and internal/external authentication/registration workflows.
-            if (string.IsNullOrEmpty(context.Request.GetRequestId())) {
+            if (string.IsNullOrEmpty(context.Request.RequestId)) {
                 // Generate a request identifier. Note: using a crypto-secure
                 // random number generator is not necessary in this case.
                 var identifier = Guid.NewGuid().ToString();
+
+                // Store the serialized authorization request parameters in the distributed cache.
+                var stream = new MemoryStream();
+                using (var writer = new BsonWriter(stream)) {
+                    writer.CloseOutput = false;
+
+                    var serializer = JsonSerializer.CreateDefault();
+                    serializer.Serialize(writer, context.Request);
+                }
 
                 var options = new DistributedCacheEntryOptions {
                     AbsoluteExpiration = context.Options.SystemClock.UtcNow + TimeSpan.FromMinutes(30),
                     SlidingExpiration = TimeSpan.FromMinutes(10)
                 };
 
-                // Store the serialized authorization request parameters in the distributed cache.
-                await services.Options.Cache.SetAsync(OpenIddictConstants.Environment.Request + identifier, context.Request.Export(), options);
+                await services.Options.Cache.SetAsync(OpenIddictConstants.Environment.Request + identifier, stream.ToArray(), options);
 
                 // Create a new authorization request containing only the request_id parameter.
                 var address = QueryHelpers.AddQueryString(
@@ -378,26 +396,22 @@ namespace OpenIddict.Infrastructure {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             // Remove the authorization request from the distributed cache.
-            if (!string.IsNullOrEmpty(context.Request.GetRequestId())) {
+            if (!string.IsNullOrEmpty(context.Request.RequestId)) {
                 // Note: the ApplyAuthorizationResponse event is called for both successful
                 // and errored authorization responses but discrimination is not necessary here,
                 // as the authorization request must be removed from the distributed cache in both cases.
-                await services.Options.Cache.RemoveAsync(OpenIddictConstants.Environment.Request + context.Request.GetRequestId());
+                await services.Options.Cache.RemoveAsync(OpenIddictConstants.Environment.Request + context.Request.RequestId);
             }
 
             if (!context.Options.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Response.Error) &&
                                                                  string.IsNullOrEmpty(context.Response.RedirectUri)) {
                 // Determine if the status code pages middleware has been enabled for this request.
-                // If it was not registered or disabled, let the OpenID Connect server middleware render
+                // If it was not registered or enabled, let the OpenID Connect server middleware render
                 // a default error page instead of delegating the rendering to the status code middleware.
                 var feature = context.HttpContext.Features.Get<IStatusCodePagesFeature>();
                 if (feature != null && feature.Enabled) {
                     // Replace the default status code to return a 400 response.
                     context.HttpContext.Response.StatusCode = 400;
-
-                    // Store the OpenID Connect response in the HTTP context to allow retrieving it
-                    // from user code (e.g from an ASP.NET Core MVC controller or a Nancy module).
-                    context.HttpContext.SetOpenIdConnectResponse(context.Response);
 
                     // Mark the request as fully handled to prevent the OpenID Connect server middleware
                     // from displaying the default error page and to allow the status code pages middleware

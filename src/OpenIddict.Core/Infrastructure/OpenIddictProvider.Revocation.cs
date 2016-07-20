@@ -20,9 +20,9 @@ namespace OpenIddict.Infrastructure {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
             // When token_type_hint is specified, reject the request if it doesn't correspond to a revocable token.
-            if (!string.IsNullOrEmpty(context.Request.GetTokenTypeHint()) &&
-                !string.Equals(context.Request.GetTokenTypeHint(), OpenIdConnectConstants.TokenTypeHints.AuthorizationCode) &&
-                !string.Equals(context.Request.GetTokenTypeHint(), OpenIdConnectConstants.TokenTypeHints.RefreshToken)) {
+            if (!string.IsNullOrEmpty(context.Request.TokenTypeHint) &&
+                !string.Equals(context.Request.TokenTypeHint, OpenIdConnectConstants.TokenTypeHints.AuthorizationCode) &&
+                !string.Equals(context.Request.TokenTypeHint, OpenIdConnectConstants.TokenTypeHints.RefreshToken)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
                     description: "Only authorization codes and refresh tokens can be revoked. When specifying a token_type_hint " +

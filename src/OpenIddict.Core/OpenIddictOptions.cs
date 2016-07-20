@@ -16,9 +16,6 @@ namespace OpenIddict {
     /// </summary>
     public class OpenIddictOptions : OpenIdConnectServerOptions {
         public OpenIddictOptions() {
-            AuthorizationEndpointPath = IntrospectionEndpointPath = LogoutEndpointPath =
-            RevocationEndpointPath = TokenEndpointPath = UserinfoEndpointPath = PathString.Empty;
-
             // Use the same lifespan as the default security stamp
             // verification interval used by ASP.NET Core Identity.
             AccessTokenLifetime = TimeSpan.FromMinutes(30);

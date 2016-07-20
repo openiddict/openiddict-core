@@ -10,13 +10,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using AspNet.Security.OpenIdConnect.Extensions;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using OpenIddict;
 
 namespace Microsoft.AspNetCore.Builder {
@@ -286,49 +284,7 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder AddEphemeralSigningKey() {
-            // Note: a 1024-bit key might be returned by RSA.Create() on .NET Desktop/Mono,
-            // where RSACryptoServiceProvider is still the default implementation and
-            // where custom implementations can be registered via CryptoConfig.
-            // To ensure the key size is always acceptable, replace it if necessary.
-            var algorithm = RSA.Create();
-
-            if (algorithm.KeySize < 2048) {
-                algorithm.KeySize = 2048;
-            }
-
-#if NET451
-            // Note: RSACng cannot be used as it's not available on Mono.
-            if (algorithm.KeySize < 2048 && algorithm is RSACryptoServiceProvider) {
-                algorithm.Dispose();
-                algorithm = new RSACryptoServiceProvider(2048);
-            }
-#endif
-
-            if (algorithm.KeySize < 2048) {
-                throw new InvalidOperationException("The ephemeral key generation failed.");
-            }
-
-            // Note: the RSA instance cannot be flowed as-is due to a bug in IdentityModel that disposes
-            // the underlying algorithm when it can be cast to RSACryptoServiceProvider. To work around
-            // this bug, the RSA public/private parameters are manually exported and re-imported when needed.
-            SecurityKey key;
-#if NET451
-            if (algorithm is RSACryptoServiceProvider) {
-                var parameters = algorithm.ExportParameters(includePrivateParameters: true);
-                key = new RsaSecurityKey(parameters);
-
-                // Dispose the algorithm instance.
-                algorithm.Dispose();
-            }
-
-            else {
-#endif
-                key = new RsaSecurityKey(algorithm);
-#if NET451
-            }
-#endif
-
-            return Configure(options => options.SigningCredentials.AddKey(key));
+            return Configure(options => options.SigningCredentials.AddEphemeralKey());
         }
 
         /// <summary>

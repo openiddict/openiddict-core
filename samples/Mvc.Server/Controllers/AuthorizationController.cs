@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,7 +53,9 @@ namespace Mvc.Server {
 
             return View(new AuthorizeViewModel {
                 ApplicationName = application.DisplayName,
-                Parameters = request.Parameters,
+                Parameters = request.ToDictionary(
+                    parameter => parameter.Key,
+                    parameter => (string) parameter.Value),
                 Scope = request.Scope
             });
         }
@@ -101,7 +104,9 @@ namespace Mvc.Server {
             var request = HttpContext.GetOpenIdConnectRequest();
 
             return View(new LogoutViewModel {
-                Parameters = request.Parameters
+                Parameters = request.ToDictionary(
+                    parameter => parameter.Key,
+                    parameter => (string) parameter.Value)
             });
         }
 
