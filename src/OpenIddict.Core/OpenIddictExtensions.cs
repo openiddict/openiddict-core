@@ -93,6 +93,12 @@ namespace Microsoft.AspNetCore.Builder {
                 options.Cache = app.ApplicationServices.GetRequiredService<IDistributedCache>();
             }
 
+            if (options.SigningCredentials.Count == 0) {
+                throw new InvalidOperationException("At least one signing key must be registered. Consider registering a X.509 " +
+                                                    "certificate using 'services.AddOpenIddict().AddSigningCertificate()' or call " +
+                                                    "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
+            }
+
             // Ensure at least one flow has been enabled.
             if (options.GrantTypes.Count == 0) {
                 throw new InvalidOperationException("At least one OAuth2/OpenID Connect flow must be enabled.");

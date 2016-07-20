@@ -44,11 +44,13 @@ namespace Mvc.Server {
                 .AllowRefreshTokenFlow()
 
                 // During development, you can disable the HTTPS requirement.
-                .DisableHttpsRequirement();
+                .DisableHttpsRequirement()
 
-            // Note: if you don't explicitly register a signing key, one is automatically generated and
-            // persisted on the disk. If the key cannot be persisted, an exception is thrown.
-            // 
+                // Register a new ephemeral key, that is discarded when the application
+                // shuts down. Tokens signed using this key are automatically invalidated.
+                // This method should only be used during development.
+                .AddEphemeralSigningKey();
+
             // On production, using a X.509 certificate stored in the machine store is recommended.
             // You can generate a self-signed certificate using Pluralsight's self-cert utility:
             // https://s3.amazonaws.com/pluralsight-free/keith-brown/samples/SelfCert.zip
