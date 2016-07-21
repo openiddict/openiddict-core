@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Builder {
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder AddUserStore<TStore>() {
-            var contract = typeof(IOpenIddictTokenStore<>).MakeGenericType(UserType);
+            var contract = typeof(IOpenIddictUserStore<>).MakeGenericType(UserType);
             if (!contract.IsAssignableFrom(typeof(TStore))) {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictUserStore.");
             }
