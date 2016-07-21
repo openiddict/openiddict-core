@@ -81,7 +81,12 @@ public void ConfigureServices(IServiceCollection services) {
         .AllowPasswordFlow()
 
 	    // During development, you can disable the HTTPS requirement.
-	    .DisableHttpsRequirement();
+	    .DisableHttpsRequirement()
+
+        // Register a new ephemeral key, that is discarded when the application
+        // shuts down. Tokens signed using this key are automatically invalidated.
+        // This method should only be used during development.
+        .AddEphemeralSigningKey();
 }
 ```
 
@@ -167,7 +172,12 @@ public void ConfigureServices(IServiceCollection services) {
         .AllowAuthorizationCodeFlow()
 
 	    // During development, you can disable the HTTPS requirement.
-	    .DisableHttpsRequirement();
+	    .DisableHttpsRequirement()
+
+        // Register a new ephemeral key, that is discarded when the application
+        // shuts down. Tokens signed using this key are automatically invalidated.
+        // This method should only be used during development.
+        .AddEphemeralSigningKey();
 }
 ```
 
