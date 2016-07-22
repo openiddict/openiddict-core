@@ -123,6 +123,20 @@ namespace OpenIddict {
                 OpenIdConnectConstants.Destinations.IdentityToken);
             }
 
+            var phone = SupportsUserPhoneNumber ? await GetPhoneNumberAsync(user) : null;
+
+            // Only add the phone number if the "phone" scope was granted.
+            if (!string.IsNullOrEmpty(phone) && scopes.Contains(OpenIdConnectConstants.Scopes.Phone)) {
+                identity.AddClaim(OpenIdConnectConstants.Claims.PhoneNumber, phone,
+                    OpenIdConnectConstants.Destinations.AccessToken,
+                    OpenIdConnectConstants.Destinations.IdentityToken);
+
+                var isPhoneConfirmed = await IsPhoneNumberConfirmedAsync(user);
+                identity.AddClaim(OpenIdConnectConstants.Claims.PhoneNumberVerified, isPhoneConfirmed.ToString(),
+                    OpenIdConnectConstants.Destinations.AccessToken,
+                    OpenIdConnectConstants.Destinations.IdentityToken);
+            }
+
             if (SupportsUserRole && scopes.Contains(OpenIddictConstants.Scopes.Roles)) {
                 foreach (var role in await GetRolesAsync(user)) {
                     identity.AddClaim(identity.RoleClaimType, role,
