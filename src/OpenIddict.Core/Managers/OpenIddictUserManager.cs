@@ -117,10 +117,6 @@ namespace OpenIddict {
                     }
 
                 }
-
-                identity.AddClaim(OpenIdConnectConstants.Claims.PreferredUsername, username,
-                OpenIdConnectConstants.Destinations.AccessToken,
-                OpenIdConnectConstants.Destinations.IdentityToken);
             }
 
             var phone = SupportsUserPhoneNumber ? await GetPhoneNumberAsync(user) : null;
