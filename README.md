@@ -233,6 +233,8 @@ using (var context = new ApplicationDbContext(
 
 **OpenIddict** is actively maintained by **[Kévin Chalet](https://github.com/PinpointTownes)**. Contributions are welcome and can be submitted using pull requests.
 
+**Special thanks to [Christopher McCrum](https://github.com/chrisjmccrum) and [Data Citadel](http://www.datacitadel.com/) for their incredible support**.
+
 ## License
 
 This project is licensed under the **Apache License**. This means that you can use, modify and distribute it freely. See [http://www.apache.org/licenses/LICENSE-2.0.html](http://www.apache.org/licenses/LICENSE-2.0.html) for more details.
