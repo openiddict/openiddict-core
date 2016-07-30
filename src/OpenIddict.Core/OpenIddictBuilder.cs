@@ -574,6 +574,16 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
+        /// Makes client identification mandatory so that token and revocation
+        /// requests that don't specify a client_id are automatically rejected.
+        /// Note: enabling this option doesn't prevent public clients from using
+        /// the token and revocation endpoints, but specifying a client_id is required.
+        /// </summary>
+        public virtual OpenIddictBuilder RequireClientIdentification() {
+            return Configure(options => options.RequireClientIdentification = true);
+        }
+
+        /// <summary>
         /// Sets the access token lifetime, after which client applications must retrieve
         /// a new access token by making a grant_type=refresh_token token request
         /// or a prompt=none authorization request, depending on the selected flow.

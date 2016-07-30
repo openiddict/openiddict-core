@@ -79,11 +79,24 @@ namespace OpenIddict.Infrastructure {
             // See http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken
             // and https://tools.ietf.org/html/rfc6749#section-6 for more information.
 
-            // At this stage, skip client authentication if the client identifier is missing.
+            // At this stage, skip client authentication if the client identifier is missing
+            // or reject the token request if client identification is set as required.
             // Note: the OpenID Connect server middleware will automatically ensure that
             // the calling application cannot use an authorization code or a refresh token
             // if it's not the intended audience, even if client authentication was skipped.
             if (string.IsNullOrEmpty(context.ClientId)) {
+                // Reject the request if client identification is mandatory.
+                if (services.Options.RequireClientIdentification) {
+                    services.Logger.LogError("The token request was rejected becaused the " +
+                                             "mandatory client_id parameter was missing or empty.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The mandatory 'client_id' parameter was missing.");
+
+                    return;
+                }
+
                 services.Logger.LogInformation("The token request validation process was skipped " +
                                                "because the client_id parameter was missing or empty.");
 

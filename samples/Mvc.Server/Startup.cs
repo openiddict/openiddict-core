@@ -48,6 +48,9 @@ namespace Mvc.Server {
                 .AllowPasswordFlow()
                 .AllowRefreshTokenFlow()
 
+                // Make the "client_id" parameter mandatory when sending a token request.
+                .RequireClientIdentification()
+
                 // During development, you can disable the HTTPS requirement.
                 .DisableHttpsRequirement()
 

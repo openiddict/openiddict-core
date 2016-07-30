@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace OpenIddict {
@@ -36,5 +35,12 @@ namespace OpenIddict {
         /// Gets the list of the OpenIddict modules registered in the application.
         /// </summary>
         public ICollection<OpenIddictModule> Modules { get; } = new List<OpenIddictModule>();
+
+        /// <summary>
+        /// Gets or sets a boolean determining whether client identification is required.
+        /// Enabling this option requires registering a client application and sending a
+        /// valid client_id when communicating with the token and revocation endpoints.
+        /// </summary>
+        public bool RequireClientIdentification { get; set; }
     }
 }

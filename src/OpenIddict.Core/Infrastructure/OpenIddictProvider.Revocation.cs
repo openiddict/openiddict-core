@@ -31,11 +31,24 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            // Skip client authentication if the client identifier is missing.
+            // Skip client authentication if the client identifier is missing or reject
+            // the revocation request if client identification is set as required.
             // Note: the OpenID Connect server middleware will automatically ensure that
             // the calling application cannot revoke a refresh token if it's not
             // the intended audience, even if client authentication was skipped.
             if (string.IsNullOrEmpty(context.ClientId)) {
+                // Reject the request if client identification is mandatory.
+                if (services.Options.RequireClientIdentification) {
+                    services.Logger.LogError("The revocation request was rejected becaused the " +
+                                             "mandatory client_id parameter was missing or empty.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The mandatory 'client_id' parameter was missing.");
+
+                    return;
+                }
+
                 services.Logger.LogInformation("The revocation request validation process was skipped " +
                                                "because the client_id parameter was missing or empty.");
 
