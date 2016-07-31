@@ -36,6 +36,9 @@ namespace Mvc.Server {
             _userManager = userManager;
         }
 
+        // Note: if you don't provide your own authorization action, OpenIddict will
+        // directly process authorization requests without requiring user consent.
+
         [Authorize, HttpGet, Route("~/connect/authorize")]
         public async Task<IActionResult> Authorize() {
             // Extract the authorization request from the ASP.NET environment.
@@ -96,6 +99,9 @@ namespace Mvc.Server {
             // to redirect the user agent to the client application using the appropriate response_mode.
             return Forbid(OpenIdConnectServerDefaults.AuthenticationScheme);
         }
+
+        // Note: if you don't provide your own logout action, OpenIddict will
+        // directly process logout requests without requiring user confirmation.
 
         [HttpGet("~/connect/logout")]
         public IActionResult Logout() {

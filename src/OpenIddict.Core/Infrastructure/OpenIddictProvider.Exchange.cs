@@ -338,119 +338,74 @@ namespace OpenIddict.Infrastructure {
 
                 var user = await services.Users.FindByNameAsync(context.Request.Username);
                 if (user == null) {
-                    services.Logger.LogError("The token request was rejected because no user profile corresponding to " +
-                                             "the specified username was found: '{Username}'.", context.Request.Username);
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "Invalid credentials.");
-
-                    return;
+                    services.Logger.LogWarning("The token request was not fully validated because the profile corresponding to the " +
+                                               "given username was not found in the database: {Username}.", context.Request.Username);
                 }
 
-                // Ensure the user is allowed to sign in.
-                if (!await services.SignIn.CanSignInAsync(user)) {
-                    services.Logger.LogError("The token request was rejected because the user '{Username}' " +
-                                             "was not allowed to sign in.", context.Request.Username);
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The user is not allowed to sign in.");
-
-                    return;
-                }
-
-                // Ensure the user is not already locked out.
-                if (services.Users.SupportsUserLockout && await services.Users.IsLockedOutAsync(user)) {
-                    services.Logger.LogError("The token request was rejected because the account '{Username}' " +
-                                             "was locked out to prevent brute force attacks.", context.Request.Username);
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "Account locked out.");
-
-                    return;
-                }
-
-                // Ensure the password is valid.
-                if (!await services.Users.CheckPasswordAsync(user, context.Request.Password)) {
-                    services.Logger.LogError("The token request was rejected because the password didn't match " +
-                                             "the password associated with the account '{Username}'.", context.Request.Username);
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "Invalid credentials.");
-
-                    if (services.Users.SupportsUserLockout) {
-                        await services.Users.AccessFailedAsync(user);
-
-                        // Ensure the user is not locked out.
-                        if (await services.Users.IsLockedOutAsync(user)) {
-                            services.Logger.LogError("The token request was rejected because the account '{Username}' " +
-                                                     "was locked out to prevent brute force attacks.", context.Request.Username);
-
-                            context.Reject(
-                                error: OpenIdConnectConstants.Errors.InvalidGrant,
-                                description: "Account locked out.");
-                        }
-                    }
-
-                    return;
-                }
-
-                if (services.Users.SupportsUserLockout) {
-                    await services.Users.ResetAccessFailedCountAsync(user);
-                }
-
-                // Reject the token request if two-factor authentication has been enabled by the user.
-                if (services.Users.SupportsUserTwoFactor && await services.Users.GetTwoFactorEnabledAsync(user)) {
-                    services.Logger.LogError("The token request was rejected because two-factor authentication " +
-                                             "was required for the account '{Username}.", context.Request.Username);
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "Two-factor authentication is required for this account.");
-
-                    return;
-                }
-
-                // Return an error if the username corresponds to the registered
-                // email address and if the "email" scope has not been requested.
-                if (services.Users.SupportsUserEmail && context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
-                                                       !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email)) {
-                    // Retrieve the username and the email address associated with the user.
-                    var username = await services.Users.GetUserNameAsync(user);
-                    var email = await services.Users.GetEmailAsync(user);
-
-                    if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                        services.Logger.LogError("The token request was rejected because the 'email' scope was not requested: " +
-                                                 "to prevent data leakage, the 'email' scope must be granted when the username " +
-                                                 "is identical to the email address associated with the user profile.");
+                else {
+                    // Ensure the user is allowed to sign in.
+                    if (!await services.SignIn.CanSignInAsync(user)) {
+                        services.Logger.LogError("The token request was rejected because the user '{Username}' " +
+                                                 "was not allowed to sign in.", context.Request.Username);
 
                         context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidRequest,
-                            description: "The 'email' scope is required.");
+                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            description: "The user is not allowed to sign in.");
 
                         return;
                     }
+
+                    // Ensure the user is not already locked out.
+                    if (services.Users.SupportsUserLockout && await services.Users.IsLockedOutAsync(user)) {
+                        services.Logger.LogError("The token request was rejected because the account '{Username}' " +
+                                                 "was locked out to prevent brute force attacks.", context.Request.Username);
+
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            description: "Account locked out.");
+
+                        return;
+                    }
+
+                    // Reject the token request if two-factor authentication has been enabled by the user.
+                    if (services.Users.SupportsUserTwoFactor && await services.Users.GetTwoFactorEnabledAsync(user)) {
+                        services.Logger.LogError("The token request was rejected because two-factor authentication " +
+                                                 "was required for the account '{Username}.", context.Request.Username);
+
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            description: "Two-factor authentication is required for this account.");
+
+                        return;
+                    }
+
+                    // Return an error if the username corresponds to the registered
+                    // email address and if the "email" scope has not been requested.
+                    if (services.Users.SupportsUserEmail && context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
+                                                           !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email)) {
+                        // Retrieve the username and the email address associated with the user.
+                        var username = await services.Users.GetUserNameAsync(user);
+                        var email = await services.Users.GetEmailAsync(user);
+
+                        if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
+                            services.Logger.LogError("The token request was rejected because the 'email' scope was not requested: " +
+                                                     "to prevent data leakage, the 'email' scope must be granted when the username " +
+                                                     "is identical to the email address associated with the user profile.");
+
+                            context.Reject(
+                                error: OpenIdConnectConstants.Errors.InvalidRequest,
+                                description: "The 'email' scope is required.");
+
+                            return;
+                        }
+                    }
                 }
 
-                var identity = await services.Users.CreateIdentityAsync(user, context.Request.GetScopes());
-                if (identity == null) {
-                    throw new InvalidOperationException("The token request was aborted because the user manager returned a null " +
-                                                       $"identity for user '{await services.Users.GetUserNameAsync(user)}'.");
-                }
-
-                // Create a new authentication ticket holding the user identity.
-                var ticket = new AuthenticationTicket(
-                    new ClaimsPrincipal(identity),
-                    new AuthenticationProperties(),
-                    context.Options.AuthenticationScheme);
-
-                ticket.SetResources(context.Request.GetResources());
-                ticket.SetScopes(context.Request.GetScopes());
-
-                context.Validate(ticket);
+                // Call context.SkipToNextMiddleware() to invoke the next middleware in the pipeline.
+                // This allows handling grant_type=password requests in a custom controller action.
+                // If the request is not handled in user code, OpenIddictMiddleware will automatically
+                // create and return a token response using the default authentication logic.
+                context.SkipToNextMiddleware();
             }
 
             else if (context.Request.IsClientCredentialsGrantType()) {
@@ -459,42 +414,11 @@ namespace OpenIddict.Infrastructure {
                 Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId) &&
                              !string.IsNullOrEmpty(context.Request.ClientSecret), "The client credentials shouldn't be null.");
 
-                // Retrieve the application details corresponding to the requested client_id.
-                // Note: this call shouldn't return a null instance, but a race condition may occur
-                // if the application was removed after the initial check made by ValidateTokenRequest.
-                var application = await services.Applications.FindByClientIdAsync(context.Request.ClientId);
-                if (application == null) {
-                    services.Logger.LogError("The token request was aborted because the client application " +
-                                             "was not found in the database: '{ClientId}'.", context.Request.ClientId);
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidClient,
-                        description: "Application not found in the database: ensure that your client_id is correct.");
-
-                    return;
-                }
-
-                var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-
-                // Note: the name identifier is always included in both identity and
-                // access tokens, even if an explicit destination is not specified.
-                identity.AddClaim(ClaimTypes.NameIdentifier, context.Request.ClientId);
-
-                identity.AddClaim(ClaimTypes.Name, await services.Applications.GetDisplayNameAsync(application),
-                    OpenIdConnectConstants.Destinations.AccessToken,
-                    OpenIdConnectConstants.Destinations.IdentityToken);
-
-                // Create a new authentication ticket
-                // holding the application identity.
-                var ticket = new AuthenticationTicket(
-                    new ClaimsPrincipal(identity),
-                    new AuthenticationProperties(),
-                    context.Options.AuthenticationScheme);
-
-                ticket.SetResources(context.Request.GetResources());
-                ticket.SetScopes(context.Request.GetScopes());
-
-                context.Validate(ticket);
+                // Call context.SkipToNextMiddleware() to invoke the next middleware in the pipeline.
+                // This allows handling grant_type=client_credentials requests in a custom controller action.
+                // If the request is not handled in user code, OpenIddictMiddleware will automatically
+                // create and return a token response using the default authentication logic.
+                context.SkipToNextMiddleware();
             }
         }
     }
