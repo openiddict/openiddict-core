@@ -16,7 +16,8 @@ namespace OpenIddict {
         }
 
         public static class Environment {
-            public const string Request = "openiddict-request:";
+            public const string AuthorizationRequest = "openiddict-authorization-request:";
+            public const string LogoutRequest = "openiddict-logout-request:";
         }
 
         public static class Scopes {

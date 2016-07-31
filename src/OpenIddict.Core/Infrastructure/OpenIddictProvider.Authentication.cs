@@ -57,7 +57,11 @@ namespace OpenIddict.Infrastructure {
             // If a request_id parameter can be found in the authorization request,
             // restore the complete authorization request stored in the distributed cache.
             if (!string.IsNullOrEmpty(context.Request.RequestId)) {
-                var payload = await services.Options.Cache.GetAsync(OpenIddictConstants.Environment.Request + context.Request.RequestId);
+                // Note: the cache key is always prefixed with a specific marker
+                // to avoid collisions with the other types of cached requests.
+                var key = OpenIddictConstants.Environment.AuthorizationRequest + context.Request.RequestId;
+
+                var payload = await services.Options.Cache.GetAsync(key);
                 if (payload == null) {
                     services.Logger.LogError("The authorization request was rejected because an unknown " +
                                              "or invalid request_id parameter was specified.");
@@ -357,7 +361,7 @@ namespace OpenIddict.Infrastructure {
             if (string.IsNullOrEmpty(context.Request.RequestId)) {
                 // Generate a request identifier. Note: using a crypto-secure
                 // random number generator is not necessary in this case.
-                var identifier = Guid.NewGuid().ToString();
+                context.Request.RequestId = Guid.NewGuid().ToString();
 
                 // Store the serialized authorization request parameters in the distributed cache.
                 var stream = new MemoryStream();
@@ -368,17 +372,19 @@ namespace OpenIddict.Infrastructure {
                     serializer.Serialize(writer, context.Request);
                 }
 
-                var options = new DistributedCacheEntryOptions {
+                // Note: the cache key is always prefixed with a specific marker
+                // to avoid collisions with the other types of cached requests.
+                var key = OpenIddictConstants.Environment.AuthorizationRequest + context.Request.RequestId;
+
+                await services.Options.Cache.SetAsync(key, stream.ToArray(), new DistributedCacheEntryOptions {
                     AbsoluteExpiration = context.Options.SystemClock.UtcNow + TimeSpan.FromMinutes(30),
                     SlidingExpiration = TimeSpan.FromMinutes(10)
-                };
-
-                await services.Options.Cache.SetAsync(OpenIddictConstants.Environment.Request + identifier, stream.ToArray(), options);
+                });
 
                 // Create a new authorization request containing only the request_id parameter.
                 var address = QueryHelpers.AddQueryString(
                     uri: context.HttpContext.Request.PathBase + context.HttpContext.Request.Path,
-                    name: OpenIdConnectConstants.Parameters.RequestId, value: identifier);
+                    name: OpenIdConnectConstants.Parameters.RequestId, value: context.Request.RequestId);
 
                 context.HttpContext.Response.Redirect(address);
 
@@ -397,10 +403,14 @@ namespace OpenIddict.Infrastructure {
 
             // Remove the authorization request from the distributed cache.
             if (!string.IsNullOrEmpty(context.Request.RequestId)) {
+                // Note: the cache key is always prefixed with a specific marker
+                // to avoid collisions with the other types of cached requests.
+                var key = OpenIddictConstants.Environment.AuthorizationRequest + context.Request.RequestId;
+
                 // Note: the ApplyAuthorizationResponse event is called for both successful
                 // and errored authorization responses but discrimination is not necessary here,
                 // as the authorization request must be removed from the distributed cache in both cases.
-                await services.Options.Cache.RemoveAsync(OpenIddictConstants.Environment.Request + context.Request.RequestId);
+                await services.Options.Cache.RemoveAsync(key);
             }
 
             if (!context.Options.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Response.Error) &&

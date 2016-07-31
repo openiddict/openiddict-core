@@ -4,6 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -12,12 +14,50 @@ using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
+        public override async Task ExtractLogoutRequest([NotNull] ExtractLogoutRequestContext context) {
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+
+            // If a request_id parameter can be found in the logout request,
+            // restore the complete logout request stored in the distributed cache.
+            if (!string.IsNullOrEmpty(context.Request.RequestId)) {
+                // Note: the cache key is always prefixed with a specific marker
+                // to avoid collisions with the other types of cached requests.
+                var key = OpenIddictConstants.Environment.LogoutRequest + context.Request.RequestId;
+
+                var payload = await services.Options.Cache.GetAsync(key);
+                if (payload == null) {
+                    services.Logger.LogError("The logout request was rejected because an unknown " +
+                                             "or invalid request_id parameter was specified.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "Invalid request: timeout expired.");
+
+                    return;
+                }
+
+                // Restore the logout request parameters from the serialized payload.
+                using (var reader = new BsonReader(new MemoryStream(payload))) {
+                    var serializer = JsonSerializer.CreateDefault();
+
+                    // Note: JsonSerializer.Populate() automatically preserves
+                    // the original request parameters resolved from the cache
+                    // when parameters with the same names are specified.
+                    serializer.Populate(reader, context.Request);
+                }
+            }
+        }
+
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
@@ -54,61 +94,113 @@ namespace OpenIddict.Infrastructure {
             // Only validate the id_token_hint if the user is still logged in.
             // If the authentication cookie doesn't exist or is no longer valid,
             // the user agent is immediately redirected to the client application.
-            if (context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
-                // Ensure that the authentication cookie contains the required ClaimTypes.NameIdentifier claim.
-                // If it cannot be found, don't handle the logout request at this stage and continue to the next middleware.
-                var identifier = context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(identifier)) {
-                    services.Logger.LogWarning("The logout request was not silently processed because the mandatory " +
-                                               "ClaimTypes.NameIdentifier claim was missing from the current principal.");
+            if (!context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
+                services.Logger.LogDebug("The logout request was silently processed without requiring user confirmation " +
+                                         "because the user was not authenticated or his session was no longer valid.");
 
-                    context.SkipToNextMiddleware();
+                // Redirect the user agent back to the client application.
+                await context.HttpContext.Authentication.SignOutAsync(context.Options.AuthenticationScheme);
 
-                    return;
-                }
+                // Mark the response as handled
+                // to skip the rest of the pipeline.
+                context.HandleResponse();
 
+                return;
+            }
+
+            // At this stage, ensure the authentication cookie contains the required ClaimTypes.NameIdentifier claim.
+            // If it cannot be found, don't handle the logout request at this stage and continue to the next middleware.
+            var identifier = context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(identifier)) {
                 // When the client application sends an id_token_hint parameter, the corresponding identity can be retrieved using
                 // AuthenticateAsync and used as a way to determine whether the logout request has been sent by a legit caller.
                 // If the token cannot be extracted, don't handle the logout request at this stage and continue to the next middleware.
                 var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
-                if (principal == null) {
+                if (principal != null && principal.HasClaim(ClaimTypes.NameIdentifier, identifier)) {
+                    services.Logger.LogInformation("The user '{Username}' was successfully logged out without requiring confirmation.",
+                                                    services.Users.GetUserName(principal));
+
+                    // Delete the ASP.NET Core Identity cookies.
+                    await services.SignIn.SignOutAsync();
+
+                    // Redirect the user agent back to the client application.
+                    await context.HttpContext.Authentication.SignOutAsync(context.Options.AuthenticationScheme);
+
+                    // Mark the response as handled
+                    // to skip the rest of the pipeline.
+                    context.HandleResponse();
+
+                    return;
+                }
+
+                else {
                     services.Logger.LogInformation("The logout request was not silently processed because " +
-                                                   "the id_token_hint parameter was missing or invalid.");
-
-                    context.SkipToNextMiddleware();
-
-                    return;
+                                                   "the id_token_hint parameter was missing or invalid or " +
+                                                   "didn't correspond to the logged in user.");
                 }
-
-                // Ensure that the identity token corresponds to the authenticated user. If the token cannot be
-                // validated, don't handle the logout request at this stage and continue to the next middleware.
-                if (!principal.HasClaim(ClaimTypes.NameIdentifier, identifier)) {
-                    services.Logger.LogWarning("The logout request was not silently processed because the principal extracted " +
-                                               "from the id_token_hint parameter didn't correspond to the logged in user.");
-
-                    context.SkipToNextMiddleware();
-
-                    return;
-                }
-
-                services.Logger.LogInformation("The user '{Username}' was successfully logged out.",
-                                               services.Users.GetUserName(principal));
-
-                // Delete the ASP.NET Core Identity cookies.
-                await services.SignIn.SignOutAsync();
             }
 
-            services.Logger.LogDebug("The logout request was silently processed without requiring user confirmation.");
+            else {
+                services.Logger.LogWarning("The logout request was not silently processed because the mandatory " +
+                                           "ClaimTypes.NameIdentifier claim was missing from the current principal.");
+            }
 
-            // Redirect the user agent back to the client application.
-            await context.HttpContext.Authentication.SignOutAsync(context.Options.AuthenticationScheme);
+            // If no request_id parameter can be found in the current request, assume the OpenID Connect
+            // request was not serialized yet and store the entire payload in the distributed cache
+            // to make it easier to flow across requests and internal/external logout workflows.
+            if (string.IsNullOrEmpty(context.Request.RequestId)) {
+                // Generate a request identifier. Note: using a crypto-secure
+                // random number generator is not necessary in this case.
+                context.Request.RequestId = Guid.NewGuid().ToString();
 
-            // Mark the response as handled
-            // to skip the rest of the pipeline.
-            context.HandleResponse();
+                // Store the serialized logout request parameters in the distributed cache.
+                var stream = new MemoryStream();
+                using (var writer = new BsonWriter(stream)) {
+                    writer.CloseOutput = false;
+
+                    var serializer = JsonSerializer.CreateDefault();
+                    serializer.Serialize(writer, context.Request);
+                }
+
+                // Note: the cache key is always prefixed with a specific marker
+                // to avoid collisions with the other types of cached requests.
+                var key = OpenIddictConstants.Environment.LogoutRequest + context.Request.RequestId;
+
+                await services.Options.Cache.SetAsync(key, stream.ToArray(), new DistributedCacheEntryOptions {
+                    AbsoluteExpiration = context.Options.SystemClock.UtcNow + TimeSpan.FromMinutes(30),
+                    SlidingExpiration = TimeSpan.FromMinutes(10)
+                });
+
+                // Create a new logout request containing only the request_id parameter.
+                var address = QueryHelpers.AddQueryString(
+                    uri: context.HttpContext.Request.PathBase + context.HttpContext.Request.Path,
+                    name: OpenIdConnectConstants.Parameters.RequestId, value: context.Request.RequestId);
+
+                context.HttpContext.Response.Redirect(address);
+
+                // Mark the response as handled
+                // to skip the rest of the pipeline.
+                context.HandleResponse();
+
+                return;
+            }
         }
 
-        public override Task ApplyLogoutResponse([NotNull] ApplyLogoutResponseContext context) {
+        public override async Task ApplyLogoutResponse([NotNull] ApplyLogoutResponseContext context) {
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+
+            // Remove the logout request from the distributed cache.
+            if (!string.IsNullOrEmpty(context.Request.RequestId)) {
+                // Note: the cache key is always prefixed with a specific marker
+                // to avoid collisions with the other types of cached requests.
+                var key = OpenIddictConstants.Environment.LogoutRequest + context.Request.RequestId;
+
+                // Note: the ApplyLogoutResponse event is called for both successful
+                // and errored logout responses but discrimination is not necessary here,
+                // as the logout request must be removed from the distributed cache in both cases.
+                await services.Options.Cache.RemoveAsync(key);
+            }
+
             if (!context.Options.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Response.Error) &&
                                                                  string.IsNullOrEmpty(context.Response.PostLogoutRedirectUri)) {
                 // Determine if the status code pages middleware has been enabled for this request.
@@ -125,8 +217,6 @@ namespace OpenIddict.Infrastructure {
                     context.HandleResponse();
                 }
             }
-
-            return Task.FromResult(0);
         }
     }
 }

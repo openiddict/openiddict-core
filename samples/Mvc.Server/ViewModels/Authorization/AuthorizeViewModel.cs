@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Mvc.Server.ViewModels.Authorization {
@@ -8,7 +7,7 @@ namespace Mvc.Server.ViewModels.Authorization {
         public string ApplicationName { get; set; }
 
         [BindNever]
-        public IDictionary<string, string> Parameters { get; set; }
+        public string RequestId { get; set; }
 
         [Display(Name = "Scope")]
         public string Scope { get; set; }
