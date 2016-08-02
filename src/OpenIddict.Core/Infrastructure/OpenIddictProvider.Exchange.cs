@@ -161,8 +161,7 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            var type = await services.Applications.GetClientTypeAsync(application);
-            if (string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase)) {
+            if (await services.Applications.IsPublicAsync(application)) {
                 // Note: public applications are not allowed to use the client credentials grant.
                 if (context.Request.IsClientCredentialsGrantType()) {
                     services.Logger.LogError("The token request was rejected because the public client application '{ClientId}' " +

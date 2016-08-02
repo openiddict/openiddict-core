@@ -139,6 +139,16 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
+            // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
+            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
+               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The 'offline_access' scope is not allowed.");
+
+                return;
+            }
+
             // Note: the OpenID Connect server middleware supports the query, form_post and fragment response modes
             // and doesn't reject unknown/custom modes until the ApplyAuthorizationResponse event is invoked.
             // To ensure authorization requests are rejected early enough, an additional check is made by OpenIddict.
@@ -167,14 +177,46 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
-            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
-               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The 'offline_access' scope is not allowed.");
+            // Note: the OpenID Connect server middleware always ensures a
+            // code_challenge_method can't be specified without code_challenge.
+            if (!string.IsNullOrEmpty(context.Request.CodeChallenge)) {
+                // Since the default challenge method (plain) is explicitly disallowed,
+                // reject the authorization request if the code_challenge_method is missing.
+                if (string.IsNullOrEmpty(context.Request.CodeChallengeMethod)) {
+                    services.Logger.LogError("The authorization request was rejected because the " +
+                                             "required 'code_challenge_method' parameter was missing.");
 
-                return;
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The 'code_challenge_method' parameter must be specified.");
+
+                    return;
+                }
+
+                // Disallow the use of the unsecure code_challenge_method=plain method.
+                // See https://tools.ietf.org/html/rfc7636#section-7.2 for more information.
+                if (context.Request.CodeChallengeMethod == OpenIdConnectConstants.CodeChallengeMethods.Plain) {
+                    services.Logger.LogError("The authorization request was rejected because the " +
+                                             "'code_challenge_method' parameter was set to 'plain'.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The specified response_type parameter is not allowed when using PKCE.");
+
+                    return;
+                }
+
+                // Reject authorization requests that contain response_type=token when a code_challenge is specified.
+                if (context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token)) {
+                    services.Logger.LogError("The authorization request was rejected because the " +
+                                             "specified response type was not compatible with PKCE.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The specified response_type parameter is not allowed when using PKCE.");
+
+                    return;
+                }
             }
 
             // Retrieve the application details corresponding to the requested client_id.
@@ -205,9 +247,7 @@ namespace OpenIddict.Infrastructure {
             // flow are rejected if the client identifier corresponds to a confidential application.
             // Note: when using the authorization code grant, ValidateTokenRequest is responsible of
             // rejecting the token request if the client_id corresponds to an unauthenticated confidential client.
-            var type = await services.Applications.GetClientTypeAsync(application);
-            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase) &&
-                !context.Request.IsAuthorizationCodeFlow()) {
+            if (await services.Applications.IsPublicAsync(application) && !context.Request.IsAuthorizationCodeFlow()) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Confidential clients can only use response_type=code.");

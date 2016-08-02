@@ -55,8 +55,7 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject revocation requests containing a client_secret if the client application is not confidential.
-            var type = await services.Applications.GetClientTypeAsync(application);
-            if (string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase)) {
+            if (await services.Applications.IsPublicAsync(application)) {
                 // Reject tokens requests containing a client_secret when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientSecret)) {
                     context.Reject(

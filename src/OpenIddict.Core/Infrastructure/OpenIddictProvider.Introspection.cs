@@ -55,8 +55,7 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject non-confidential applications.
-            var type = await services.Applications.GetClientTypeAsync(application);
-            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase)) {
+            if (!await services.Applications.IsConfidentialAsync(application)) {
                 services.Logger.LogError("The introspection request was rejected because the public application " +
                                          "'{ClientId}' was not allowed to use this endpoint.", context.ClientId);
 

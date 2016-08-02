@@ -17,7 +17,11 @@ namespace OpenIddict.Infrastructure {
         public override Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            Debug.Assert(services.Options.GrantTypes.Count != 0, "At least one flow should be enabled.");
+            // Note: though it's natively supported by the OpenID Connect server middleware,
+            // OpenIddict disallows the use of the unsecure code_challenge_method=plain method,
+            // which must be manually removed from the code_challenge_methods_supported property.
+            // See https://tools.ietf.org/html/rfc7636#section-7.2 for more information.
+            context.CodeChallengeMethods.Remove(OpenIdConnectConstants.CodeChallengeMethods.Plain);
 
             // Note: the OpenID Connect server middleware automatically populates grant_types_supported
             // by determining whether the authorization and token endpoints are enabled or not but
