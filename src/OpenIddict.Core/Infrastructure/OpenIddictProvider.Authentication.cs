@@ -103,8 +103,7 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject code flow authorization requests if the authorization code flow is not enabled.
-            if (context.Request.IsAuthorizationCodeFlow() &&
-               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode)) {
+            if (context.Request.IsAuthorizationCodeFlow() && !services.Options.IsAuthorizationCodeFlowEnabled()) {
                 services.Logger.LogError("The authorization request was rejected because " +
                                          "the authorization code flow was not enabled.");
 
@@ -116,7 +115,7 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject implicit flow authorization requests if the implicit flow is not enabled.
-            if (context.Request.IsImplicitFlow() && !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit)) {
+            if (context.Request.IsImplicitFlow() && !services.Options.IsImplicitFlowEnabled()) {
                 services.Logger.LogError("The authorization request was rejected because the implicit flow was not enabled.");
 
                 context.Reject(
@@ -127,8 +126,8 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject hybrid flow authorization requests if the authorization code or the implicit flows are not enabled.
-            if (context.Request.IsHybridFlow() && (!services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
-                                                   !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))) {
+            if (context.Request.IsHybridFlow() && (!services.Options.IsAuthorizationCodeFlowEnabled() ||
+                                                   !services.Options.IsImplicitFlowEnabled())) {
                 services.Logger.LogError("The authorization request was rejected because the " +
                                          "authorization code flow or the implicit flow was not enabled.");
 
@@ -140,8 +139,7 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
-            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
-               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) && !services.Options.IsRefreshTokenFlowEnabled()) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "The 'offline_access' scope is not allowed.");

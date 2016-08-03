@@ -12,6 +12,7 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,8 +40,7 @@ namespace OpenIddict.Infrastructure {
 
             // Reject token requests using grant_type=authorization_code
             // if the authorization code flow support is not enabled.
-            if (context.Request.IsAuthorizationCodeGrantType() &&
-               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode)) {
+            if (context.Request.IsAuthorizationCodeGrantType() && !services.Options.IsAuthorizationCodeFlowEnabled()) {
                 services.Logger.LogError("The token request was rejected because the authorization code flow was not enabled.");
 
                 context.Reject(
@@ -52,8 +52,7 @@ namespace OpenIddict.Infrastructure {
 
             // Reject token requests using grant_type=client_credentials
             // if the client credentials flow support is not enabled.
-            else if (context.Request.IsClientCredentialsGrantType() &&
-                    !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials)) {
+            else if (context.Request.IsClientCredentialsGrantType() && !services.Options.IsClientCredentialsFlowEnabled()) {
                 services.Logger.LogError("The token request was rejected because the client credentials flow was not enabled.");
 
                 context.Reject(
@@ -65,8 +64,7 @@ namespace OpenIddict.Infrastructure {
 
             // Reject token requests using grant_type=password if the
             // resource owner password credentials flow support is not enabled.
-            else if (context.Request.IsPasswordGrantType() &&
-                    !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password)) {
+            else if (context.Request.IsPasswordGrantType() && !services.Options.IsPasswordFlowEnabled()) {
                 services.Logger.LogError("The token request was rejected because the resource " +
                                          "owner password credentials flow was not enabled.");
 
@@ -79,8 +77,7 @@ namespace OpenIddict.Infrastructure {
 
             // Reject token requests using grant_type=refresh_token
             // if the refresh token flow support is not enabled.
-            else if (context.Request.IsRefreshTokenGrantType() &&
-                    !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+            if (context.Request.IsRefreshTokenGrantType() && !services.Options.IsRefreshTokenFlowEnabled()) {
                 services.Logger.LogError("The token request was rejected because the refresh token flow was not enabled.");
 
                 context.Reject(
@@ -91,8 +88,7 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject token requests that specify scope=offline_access if the refresh token flow is not enabled.
-            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
-               !services.Options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) && !services.Options.IsRefreshTokenFlowEnabled()) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "The 'offline_access' scope is not allowed.");

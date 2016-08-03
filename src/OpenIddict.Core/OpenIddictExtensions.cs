@@ -116,20 +116,18 @@ namespace Microsoft.AspNetCore.Builder {
 
             // Ensure the authorization endpoint has been enabled when
             // the authorization code or implicit grants are supported.
-            if (!options.AuthorizationEndpointPath.HasValue &&
-                (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
-                 options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))) {
+            if (!options.AuthorizationEndpointPath.HasValue && (options.IsAuthorizationCodeFlowEnabled() ||
+                                                                options.IsImplicitFlowEnabled())) {
                 throw new InvalidOperationException("The authorization endpoint must be enabled to use " +
                                                     "the authorization code and implicit flows.");
             }
 
             // Ensure the token endpoint has been enabled when the authorization code,
             // client credentials, password or refresh token grants are supported.
-            else if (!options.TokenEndpointPath.HasValue && 
-                     (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
-                      options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials) ||
-                      options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password) ||
-                      options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))) {
+            else if (!options.TokenEndpointPath.HasValue && (options.IsAuthorizationCodeFlowEnabled() ||
+                                                             options.IsClientCredentialsFlowEnabled() ||
+                                                             options.IsPasswordFlowEnabled() ||
+                                                             options.IsRefreshTokenFlowEnabled())) {
                 throw new InvalidOperationException("The token endpoint must be enabled to use the authorization code, " +
                                                     "client credentials, password and refresh token flows.");
             }
@@ -149,6 +147,71 @@ namespace Microsoft.AspNetCore.Builder {
             }
 
             return app;
+        }
+
+        /// <summary>
+        /// Determines whether the authorization code flow has been enabled.
+        /// </summary>
+        /// <param name="options">The OpenIddict options.</param>
+        /// <returns><c>true</c> if the authorization code flow has been enabled, <c>false</c> otherwise.</returns>
+        public static bool IsAuthorizationCodeFlowEnabled([NotNull] this OpenIddictOptions options) {
+            if (options == null) {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode);
+        }
+
+        /// <summary>
+        /// Determines whether the client credentials flow has been enabled.
+        /// </summary>
+        /// <param name="options">The OpenIddict options.</param>
+        /// <returns><c>true</c> if the client credentials flow has been enabled, <c>false</c> otherwise.</returns>
+        public static bool IsClientCredentialsFlowEnabled([NotNull] this OpenIddictOptions options) {
+            if (options == null) {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials);
+        }
+
+        /// <summary>
+        /// Determines whether the implicit flow has been enabled.
+        /// </summary>
+        /// <param name="options">The OpenIddict options.</param>
+        /// <returns><c>true</c> if the implicit flow has been enabled, <c>false</c> otherwise.</returns>
+        public static bool IsImplicitFlowEnabled([NotNull] this OpenIddictOptions options) {
+            if (options == null) {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit);
+        }
+
+        /// <summary>
+        /// Determines whether the password flow has been enabled.
+        /// </summary>
+        /// <param name="options">The OpenIddict options.</param>
+        /// <returns><c>true</c> if the password flow has been enabled, <c>false</c> otherwise.</returns>
+        public static bool IsPasswordFlowEnabled([NotNull] this OpenIddictOptions options) {
+            if (options == null) {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password);
+        }
+
+        /// <summary>
+        /// Determines whether the refresh token flow has been enabled.
+        /// </summary>
+        /// <param name="options">The OpenIddict options.</param>
+        /// <returns><c>true</c> if the refresh token flow has been enabled, <c>false</c> otherwise.</returns>
+        public static bool IsRefreshTokenFlowEnabled([NotNull] this OpenIddictOptions options) {
+            if (options == null) {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken);
         }
     }
 }
