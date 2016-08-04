@@ -29,7 +29,11 @@
   "buildOptions": {
     "warningsAsErrors": true,
     "nowarn": [ "CS1591" ],
-    "xmlDoc": true
+    "xmlDoc": true,
+
+    "copyToOutput": {
+      "include": [ "xunit.runner.json" ]
+    }
   },
 
   "testRunner": "xunit",
