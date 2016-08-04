@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net.Http;
 using AspNet.Security.OpenIdConnect.Extensions;
 
 namespace OpenIddict.Tests.Infrastructure.Serializers
 {
-    internal class PasswordFlowSerializer : IFlowSerializer
+    internal class PasswordOpenIdConnectRequestSerializer : IOpenIdConnectRequestSerializer
     {
         private const string DefaultRequestUri = "connect/token";
 
@@ -24,7 +23,6 @@ namespace OpenIddict.Tests.Infrastructure.Serializers
         {
             foreach (var parameterPair in request)
             {
-                Debug.WriteLine(parameterPair.Value.ToString());
                 yield return new KeyValuePair<string, string>(parameterPair.Key, parameterPair.Value.ToString());
             }
         }

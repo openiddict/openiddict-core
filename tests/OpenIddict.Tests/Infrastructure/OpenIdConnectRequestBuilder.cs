@@ -30,15 +30,15 @@ namespace OpenIddict.Tests.Infrastructure
             With((r, p) => r.GrantType = p, grantType, nameof(grantType));
 
         public HttpRequestMessage BuildRequestMessage() =>
-            Build(GuessFlow());
+            Build(GuessSerializer());
 
-        private HttpRequestMessage Build(IFlowSerializer serializer) =>
+        private HttpRequestMessage Build(IOpenIdConnectRequestSerializer serializer) =>
             serializer.Serialize(_request);
 
-        private IFlowSerializer GuessFlow()
+        private IOpenIdConnectRequestSerializer GuessSerializer()
         {
             if (_request.IsPasswordGrantType())
-                return new PasswordFlowSerializer();
+                return new PasswordOpenIdConnectRequestSerializer();
 
             throw new NotImplementedException();
         }

@@ -18,10 +18,15 @@ namespace OpenIddict.Tests.Infrastructure
                 .AddEnvironmentVariables()
                 .Build();
 
+            var serviceProvider = new ServiceCollection()
+               .AddEntityFrameworkInMemoryDatabase()
+               .BuildServiceProvider();
+
             //services.AddMvc();
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseInMemoryDatabase());
+                    options.UseInMemoryDatabase()
+                    .UseInternalServiceProvider(serviceProvider));
 
             // Register the Identity services.
             services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()

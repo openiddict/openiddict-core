@@ -3,7 +3,7 @@ using AspNet.Security.OpenIdConnect.Extensions;
 
 namespace OpenIddict.Tests.Infrastructure.Serializers
 {
-    public interface IFlowSerializer
+    public interface IOpenIdConnectRequestSerializer
     {
         HttpRequestMessage Serialize(OpenIdConnectRequest request);
     }
