@@ -15,6 +15,7 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict;
 
 namespace Microsoft.AspNetCore.Builder {
@@ -288,7 +289,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> used to sign the tokens issued by OpenIddict.
+        /// Registers a <see cref="X509Certificate2"/> that is used to sign the tokens issued by OpenIddict.
         /// </summary>
         /// <param name="certificate">The certificate used to sign the security tokens issued by the server.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -305,8 +306,8 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from
-        /// an embedded resource to sign the tokens issued by OpenIddict.
+        /// Registers a <see cref="X509Certificate2"/> retrieved from an
+        /// embedded resource and used to sign the tokens issued by OpenIddict.
         /// </summary>
         /// <param name="assembly">The assembly containing the certificate.</param>
         /// <param name="resource">The name of the embedded resource.</param>
@@ -330,8 +331,8 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> extracted
-        /// from a stream to sign the tokens issued by OpenIddict.
+        /// Registers a <see cref="X509Certificate2"/> extracted from a
+        /// stream and used to sign the tokens issued by OpenIddict.
         /// </summary>
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
@@ -349,8 +350,8 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> extracted
-        /// from a stream to sign the tokens issued by OpenIddict.
+        /// Registers a <see cref="X509Certificate2"/> extracted from a
+        /// stream and used to sign the tokens issued by OpenIddict.
         /// </summary>
         /// <param name="stream">The stream containing the certificate.</param>
         /// <param name="password">The password used to open the certificate.</param>
@@ -373,8 +374,8 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from the
-        /// X.509 machine store to sign the tokens issued by OpenIddict.
+        /// Registers a <see cref="X509Certificate2"/> retrieved from the X.509
+        /// machine store and used to sign the tokens issued by OpenIddict.
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -387,8 +388,8 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> retrieved from the
-        /// given X.509 store to sign the tokens issued by OpenIddict.
+        /// Registers a <see cref="X509Certificate2"/> retrieved from the given
+        /// X.509 store and used to sign the tokens issued by OpenIddict.
         /// </summary>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <param name="name">The name of the X.509 store.</param>
@@ -401,6 +402,20 @@ namespace Microsoft.AspNetCore.Builder {
             }
 
             return Configure(options => options.SigningCredentials.AddCertificate(thumbprint, name, location));
+        }
+
+        /// <summary>
+        /// Registers a <see cref="SecurityKey"/> used to sign the tokens issued by OpenIddict.
+        /// Note: using <see cref="RsaSecurityKey"/> asymmetric keys is recommended on production.
+        /// </summary>
+        /// <param name="key">The security key.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddSigningKey([NotNull] SecurityKey key) {
+            if (key == null) {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            return Configure(options => options.SigningCredentials.AddKey(key));
         }
 
         /// <summary>
