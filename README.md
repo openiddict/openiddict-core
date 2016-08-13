@@ -152,12 +152,6 @@ services.AddOpenIddict<ApplicationUser, IdentityRole<int>, ApplicationDbContext,
 
 ## Enabling interactive flows support
 
-  - **Create your own authorization controller and your own views**:
-
-To **enable authorization code/implicit flows support, you must create your own controller** and your own views/view models. The Mvc.Server sample comes with an [`AuthorizationController` that you can easily reuse in your application](https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs).
-
-![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
-
   - **Enable the corresponding flows in the OpenIddict options**:
 
 ```csharp
@@ -180,6 +174,14 @@ public void ConfigureServices(IServiceCollection services) {
         .AddEphemeralSigningKey();
 }
 ```
+
+  - **Create your own authorization controller and your own views**:
+
+**By default, OpenIddict processes authorization requests without requiring user consent**, which allows you to use OpenIddict with your own SPA apps without having to add custom code.
+
+**To display a confirmation form, you must create your own controller** and your own views/view models. The Mvc.Server sample comes with an [`AuthorizationController` that you can easily reuse in your application](https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs).
+
+![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
 
   - **Register your client application**:
 
