@@ -506,15 +506,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Enables the authorization endpoint using the default endpoint path (/connect/authorize).
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder EnableAuthorizationEndpoint() {
-            return EnableAuthorizationEndpoint(OpenIddictDefaults.AuthorizationEndpointPath);
-        }
-
-        /// <summary>
-        /// Enables the authorization endpoint using the specified path.
+        /// Enables the authorization endpoint.
         /// </summary>
         /// <param name="path">The relative path of the authorization endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -523,15 +515,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Enables the introspection endpoint using the default endpoint path (/connect/introspect).
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder EnableIntrospectionEndpoint() {
-            return EnableIntrospectionEndpoint(OpenIddictDefaults.IntrospectionEndpointPath);
-        }
-
-        /// <summary>
-        /// Enables the introspection endpoint using the specified path.
+        /// Enables the introspection endpoint.
         /// </summary>
         /// <param name="path">The relative path of the logout endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -540,15 +524,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Enables the logout endpoint using the default endpoint path (/connect/logout).
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder EnableLogoutEndpoint() {
-            return EnableLogoutEndpoint(OpenIddictDefaults.LogoutEndpointPath);
-        }
-
-        /// <summary>
-        /// Enables the logout endpoint using the specified path.
+        /// Enables the logout endpoint.
         /// </summary>
         /// <param name="path">The relative path of the logout endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -557,15 +533,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Enables the revocation endpoint using the default endpoint path (/connect/revoke).
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder EnableRevocationEndpoint() {
-            return EnableRevocationEndpoint(OpenIddictDefaults.RevocationEndpointPath);
-        }
-
-        /// <summary>
-        /// Enables the revocation endpoint using the specified path.
+        /// Enables the revocation endpoint.
         /// </summary>
         /// <param name="path">The relative path of the revocation endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -574,15 +542,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Enables the token endpoint using the default endpoint path (/connect/token).
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder EnableTokenEndpoint() {
-            return EnableTokenEndpoint(OpenIddictDefaults.TokenEndpointPath);
-        }
-
-        /// <summary>
-        /// Enables the token endpoint using the specified path.
+        /// Enables the token endpoint.
         /// </summary>
         /// <param name="path">The relative path of the token endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -591,15 +551,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Enables the userinfo endpoint using the default endpoint path (/connect/userinfo).
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder EnableUserinfoEndpoint() {
-            return EnableUserinfoEndpoint(OpenIddictDefaults.UserinfoEndpointPath);
-        }
-
-        /// <summary>
-        /// Enables the userinfo endpoint using the specified path.
+        /// Enables the userinfo endpoint.
         /// </summary>
         /// <param name="path">The relative path of the userinfo endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>

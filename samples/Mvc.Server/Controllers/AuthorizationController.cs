@@ -36,9 +36,6 @@ namespace Mvc.Server {
             _userManager = userManager;
         }
 
-        // Note: if you don't provide your own authorization action, OpenIddict will
-        // directly process authorization requests without requiring user consent.
-
         [Authorize, HttpGet, Route("~/connect/authorize")]
         public async Task<IActionResult> Authorize() {
             // Extract the authorization request from the ASP.NET environment.
@@ -100,9 +97,6 @@ namespace Mvc.Server {
             return Forbid(OpenIdConnectServerDefaults.AuthenticationScheme);
         }
 
-        // Note: if you don't provide your own logout action, OpenIddict will
-        // directly process logout requests without requiring user confirmation.
-
         [HttpGet("~/connect/logout")]
         public IActionResult Logout() {
             // Extract the authorization request from the ASP.NET environment.
@@ -126,5 +120,53 @@ namespace Mvc.Server {
             // to the post_logout_redirect_uri specified by the client application.
             return SignOut(OpenIdConnectServerDefaults.AuthenticationScheme);
         }
+
+        // Note: to support the password grant type, you must provide your own token endpoint action:
+
+        // [HttpPost("~/connect/token")]
+        // public async Task<IActionResult> Exchange() {
+        //     var request = HttpContext.GetOpenIdConnectRequest();
+        // 
+        //     if (request.IsPasswordGrantType()) {
+        //         var user = await _userManager.FindByNameAsync(request.Username);
+        //         if (user == null) {
+        //             return Json(new OpenIdConnectResponse {
+        //                 Error = OpenIdConnectConstants.Errors.InvalidGrant
+        //             });
+        //         }
+        // 
+        //         // Ensure the password is valid.
+        //         if (!await _userManager.CheckPasswordAsync(user, request.Password)) {
+        //             if (_userManager.SupportsUserLockout) {
+        //                 await _userManager.AccessFailedAsync(user);
+        //             }
+        // 
+        //             return Json(new OpenIdConnectResponse {
+        //                 Error = OpenIdConnectConstants.Errors.InvalidGrant
+        //             });
+        //         }
+        // 
+        //         if (_userManager.SupportsUserLockout) {
+        //             await _userManager.ResetAccessFailedCountAsync(user);
+        //         }
+        // 
+        //         var identity = await _userManager.CreateIdentityAsync(user, request.GetScopes());
+        // 
+        //         // Create a new authentication ticket holding the user identity.
+        //         var ticket = new AuthenticationTicket(
+        //             new ClaimsPrincipal(identity),
+        //             new AuthenticationProperties(),
+        //             OpenIdConnectServerDefaults.AuthenticationScheme);
+        // 
+        //         ticket.SetResources(request.GetResources());
+        //         ticket.SetScopes(request.GetScopes());
+        // 
+        //         return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
+        //     }
+        // 
+        //     return Json(new OpenIdConnectResponse {
+        //         Error = OpenIdConnectConstants.Errors.UnsupportedGrantType
+        //     });
+        // }
     }
 }

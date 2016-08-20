@@ -401,10 +401,6 @@ namespace OpenIddict.Infrastructure {
                     }
                 }
 
-                // Call context.SkipToNextMiddleware() to invoke the next middleware in the pipeline.
-                // This allows handling grant_type=password requests in a custom controller action.
-                // If the request is not handled in user code, OpenIddictMiddleware will automatically
-                // create and return a token response using the default authentication logic.
                 context.SkipToNextMiddleware();
             }
 
@@ -414,10 +410,6 @@ namespace OpenIddict.Infrastructure {
                 Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId) &&
                              !string.IsNullOrEmpty(context.Request.ClientSecret), "The client credentials shouldn't be null.");
 
-                // Call context.SkipToNextMiddleware() to invoke the next middleware in the pipeline.
-                // This allows handling grant_type=client_credentials requests in a custom controller action.
-                // If the request is not handled in user code, OpenIddictMiddleware will automatically
-                // create and return a token response using the default authentication logic.
                 context.SkipToNextMiddleware();
             }
         }

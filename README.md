@@ -150,7 +150,61 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
 services.AddOpenIddict<ApplicationUser, IdentityRole<int>, ApplicationDbContext, int>()
 ```
 
-## Enabling interactive flows support
+  - **Create your own authorization controller**:
+
+To **support the password or the client credentials flow, you must provide your own token endpoint action**:
+
+```csharp
+[HttpPost("~/connect/token")]
+public async Task<IActionResult> Exchange() {
+    var request = HttpContext.GetOpenIdConnectRequest();
+
+    if (request.IsPasswordGrantType()) {
+        var user = await _userManager.FindByNameAsync(request.Username);
+        if (user == null) {
+            return Json(new OpenIdConnectResponse {
+                Error = OpenIdConnectConstants.Errors.InvalidGrant
+            });
+        }
+
+        // Ensure the password is valid.
+        if (!await _userManager.CheckPasswordAsync(user, request.Password)) {
+            if (_userManager.SupportsUserLockout) {
+                await _userManager.AccessFailedAsync(user);
+            }
+
+            return Json(new OpenIdConnectResponse {
+                Error = OpenIdConnectConstants.Errors.InvalidGrant
+            });
+        }
+
+        if (_userManager.SupportsUserLockout) {
+            await _userManager.ResetAccessFailedCountAsync(user);
+        }
+
+        var identity = await _userManager.CreateIdentityAsync(user, request.GetScopes());
+
+        // Create a new authentication ticket holding the user identity.
+        var ticket = new AuthenticationTicket(
+            new ClaimsPrincipal(identity),
+            new AuthenticationProperties(),
+            OpenIdConnectServerDefaults.AuthenticationScheme);
+
+        ticket.SetResources(request.GetResources());
+        ticket.SetScopes(request.GetScopes());
+
+        return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
+    }
+
+    return Json(new OpenIdConnectResponse {
+        Error = OpenIdConnectConstants.Errors.UnsupportedGrantType
+    });
+}
+```
+
+To **enable authorization code/implicit flows support, you'll similarly have to create your own authorization endpoint action** and your own views/view models. The Mvc.Server sample comes with an [`AuthorizationController` that you can easily reuse in your application](https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs).
+
+![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
 
   - **Enable the corresponding flows in the OpenIddict options**:
 
@@ -174,14 +228,6 @@ public void ConfigureServices(IServiceCollection services) {
         .AddEphemeralSigningKey();
 }
 ```
-
-  - **Create your own authorization controller and your own views**:
-
-**By default, OpenIddict processes authorization requests without requiring user consent**, which allows you to use OpenIddict with your own SPA apps without having to add custom code.
-
-**To display a confirmation form, you must create your own controller** and your own views/view models. The Mvc.Server sample comes with an [`AuthorizationController` that you can easily reuse in your application](https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs).
-
-![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
 
   - **Register your client application**:
 
