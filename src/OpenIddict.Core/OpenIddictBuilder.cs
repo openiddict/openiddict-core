@@ -457,6 +457,19 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
+        /// Enables custom grant type support.
+        /// </summary>
+        /// <param name="type">The grant type associated with the flow.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AllowCustomFlow([NotNull] string type) {
+            if (string.IsNullOrEmpty(type)) {
+                throw new ArgumentException("The grant type cannot be null or empty.", nameof(type));
+            }
+
+            return Configure(options => options.GrantTypes.Add(type));
+        }
+
+        /// <summary>
         /// Enables implicit flow support. For more information
         /// about this specific OAuth2/OpenID Connect flow, visit
         /// https://tools.ietf.org/html/rfc6749#section-4.2 and

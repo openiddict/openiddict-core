@@ -104,16 +104,6 @@ namespace Microsoft.AspNetCore.Builder {
                 throw new InvalidOperationException("At least one OAuth2/OpenID Connect flow must be enabled.");
             }
 
-            // Ensure only supported grant types are listed to prevent
-            // unknown flows from being exposed in the discovery document.
-            if (options.GrantTypes.Any(type => type != OpenIdConnectConstants.GrantTypes.AuthorizationCode &&
-                                               type != OpenIdConnectConstants.GrantTypes.ClientCredentials &&
-                                               type != OpenIdConnectConstants.GrantTypes.Implicit &&
-                                               type != OpenIdConnectConstants.GrantTypes.Password &&
-                                               type != OpenIdConnectConstants.GrantTypes.RefreshToken)) {
-                throw new InvalidOperationException("Only supported flows can be enabled.");
-            }
-
             // Ensure the authorization endpoint has been enabled when
             // the authorization code or implicit grants are supported.
             if (!options.AuthorizationEndpointPath.HasValue && (options.IsAuthorizationCodeFlowEnabled() ||

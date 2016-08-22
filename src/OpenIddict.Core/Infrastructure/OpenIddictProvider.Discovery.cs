@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Diagnostics;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
@@ -30,13 +29,6 @@ namespace OpenIddict.Infrastructure {
 
             // Copy the supported grant types list to the discovery document.
             foreach (var type in services.Options.GrantTypes) {
-                Debug.Assert(type == OpenIdConnectConstants.GrantTypes.AuthorizationCode ||
-                             type == OpenIdConnectConstants.GrantTypes.ClientCredentials ||
-                             type == OpenIdConnectConstants.GrantTypes.Implicit ||
-                             type == OpenIdConnectConstants.GrantTypes.Password ||
-                             type == OpenIdConnectConstants.GrantTypes.RefreshToken,
-                             "Unsupported or non-standard OAuth2/OIDC grant types should not be exposed.");
-
                 context.GrantTypes.Add(type);
             }
 

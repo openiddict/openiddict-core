@@ -23,66 +23,14 @@ namespace OpenIddict.Infrastructure {
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
 
-            // Note: the OpenID Connect server middleware supports authorization code, refresh token, client credentials,
-            // resource owner password credentials and custom grants but OpenIddict uses a stricter policy rejecting custom grants.
-            if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType() &&
-                !context.Request.IsPasswordGrantType() && !context.Request.IsClientCredentialsGrantType()) {
+            // Reject token requests that don't specify a supported grant type.
+            if (!services.Options.GrantTypes.Contains(context.Request.GrantType)) {
                 services.Logger.LogError("The token request was rejected because the '{Grant}' " +
                                          "grant is not supported.", context.Request.GrantType);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
-                    description: "Only authorization code, refresh token, client credentials " +
-                                 "and password grants are accepted by this authorization server.");
-
-                return;
-            }
-
-            // Reject token requests using grant_type=authorization_code
-            // if the authorization code flow support is not enabled.
-            if (context.Request.IsAuthorizationCodeGrantType() && !services.Options.IsAuthorizationCodeFlowEnabled()) {
-                services.Logger.LogError("The token request was rejected because the authorization code flow was not enabled.");
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
-                    description: "The specified grant_type parameter is not allowed.");
-
-                return;
-            }
-
-            // Reject token requests using grant_type=client_credentials
-            // if the client credentials flow support is not enabled.
-            else if (context.Request.IsClientCredentialsGrantType() && !services.Options.IsClientCredentialsFlowEnabled()) {
-                services.Logger.LogError("The token request was rejected because the client credentials flow was not enabled.");
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
-                    description: "The specified grant_type parameter is not allowed.");
-
-                return;
-            }
-
-            // Reject token requests using grant_type=password if the
-            // resource owner password credentials flow support is not enabled.
-            else if (context.Request.IsPasswordGrantType() && !services.Options.IsPasswordFlowEnabled()) {
-                services.Logger.LogError("The token request was rejected because the resource " +
-                                         "owner password credentials flow was not enabled.");
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
-                    description: "The specified grant_type parameter is not allowed.");
-
-                return;
-            }
-
-            // Reject token requests using grant_type=refresh_token
-            // if the refresh token flow support is not enabled.
-            if (context.Request.IsRefreshTokenGrantType() && !services.Options.IsRefreshTokenFlowEnabled()) {
-                services.Logger.LogError("The token request was rejected because the refresh token flow was not enabled.");
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
-                    description: "The specified grant_type parameter is not allowed.");
+                    description: "The specified grant_type is not supported by this authorization server.");
 
                 return;
             }
@@ -221,11 +169,6 @@ namespace OpenIddict.Infrastructure {
 
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
-
-            Debug.Assert(context.Request.IsAuthorizationCodeGrantType() ||
-                         context.Request.IsClientCredentialsGrantType() ||
-                         context.Request.IsPasswordGrantType() ||
-                         context.Request.IsRefreshTokenGrantType(), "The grant_type parameter should be a supported value.");
 
             // Note: the OpenID Connect server middleware automatically reuses the authentication ticket
             // stored in the authorization code to create a new identity. To ensure the user was not removed
@@ -410,6 +353,10 @@ namespace OpenIddict.Infrastructure {
                 Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId) &&
                              !string.IsNullOrEmpty(context.Request.ClientSecret), "The client credentials shouldn't be null.");
 
+                context.SkipToNextMiddleware();
+            }
+
+            else {
                 context.SkipToNextMiddleware();
             }
         }
