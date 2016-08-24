@@ -280,12 +280,28 @@ namespace Microsoft.AspNetCore.Builder {
         /// <summary>
         /// Registers a new ephemeral key used to sign the tokens issued by OpenIddict: the key
         /// is discarded when the application shuts down and tokens signed using this key are
-        /// automatically invalidated. This method should only be used during development:
-        /// on production, using a X.509 certificate stored in the machine store is recommended.
+        /// automatically invalidated. This method should only be used during development.
+        /// On production, using a X.509 certificate stored in the machine store is recommended.
         /// </summary>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder AddEphemeralSigningKey() {
             return Configure(options => options.SigningCredentials.AddEphemeralKey());
+        }
+
+        /// <summary>
+        /// Registers a new ephemeral key used to sign the tokens issued by OpenIddict: the key
+        /// is discarded when the application shuts down and tokens signed using this key are
+        /// automatically invalidated. This method should only be used during development.
+        /// On production, using a X.509 certificate stored in the machine store is recommended.
+        /// </summary>
+        /// <param name="algorithm">The algorithm associated with the signing key.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddEphemeralSigningKey([NotNull] string algorithm) {
+            if (string.IsNullOrEmpty(algorithm)) {
+                throw new ArgumentException("The algorithm cannot be null or empty.", nameof(algorithm));
+            }
+
+            return Configure(options => options.SigningCredentials.AddEphemeralKey(algorithm));
         }
 
         /// <summary>
