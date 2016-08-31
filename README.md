@@ -156,14 +156,16 @@ To **support the password or the client credentials flow, you must provide your 
 
 ```csharp
 [HttpPost("~/connect/token")]
+[Produces("application/json")]
 public async Task<IActionResult> Exchange() {
     var request = HttpContext.GetOpenIdConnectRequest();
 
     if (request.IsPasswordGrantType()) {
         var user = await _userManager.FindByNameAsync(request.Username);
         if (user == null) {
-            return Json(new OpenIdConnectResponse {
-                Error = OpenIdConnectConstants.Errors.InvalidGrant
+            return BadRequest(new OpenIdConnectResponse {
+                Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                ErrorDescription = "The username/password couple is invalid."
             });
         }
 
@@ -173,8 +175,9 @@ public async Task<IActionResult> Exchange() {
                 await _userManager.AccessFailedAsync(user);
             }
 
-            return Json(new OpenIdConnectResponse {
-                Error = OpenIdConnectConstants.Errors.InvalidGrant
+            return BadRequest(new OpenIdConnectResponse {
+                Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                ErrorDescription = "The username/password couple is invalid."
             });
         }
 
@@ -196,8 +199,9 @@ public async Task<IActionResult> Exchange() {
         return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
     }
 
-    return Json(new OpenIdConnectResponse {
-        Error = OpenIdConnectConstants.Errors.UnsupportedGrantType
+    return BadRequest(new OpenIdConnectResponse {
+        Error = OpenIdConnectConstants.Errors.UnsupportedGrantType,
+        ErrorDescription = "The specified grant type is not supported."
     });
 }
 ```

@@ -124,14 +124,16 @@ namespace Mvc.Server {
         // Note: to support the password grant type, you must provide your own token endpoint action:
 
         // [HttpPost("~/connect/token")]
+        // [Produces("application/json")]
         // public async Task<IActionResult> Exchange() {
         //     var request = HttpContext.GetOpenIdConnectRequest();
         // 
         //     if (request.IsPasswordGrantType()) {
         //         var user = await _userManager.FindByNameAsync(request.Username);
         //         if (user == null) {
-        //             return Json(new OpenIdConnectResponse {
-        //                 Error = OpenIdConnectConstants.Errors.InvalidGrant
+        //             return BadRequest(new OpenIdConnectResponse {
+        //                 Error = OpenIdConnectConstants.Errors.InvalidGrant,
+        //                 ErrorDescription = "The username/password couple is invalid."
         //             });
         //         }
         // 
@@ -141,8 +143,9 @@ namespace Mvc.Server {
         //                 await _userManager.AccessFailedAsync(user);
         //             }
         // 
-        //             return Json(new OpenIdConnectResponse {
-        //                 Error = OpenIdConnectConstants.Errors.InvalidGrant
+        //             return BadRequest(new OpenIdConnectResponse {
+        //                 Error = OpenIdConnectConstants.Errors.InvalidGrant,
+        //                 ErrorDescription = "The username/password couple is invalid."
         //             });
         //         }
         // 
@@ -164,8 +167,9 @@ namespace Mvc.Server {
         //         return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
         //     }
         // 
-        //     return Json(new OpenIdConnectResponse {
-        //         Error = OpenIdConnectConstants.Errors.UnsupportedGrantType
+        //     return BadRequest(new OpenIdConnectResponse {
+        //         Error = OpenIdConnectConstants.Errors.UnsupportedGrantType,
+        //         ErrorDescription = "The specified grant type is not supported."
         //     });
         // }
     }
