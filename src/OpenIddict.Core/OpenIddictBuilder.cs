@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using AspNet.Security.OpenIdConnect.Extensions;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -615,6 +616,20 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder SetRefreshTokenLifetime(TimeSpan lifetime) {
             return Configure(options => options.RefreshTokenLifetime = lifetime);
+        }
+
+        /// <summary>
+        /// Configures OpenIddict to use a specific data protection provider
+        /// instead of relying on the default instance provided by the DI container.
+        /// </summary>
+        /// <param name="provider">The data protection provider used to create token protectors.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder UseDataProtectionProvider(IDataProtectionProvider provider) {
+            if (provider == null) {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            return Configure(options => options.DataProtectionProvider = provider);
         }
 
         /// <summary>
