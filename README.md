@@ -33,7 +33,7 @@ Note: OpenIddict uses **[Entity Framework Core](https://github.com/aspnet/Entity
 
 To use OpenIddict, you need to:
 
-  - **Install the latest [.NET Core tooling](https://www.microsoft.com/net/download) and update your packages to reference the RC2 final packages**.
+  - **Install the latest [.NET Core tooling](https://www.microsoft.com/net/download) and update your packages to reference the ASP.NET Core RTM packages**.
 
   - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
