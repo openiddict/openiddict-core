@@ -4,17 +4,16 @@
  * the license and the contributors participating to this project.
  */
 
-using Microsoft.AspNetCore.Builder;
+using AspNet.Security.OpenIdConnect.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.ViewModels.Shared;
 
 namespace Mvc.Server {
     public class ErrorController : Controller {
         [HttpGet, HttpPost, Route("~/error")]
-        public IActionResult Error() {
+        public IActionResult Error(OpenIdConnectResponse response) {
             // If the error was not caused by an invalid
             // OIDC request, display a generic error page.
-            var response = HttpContext.GetOpenIdConnectResponse();
             if (response == null) {
                 return View(new ErrorViewModel());
             }

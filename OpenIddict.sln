@@ -17,6 +17,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.EntityFramework"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Core", "src\OpenIddict.Core\OpenIddict.Core.xproj", "{E60CF8CA-6313-4359-BE43-AFCBB927EA30}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Mvc", "src\OpenIddict.Mvc\OpenIddict.Mvc.xproj", "{6EB5B6A9-4ED8-401D-A673-FD513F256AAE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{E60CF8CA-6313-4359-BE43-AFCBB927EA30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E60CF8CA-6313-4359-BE43-AFCBB927EA30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E60CF8CA-6313-4359-BE43-AFCBB927EA30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EB5B6A9-4ED8-401D-A673-FD513F256AAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EB5B6A9-4ED8-401D-A673-FD513F256AAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EB5B6A9-4ED8-401D-A673-FD513F256AAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EB5B6A9-4ED8-401D-A673-FD513F256AAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,5 +59,6 @@ Global
 		{7CBEAFD2-E3D0-4424-9B78-E87AB52327A6} = {F47D1283-0EE9-4728-8026-58405C29B786}
 		{D2450929-ED0E-420D-B475-327924F9701C} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 		{E60CF8CA-6313-4359-BE43-AFCBB927EA30} = {D544447C-D701-46BB-9A5B-C76C612A596B}
+		{6EB5B6A9-4ED8-401D-A673-FD513F256AAE} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 	EndGlobalSection
 EndGlobal
