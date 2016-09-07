@@ -171,19 +171,14 @@ public async Task<IActionResult> Exchange() {
 
         // Ensure the password is valid.
         if (!await _userManager.CheckPasswordAsync(user, request.Password)) {
-            if (_userManager.SupportsUserLockout) {
-                await _userManager.AccessFailedAsync(user);
-            }
-
             return BadRequest(new OpenIdConnectResponse {
                 Error = OpenIdConnectConstants.Errors.InvalidGrant,
                 ErrorDescription = "The username/password couple is invalid."
             });
         }
 
-        if (_userManager.SupportsUserLockout) {
-            await _userManager.ResetAccessFailedCountAsync(user);
-        }
+        // Note: for a more complete sample including account lockout support, visit
+        // https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs
 
         var identity = await _userManager.CreateIdentityAsync(user, request.GetScopes());
 

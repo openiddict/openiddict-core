@@ -210,6 +210,8 @@ namespace OpenIddict.Infrastructure {
                 await services.Tokens.RevokeAsync(token);
 
                 context.Validate(context.Ticket);
+
+                return;
             }
 
             // Note: the OpenID Connect server middleware automatically reuses the authentication ticket
@@ -271,6 +273,8 @@ namespace OpenIddict.Infrastructure {
                     context.Options.AuthenticationScheme);
 
                 context.Validate(ticket);
+
+                return;
             }
 
             else if (context.Request.IsPasswordGrantType()) {
@@ -285,80 +289,31 @@ namespace OpenIddict.Infrastructure {
                                                "given username was not found in the database: {Username}.", context.Request.Username);
                 }
 
-                else {
-                    // Ensure the user is allowed to sign in.
-                    if (!await services.SignIn.CanSignInAsync(user)) {
-                        services.Logger.LogError("The token request was rejected because the user '{Username}' " +
-                                                 "was not allowed to sign in.", context.Request.Username);
+                // Return an error if the username corresponds to the registered
+                // email address and if the "email" scope has not been requested.
+                else if (services.Users.SupportsUserEmail && context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
+                                                            !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email)) {
+                    // Retrieve the username and the email address associated with the user.
+                    var username = await services.Users.GetUserNameAsync(user);
+                    var email = await services.Users.GetEmailAsync(user);
+
+                    if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
+                        services.Logger.LogError("The token request was rejected because the 'email' scope was not requested: " +
+                                                 "to prevent data leakage, the 'email' scope must be granted when the username " +
+                                                 "is identical to the email address associated with the user profile.");
 
                         context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidGrant,
-                            description: "The user is not allowed to sign in.");
+                            error: OpenIdConnectConstants.Errors.InvalidRequest,
+                            description: "The 'email' scope is required.");
 
                         return;
-                    }
-
-                    // Ensure the user is not already locked out.
-                    if (services.Users.SupportsUserLockout && await services.Users.IsLockedOutAsync(user)) {
-                        services.Logger.LogError("The token request was rejected because the account '{Username}' " +
-                                                 "was locked out to prevent brute force attacks.", context.Request.Username);
-
-                        context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidGrant,
-                            description: "Account locked out.");
-
-                        return;
-                    }
-
-                    // Reject the token request if two-factor authentication has been enabled by the user.
-                    if (services.Users.SupportsUserTwoFactor && await services.Users.GetTwoFactorEnabledAsync(user)) {
-                        services.Logger.LogError("The token request was rejected because two-factor authentication " +
-                                                 "was required for the account '{Username}.", context.Request.Username);
-
-                        context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidGrant,
-                            description: "Two-factor authentication is required for this account.");
-
-                        return;
-                    }
-
-                    // Return an error if the username corresponds to the registered
-                    // email address and if the "email" scope has not been requested.
-                    if (services.Users.SupportsUserEmail && context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
-                                                           !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email)) {
-                        // Retrieve the username and the email address associated with the user.
-                        var username = await services.Users.GetUserNameAsync(user);
-                        var email = await services.Users.GetEmailAsync(user);
-
-                        if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                            services.Logger.LogError("The token request was rejected because the 'email' scope was not requested: " +
-                                                     "to prevent data leakage, the 'email' scope must be granted when the username " +
-                                                     "is identical to the email address associated with the user profile.");
-
-                            context.Reject(
-                                error: OpenIdConnectConstants.Errors.InvalidRequest,
-                                description: "The 'email' scope is required.");
-
-                            return;
-                        }
                     }
                 }
-
-                context.SkipToNextMiddleware();
             }
 
-            else if (context.Request.IsClientCredentialsGrantType()) {
-                // Note: at this stage, the client credentials cannot be null or invalid, as client authentication is required
-                // to use the client credentials grant and is automatically enforced by the OpenID Connect server middleware.
-                Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId) &&
-                             !string.IsNullOrEmpty(context.Request.ClientSecret), "The client credentials shouldn't be null.");
-
-                context.SkipToNextMiddleware();
-            }
-
-            else {
-                context.SkipToNextMiddleware();
-            }
+            // Invoke the rest of the pipeline to allow
+            // the user code to handle the token request.
+            context.SkipToNextMiddleware();
         }
     }
 }
