@@ -97,22 +97,38 @@ namespace OpenIddict {
             if (scopes.Contains(OpenIdConnectConstants.Scopes.Profile)) {
                 var username = await GetUserNameAsync(user);
 
-                // Throw an exception if the username corresponds to the registered
-                // email address and if the "email" scope has not been requested.
-                if (!scopes.Contains(OpenIdConnectConstants.Scopes.Email) &&
-                    !string.IsNullOrEmpty(email) &&
-                     string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                    throw new InvalidOperationException("The 'email' scope is required.");
-                }
+                if (!string.IsNullOrEmpty(email)) {
 
-                identity.AddClaim(ClaimTypes.Name, username,
-                    OpenIdConnectConstants.Destinations.AccessToken,
-                    OpenIdConnectConstants.Destinations.IdentityToken);
+                    // Only add the email address if the "email" scope was granted.
+                    if (scopes.Contains(OpenIdConnectConstants.Scopes.Email)) {
+                        identity.AddClaim(ClaimTypes.Email, email,
+                            OpenIdConnectConstants.Destinations.AccessToken,
+                            OpenIdConnectConstants.Destinations.IdentityToken);
+
+                        var isEmailConfirmed = await IsEmailConfirmedAsync(user);
+                        identity.AddClaim(OpenIdConnectConstants.Claims.EmailVerified, isEmailConfirmed.ToString(),
+                            OpenIdConnectConstants.Destinations.AccessToken,
+                            OpenIdConnectConstants.Destinations.IdentityToken);
+                    } else
+                    // Throw an exception if the username corresponds to the registered
+                    // email address and if the "email" scope has not been requested.
+                    if (string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
+                        throw new InvalidOperationException("The 'email' scope is required.");
+                    }
+
+                }
             }
 
-            // Only add the email address if the "email" scope was granted.
-            if (!string.IsNullOrEmpty(email) && scopes.Contains(OpenIdConnectConstants.Scopes.Email)) {
-                identity.AddClaim(ClaimTypes.Email, email,
+            var phone = SupportsUserPhoneNumber ? await GetPhoneNumberAsync(user) : null;
+
+            // Only add the phone number if the "phone" scope was granted.
+            if (!string.IsNullOrEmpty(phone) && scopes.Contains(OpenIdConnectConstants.Scopes.Phone)) {
+                identity.AddClaim(OpenIdConnectConstants.Claims.PhoneNumber, phone,
+                    OpenIdConnectConstants.Destinations.AccessToken,
+                    OpenIdConnectConstants.Destinations.IdentityToken);
+
+                var isPhoneConfirmed = await IsPhoneNumberConfirmedAsync(user);
+                identity.AddClaim(OpenIdConnectConstants.Claims.PhoneNumberVerified, isPhoneConfirmed.ToString(),
                     OpenIdConnectConstants.Destinations.AccessToken,
                     OpenIdConnectConstants.Destinations.IdentityToken);
             }
