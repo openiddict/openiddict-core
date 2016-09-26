@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AspNet.Security.OAuth.Validation;
+using AspNet.Security.OpenIdConnect.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +10,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
 using Mvc.Server.ViewModels.Account;
+using Newtonsoft.Json.Linq;
+using OpenIddict;
 
 namespace Mvc.Server.Controllers {
     [Authorize]
@@ -30,6 +34,44 @@ namespace Mvc.Server.Controllers {
             _emailSender = emailSender;
             _smsSender = smsSender;
             _applicationDbContext = applicationDbContext;
+        }
+
+        //
+        // GET: /Account/Userinfo
+        [Authorize(ActiveAuthenticationSchemes = OAuthValidationDefaults.AuthenticationScheme)]
+        [HttpGet, Produces("application/json")]
+        public async Task<IActionResult> Userinfo() {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) {
+                return BadRequest(new OpenIdConnectResponse {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = "The user profile is no longer available."
+                });
+            }
+
+            var claims = new JObject();
+
+            // Note: the "sub" claim is a mandatory claim and must be included in the JSON response.
+            claims[OpenIdConnectConstants.Claims.Subject] = user.Id.ToString();
+
+            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Email)) {
+                claims[OpenIdConnectConstants.Claims.Email] = user.Email;
+                claims[OpenIdConnectConstants.Claims.EmailVerified] = user.EmailConfirmed;
+            }
+
+            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Phone)) {
+                claims[OpenIdConnectConstants.Claims.PhoneNumber] = user.PhoneNumber;
+                claims[OpenIdConnectConstants.Claims.PhoneNumberVerified] = user.PhoneNumberConfirmed;
+            }
+
+            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIddictConstants.Scopes.Roles)) {
+                claims[OpenIddictConstants.Claims.Roles] = JArray.FromObject(await _userManager.GetRolesAsync(user));
+            }
+
+            // Note: the complete list of standard claims supported by the OpenID Connect specification
+            // can be found here: http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+
+            return Json(claims);
         }
 
         //

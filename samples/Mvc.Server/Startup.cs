@@ -30,7 +30,7 @@ namespace Mvc.Server {
                 .AddDefaultTokenProviders();
 
             // Register the OpenIddict services, including the default Entity Framework stores.
-            services.AddOpenIddict<ApplicationUser, IdentityRole<Guid>, ApplicationDbContext, Guid>()
+            services.AddOpenIddict<ApplicationDbContext, Guid>()
                 // Register the ASP.NET Core MVC binder used by OpenIddict.
                 // Note: if you don't call this method, you won't be able to
                 // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
@@ -40,7 +40,7 @@ namespace Mvc.Server {
                 .EnableAuthorizationEndpoint("/connect/authorize")
                 .EnableLogoutEndpoint("/connect/logout")
                 .EnableTokenEndpoint("/connect/token")
-                .EnableUserinfoEndpoint("/connect/userinfo")
+                .EnableUserinfoEndpoint("/Account/Userinfo")
 
                 // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
                 // can enable the other flows if you need to support implicit or client credentials.

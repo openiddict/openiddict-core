@@ -8,11 +8,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace OpenIddict {
     /// <summary>
@@ -23,11 +21,9 @@ namespace OpenIddict {
         public OpenIddictTokenManager(
             [NotNull] IServiceProvider services,
             [NotNull] IOpenIddictTokenStore<TToken> store,
-            [NotNull] IOptions<IdentityOptions> options,
             [NotNull] ILogger<OpenIddictTokenManager<TToken>> logger) {
             Context = services?.GetRequiredService<IHttpContextAccessor>()?.HttpContext;
             Logger = logger;
-            Options = options.Value;
             Store = store;
         }
 
@@ -45,11 +41,6 @@ namespace OpenIddict {
         /// Gets the logger associated with the current manager.
         /// </summary>
         protected ILogger Logger { get; }
-
-        /// <summary>
-        /// Gets the identity options.
-        /// </summary>
-        protected IdentityOptions Options { get; }
 
         /// <summary>
         /// Gets the store associated with the current manager.

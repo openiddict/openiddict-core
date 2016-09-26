@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha2-*",
+  "version": "1.0.0-beta1-*",
 
   "description": "Core components of OpenIddict.",
   "authors": [ "Kévin Chalet" ],
@@ -37,7 +37,6 @@
     "CryptoHelper": "2.0.0",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0",
-    "Microsoft.AspNetCore.Identity": "1.0.0",
     "Microsoft.Extensions.Caching.Memory": "1.0.0"
   },
 

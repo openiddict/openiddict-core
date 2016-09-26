@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -13,10 +12,8 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,10 +22,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
 namespace OpenIddict.Infrastructure {
-    public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
+    public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
+        where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task ExtractAuthorizationRequest([NotNull] ExtractAuthorizationRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             // Reject requests using the unsupported request parameter.
             if (!string.IsNullOrEmpty(context.Request.Request)) {
@@ -86,7 +83,7 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             // Note: the OpenID Connect server middleware supports authorization code, implicit, hybrid,
             // none and custom flows but OpenIddict uses a stricter policy rejecting unknown flows.
@@ -311,56 +308,7 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
-
-            if (string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
-                // Note: principal is guaranteed to be non-null since ValidateAuthorizationRequest
-                // rejects prompt=none requests missing or having an invalid id_token_hint.
-                var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
-                Debug.Assert(principal != null, "The principal extracted from the id_token_hint shouldn't be null.");
-
-                // Note: user may be null if the user was removed after
-                // the initial check made by ValidateAuthorizationRequest.
-                var user = await services.Users.GetUserAsync(principal);
-                if (user == null) {
-                    services.Logger.LogError("The authorization request was aborted because the profile corresponding " +
-                                             "to the logged in user was not found in the database: {Identifier}.",
-                                             context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier));
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.ServerError,
-                        description: "An internal error has occurred.");
-
-                    return;
-                }
-
-                // Note: filtering the username is not needed at this stage as OpenIddictController.Accept
-                // and OpenIddictProvider.HandleTokenRequest are expected to reject requests that don't
-                // include the "email" scope if the username corresponds to the registed email address.
-                var identity = await services.Users.CreateIdentityAsync(user, context.Request.GetScopes());
-                if (identity == null) {
-                    throw new InvalidOperationException("The authorization request was aborted because the user manager returned a null " +
-                                                       $"identity for user '{await services.Users.GetUserNameAsync(user)}'.");
-                }
-
-                // Create a new authentication ticket holding the user identity.
-                var ticket = new AuthenticationTicket(
-                    new ClaimsPrincipal(identity),
-                    new AuthenticationProperties(),
-                    context.Options.AuthenticationScheme);
-
-                ticket.SetResources(context.Request.GetResources());
-                ticket.SetScopes(context.Request.GetScopes());
-
-                // Call SignInAsync to create and return a new OpenID Connect response containing the serialized code/tokens.
-                await context.HttpContext.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
-
-                // Mark the response as handled
-                // to skip the rest of the pipeline.
-                context.HandleResponse();
-
-                return;
-            }
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             // If no request_id parameter can be found in the current request, assume the OpenID Connect request
             // was not serialized yet and store the entire payload in the distributed cache to make it easier
@@ -406,7 +354,7 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task ApplyAuthorizationResponse([NotNull] ApplyAuthorizationResponseContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             // Remove the authorization request from the distributed cache.
             if (!string.IsNullOrEmpty(context.Request.RequestId)) {

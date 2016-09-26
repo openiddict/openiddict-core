@@ -14,10 +14,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Infrastructure {
-    public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
+    public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
+        where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             // Note: the OpenID Connect server middleware supports both GET and POST
             // introspection requests but OpenIddict only accepts POST requests.
@@ -82,7 +82,7 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
             Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client_id parameter shouldn't be null.");
@@ -94,18 +94,6 @@ namespace OpenIddict.Infrastructure {
                 services.Logger.LogWarning("The client application '{ClientId}' is not allowed to introspect the access " +
                                            "token '{Identifier}' because it's not listed as a valid audience.",
                                            context.Request.ClientId, context.Ticket.GetTicketId());
-
-                context.Claims.RemoveAll();
-                context.Active = false;
-
-                return;
-            }
-
-            var user = await services.Users.GetUserAsync(context.Ticket.Principal);
-            if (user == null) {
-                services.Logger.LogInformation("The token {Identifier} was declared as inactive because the " +
-                                               "corresponding user ({Username}) was not found in the database.",
-                                               context.Ticket.GetTicketId(), services.Users.GetUserName(context.Ticket.Principal));
 
                 context.Claims.RemoveAll();
                 context.Active = false;

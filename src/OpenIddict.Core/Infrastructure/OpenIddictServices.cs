@@ -7,7 +7,6 @@
 using System;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,8 +15,8 @@ namespace OpenIddict.Infrastructure {
     /// <summary>
     /// Exposes the common services used by OpenIddict.
     /// </summary>
-    public class OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>
-        where TUser : class where TApplication : class where TAuthorization : class
+    public class OpenIddictServices<TApplication, TAuthorization, TScope, TToken>
+        where TApplication : class where TAuthorization : class
         where TScope : class where TToken : class {
         public OpenIddictServices([NotNull] IServiceProvider services) {
             Services = services;
@@ -38,7 +37,7 @@ namespace OpenIddict.Infrastructure {
         /// Gets the <see cref="ILogger"/>.
         /// </summary>
         public virtual ILogger Logger =>
-            Services.GetRequiredService<ILogger<OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken>>>();
+            Services.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
 
         /// <summary>
         /// Gets the <see cref="OpenIddictOptions"/>.
@@ -51,18 +50,8 @@ namespace OpenIddict.Infrastructure {
         public virtual IServiceProvider Services { get; }
 
         /// <summary>
-        /// Gets the <see cref="SignInManager{TUser}"/>.
-        /// </summary>
-        public virtual SignInManager<TUser> SignIn => Services.GetRequiredService<SignInManager<TUser>>();
-
-        /// <summary>
         /// Gets the <see cref="OpenIddictTokenManager{TToken}"/>.
         /// </summary>
         public virtual OpenIddictTokenManager<TToken> Tokens => Services.GetRequiredService<OpenIddictTokenManager<TToken>>();
-
-        /// <summary>
-        /// Gets the <see cref="OpenIddictUserManager{TUser}"/>.
-        /// </summary>
-        public virtual OpenIddictUserManager<TUser> Users => Services.GetRequiredService<OpenIddictUserManager<TUser>>();
     }
 }

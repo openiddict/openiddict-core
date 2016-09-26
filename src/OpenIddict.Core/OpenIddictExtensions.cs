@@ -21,24 +21,14 @@ namespace Microsoft.AspNetCore.Builder {
         /// Registers the OpenIddict core services in the DI container.
         /// When using this method, custom stores must be manually registered.
         /// </summary>
-        /// <typeparam name="TUser">The type of the User entity.</typeparam>
-        /// <typeparam name="TRole">The type of the Role entity.</typeparam>
         /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
         /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
         /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
         /// <typeparam name="TToken">The type of the Token entity.</typeparam>
         /// <param name="services">The services collection.</param>
-        /// <remarks>
-        /// Note: the core services include native support for the non-interactive flows
-        /// (resource owner password credentials, client credentials, refresh token).
-        /// To support interactive flows like authorization code or implicit/hybrid,
-        /// consider adding the MVC module or creating your own authorization controller.
-        /// </remarks>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddOpenIddict<TUser, TRole, TApplication, TAuthorization, TScope, TToken>(
+        public static OpenIddictBuilder AddOpenIddict<TApplication, TAuthorization, TScope, TToken>(
             [NotNull] this IServiceCollection services)
-            where TUser : class
-            where TRole : class
             where TApplication : class
             where TAuthorization : class
             where TScope : class
@@ -50,10 +40,8 @@ namespace Microsoft.AspNetCore.Builder {
             var builder = new OpenIddictBuilder(services) {
                 ApplicationType = typeof(TApplication),
                 AuthorizationType = typeof(TAuthorization),
-                RoleType = typeof(TRole),
                 ScopeType = typeof(TScope),
-                TokenType = typeof(TToken),
-                UserType = typeof(TUser)
+                TokenType = typeof(TToken)
             };
 
             // Register the services required by the OpenID Connect server middleware.
@@ -62,7 +50,7 @@ namespace Microsoft.AspNetCore.Builder {
 
             builder.Configure(options => {
                 // Register the OpenID Connect server provider in the OpenIddict options.
-                options.Provider = new OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken>();
+                options.Provider = new OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>();
             });
 
             // Register the OpenIddict core services in the DI container.
@@ -70,8 +58,7 @@ namespace Microsoft.AspNetCore.Builder {
             builder.Services.TryAddScoped<OpenIddictAuthorizationManager<TAuthorization>>();
             builder.Services.TryAddScoped<OpenIddictScopeManager<TScope>>();
             builder.Services.TryAddScoped<OpenIddictTokenManager<TToken>>();
-            builder.Services.TryAddScoped<OpenIddictUserManager<TUser>>();
-            builder.Services.TryAddScoped<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            builder.Services.TryAddScoped<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             return builder;
         }

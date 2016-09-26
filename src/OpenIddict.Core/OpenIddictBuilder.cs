@@ -45,12 +45,6 @@ namespace Microsoft.AspNetCore.Builder {
         public Type AuthorizationType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type corresponding to the Role entity.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Type RoleType { get; set; }
-
-        /// <summary>
         /// Gets or sets the type corresponding to the Scope entity.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -61,12 +55,6 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Type TokenType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type corresponding to the User entity.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Type UserType { get; set; }
 
         /// <summary>
         /// Gets the services collection.
@@ -211,38 +199,6 @@ namespace Microsoft.AspNetCore.Builder {
             var contract = typeof(IOpenIddictTokenStore<>).MakeGenericType(TokenType);
             if (!contract.IsAssignableFrom(typeof(TStore))) {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictTokenStore.");
-            }
-
-            Services.AddScoped(contract, typeof(TStore));
-
-            return this;
-        }
-
-        /// <summary>
-        /// Adds a custom user manager.
-        /// </summary>
-        /// <typeparam name="TManager">The type of the custom manager.</typeparam>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddUserManager<TManager>() {
-            var contract = typeof(OpenIddictUserManager<>).MakeGenericType(UserType);
-            if (!contract.IsAssignableFrom(typeof(TManager))) {
-                throw new InvalidOperationException("Custom managers must be derived from OpenIddictUserManager.");
-            }
-
-            Services.AddScoped(contract, typeof(TManager));
-
-            return this;
-        }
-
-        /// <summary>
-        /// Adds a custom user store.
-        /// </summary>
-        /// <typeparam name="TStore">The type of the custom store.</typeparam>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddUserStore<TStore>() {
-            var contract = typeof(IOpenIddictUserStore<>).MakeGenericType(UserType);
-            if (!contract.IsAssignableFrom(typeof(TStore))) {
-                throw new InvalidOperationException("Custom stores must implement IOpenIddictUserStore.");
             }
 
             Services.AddScoped(contract, typeof(TStore));

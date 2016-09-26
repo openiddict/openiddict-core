@@ -4,23 +4,20 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Diagnostics;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Infrastructure {
-    public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
+    public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
+        where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             // Reject token requests that don't specify a supported grant type.
             if (!services.Options.GrantTypes.Contains(context.Request.GrantType)) {
@@ -180,26 +177,13 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             // Note: the OpenID Connect server middleware automatically reuses the authentication ticket
             // stored in the authorization code to create a new identity. To ensure the user was not removed
             // after the authorization code was issued, a new check is made before validating the request.
             if (context.Request.IsAuthorizationCodeGrantType()) {
                 Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
-
-                var user = await services.Users.GetUserAsync(context.Ticket.Principal);
-                if (user == null) {
-                    services.Logger.LogError("The token request was rejected because the user profile associated " +
-                                             "with the authorization code was not found in the database: '{Identifier}'.",
-                                             context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier));
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The authorization code is no longer valid.");
-
-                    return;
-                }
 
                 // Extract the token identifier from the authorization code.
                 var identifier = context.Ticket.GetTicketId();
@@ -232,19 +216,6 @@ namespace OpenIddict.Infrastructure {
             else if (context.Request.IsRefreshTokenGrantType()) {
                 Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
-                var user = await services.Users.GetUserAsync(context.Ticket.Principal);
-                if (user == null) {
-                    services.Logger.LogError("The token request was rejected because the user profile associated " +
-                                             "with the refresh token was not found in the database: '{Identifier}'.",
-                                             context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier));
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The refresh token is no longer valid.");
-
-                    return;
-                }
-
                 // Extract the token identifier from the refresh token.
                 var identifier = context.Ticket.GetTicketId();
                 Debug.Assert(!string.IsNullOrEmpty(identifier),
@@ -269,22 +240,7 @@ namespace OpenIddict.Infrastructure {
                     await services.Tokens.RevokeAsync(token);
                 }
 
-                // Note: the "scopes" property stored in context.AuthenticationTicket is automatically updated by the
-                // OpenID Connect server middleware when the client application requests a restricted scopes collection.
-                var identity = await services.Users.CreateIdentityAsync(user, context.Ticket.GetScopes());
-                if (identity == null) {
-                    throw new InvalidOperationException("The token request was aborted because the user manager returned a null " +
-                                                       $"identity for user '{await services.Users.GetUserNameAsync(user)}'.");
-                }
-
-                // Create a new authentication ticket holding the user identity but
-                // reuse the authentication properties stored in the refresh token.
-                var ticket = new AuthenticationTicket(
-                    new ClaimsPrincipal(identity),
-                    context.Ticket.Properties,
-                    context.Options.AuthenticationScheme);
-
-                context.Validate(ticket);
+                context.Validate(context.Ticket);
 
                 return;
             }

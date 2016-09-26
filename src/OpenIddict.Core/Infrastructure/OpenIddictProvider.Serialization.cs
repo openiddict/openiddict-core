@@ -5,8 +5,6 @@
  */
 
 using System;
-using System.Diagnostics;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
@@ -14,31 +12,12 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace OpenIddict.Infrastructure {
-    public partial class OpenIddictProvider<TUser, TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TUser : class where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
+    public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
+        where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
-            Debug.Assert(context.Request.IsAuthorizationRequest(), "The request should be an authorization request.");
-            Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client_id parameter shouldn't be null or empty.");
-
-            // Note: a null value could be returned by FindByIdAsync. In this case, throw an exception to abort the token request.
-            var user = await services.Users.FindByIdAsync(context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier));
-            if (user == null) {
-                throw new InvalidOperationException("The token request was aborted because the user associated " +
-                                                    "with the authorization code was not found in the database.");
-            }
-
-            var application = await services.Applications.FindByClientIdAsync(context.Request.ClientId);
-            if (application == null) {
-                throw new InvalidOperationException("The application cannot be retrieved from the database.");
-            }
-
-            // Persist a new token entry in the database and attach it
-            // to the user and the client application it is issued to.
-            var identifier = await services.Users.CreateTokenAsync(user, context.Request.ClientId,
-                OpenIdConnectConstants.TokenTypeHints.AuthorizationCode);
-
+            var identifier = await services.Tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode);
             if (string.IsNullOrEmpty(identifier)) {
                 throw new InvalidOperationException("The unique key associated with an authorization code cannot be null or empty.");
             }
@@ -50,43 +29,9 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TUser, TApplication, TAuthorization, TScope, TToken>>();
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
-            Debug.Assert(context.Request.IsTokenRequest(), "The request should be a token request.");
-            Debug.Assert(!context.Request.IsClientCredentialsGrantType(),
-                "A refresh token should not be issued when using grant_type=client_credentials.");
-
-            // Note: a null value could be returned by FindByIdAsync if the user was removed after the initial
-            // check made by HandleTokenRequest. In this case, throw an exception to abort the token request.
-            var user = await services.Users.FindByIdAsync(context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier));
-            if (user == null) {
-                throw new InvalidOperationException("The token request was aborted because the user associated " +
-                                                    "with the refresh token was not found in the database.");
-            }
-
-            string identifier;
-
-            // If the client application sending the token request is known,
-            // ensure the token is attached to the corresponding client entity.
-            if (!string.IsNullOrEmpty(context.Request.ClientId)) {
-                var application = await services.Applications.FindByClientIdAsync(context.Request.ClientId);
-                if (application == null) {
-                    throw new InvalidOperationException("The application cannot be retrieved from the database.");
-                }
-
-                // Persist a new token entry in the database and attach it
-                // to the user and the client application it is issued to.
-                identifier = await services.Users.CreateTokenAsync(user, context.Request.ClientId,
-                    OpenIdConnectConstants.TokenTypeHints.RefreshToken);
-            }
-
-            else {
-                // Persist a new token entry in the database
-                // and attach it to the user it corresponds to.
-                identifier = await services.Users.CreateTokenAsync(user,
-                    OpenIdConnectConstants.TokenTypeHints.RefreshToken);
-            }
-
+            var identifier = await services.Tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken);
             if (string.IsNullOrEmpty(identifier)) {
                 throw new InvalidOperationException("The unique key associated with a refresh token cannot be null or empty.");
             }

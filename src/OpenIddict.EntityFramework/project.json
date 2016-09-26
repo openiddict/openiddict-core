@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.0-alpha2-*",
+  "version": "1.0.0-beta1-*",
 
   "description": "Entity Framework adapter for OpenIddict.",
   "authors": [ "Kévin Chalet" ],
