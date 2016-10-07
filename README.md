@@ -152,58 +152,10 @@ services.AddOpenIddict<ApplicationUser, IdentityRole<int>, ApplicationDbContext,
 
   - **Create your own authorization controller**:
 
-To **support the password or the client credentials flow, you must provide your own token endpoint action**:
+To **support the password or the client credentials flow, you must provide your own token endpoint action**.
+To enable authorization code/implicit flows support, you'll similarly have to create your own authorization endpoint action and your own views/view models.
 
-```csharp
-[HttpPost("~/connect/token")]
-[Produces("application/json")]
-public async Task<IActionResult> Exchange() {
-    var request = HttpContext.GetOpenIdConnectRequest();
-
-    if (request.IsPasswordGrantType()) {
-        var user = await _userManager.FindByNameAsync(request.Username);
-        if (user == null) {
-            return BadRequest(new OpenIdConnectResponse {
-                Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                ErrorDescription = "The username/password couple is invalid."
-            });
-        }
-
-        // Ensure the password is valid.
-        if (!await _userManager.CheckPasswordAsync(user, request.Password)) {
-            return BadRequest(new OpenIdConnectResponse {
-                Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                ErrorDescription = "The username/password couple is invalid."
-            });
-        }
-
-        // Note: for a more complete sample including account lockout support, visit
-        // https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs
-
-        var identity = await _userManager.CreateIdentityAsync(user, request.GetScopes());
-
-        // Create a new authentication ticket holding the user identity.
-        var ticket = new AuthenticationTicket(
-            new ClaimsPrincipal(identity),
-            new AuthenticationProperties(),
-            OpenIdConnectServerDefaults.AuthenticationScheme);
-
-        ticket.SetResources(request.GetResources());
-        ticket.SetScopes(request.GetScopes());
-
-        return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
-    }
-
-    return BadRequest(new OpenIdConnectResponse {
-        Error = OpenIdConnectConstants.Errors.UnsupportedGrantType,
-        ErrorDescription = "The specified grant type is not supported."
-    });
-}
-```
-
-To **enable authorization code/implicit flows support, you'll similarly have to create your own authorization endpoint action** and your own views/view models. The Mvc.Server sample comes with an [`AuthorizationController` that you can easily reuse in your application](https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs).
-
-![](https://cloud.githubusercontent.com/assets/6998306/10988233/d9026712-843a-11e5-8ff0-e7addffd727b.png)
+The **Mvc.Server sample comes with an [`AuthorizationController` that supports both the password flow and the authorization code flow and that you can easily reuse in your application](https://github.com/openiddict/openiddict-core/blob/dev/samples/Mvc.Server/Controllers/AuthorizationController.cs)**.
 
   - **Enable the corresponding flows in the OpenIddict options**:
 
