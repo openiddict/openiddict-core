@@ -255,39 +255,6 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            // Ensure that the appropriate set of scopes is requested to prevent personal data leakage when possible.
-            if (services.Users.SupportsUserEmail && context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated) &&
-                                                    context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
-                                                   !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email)) {
-                // Skip scope validation if the user cannot be found in the database.
-                var user = await services.Users.GetUserAsync(context.HttpContext.User);
-                if (user == null) {
-                    services.Logger.LogWarning("The authorization request was not fully validated because the profile corresponding " +
-                                               "to the logged in user was not found in the database: {Identifier}.",
-                                               context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier));
-                }
-
-                else {
-                    // Retrieve the username and the email address associated with the user.
-                    var username = await services.Users.GetUserNameAsync(user);
-                    var email = await services.Users.GetEmailAsync(user);
-
-                    // Return an error if the username corresponds to the registered
-                    // email address and if the "email" scope has not been requested.
-                    if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                        services.Logger.LogError("The authorization request was rejected because the 'email' scope was not requested: " +
-                                                 "to prevent data leakage, the 'email' scope must be granted when the username " +
-                                                 "is identical to the email address associated with the user profile.");
-
-                        context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidRequest,
-                            description: "The 'email' scope is required.");
-
-                        return;
-                    }
-                }
-            }
-
             // Run additional checks for prompt=none requests.
             if (string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
                 // If the user is not authenticated, return an error to the client application.

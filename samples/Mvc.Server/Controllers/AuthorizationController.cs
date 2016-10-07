@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -78,8 +79,13 @@ namespace Mvc.Server {
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetResources(request.GetResources());
-            ticket.SetScopes(request.GetScopes());
+            // Set the list of scopes granted to the client application.
+            ticket.SetScopes(new[] {
+                /* openid: */ OpenIdConnectConstants.Scopes.OpenId,
+                /* email: */ OpenIdConnectConstants.Scopes.Email,
+                /* profile: */ OpenIdConnectConstants.Scopes.Profile,
+                /* offline_access: */ OpenIdConnectConstants.Scopes.OfflineAccess
+            }.Intersect(request.GetScopes()));
 
             // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
             return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
@@ -176,8 +182,13 @@ namespace Mvc.Server {
                     new AuthenticationProperties(),
                     OpenIdConnectServerDefaults.AuthenticationScheme);
 
-                ticket.SetResources(request.GetResources());
-                ticket.SetScopes(request.GetScopes());
+                // Set the list of scopes granted to the client application.
+                ticket.SetScopes(new[] {
+                    /* openid: */ OpenIdConnectConstants.Scopes.OpenId,
+                    /* email: */ OpenIdConnectConstants.Scopes.Email,
+                    /* profile: */ OpenIdConnectConstants.Scopes.Profile,
+                    /* offline_access: */ OpenIdConnectConstants.Scopes.OfflineAccess
+                }.Intersect(request.GetScopes()));
 
                 return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
             }

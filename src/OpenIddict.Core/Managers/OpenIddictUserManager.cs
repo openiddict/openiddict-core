@@ -90,20 +90,9 @@ namespace OpenIddict {
             // access tokens, even if an explicit destination is not specified.
             identity.AddClaim(ClaimTypes.NameIdentifier, await GetUserIdAsync(user));
 
-            // Resolve the email address associated with the user if the underlying store supports it.
-            var email = SupportsUserEmail ? await GetEmailAsync(user) : null;
-
             // Only add the name claim if the "profile" scope was granted.
             if (scopes.Contains(OpenIdConnectConstants.Scopes.Profile)) {
                 var username = await GetUserNameAsync(user);
-
-                // Throw an exception if the username corresponds to the registered
-                // email address and if the "email" scope has not been requested.
-                if (!scopes.Contains(OpenIdConnectConstants.Scopes.Email) &&
-                    !string.IsNullOrEmpty(email) &&
-                     string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                    throw new InvalidOperationException("The 'email' scope is required.");
-                }
 
                 identity.AddClaim(ClaimTypes.Name, username,
                     OpenIdConnectConstants.Destinations.AccessToken,
@@ -111,7 +100,9 @@ namespace OpenIddict {
             }
 
             // Only add the email address if the "email" scope was granted.
-            if (!string.IsNullOrEmpty(email) && scopes.Contains(OpenIdConnectConstants.Scopes.Email)) {
+            if (SupportsUserEmail && scopes.Contains(OpenIdConnectConstants.Scopes.Email)) {
+                var email = await GetEmailAsync(user);
+
                 identity.AddClaim(ClaimTypes.Email, email,
                     OpenIdConnectConstants.Destinations.AccessToken,
                     OpenIdConnectConstants.Destinations.IdentityToken);

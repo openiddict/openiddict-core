@@ -13,7 +13,6 @@ using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -288,40 +287,6 @@ namespace OpenIddict.Infrastructure {
                 context.Validate(ticket);
 
                 return;
-            }
-
-            else if (context.Request.IsPasswordGrantType()) {
-                // Note: at this stage, the client credentials cannot be null as the OpenID Connect server middleware
-                // automatically rejects grant_type=password requests that don't specify a username/password couple.
-                Debug.Assert(!string.IsNullOrEmpty(context.Request.Username) &&
-                             !string.IsNullOrEmpty(context.Request.Password), "The user credentials shouldn't be null.");
-
-                var user = await services.Users.FindByNameAsync(context.Request.Username);
-                if (user == null) {
-                    services.Logger.LogWarning("The token request was not fully validated because the profile corresponding to the " +
-                                               "given username was not found in the database: {Username}.", context.Request.Username);
-                }
-
-                // Return an error if the username corresponds to the registered
-                // email address and if the "email" scope has not been requested.
-                else if (services.Users.SupportsUserEmail && context.Request.HasScope(OpenIdConnectConstants.Scopes.Profile) &&
-                                                            !context.Request.HasScope(OpenIdConnectConstants.Scopes.Email)) {
-                    // Retrieve the username and the email address associated with the user.
-                    var username = await services.Users.GetUserNameAsync(user);
-                    var email = await services.Users.GetEmailAsync(user);
-
-                    if (!string.IsNullOrEmpty(email) && string.Equals(username, email, StringComparison.OrdinalIgnoreCase)) {
-                        services.Logger.LogError("The token request was rejected because the 'email' scope was not requested: " +
-                                                 "to prevent data leakage, the 'email' scope must be granted when the username " +
-                                                 "is identical to the email address associated with the user profile.");
-
-                        context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidRequest,
-                            description: "The 'email' scope is required.");
-
-                        return;
-                    }
-                }
             }
 
             // Invoke the rest of the pipeline to allow
