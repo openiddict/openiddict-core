@@ -126,24 +126,6 @@ public class ApplicationDbContext : OpenIddictDbContext<ApplicationUser> {
 }
 ```
 
-> **Note:** although recommended, inheriting from `OpenIddictDbContext` is not mandatory. Alternatively, you can also create your own context and manually add the entity sets needed by OpenIddict:
-
-```csharp
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
-    public ApplicationDbContext(DbContextOptions options)
-        : base(options) {
-    }
-
-    public DbSet<OpenIddictApplication> Applications { get; set; }
-
-    public DbSet<OpenIddictAuthorization> Authorizations { get; set; }
-
-    public DbSet<OpenIddictScope> Scopes { get; set; }
-
-    public DbSet<OpenIddictToken> Tokens { get; set; }
-}
-```
-
 > **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure to register your Entity Framework context using the overload accepting a `TKey` generic argument:
 
 ```csharp
