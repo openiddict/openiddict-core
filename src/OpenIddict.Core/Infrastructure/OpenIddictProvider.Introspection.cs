@@ -95,6 +95,7 @@ namespace OpenIddict.Infrastructure {
                                            "token '{Identifier}' because it's not listed as a valid audience.",
                                            context.Request.ClientId, context.Ticket.GetTicketId());
 
+                context.Claims.RemoveAll();
                 context.Active = false;
 
                 return;
@@ -106,6 +107,7 @@ namespace OpenIddict.Infrastructure {
                                                "corresponding user ({Username}) was not found in the database.",
                                                context.Ticket.GetTicketId(), services.Users.GetUserName(context.Ticket.Principal));
 
+                context.Claims.RemoveAll();
                 context.Active = false;
 
                 return;
@@ -120,6 +122,7 @@ namespace OpenIddict.Infrastructure {
                     services.Logger.LogInformation("The token {Identifier} was declared as inactive because " +
                                                    "it was revoked.", context.Ticket.GetTicketId());
 
+                    context.Claims.RemoveAll();
                     context.Active = false;
 
                     return;
