@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -22,12 +21,12 @@ using OpenIddict;
 
 namespace Mvc.Server {
     public class AuthorizationController : Controller {
-        private readonly OpenIddictApplicationManager<OpenIddictApplication<Guid>> _applicationManager;
+        private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public AuthorizationController(
-            OpenIddictApplicationManager<OpenIddictApplication<Guid>> applicationManager,
+            OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager) {
             _applicationManager = applicationManager;
