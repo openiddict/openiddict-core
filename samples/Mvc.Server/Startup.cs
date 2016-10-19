@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using CryptoHelper;
 using Microsoft.AspNetCore.Builder;
