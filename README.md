@@ -9,6 +9,12 @@
 
 OpenIddict aims at providing a **simple and easy-to-use solution** to implement an **OpenID Connect server in any ASP.NET Core application**.
 
+OpenIddict is based on
+**[AspNet.Security.OpenIdConnect.Server (codenamed ASOS)](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server)** to control the OpenID Connect authentication flow and can be used with any membership stack, **including [ASP.NET Core Identity](https://github.com/aspnet/Identity)**.
+
+OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)** and the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)**. You can also create your own custom grant types.
+
+Note: OpenIddict uses **[Entity Framework Core](https://github.com/aspnet/EntityFramework)** by default, but you can also provide your own store.
 
 ### Why an OpenID Connect server?
 
@@ -16,16 +22,6 @@ Adding an OpenID Connect server to your application **allows you to support toke
 It also allows you to manage all your users using local password or an external identity provider
 (e.g. Facebook or Google) for all your applications in one central place,
 with the power to control who can access your API and the information that is exposed to each client.
-
-
-### How does it work?
-
-OpenIddict is based on **[ASP.NET Core Identity](https://github.com/aspnet/Identity)** (for user management) and relies on
-**[AspNet.Security.OpenIdConnect.Server (codenamed ASOS)](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server)** to control the OpenID Connect authentication flow.
-
-OpenIddict fully supports the **code/implicit/hybrid flows** and the **client credentials/resource owner password grants**. For more information about these terms, please visit the **[OpenID website](http://openid.net/specs/openid-connect-core-1_0.html)** and read the **[OAuth2 specification](https://tools.ietf.org/html/rfc6749)**.
-
-Note: OpenIddict uses **[Entity Framework Core](https://github.com/aspnet/EntityFramework)** by default, but you can also provide your own store.
 
 --------------
 
@@ -73,7 +69,7 @@ public void ConfigureServices(IServiceCollection services) {
 	    .AddDefaultTokenProviders();
 
 	// Register the OpenIddict services, including the default Entity Framework stores.
-	services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+	services.AddOpenIddict<ApplicationDbContext>()
         // Enable the token endpoint (required to use the password flow).
         .EnableTokenEndpoint("/connect/token")
 
@@ -110,12 +106,6 @@ public void Configure(IApplicationBuilder app) {
 
 > **Note:** `UseOpenIddict()` must be registered ***after*** `app.UseIdentity()` and the external social providers.
 
-  - **Update your `ApplicationUser` entity model to inherit from `OpenIddictUser`**:
-
-```csharp
-public class ApplicationUser : OpenIddictUser { }
-```
-
   - **Update your Entity Framework context to inherit from `OpenIddictDbContext`**:
 
 ```csharp
@@ -129,7 +119,7 @@ public class ApplicationDbContext : OpenIddictDbContext<ApplicationUser> {
 > **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure to register your Entity Framework context using the overload accepting a `TKey` generic argument:
 
 ```csharp
-services.AddOpenIddict<ApplicationUser, IdentityRole<int>, ApplicationDbContext, int>()
+services.AddOpenIddict<ApplicationDbContext, long>()
 ```
 
   - **Create your own authorization controller**:
@@ -144,7 +134,7 @@ The **Mvc.Server sample comes with an [`AuthorizationController` that supports b
 ```csharp
 public void ConfigureServices(IServiceCollection services) {
 	// Register the OpenIddict services, including the default Entity Framework stores.
-	services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+	services.AddOpenIddict<ApplicationDbContext>()
         // Enable the authorization and token endpoints (required to use the code flow).
         .EnableAuthorizationEndpoint("/connect/authorize")
         .EnableTokenEndpoint("/connect/token")
