@@ -174,17 +174,6 @@ namespace Mvc.Server {
         }
 
         private async Task<AuthenticationTicket> CreateTicketAsync(OpenIdConnectRequest request, ApplicationUser user) {
-            // Set the list of scopes granted to the client application.
-            // Note: the offline_access scope must be granted
-            // to allow OpenIddict to return a refresh token.
-            var scopes = new[] {
-                OpenIdConnectConstants.Scopes.OpenId,
-                OpenIdConnectConstants.Scopes.Email,
-                OpenIdConnectConstants.Scopes.Profile,
-                OpenIdConnectConstants.Scopes.OfflineAccess,
-                OpenIddictConstants.Scopes.Roles
-            }.Intersect(request.GetScopes());
-
             // Create a new ClaimsPrincipal containing the claims that
             // will be used to create an id_token, a token or a code.
             var principal = await _signInManager.CreateUserPrincipalAsync(user);
@@ -194,26 +183,11 @@ namespace Mvc.Server {
             // whether they should be included in access tokens, in identity tokens or in both.
 
             foreach (var claim in principal.Claims) {
-                // Always include the user identifier in the
-                // access token and the identity token.
-                if (claim.Type == ClaimTypes.NameIdentifier) {
-                    claim.SetDestinations(OpenIdConnectConstants.Destinations.AccessToken,
-                                          OpenIdConnectConstants.Destinations.IdentityToken);
-                }
-
-                // Include the name claim, but only if the "profile" scope was requested.
-                else if (claim.Type == ClaimTypes.Name && scopes.Contains(OpenIdConnectConstants.Scopes.Profile)) {
-                    claim.SetDestinations(OpenIdConnectConstants.Destinations.IdentityToken);
-                }
-
-                // Include the role claims, but only if the "roles" scope was requested.
-                else if (claim.Type == ClaimTypes.Role && scopes.Contains(OpenIddictConstants.Scopes.Roles)) {
-                    claim.SetDestinations(OpenIdConnectConstants.Destinations.AccessToken,
-                                          OpenIdConnectConstants.Destinations.IdentityToken);
-                }
-
-                // The other claims won't be added to the access
-                // and identity tokens and will be kept private.
+                // In this sample, every claim is serialized in both the access and the identity tokens.
+                // In a real world application, you'd probably want to exclude confidential claims
+                // or apply a claims policy based on the scopes requested by the client application.
+                claim.SetDestinations(OpenIdConnectConstants.Destinations.AccessToken,
+                                      OpenIdConnectConstants.Destinations.IdentityToken);
             }
 
             // Create a new authentication ticket holding the user identity.
@@ -221,7 +195,16 @@ namespace Mvc.Server {
                 principal, new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetScopes(scopes);
+            // Set the list of scopes granted to the client application.
+            // Note: the offline_access scope must be granted
+            // to allow OpenIddict to return a refresh token.
+            ticket.SetScopes(new[] {
+                OpenIdConnectConstants.Scopes.OpenId,
+                OpenIdConnectConstants.Scopes.Email,
+                OpenIdConnectConstants.Scopes.Profile,
+                OpenIdConnectConstants.Scopes.OfflineAccess,
+                OpenIddictConstants.Scopes.Roles
+            }.Intersect(request.GetScopes()));
 
             return ticket;
         }
