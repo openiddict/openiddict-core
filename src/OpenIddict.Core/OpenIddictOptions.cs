@@ -32,11 +32,6 @@ namespace OpenIddict {
         public ICollection<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Gets the list of the OpenIddict modules registered in the application.
-        /// </summary>
-        public ICollection<OpenIddictModule> Modules { get; } = new List<OpenIddictModule>();
-
-        /// <summary>
         /// Gets or sets a boolean determining whether client identification is required.
         /// Enabling this option requires registering a client application and sending a
         /// valid client_id when communicating with the token and revocation endpoints.

@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Linq;
 using AspNet.Security.OpenIdConnect.Extensions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Distributed;
@@ -109,21 +108,7 @@ namespace Microsoft.AspNetCore.Builder {
                                                     "client credentials, password and refresh token flows.");
             }
 
-            // Get the modules registered by the application
-            // and add the OpenID Connect server middleware.
-            var modules = options.Modules.ToList();
-            modules.Add(new OpenIddictModule("OpenID Connect server", 0, builder => builder.UseOpenIdConnectServer(options)));
-
-            // Register the OpenIddict modules in the ASP.NET Core pipeline.
-            foreach (var module in modules.OrderBy(module => module.Position)) {
-                if (module?.Registration == null) {
-                    throw new InvalidOperationException("An invalid OpenIddict module was registered.");
-                }
-
-                module.Registration(app);
-            }
-
-            return app;
+            return app.UseOpenIdConnectServer(options);
         }
 
         /// <summary>

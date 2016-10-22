@@ -8,7 +8,6 @@ using System;
 using System.ComponentModel;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -204,34 +203,6 @@ namespace Microsoft.AspNetCore.Builder {
             Services.AddScoped(contract, typeof(TStore));
 
             return this;
-        }
-
-        /// <summary>
-        /// Registers a new OpenIddict module. If a module with the same name already
-        /// exists, the new instance is ignored and this extension has no effect.
-        /// </summary>
-        /// <param name="name">The name of the OpenIddict module.</param>
-        /// <param name="position">The relative position of the OpenIddict module in the ASP.NET Core pipeline.</param>
-        /// <param name="registration">The delegate used to register the module in the ASP.NET Core pipeline.</param>
-        /// <returns>The<see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddModule(
-            [NotNull] string name, int position,
-            [NotNull] Action<IApplicationBuilder> registration) {
-            if (string.IsNullOrEmpty(name)) {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (registration == null) {
-                throw new ArgumentNullException(nameof(registration));
-            }
-
-            return Configure(options => {
-                if (options.Modules.Any(module => module.Name == name)) {
-                    return;
-                }
-
-                options.Modules.Add(new OpenIddictModule(name, position, registration));
-            });
         }
 
         /// <summary>
