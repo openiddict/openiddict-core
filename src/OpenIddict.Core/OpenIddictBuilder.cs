@@ -459,6 +459,22 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
+        /// Disables the configuration endpoint.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder DisableConfigurationEndpoint() {
+            return Configure(options => options.ConfigurationEndpointPath = PathString.Empty);
+        }
+
+        /// <summary>
+        /// Disables the cryptography endpoint.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder DisableCryptographyEndpoint() {
+            return Configure(options => options.CryptographyEndpointPath = PathString.Empty);
+        }
+
+        /// <summary>
         /// Disables the HTTPS requirement during development.
         /// </summary>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
