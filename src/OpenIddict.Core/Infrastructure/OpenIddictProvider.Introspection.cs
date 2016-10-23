@@ -16,9 +16,7 @@ using Microsoft.Extensions.Logging;
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
-        public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
-
+        public override Task ExtractIntrospectionRequest([NotNull] ExtractIntrospectionRequestContext context) {
             // Note: the OpenID Connect server middleware supports both GET and POST
             // introspection requests but OpenIddict only accepts POST requests.
             if (!string.Equals(context.HttpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase)) {
@@ -26,8 +24,14 @@ namespace OpenIddict.Infrastructure {
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Introspection requests must use HTTP POST.");
 
-                return;
+                return Task.FromResult(0);
             }
+
+            return Task.FromResult(0);
+        }
+
+        public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context) {
+            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             // Note: the OpenID Connect server middleware supports unauthenticated introspection requests
             // but OpenIddict uses a stricter policy preventing unauthenticated/public applications

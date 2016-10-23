@@ -116,7 +116,8 @@ namespace OpenIddict.Infrastructure {
 
                 // Create a new logout request containing only the request_id parameter.
                 var address = QueryHelpers.AddQueryString(
-                    uri: context.HttpContext.Request.PathBase + context.HttpContext.Request.Path,
+                    uri: context.HttpContext.Request.Scheme + "://" + context.HttpContext.Request.Host +
+                         context.HttpContext.Request.PathBase + context.HttpContext.Request.Path,
                     name: OpenIdConnectConstants.Parameters.RequestId, value: context.Request.RequestId);
 
                 context.HttpContext.Response.Redirect(address);

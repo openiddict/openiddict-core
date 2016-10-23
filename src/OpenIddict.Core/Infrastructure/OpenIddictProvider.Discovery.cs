@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace OpenIddict.Infrastructure {
@@ -20,7 +21,8 @@ namespace OpenIddict.Infrastructure {
             // OpenIddict disallows the use of the unsecure code_challenge_method=plain method,
             // which must be manually removed from the code_challenge_methods_supported property.
             // See https://tools.ietf.org/html/rfc7636#section-7.2 for more information.
-            context.CodeChallengeMethods.Remove(OpenIdConnectConstants.CodeChallengeMethods.Plain);
+            context.CodeChallengeMethods.Clear();
+            context.CodeChallengeMethods.Add(OpenIdConnectConstants.CodeChallengeMethods.Sha256);
 
             // Note: the OpenID Connect server middleware automatically populates grant_types_supported
             // by determining whether the authorization and token endpoints are enabled or not but
@@ -39,8 +41,9 @@ namespace OpenIddict.Infrastructure {
             context.Scopes.Add(OpenIdConnectConstants.Scopes.Phone);
             context.Scopes.Add(OpenIddictConstants.Scopes.Roles);
 
-            // Only add the "offline_access" scope if "refresh_token" is listed as a supported grant type.
-            if (context.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+            // Only add the "offline_access" scope if the refresh
+            // token flow is enabled in the OpenIddict options.
+            if (services.Options.IsRefreshTokenFlowEnabled()) {
                 context.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
             }
 

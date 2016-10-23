@@ -21,7 +21,7 @@ namespace OpenIddict {
             [NotNull] IServiceProvider services,
             [NotNull] IOpenIddictScopeStore<TScope> store,
             [NotNull] ILogger<OpenIddictAuthorizationManager<TScope>> logger) {
-            Context = services?.GetRequiredService<IHttpContextAccessor>()?.HttpContext;
+            Context = services?.GetService<IHttpContextAccessor>()?.HttpContext;
             Logger = logger;
             Store = store;
         }

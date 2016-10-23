@@ -1,10 +1,15 @@
 ﻿{
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+
+    "embed": {
+      "include": [ "Certificate.pfx" ]
+    }
   },
 
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "Microsoft.AspNetCore.Diagnostics": "1.0.0",
     "Microsoft.AspNetCore.TestHost": "1.0.0",
     "Microsoft.Extensions.Caching.Memory": "1.0.0",
     "Microsoft.Extensions.Logging.Debug": "1.0.0",

@@ -22,7 +22,7 @@ namespace OpenIddict {
             [NotNull] IServiceProvider services,
             [NotNull] IOpenIddictTokenStore<TToken> store,
             [NotNull] ILogger<OpenIddictTokenManager<TToken>> logger) {
-            Context = services?.GetRequiredService<IHttpContextAccessor>()?.HttpContext;
+            Context = services?.GetService<IHttpContextAccessor>()?.HttpContext;
             Logger = logger;
             Store = store;
         }
