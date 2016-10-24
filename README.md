@@ -50,7 +50,8 @@ To use OpenIddict, you need to:
 ```json
 "dependencies": {
   "AspNet.Security.OAuth.Validation": "1.0.0-alpha2-final",
-  "OpenIddict": "1.0.0-*"
+  "OpenIddict": "1.0.0-*",
+  "OpenIddict.Mvc": "1.0.0-*"
 }
 ```
 
@@ -70,6 +71,11 @@ public void ConfigureServices(IServiceCollection services) {
 
 	// Register the OpenIddict services, including the default Entity Framework stores.
 	services.AddOpenIddict<ApplicationDbContext>()
+        // Register the ASP.NET Core MVC binder used by OpenIddict.
+        // Note: if you don't call this method, you won't be able to
+        // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
+        .AddMvcBinders()
+
         // Enable the token endpoint (required to use the password flow).
         .EnableTokenEndpoint("/connect/token")
 
@@ -135,6 +141,11 @@ The **Mvc.Server sample comes with an [`AuthorizationController` that supports b
 public void ConfigureServices(IServiceCollection services) {
 	// Register the OpenIddict services, including the default Entity Framework stores.
 	services.AddOpenIddict<ApplicationDbContext>()
+        // Register the ASP.NET Core MVC binder used by OpenIddict.
+        // Note: if you don't call this method, you won't be able to
+        // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
+        .AddMvcBinders()
+
         // Enable the authorization and token endpoints (required to use the code flow).
         .EnableAuthorizationEndpoint("/connect/authorize")
         .EnableTokenEndpoint("/connect/token")
