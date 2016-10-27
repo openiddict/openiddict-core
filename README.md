@@ -23,6 +23,14 @@ It also allows you to manage all your users using local password or an external 
 (e.g. Facebook or Google) for all your applications in one central place,
 with the power to control who can access your API and the information that is exposed to each client.
 
+## Samples
+
+**[Specialized samples can be found in the samples repository](https://github.com/openiddict/openiddict-samples):**
+
+  - [Authorization code flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/CodeFlow)
+  - [Implicit flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/ImplicitFlow)
+  - [Password flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/PasswordFlow)
+
 --------------
 
 ## Getting started
