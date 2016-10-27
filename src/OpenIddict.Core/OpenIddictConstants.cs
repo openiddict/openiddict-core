@@ -20,6 +20,10 @@ namespace OpenIddict.Core {
             public const string LogoutRequest = "openiddict-logout-request:";
         }
 
+        public static class Metadata {
+            public const string ExternalProvidersSupported = "external_providers_supported";
+        }
+
         public static class Scopes {
             public const string Roles = "roles";
         }

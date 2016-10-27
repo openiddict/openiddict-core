@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Linq;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
@@ -11,6 +12,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using OpenIddict.Core;
 
 namespace OpenIddict {
@@ -48,6 +50,11 @@ namespace OpenIddict {
             if (options.Value.IsRefreshTokenFlowEnabled()) {
                 context.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
             }
+
+            context.Metadata[OpenIddictConstants.Metadata.ExternalProvidersSupported] = JArray.FromObject(
+                from provider in context.HttpContext.Authentication.GetAuthenticationSchemes()
+                where !string.IsNullOrEmpty(provider.DisplayName)
+                select provider.AuthenticationScheme);
 
             return Task.FromResult(0);
         }

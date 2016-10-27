@@ -2,6 +2,9 @@
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Builder;
 using OpenIddict.Core;
 using Xunit;
@@ -102,6 +105,23 @@ namespace OpenIddict.Tests {
             // Assert
             Assert.DoesNotContain(OpenIdConnectConstants.Scopes.OfflineAccess,
                 response[OpenIdConnectConstants.Metadata.ScopesSupported].Values<string>());
+        }
+
+        [Fact]
+        public async Task HandleConfigurationRequest_ExternalProvidersAreCorrectlyReturned() {
+            // Arrange
+            var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.GetAsync(ConfigurationEndpoint);
+            var providers = response[OpenIddictConstants.Metadata.ExternalProvidersSupported].Values<string>();
+
+            // Assert
+            Assert.DoesNotContain(CookieAuthenticationDefaults.AuthenticationScheme, providers);
+            Assert.Contains(FacebookDefaults.AuthenticationScheme, providers);
+            Assert.Contains(GoogleDefaults.AuthenticationScheme, providers);
         }
     }
 }

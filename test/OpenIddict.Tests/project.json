@@ -10,6 +10,9 @@
   "dependencies": {
     "AspNet.Security.OpenIdConnect.Client": "1.0.0-beta7-final",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
+    "Microsoft.AspNetCore.Authentication.Facebook": "1.0.0",
+    "Microsoft.AspNetCore.Authentication.Google": "1.0.0",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0",
     "Microsoft.AspNetCore.TestHost": "1.0.0",
     "Microsoft.Extensions.Caching.Memory": "1.0.0",
