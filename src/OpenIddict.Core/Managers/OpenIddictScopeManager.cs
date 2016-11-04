@@ -20,7 +20,7 @@ namespace OpenIddict {
         public OpenIddictScopeManager(
             [NotNull] IServiceProvider services,
             [NotNull] IOpenIddictScopeStore<TScope> store,
-            [NotNull] ILogger<OpenIddictAuthorizationManager<TScope>> logger) {
+            [NotNull] ILogger<OpenIddictScopeManager<TScope>> logger) {
             Context = services?.GetService<IHttpContextAccessor>()?.HttpContext;
             Logger = logger;
             Store = store;

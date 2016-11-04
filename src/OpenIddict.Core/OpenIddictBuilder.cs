@@ -82,13 +82,25 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddApplicationManager<TManager>() {
+        public OpenIddictBuilder AddApplicationManager<TManager>() where TManager : class
+            => AddApplicationManager(typeof(TManager));
+
+        /// <summary>
+        /// Adds a custom application manager.
+        /// </summary>
+        /// <param name="type">The type of the custom manager.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddApplicationManager([NotNull] Type type) {
+            if (type == null) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var contract = typeof(OpenIddictApplicationManager<>).MakeGenericType(ApplicationType);
-            if (!contract.IsAssignableFrom(typeof(TManager))) {
+            if (!contract.IsAssignableFrom(type)) {
                 throw new InvalidOperationException("Custom managers must be derived from OpenIddictApplicationManager.");
             }
 
-            Services.AddScoped(contract, typeof(TManager));
+            Services.AddScoped(contract, type);
 
             return this;
         }
@@ -98,13 +110,25 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddApplicationStore<TStore>() {
+        public OpenIddictBuilder AddApplicationStore<TStore>() where TStore : class
+            => AddApplicationStore(typeof(TStore));
+
+        /// <summary>
+        /// Adds a custom application store.
+        /// </summary>
+        /// <param name="type">The type of the custom store.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddApplicationStore([NotNull] Type type) {
+            if (type == null) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var contract = typeof(IOpenIddictApplicationStore<>).MakeGenericType(ApplicationType);
-            if (!contract.IsAssignableFrom(typeof(TStore))) {
+            if (!contract.IsAssignableFrom(type)) {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictApplicationStore.");
             }
 
-            Services.AddScoped(contract, typeof(TStore));
+            Services.AddScoped(contract, type);
 
             return this;
         }
@@ -114,13 +138,25 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddAuthorizationManager<TManager>() {
+        public OpenIddictBuilder AddAuthorizationManager<TManager>() where TManager : class
+            => AddAuthorizationManager(typeof(TManager));
+
+        /// <summary>
+        /// Adds a custom authorization manager.
+        /// </summary>
+        /// <param name="type">The type of the custom manager.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddAuthorizationManager([NotNull] Type type) {
+            if (type == null) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var contract = typeof(OpenIddictAuthorizationManager<>).MakeGenericType(AuthorizationType);
-            if (!contract.IsAssignableFrom(typeof(TManager))) {
+            if (!contract.IsAssignableFrom(type)) {
                 throw new InvalidOperationException("Custom managers must be derived from OpenIddictAuthorizationManager.");
             }
 
-            Services.AddScoped(contract, typeof(TManager));
+            Services.AddScoped(contract, type);
 
             return this;
         }
@@ -130,13 +166,25 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddAuthorizationStore<TStore>() {
+        public OpenIddictBuilder AddAuthorizationStore<TStore>() where TStore : class
+            => AddAuthorizationStore(typeof(TStore));
+
+        /// <summary>
+        /// Adds a custom authorization store.
+        /// </summary>
+        /// <param name="type">The type of the custom store.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddAuthorizationStore([NotNull] Type type) {
+            if (type == null) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var contract = typeof(IOpenIddictAuthorizationStore<>).MakeGenericType(AuthorizationType);
-            if (!contract.IsAssignableFrom(typeof(TStore))) {
+            if (!contract.IsAssignableFrom(type)) {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictAuthorizationStore.");
             }
 
-            Services.AddScoped(contract, typeof(TStore));
+            Services.AddScoped(contract, type);
 
             return this;
         }
@@ -146,13 +194,25 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddScopeManager<TManager>() {
+        public OpenIddictBuilder AddScopeManager<TManager>() where TManager : class
+            => AddScopeManager(typeof(TManager));
+
+        /// <summary>
+        /// Adds a custom scope manager.
+        /// </summary>
+        /// <param name="type">The type of the custom manager.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddScopeManager([NotNull] Type type) {
+            if (type == null) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var contract = typeof(OpenIddictScopeManager<>).MakeGenericType(ScopeType);
-            if (!contract.IsAssignableFrom(typeof(TManager))) {
+            if (!contract.IsAssignableFrom(type)) {
                 throw new InvalidOperationException("Custom managers must be derived from OpenIddictScopeManager.");
             }
 
-            Services.AddScoped(contract, typeof(TManager));
+            Services.AddScoped(contract, type);
 
             return this;
         }
@@ -162,13 +222,25 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddScopeStore<TStore>() {
+        public OpenIddictBuilder AddScopeStore<TStore>() where TStore : class
+            => AddScopeStore(typeof(TStore));
+
+        /// <summary>
+        /// Adds a custom scope store.
+        /// </summary>
+        /// <param name="type">The type of the custom store.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddScopeStore([NotNull] Type type) {
+            if (type == null) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var contract = typeof(IOpenIddictScopeStore<>).MakeGenericType(ScopeType);
-            if (!contract.IsAssignableFrom(typeof(TStore))) {
+            if (!contract.IsAssignableFrom(type)) {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictScopeStore.");
             }
 
-            Services.AddScoped(contract, typeof(TStore));
+            Services.AddScoped(contract, type);
 
             return this;
         }
@@ -178,13 +250,25 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddTokenManager<TManager>() {
+        public OpenIddictBuilder AddTokenManager<TManager>() where TManager : class
+            => AddTokenManager(typeof(TManager));
+
+        /// <summary>
+        /// Adds a custom token manager.
+        /// </summary>
+        /// <param name="type">The type of the custom manager.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddTokenManager([NotNull] Type type) {
+            if (type == null) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var contract = typeof(OpenIddictTokenManager<>).MakeGenericType(TokenType);
-            if (!contract.IsAssignableFrom(typeof(TManager))) {
+            if (!contract.IsAssignableFrom(type)) {
                 throw new InvalidOperationException("Custom managers must be derived from OpenIddictTokenManager.");
             }
 
-            Services.AddScoped(contract, typeof(TManager));
+            Services.AddScoped(contract, type);
 
             return this;
         }
@@ -194,13 +278,25 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddTokenStore<TStore>() {
+        public OpenIddictBuilder AddTokenStore<TStore>() where TStore : class
+            => AddTokenStore(typeof(TStore));
+
+        /// <summary>
+        /// Adds a custom token store.
+        /// </summary>
+        /// <param name="type">The type of the custom store.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder AddTokenStore([NotNull] Type type) {
+            if (type == null) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             var contract = typeof(IOpenIddictTokenStore<>).MakeGenericType(TokenType);
-            if (!contract.IsAssignableFrom(typeof(TStore))) {
+            if (!contract.IsAssignableFrom(type)) {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictTokenStore.");
             }
 
-            Services.AddScoped(contract, typeof(TStore));
+            Services.AddScoped(contract, type);
 
             return this;
         }
@@ -468,6 +564,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the authorization endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder EnableAuthorizationEndpoint(PathString path) {
+            if (!path.HasValue) {
+                throw new ArgumentException("The path cannot be empty.", nameof(path));
+            }
+
             return Configure(options => options.AuthorizationEndpointPath = path);
         }
 
@@ -477,6 +577,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the logout endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder EnableIntrospectionEndpoint(PathString path) {
+            if (!path.HasValue) {
+                throw new ArgumentException("The path cannot be empty.", nameof(path));
+            }
+
             return Configure(options => options.IntrospectionEndpointPath = path);
         }
 
@@ -486,6 +590,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the logout endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder EnableLogoutEndpoint(PathString path) {
+            if (!path.HasValue) {
+                throw new ArgumentException("The path cannot be empty.", nameof(path));
+            }
+
             return Configure(options => options.LogoutEndpointPath = path);
         }
 
@@ -495,6 +603,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the revocation endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder EnableRevocationEndpoint(PathString path) {
+            if (!path.HasValue) {
+                throw new ArgumentException("The path cannot be empty.", nameof(path));
+            }
+
             return Configure(options => options.RevocationEndpointPath = path);
         }
 
@@ -504,6 +616,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the token endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder EnableTokenEndpoint(PathString path) {
+            if (!path.HasValue) {
+                throw new ArgumentException("The path cannot be empty.", nameof(path));
+            }
+
             return Configure(options => options.TokenEndpointPath = path);
         }
 
@@ -513,6 +629,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the userinfo endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public virtual OpenIddictBuilder EnableUserinfoEndpoint(PathString path) {
+            if (!path.HasValue) {
+                throw new ArgumentException("The path cannot be empty.", nameof(path));
+            }
+
             return Configure(options => options.UserinfoEndpointPath = path);
         }
 
