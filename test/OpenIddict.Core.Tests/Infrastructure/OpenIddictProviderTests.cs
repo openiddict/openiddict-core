@@ -110,6 +110,10 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                         return context.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
                     }
 
+                    else if (context.Request.Path == LogoutEndpoint) {
+                        return context.Authentication.SignOutAsync(OpenIdConnectServerDefaults.AuthenticationScheme);
+                    }
+
                     else if (context.Request.Path == UserinfoEndpoint) {
                         context.Response.Headers[HeaderNames.ContentType] = "application/json";
 

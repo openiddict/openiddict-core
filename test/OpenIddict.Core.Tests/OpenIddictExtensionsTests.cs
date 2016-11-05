@@ -30,7 +30,6 @@ namespace OpenIddict.Core.Tests {
 
         [Theory]
         [InlineData(typeof(IDataProtectionProvider))]
-        [InlineData(typeof(IDistributedCache))]
         [InlineData(typeof(OpenIddictApplicationManager<object>))]
         [InlineData(typeof(OpenIddictAuthorizationManager<object>))]
         [InlineData(typeof(OpenIddictScopeManager<object>))]
@@ -45,6 +44,23 @@ namespace OpenIddict.Core.Tests {
 
             // Assert
             Assert.Contains(services, service => service.ServiceType == type);
+        }
+
+        [Fact]
+        public void UseOpenIddict_AnExceptionIsThrownWhenNoDistributedCacheIsRegisteredIfRequestCachingIsEnabled() {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict<object, object, object, object>()
+                .EnableRequestCaching();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
+
+            Assert.Equal("A distributed cache implementation must be registered in the OpenIddict options " +
+                         "or in the dependency injection container when enabling request caching support.", exception.Message);
         }
 
         [Fact]

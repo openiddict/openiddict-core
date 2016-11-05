@@ -627,6 +627,24 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
+        public void EnableRequestCaching_RequestCachingIsEnabled() {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOptions();
+
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.EnableRequestCaching();
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<OpenIddictOptions>>();
+
+            // Assert
+            Assert.True(options.Value.EnableRequestCaching);
+        }
+
+        [Fact]
         public void EnableRevocationEndpoint_RevocationEndpointIsEnabled() {
             // Arrange
             var services = new ServiceCollection();

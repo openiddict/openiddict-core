@@ -27,6 +27,15 @@ namespace OpenIddict {
         public IDistributedCache Cache { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether request caching should be enabled.
+        /// When enabled, both authorization and logout requests are automatically stored
+        /// in the distributed cache, which allows flowing large payloads across requests.
+        /// Enabling this option is recommended when using external authentication providers
+        /// or when large GET or POST OpenID Connect authorization requests support is required.
+        /// </summary>
+        public bool EnableRequestCaching { get; set; }
+
+        /// <summary>
         /// Gets the OAuth2/OpenID Connect flows enabled for this application.
         /// </summary>
         public ICollection<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);

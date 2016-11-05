@@ -598,6 +598,18 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
+        /// Enables request caching, so that both authorization and logout requests
+        /// are automatically stored in the distributed cache, which allows flowing
+        /// large payloads across requests. Enabling this option is recommended
+        /// when using external authentication providers or when large GET or POST
+        /// OpenID Connect authorization requests support is required.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public virtual OpenIddictBuilder EnableRequestCaching() {
+            return Configure(options => options.EnableRequestCaching = true);
+        }
+
+        /// <summary>
         /// Enables the revocation endpoint.
         /// </summary>
         /// <param name="path">The relative path of the revocation endpoint.</param>

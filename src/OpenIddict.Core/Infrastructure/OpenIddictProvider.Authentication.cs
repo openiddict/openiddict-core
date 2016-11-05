@@ -52,8 +52,20 @@ namespace OpenIddict.Infrastructure {
             }
 
             // If a request_id parameter can be found in the authorization request,
-            // restore the complete authorization request stored in the distributed cache.
+            // restore the complete authorization request from the distributed cache.
             if (!string.IsNullOrEmpty(context.Request.RequestId)) {
+                // Return an error if request caching support was not enabled.
+                if (!services.Options.EnableRequestCaching) {
+                    services.Logger.LogError("The authorization request was rejected because " +
+                                             "request caching support was not enabled.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The request_id parameter is not supported.");
+
+                    return;
+                }
+
                 // Note: the cache key is always prefixed with a specific marker
                 // to avoid collisions with the other types of cached requests.
                 var key = OpenIddictConstants.Environment.AuthorizationRequest + context.Request.RequestId;
@@ -313,7 +325,7 @@ namespace OpenIddict.Infrastructure {
             // If no request_id parameter can be found in the current request, assume the OpenID Connect request
             // was not serialized yet and store the entire payload in the distributed cache to make it easier
             // to flow across requests and internal/external authentication/registration workflows.
-            if (string.IsNullOrEmpty(context.Request.RequestId)) {
+            if (services.Options.EnableRequestCaching && string.IsNullOrEmpty(context.Request.RequestId)) {
                 // Generate a request identifier. Note: using a crypto-secure
                 // random number generator is not necessary in this case.
                 context.Request.RequestId = Guid.NewGuid().ToString();
@@ -358,7 +370,7 @@ namespace OpenIddict.Infrastructure {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
             // Remove the authorization request from the distributed cache.
-            if (!string.IsNullOrEmpty(context.Request.RequestId)) {
+            if (services.Options.EnableRequestCaching && !string.IsNullOrEmpty(context.Request.RequestId)) {
                 // Note: the cache key is always prefixed with a specific marker
                 // to avoid collisions with the other types of cached requests.
                 var key = OpenIddictConstants.Environment.AuthorizationRequest + context.Request.RequestId;

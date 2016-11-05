@@ -22,9 +22,9 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                Request = "eyJhbGciOiJub25lIn0.eyJpc3MiOiJodHRwOi8vd3d3LmZhYnJpa2FtLmNvbSIsImF1ZCI6Imh" +
-                          "0dHA6Ly93d3cuY29udG9zby5jb20iLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNsaWVudF9pZC" +
-                          "I6IkZhYnJpa2FtIiwicmVkaXJlY3RfdXJpIjoiaHR0cDovL3d3dy5mYWJyaWthbS5jb20vcGF0aCJ9.",
+                Request = "eyJhbGciOiJub25lIn0.eyJpc3MiOiJodHRwOi8vd3d3LmZhYnJpa2FtLmNvbSIsImF1ZCI6Imh0" +
+                          "dHA6Ly93d3cuY29udG9zby5jb20iLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNsaWVudF9pZCI6" +
+                          "IkZhYnJpa2FtIiwicmVkaXJlY3RfdXJpIjoiaHR0cDovL3d3dy5mYWJyaWthbS5jb20vcGF0aCJ9.",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code,
                 Scope = OpenIdConnectConstants.Scopes.OpenId
             });
@@ -56,7 +56,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
         }
 
         [Fact]
-        public async Task ExtractAuthorizationRequest_InvalidRequestIdParameterIsRejected() {
+        public async Task ExtractAuthorizationRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled() {
             // Arrange
             var server = CreateAuthorizationServer();
 
@@ -64,10 +64,28 @@ namespace OpenIddict.Core.Tests.Infrastructure {
 
             // Act
             var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code
+                RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7"
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("The request_id parameter is not supported.", response.ErrorDescription);
+        }
+
+        [Fact]
+        public async Task ExtractAuthorizationRequest_InvalidRequestIdParameterIsRejected() {
+            // Arrange
+            var server = CreateAuthorizationServer(builder => {
+                builder.Services.AddDistributedMemoryCache();
+
+                builder.EnableRequestCaching();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+                RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7"
             });
 
             // Assert
@@ -382,6 +400,8 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                 }));
 
                 builder.Services.AddSingleton(cache.Object);
+
+                builder.EnableRequestCaching();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -415,28 +435,6 @@ namespace OpenIddict.Core.Tests.Infrastructure {
         [InlineData("token")]
         public async Task HandleAuthorizationRequest_RequestsAreNotHandledLocally(string type) {
             // Arrange
-            var request = new OpenIdConnectRequest {
-                ClientId = "Fabrikam",
-                Nonce = "n-0S6_WzA2Mj",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = type,
-                Scope = OpenIdConnectConstants.Scopes.OpenId
-            };
-
-            var stream = new MemoryStream();
-            using (var writer = new BsonWriter(stream)) {
-                writer.CloseOutput = false;
-
-                var serializer = JsonSerializer.CreateDefault();
-                serializer.Serialize(writer, request);
-            }
-
-            var cache = new Mock<IDistributedCache>();
-
-            cache.Setup(mock => mock.GetAsync(OpenIddictConstants.Environment.AuthorizationRequest +
-                                              "b2ee7815-5579-4ff7-86b0-ba671b939d96"))
-                .ReturnsAsync(stream.ToArray());
-
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
                     var application = Mock.Of<object>();
@@ -455,15 +453,17 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                     instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
                 }));
-
-                builder.Services.AddSingleton(cache.Object);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
             var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
-                RequestId = "b2ee7815-5579-4ff7-86b0-ba671b939d96"
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = type,
+                Scope = OpenIdConnectConstants.Scopes.OpenId
             });
 
             // Assert
@@ -510,6 +510,8 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                 }));
 
                 builder.Services.AddSingleton(cache.Object);
+
+                builder.EnableRequestCaching();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());

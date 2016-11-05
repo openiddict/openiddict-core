@@ -53,6 +53,13 @@ namespace Mvc.Server {
                 // During development, you can disable the HTTPS requirement.
                 .DisableHttpsRequirement()
 
+                // When request caching is enabled, authorization and logout requests
+                // are stored in the distributed cache by OpenIddict and the user agent
+                // is redirected to the same page with a single parameter (request_id).
+                // This allows flowing large OpenID Connect requests even when using
+                // an external authentication provider like Google, Facebook or Twitter.
+                .EnableRequestCaching()
+
                 // Register a new ephemeral key, that is discarded when the application
                 // shuts down. Tokens signed using this key are automatically invalidated.
                 // This method should only be used during development.

@@ -9,9 +9,30 @@ using Xunit;
 namespace OpenIddict.Core.Tests.Infrastructure {
     public partial class OpenIddictProviderTests {
         [Fact]
-        public async Task ExtractLogoutRequest_InvalidRequestIdParameterIsRejected() {
+        public async Task ExtractLogoutRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled() {
             // Arrange
             var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest {
+                RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7"
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("The request_id parameter is not supported.", response.ErrorDescription);
+        }
+
+        [Fact]
+        public async Task ExtractLogoutRequest_InvalidRequestIdParameterIsRejected() {
+            // Arrange
+            var server = CreateAuthorizationServer(builder => {
+                builder.Services.AddDistributedMemoryCache();
+
+                builder.EnableRequestCaching();
+            });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
@@ -65,6 +86,8 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                 }));
 
                 builder.Services.AddSingleton(cache.Object);
+
+                builder.EnableRequestCaching();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -84,6 +107,30 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                 OpenIddictConstants.Environment.LogoutRequest + identifier,
                 It.IsAny<byte[]>(),
                 It.IsAny<DistributedCacheEntryOptions>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task HandleLogoutRequest_RequestsAreNotHandledLocally() {
+            // Arrange
+            var server = CreateAuthorizationServer(builder => {
+                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+                    var application = Mock.Of<object>();
+
+                    instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path"))
+                        .ReturnsAsync(application);
+                }));
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest {
+                PostLogoutRedirectUri = "http://www.fabrikam.com/path",
+                State = "af0ifjsldkj"
+            });
+
+            // Assert
+            Assert.Equal("af0ifjsldkj", response.State);
         }
 
         [Fact]

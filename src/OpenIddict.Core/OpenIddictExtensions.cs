@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Builder {
                 TokenType = typeof(TToken)
             };
 
-            // Register the services required by the OpenID Connect server middleware.
+            // Register the authentication services, as they are
+            // required by the OpenID Connect server middleware.
             builder.Services.AddAuthentication();
-            builder.Services.AddDistributedMemoryCache();
 
             builder.Configure(options => {
                 // Register the OpenID Connect server provider in the OpenIddict options.
@@ -75,10 +75,18 @@ namespace Microsoft.AspNetCore.Builder {
             // Resolve the OpenIddict options from the DI container.
             var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictOptions>>().Value;
 
+            // When no distributed cache has been registered in the options,
+            // try to resolve it from the dependency injection container.
             if (options.Cache == null) {
-                options.Cache = app.ApplicationServices.GetRequiredService<IDistributedCache>();
+                options.Cache = app.ApplicationServices.GetService<IDistributedCache>();
+
+                if (options.EnableRequestCaching && options.Cache == null) {
+                    throw new InvalidOperationException("A distributed cache implementation must be registered in the OpenIddict options " +
+                                                        "or in the dependency injection container when enabling request caching support.");
+                }
             }
 
+            // Ensure at least one signing certificate/key has been registered.
             if (options.SigningCredentials.Count == 0) {
                 throw new InvalidOperationException("At least one signing key must be registered. Consider registering a X.509 " +
                                                     "certificate using 'services.AddOpenIddict().AddSigningCertificate()' or call " +
