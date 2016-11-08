@@ -5,7 +5,6 @@
  */
 
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Server;
@@ -14,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Mvc.Server.Helpers;
 using Mvc.Server.Models;
 using Mvc.Server.ViewModels.Authorization;
 using Mvc.Server.ViewModels.Shared;
@@ -37,7 +37,7 @@ namespace Mvc.Server {
         // Note: to support interactive flows like the code flow,
         // you must provide your own authorization endpoint action:
 
-        [Authorize, HttpGet, Route("~/connect/authorize")]
+        [Authorize, HttpGet("~/connect/authorize")]
         public async Task<IActionResult> Authorize(OpenIdConnectRequest request) {
             // Retrieve the application details from the database.
             var application = await _applicationManager.FindByClientIdAsync(request.ClientId);
@@ -57,7 +57,8 @@ namespace Mvc.Server {
             });
         }
 
-        [Authorize, HttpPost("~/connect/authorize/accept"), ValidateAntiForgeryToken]
+        [Authorize, FormValueRequired("submit.Accept")]
+        [HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
         public async Task<IActionResult> Accept(OpenIdConnectRequest request) {
             // Retrieve the profile of the logged in user.
             var user = await _userManager.GetUserAsync(User);
@@ -75,7 +76,8 @@ namespace Mvc.Server {
             return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
         }
 
-        [Authorize, HttpPost("~/connect/authorize/deny"), ValidateAntiForgeryToken]
+        [Authorize, FormValueRequired("submit.Deny")]
+        [HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
         public IActionResult Deny() {
             // Notify OpenIddict that the authorization grant has been denied by the resource owner
             // to redirect the user agent to the client application using the appropriate response_mode.
@@ -109,8 +111,7 @@ namespace Mvc.Server {
         // Note: to support non-interactive flows like password,
         // you must provide your own token endpoint action:
 
-        [HttpPost("~/connect/token")]
-        [Produces("application/json")]
+        [HttpPost("~/connect/token"), Produces("application/json")]
         public async Task<IActionResult> Exchange(OpenIdConnectRequest request) {
             if (request.IsPasswordGrantType()) {
                 var user = await _userManager.FindByNameAsync(request.Username);
