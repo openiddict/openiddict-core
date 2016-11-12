@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -14,7 +13,7 @@ using Xunit;
 namespace OpenIddict.Core.Tests {
     public class OpenIddictExtensionsTests {
         [Fact]
-        public void AddOpenIddict_ProviderIsRegistered() {
+        public void AddOpenIddict_RegistersProvider() {
             // Arrange
             var services = new ServiceCollection();
 
@@ -35,7 +34,7 @@ namespace OpenIddict.Core.Tests {
         [InlineData(typeof(OpenIddictScopeManager<object>))]
         [InlineData(typeof(OpenIddictTokenManager<object>))]
         [InlineData(typeof(OpenIddictServices<object, object, object, object>))]
-        public void AddOpenIddict_BasicServicesAreRegistered(Type type) {
+        public void AddOpenIddict_RegistersCoreServices(Type type) {
             // Arrange
             var services = new ServiceCollection();
 
