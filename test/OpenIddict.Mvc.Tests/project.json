@@ -6,6 +6,7 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.AspNetCore.TestHost": "1.1.0",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Microsoft.Extensions.Caching.Memory": "1.1.0",
     "Microsoft.Extensions.Logging.Debug": "1.1.0",
     "Moq": "4.6.38-alpha",
