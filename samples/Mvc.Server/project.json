@@ -21,45 +21,36 @@
   "dependencies": {
     "AspNet.Security.OAuth.Introspection": "1.0.0-alpha2-final",
     "AspNet.Security.OAuth.Validation": "1.0.0-alpha2-final",
-    "Microsoft.AspNetCore.Authentication.Google": "1.0.0",
-    "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0",
-    "Microsoft.AspNetCore.Diagnostics": "1.0.0",
-    "Microsoft.AspNetCore.Mvc": "1.0.0",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
-    "Microsoft.AspNetCore.StaticFiles": "1.0.0",
-    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0",
-    "Microsoft.Extensions.Configuration.CommandLine": "1.0.0",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0",
-    "Microsoft.Extensions.Logging.Console": "1.0.0",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0",
+    "Microsoft.AspNetCore.Authentication.Google": "1.1.0",
+    "Microsoft.AspNetCore.Authentication.Twitter": "1.1.0",
+    "Microsoft.AspNetCore.Diagnostics": "1.1.0",
+    "Microsoft.AspNetCore.Mvc": "1.1.0",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
+    "Microsoft.AspNetCore.StaticFiles": "1.1.0",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0",
+    "Microsoft.Extensions.Configuration.CommandLine": "1.1.0",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0",
+    "Microsoft.Extensions.Configuration.Json": "1.1.0",
+    "Microsoft.Extensions.Logging.Console": "1.1.0",
+    "Microsoft.Extensions.Logging.Debug": "1.1.0",
     "NWebsec.AspNetCore.Middleware": "1.0.0-gamma1-15",
     "OpenIddict": { "target": "project" },
     "OpenIddict.Mvc": { "target": "project" }
   },
 
   "frameworks": {
-    "net451": {
+    "net451": { },
+
+    "netcoreapp1.1": {
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1"
+        "Microsoft.NETCore.App": { "type": "platform", "version": "1.1.0" }
       }
-    },
-
-    "netcoreapp1.0": {
-      "dependencies": {
-        "Microsoft.NETCore.App": { "type": "platform", "version": "1.0.0" }
-      },
-
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
     }
   },
 
   "tools": {
-    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-preview2-final"
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.1.0-preview4-final"
   },
 
   "scripts": {
