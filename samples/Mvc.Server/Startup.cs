@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
-using NWebsec.AspNetCore.Middleware;
 using OpenIddict;
 
 namespace Mvc.Server {
@@ -89,20 +88,6 @@ namespace Mvc.Server {
             app.UseDeveloperExceptionPage();
 
             app.UseStaticFiles();
-
-            app.UseCsp(options => options.DefaultSources(directive => directive.Self())
-                .ImageSources(directive => directive.Self()
-                    .CustomSources("*"))
-                .ScriptSources(directive => directive.Self()
-                    .UnsafeInline())
-                .StyleSources(directive => directive.Self()
-                    .UnsafeInline()));
-
-            app.UseXContentTypeOptions();
-
-            app.UseXfo(options => options.Deny());
-
-            app.UseXXssProtection(options => options.EnabledWithBlockMode());
 
             // Add a middleware used to validate access tokens and protect the API endpoints.
             app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"), branch => {
