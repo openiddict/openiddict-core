@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace Mvc.Client.Controllers {
     public class HomeController : Controller {
@@ -23,13 +24,15 @@ namespace Mvc.Client.Controllers {
                                                         "Make sure that SaveTokens is set to true in the OIDC options.");
                 }
 
-                var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:54540/api/message");
+                var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:54540/api/userinfo");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 var response = await client.SendAsync(request, cancellationToken);
                 response.EnsureSuccessStatusCode();
 
-                return View("Home", model: await response.Content.ReadAsStringAsync());
+                var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
+
+                return View("Home", model: (string) payload["preferred_username"]);
             }
         }
     }
