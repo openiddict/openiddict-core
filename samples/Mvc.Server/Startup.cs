@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
-using NWebsec.AspNetCore.Middleware;
 using OpenIddict;
 
 namespace Mvc.Server {
@@ -39,7 +38,7 @@ namespace Mvc.Server {
                 .EnableAuthorizationEndpoint("/connect/authorize")
                 .EnableLogoutEndpoint("/connect/logout")
                 .EnableTokenEndpoint("/connect/token")
-                .EnableUserinfoEndpoint("/Account/Userinfo")
+                .EnableUserinfoEndpoint("/api/userinfo")
 
                 // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
                 // can enable the other flows if you need to support implicit or client credentials.
@@ -90,47 +89,26 @@ namespace Mvc.Server {
 
             app.UseStaticFiles();
 
-            // Add a middleware used to validate access
-            // tokens and protect the API endpoints.
-            app.UseOAuthValidation();
-
-            // Alternatively, you can also use the introspection middleware.
-            // Using it is recommended if your resource server is in a
-            // different application/separated from the authorization server.
-            // 
-            // app.UseOAuthIntrospection(options => {
-            //     options.AutomaticAuthenticate = true;
-            //     options.AutomaticChallenge = true;
-            //     options.Authority = "http://localhost:54540/";
-            //     options.Audience = "resource_server";
-            //     options.ClientId = "resource_server";
-            //     options.ClientSecret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd";
-            // });
-
-            app.UseCsp(options => options.DefaultSources(directive => directive.Self())
-                .ImageSources(directive => directive.Self()
-                    .CustomSources("*"))
-                .ScriptSources(directive => directive.Self()
-                    .UnsafeInline())
-                .StyleSources(directive => directive.Self()
-                    .UnsafeInline()));
-
-            app.UseXContentTypeOptions();
-
-            app.UseXfo(options => options.Deny());
-
-            app.UseXXssProtection(options => options.EnabledWithBlockMode());
-
-            app.UseIdentity();
-
-            app.UseGoogleAuthentication(new GoogleOptions {
-                ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
-                ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f"
+            // Add a middleware used to validate access tokens and protect the API endpoints.
+            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"), branch => {
+                branch.UseOAuthValidation();
             });
 
-            app.UseTwitterAuthentication(new TwitterOptions {
-                ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
-                ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
+            // Warning: starting with ASP.NET Core 1.1.0, having multiple authentication middleware
+            // with AutomaticChallenge = true is no longer supported. To ensure the validation and
+            // cookies middleware don't collide, app.UseIdentity() is only invoked for non-API calls.
+            app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api"), branch => {
+                branch.UseIdentity();
+
+                branch.UseGoogleAuthentication(new GoogleOptions {
+                    ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
+                    ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f"
+                });
+
+                branch.UseTwitterAuthentication(new TwitterOptions {
+                    ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
+                    ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
+                });
             });
 
             app.UseStatusCodePagesWithReExecute("/error");
@@ -159,7 +137,7 @@ namespace Mvc.Server {
                         ClientId = "myClient",
                         ClientSecret = Crypto.HashPassword("secret_secret_secret"),
                         DisplayName = "My client application",
-                        LogoutRedirectUri = "http://localhost:53507/",
+                        LogoutRedirectUri = "http://localhost:53507/signout-callback-oidc",
                         RedirectUri = "http://localhost:53507/signin-oidc",
                         Type = OpenIddictConstants.ClientTypes.Confidential
                     });

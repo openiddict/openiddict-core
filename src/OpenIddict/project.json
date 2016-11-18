@@ -33,18 +33,12 @@
   },
 
   "dependencies": {
-    "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
+    "JetBrains.Annotations": { "type": "build", "version": "10.2.1" },
     "OpenIddict.EntityFramework": { "target": "project" }
   },
 
   "frameworks": {
     "net451": { },
-
-    "netstandard1.4": {
-      "imports": [
-        "dotnet5.5",
-        "portable-net451+win8"
-      ]
-    }
+    "netstandard1.4": { }
   }
 }
