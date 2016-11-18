@@ -37,6 +37,8 @@ namespace Mvc.Server {
         // Note: to support interactive flows like the code flow,
         // you must provide your own authorization endpoint action:
 
+        //
+        // POST: /connect/logout
         [Authorize, HttpGet("~/connect/authorize")]
         public async Task<IActionResult> Authorize(OpenIdConnectRequest request) {
             // Retrieve the application details from the database.
@@ -57,6 +59,8 @@ namespace Mvc.Server {
             });
         }
 
+        //
+        // POST: /connect/authorize
         [Authorize, FormValueRequired("submit.Accept")]
         [HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
         public async Task<IActionResult> Accept(OpenIdConnectRequest request) {
@@ -76,6 +80,8 @@ namespace Mvc.Server {
             return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
         }
 
+        //
+        // POST: /connect/authorize
         [Authorize, FormValueRequired("submit.Deny")]
         [HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
         public IActionResult Deny() {
@@ -87,6 +93,8 @@ namespace Mvc.Server {
         // Note: the logout action is only useful when implementing interactive
         // flows like the authorization code flow or the implicit flow.
 
+        //
+        // GET: /connect/logout
         [HttpGet("~/connect/logout")]
         public IActionResult Logout(OpenIdConnectRequest request) {
             // Flow the request_id to allow OpenIddict to restore
@@ -96,6 +104,8 @@ namespace Mvc.Server {
             });
         }
 
+        //
+        // POST: /connect/logout
         [HttpPost("~/connect/logout"), ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout() {
             // Ask ASP.NET Core Identity to delete the local and external cookies created
@@ -111,6 +121,8 @@ namespace Mvc.Server {
         // Note: to support non-interactive flows like password,
         // you must provide your own token endpoint action:
 
+        //
+        // GET: /connect/token
         [HttpPost("~/connect/token"), Produces("application/json")]
         public async Task<IActionResult> Exchange(OpenIdConnectRequest request) {
             if (request.IsPasswordGrantType()) {
@@ -122,44 +134,15 @@ namespace Mvc.Server {
                     });
                 }
 
-                // Ensure the user is allowed to sign in.
-                if (!await _signInManager.CanSignInAsync(user)) {
-                    return BadRequest(new OpenIdConnectResponse {
-                        Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                        ErrorDescription = "The specified user is not allowed to sign in."
-                    });
-                }
-
-                // Reject the token request if two-factor authentication has been enabled by the user.
-                if (_userManager.SupportsUserTwoFactor && await _userManager.GetTwoFactorEnabledAsync(user)) {
-                    return BadRequest(new OpenIdConnectResponse {
-                        Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                        ErrorDescription = "The specified user is not allowed to sign in."
-                    });
-                }
-
-                // Ensure the user is not already locked out.
-                if (_userManager.SupportsUserLockout && await _userManager.IsLockedOutAsync(user)) {
+                // Ensure the user is allowed to sign in and make sure that the password is valid and that
+                // the account is not locked out. Warning: don't use PasswordSignInAsync in this action as it
+                // returns an authentication cookie, which would result in a session fixation vulnerability.
+                var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+                if (!result.Succeeded) {
                     return BadRequest(new OpenIdConnectResponse {
                         Error = OpenIdConnectConstants.Errors.InvalidGrant,
                         ErrorDescription = "The username/password couple is invalid."
                     });
-                }
-
-                // Ensure the password is valid.
-                if (!await _userManager.CheckPasswordAsync(user, request.Password)) {
-                    if (_userManager.SupportsUserLockout) {
-                        await _userManager.AccessFailedAsync(user);
-                    }
-
-                    return BadRequest(new OpenIdConnectResponse {
-                        Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                        ErrorDescription = "The username/password couple is invalid."
-                    });
-                }
-
-                if (_userManager.SupportsUserLockout) {
-                    await _userManager.ResetAccessFailedCountAsync(user);
                 }
 
                 // Create a new authentication ticket.
