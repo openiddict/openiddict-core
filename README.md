@@ -66,6 +66,12 @@ To use OpenIddict, you need to:
   - **Configure the OpenIddict services** in `Startup.ConfigureServices`:
 
 ```csharp
+public Startup(IHostingEnvironment env) {
+        CurrentEnvironment = env;
+}
+
+private IHostingEnvironment CurrentEnvironment { get; set; }
+
 public void ConfigureServices(IServiceCollection services) {
     services.AddMvc();
 
@@ -78,25 +84,29 @@ public void ConfigureServices(IServiceCollection services) {
 	    .AddDefaultTokenProviders();
 
 	// Register the OpenIddict services, including the default Entity Framework stores.
-	services.AddOpenIddict<ApplicationDbContext>()
+	var openIdDict = services.AddOpenIddict<ApplicationDbContext>()
         // Register the ASP.NET Core MVC binder used by OpenIddict.
         // Note: if you don't call this method, you won't be able to
         // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
-        .AddMvcBinders()
+          .AddMvcBinders()
 
         // Enable the token endpoint (required to use the password flow).
-        .EnableTokenEndpoint("/connect/token")
+          .EnableTokenEndpoint("/connect/token")
 
         // Allow client applications to use the grant_type=password flow.
-        .AllowPasswordFlow()
-
+          .AllowPasswordFlow();
+	
+	if (CurrentEnvironment.IsDevelopment()) {
+	    openIdDict
 	    // During development, you can disable the HTTPS requirement.
-	    .DisableHttpsRequirement()
+	      .DisableHttpsRequirement()
 
-        // Register a new ephemeral key, that is discarded when the application
-        // shuts down. Tokens signed using this key are automatically invalidated.
-        // This method should only be used during development.
-        .AddEphemeralSigningKey();
+	    // Register a new ephemeral key, that is discarded when the application
+	    // shuts down. Tokens signed using this key are automatically invalidated.
+	    // This method should only be used during development.
+	      .AddEphemeralSigningKey();
+        }
+
 }
 ```
 
@@ -146,29 +156,39 @@ The **Mvc.Server sample comes with an [`AuthorizationController` that supports b
   - **Enable the corresponding flows in the OpenIddict options**:
 
 ```csharp
+public Startup(IHostingEnvironment env) {
+    CurrentEnvironment = env;
+}
+
+private IHostingEnvironment CurrentEnvironment { get; set; }
+
 public void ConfigureServices(IServiceCollection services) {
 	// Register the OpenIddict services, including the default Entity Framework stores.
-	services.AddOpenIddict<ApplicationDbContext>()
+	var openIdDict = services.AddOpenIddict<ApplicationDbContext>()
         // Register the ASP.NET Core MVC binder used by OpenIddict.
         // Note: if you don't call this method, you won't be able to
         // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
-        .AddMvcBinders()
+          .AddMvcBinders()
 
         // Enable the authorization and token endpoints (required to use the code flow).
-        .EnableAuthorizationEndpoint("/connect/authorize")
-        .EnableTokenEndpoint("/connect/token")
+          .EnableAuthorizationEndpoint("/connect/authorize")
+          .EnableTokenEndpoint("/connect/token")
 
         // Allow client applications to use the code flow.
-        .AllowAuthorizationCodeFlow()
+          .AllowAuthorizationCodeFlow();
 
+	
+	if (CurrentEnvironment.IsDevelopment()) {
+	    openIdDict
 	    // During development, you can disable the HTTPS requirement.
-	    .DisableHttpsRequirement()
+	      .DisableHttpsRequirement()
 
-        // Register a new ephemeral key, that is discarded when the application
-        // shuts down. Tokens signed using this key are automatically invalidated.
-        // This method should only be used during development.
-        .AddEphemeralSigningKey();
-}
+	    // Register a new ephemeral key, that is discarded when the application
+	    // shuts down. Tokens signed using this key are automatically invalidated.
+	    // This method should only be used during development.
+	      .AddEphemeralSigningKey();
+        }
+    }
 ```
 
   - **Register your client application**:
