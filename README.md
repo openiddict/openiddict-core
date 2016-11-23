@@ -30,6 +30,7 @@ with the power to control who can access your API and the information that is ex
   - [Authorization code flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/CodeFlow)
   - [Implicit flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/ImplicitFlow)
   - [Password flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/PasswordFlow)
+  - [Client credentials flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/ClientCredentialsFlow)
 
 --------------
 
