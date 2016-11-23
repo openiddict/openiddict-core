@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Client;
+using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;

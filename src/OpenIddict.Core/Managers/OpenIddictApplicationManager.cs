@@ -157,6 +157,35 @@ namespace OpenIddict {
 
             return Store.GetTokensAsync(application, CancellationToken);
         }
+        /// <summary>
+        /// Determines whether an application is a confidential client.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <returns><c>true</c> if the application is a confidential client, <c>false</c> otherwise.</returns>
+        public async Task<bool> IsConfidentialAsync([NotNull] TApplication application) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var type = await GetClientTypeAsync(application);
+
+            return string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Determines whether an application is a public client.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <returns><c>true</c> if the application is a public client, <c>false</c> otherwise.</returns>
+        public async Task<bool> IsPublicAsync(TApplication application) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var type = await GetClientTypeAsync(application);
+
+            return string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase);
+        }
 
         /// <summary>
         /// Validates the redirect_uri associated with an application.

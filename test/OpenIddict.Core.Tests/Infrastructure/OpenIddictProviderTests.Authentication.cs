@@ -1,7 +1,8 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Client;
+using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -416,7 +417,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             var identifier = (string) response[OpenIdConnectConstants.Parameters.RequestId];
 
             // Assert
-            Assert.Equal(1, response.Count());
+            Assert.Equal(1, response.GetParameters().Count());
             Assert.NotNull(identifier);
 
             cache.Verify(mock => mock.SetAsync(

@@ -7,7 +7,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Diagnostics;
@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
+using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Infrastructure {
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
@@ -57,12 +58,14 @@ namespace OpenIddict.Infrastructure {
 
                 // Restore the logout request parameters from the serialized payload.
                 using (var reader = new BsonReader(new MemoryStream(payload))) {
-                    var serializer = JsonSerializer.CreateDefault();
+                    foreach (var parameter in JObject.Load(reader)) {
+                        // Avoid overriding the current request parameters.
+                        if (context.Request.HasParameter(parameter.Key)) {
+                            continue;
+                        }
 
-                    // Note: JsonSerializer.Populate() automatically preserves
-                    // the original request parameters resolved from the cache
-                    // when parameters with the same names are specified.
-                    serializer.Populate(reader, context.Request);
+                        context.Request.SetParameter(parameter.Key, parameter.Value);
+                    }
                 }
             }
         }

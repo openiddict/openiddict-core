@@ -1,7 +1,9 @@
 ﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Authentication;
@@ -196,7 +198,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             });
 
             // Assert
-            Assert.Equal(1, response.Count());
+            Assert.Equal(1, response.GetParameters().Count());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
         }
 
@@ -253,7 +255,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             });
 
             // Assert
-            Assert.Equal(1, response.Count());
+            Assert.Equal(1, response.GetParameters().Count());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56"), Times.Once());
@@ -312,7 +314,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             });
 
             // Assert
-            Assert.Equal(1, response.Count());
+            Assert.Equal(1, response.GetParameters().Count());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56"), Times.Once());

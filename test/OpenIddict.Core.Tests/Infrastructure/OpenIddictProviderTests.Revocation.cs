@@ -3,7 +3,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Authentication;
@@ -300,7 +302,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             });
 
             // Assert
-            Assert.Equal(0, response.Count());
+            Assert.Equal(0, response.GetParameters().Count());
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56"), Times.Once());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(It.IsAny<object>()), Times.Never());
@@ -343,7 +345,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             });
 
             // Assert
-            Assert.Equal(0, response.Count());
+            Assert.Equal(0, response.GetParameters().Count());
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56"), Times.Once());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(token), Times.Once());
