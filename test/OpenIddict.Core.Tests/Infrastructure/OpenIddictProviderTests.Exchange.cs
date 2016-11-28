@@ -516,9 +516,33 @@ namespace OpenIddict.Core.Tests.Infrastructure {
         [Theory]
         [InlineData(OpenIdConnectConstants.GrantTypes.ClientCredentials)]
         [InlineData(OpenIdConnectConstants.GrantTypes.Password)]
+        [InlineData(OpenIdConnectConstants.GrantTypes.RefreshToken)]
         [InlineData("urn:ietf:params:oauth:grant-type:custom_grant")]
         public async Task HandleTokenRequest_RequestsAreNotHandledLocally(string flow) {
             // Arrange
+            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            identity.AddClaim(ClaimTypes.NameIdentifier, "Bob le Bricoleur");
+
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(identity),
+                new AuthenticationProperties(),
+                OpenIdConnectServerDefaults.AuthenticationScheme);
+
+            ticket.SetTicketId("60FFF7EA-F98E-437B-937E-5073CC313103");
+            ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
+                .Returns(ticket);
+
+            var token = Mock.Of<object>();
+
+            var manager = CreateTokenManager(instance => {
+                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103"))
+                    .ReturnsAsync(token);
+            });
+
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
                     var application = Mock.Of<object>();
@@ -534,6 +558,10 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                 }));
 
                 builder.AllowCustomFlow("urn:ietf:params:oauth:grant-type:custom_grant");
+
+                builder.Services.AddSingleton(manager);
+
+                builder.Configure(options => options.RefreshTokenFormat = format.Object);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -543,6 +571,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
                 GrantType = flow,
+                RefreshToken = "8xLOxBtZp8",
                 Username = "johndoe",
                 Password = "A3ddj3w"
             });

@@ -180,9 +180,6 @@ namespace OpenIddict.Infrastructure {
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context) {
             var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
 
-            // Note: the OpenID Connect server middleware automatically reuses the authentication ticket
-            // stored in the authorization code to create a new identity. To ensure the user was not removed
-            // after the authorization code was issued, a new check is made before validating the request.
             if (context.Request.IsAuthorizationCodeGrantType()) {
                 Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
@@ -211,9 +208,6 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            // Note: the OpenID Connect server middleware automatically reuses the authentication ticket
-            // stored in the refresh token to create a new identity. To ensure the user was not removed
-            // after the refresh token was issued, a new check is made before validating the request.
             else if (context.Request.IsRefreshTokenGrantType()) {
                 Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
@@ -240,10 +234,6 @@ namespace OpenIddict.Infrastructure {
                 if (context.Options.UseSlidingExpiration) {
                     await services.Tokens.RevokeAsync(token);
                 }
-
-                context.Validate(context.Ticket);
-
-                return;
             }
 
             // Invoke the rest of the pipeline to allow

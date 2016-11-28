@@ -94,8 +94,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                 app.UseOpenIddict();
 
                 app.Run(context => {
-                    if (context.Request.Path == AuthorizationEndpoint ||
-                        context.Request.Path == TokenEndpoint) {
+                    if (context.Request.Path == AuthorizationEndpoint || context.Request.Path == TokenEndpoint) {
                         var request = context.GetOpenIdConnectRequest();
 
                         var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
