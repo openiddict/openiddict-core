@@ -2,9 +2,11 @@
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
+using Microsoft.AspNetCore.Builder;
+using OpenIddict.Core;
 using Xunit;
 
-namespace OpenIddict.Core.Tests.Infrastructure {
+namespace OpenIddict.Tests {
     public partial class OpenIddictProviderTests {
         [Fact]
         public async Task HandleConfigurationRequest_PlainCodeChallengeMethodIsNotReturned() {

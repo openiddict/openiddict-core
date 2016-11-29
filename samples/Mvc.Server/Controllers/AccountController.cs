@@ -11,7 +11,7 @@ using Mvc.Server.Models;
 using Mvc.Server.Services;
 using Mvc.Server.ViewModels.Account;
 using Newtonsoft.Json.Linq;
-using OpenIddict;
+using OpenIddict.Core;
 
 namespace Mvc.Server.Controllers {
     [Authorize]

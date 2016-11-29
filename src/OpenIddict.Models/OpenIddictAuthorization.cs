@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace OpenIddict {
+namespace OpenIddict.Models {
     /// <summary>
     /// Represents an OpenIddict authorization.
     /// </summary>

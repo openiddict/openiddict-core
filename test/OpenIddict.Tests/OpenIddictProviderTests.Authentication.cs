@@ -1,16 +1,20 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
+using OpenIddict.Core;
+using OpenIddict.Models;
 using Xunit;
 
-namespace OpenIddict.Core.Tests.Infrastructure {
+namespace OpenIddict.Tests {
     public partial class OpenIddictProviderTests {
         [Fact]
         public async Task ExtractAuthorizationRequest_UnsupportedRequestParameterIsRejected() {
@@ -278,7 +282,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenClientCannotBeFound() {
             // Arrange
             var manager = CreateApplicationManager(instance => {
-                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(null);
             });
 
@@ -299,19 +303,19 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("Application not found in the database: ensure that your client_id is correct.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam"), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenRedirectUriIsInvalid() {
             // Arrange
-            var application = Mock.Of<object>();
+            var application = new OpenIddictApplication();
 
             var manager = CreateApplicationManager(instance => {
-                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path"))
+                instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
             });
 
@@ -332,8 +336,8 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("Invalid redirect_uri.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path"), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Theory]
@@ -343,16 +347,16 @@ namespace OpenIddict.Core.Tests.Infrastructure {
         [InlineData("token")]
         public async Task ValidateAuthorizationRequest_ImplicitOrHybridRequestIsRejectedWhenClientIsConfidential(string type) {
             // Arrange
-            var application = Mock.Of<object>();
+            var application = new OpenIddictApplication();
 
             var manager = CreateApplicationManager(instance => {
-                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path"))
+                instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
-                instance.Setup(mock => mock.GetClientTypeAsync(application))
+                instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
             });
 
@@ -376,9 +380,9 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal("Confidential clients are not allowed to retrieve " +
                          "an access token from the authorization endpoint.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -388,15 +392,15 @@ namespace OpenIddict.Core.Tests.Infrastructure {
 
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path"))
+                    instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    instance.Setup(mock => mock.GetClientTypeAsync(application))
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
                 }));
 
@@ -438,20 +442,20 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             // Arrange
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path"))
+                    instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    instance.Setup(mock => mock.GetClientTypeAsync(application))
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
                 }));
 
                 builder.Services.AddSingleton(CreateTokenManager(instance => {
-                    instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode))
+                    instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
                 }));
             });
@@ -498,15 +502,15 @@ namespace OpenIddict.Core.Tests.Infrastructure {
 
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path"))
+                    instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    instance.Setup(mock => mock.GetClientTypeAsync(application))
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
                 }));
 
@@ -535,15 +539,15 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             // Arrange
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path"))
+                    instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    instance.Setup(mock => mock.GetClientTypeAsync(application))
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
                 }));
 

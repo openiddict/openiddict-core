@@ -18,8 +18,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
+using OpenIddict.Core;
+using OpenIddict.Models;
 
-namespace OpenIddict.Core.Tests.Infrastructure {
+namespace OpenIddict.Tests {
     public partial class OpenIddictProviderTests {
         public const string AuthorizationEndpoint = "/connect/authorize";
         public const string ConfigurationEndpoint = "/.well-known/openid-configuration";
@@ -37,7 +39,10 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             builder.ConfigureLogging(options => options.AddDebug());
 
             builder.ConfigureServices(services => {
-                var instance = services.AddOpenIddict<object, object, object, object>()
+                services.AddAuthentication();
+                services.AddOptions();
+
+                var instance = services.AddOpenIddict()
                     // Disable the transport security requirement during testing.
                     .DisableHttpsRequirement()
 
@@ -59,13 +64,17 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                     // Register the X.509 certificate used to sign the identity tokens.
                     .AddSigningCertificate(
                         assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
-                        resource: "OpenIddict.Core.Tests.Certificate.pfx",
+                        resource: "OpenIddict.Tests.Certificate.pfx",
                         password: "OpenIddict")
 
                     // Note: overriding the default data protection provider is not necessary for the tests to pass,
                     // but is useful to ensure unnecessary keys are not persisted in testing environments, which also
                     // helps make the unit tests run faster, as no registry or disk access is required in this case.
                     .UseDataProtectionProvider(new EphemeralDataProtectionProvider());
+
+                // Replace the default application/token managers.
+                services.AddSingleton(CreateApplicationManager());
+                services.AddSingleton(CreateTokenManager());
 
                 // Run the configuration delegate
                 // registered by the unit tests.
@@ -129,22 +138,20 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             return new TestServer(builder);
         }
 
-        private static OpenIddictApplicationManager<object> CreateApplicationManager(Action<Mock<OpenIddictApplicationManager<object>>> setup = null) {
-            var manager = new Mock<OpenIddictApplicationManager<object>>(
-                Mock.Of<IServiceProvider>(),
-                Mock.Of<IOpenIddictApplicationStore<object>>(),
-                Mock.Of<ILogger<OpenIddictApplicationManager<object>>>());
+        private static OpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>> setup = null) {
+            var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
+                Mock.Of<IOpenIddictApplicationStore<OpenIddictApplication>>(),
+                Mock.Of<ILogger<OpenIddictApplicationManager<OpenIddictApplication>>>());
 
             setup?.Invoke(manager);
 
             return manager.Object;
         }
 
-        private static OpenIddictTokenManager<object> CreateTokenManager(Action<Mock<OpenIddictTokenManager<object>>> setup = null) {
-            var manager = new Mock<OpenIddictTokenManager<object>>(
-                Mock.Of<IServiceProvider>(),
-                Mock.Of<IOpenIddictTokenStore<object>>(),
-                Mock.Of<ILogger<OpenIddictTokenManager<object>>>());
+        private static OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> setup = null) {
+            var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
+                Mock.Of<IOpenIddictTokenStore<OpenIddictToken>>(),
+                Mock.Of<ILogger<OpenIddictTokenManager<OpenIddictToken>>>());
 
             setup?.Invoke(manager);
 

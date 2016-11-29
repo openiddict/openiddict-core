@@ -1,51 +1,40 @@
 ﻿using System;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OpenIddict.Models;
 using Xunit;
 
 namespace OpenIddict.EntityFramework.Tests {
     public class OpenIddictExtensionsTests {
         [Theory]
-        [InlineData(typeof(OpenIddictApplicationStore<OpenIddictApplication<Guid>, OpenIddictToken<Guid>, OpenIddictDbContext, Guid>))]
-        [InlineData(typeof(OpenIddictAuthorizationStore<OpenIddictAuthorization<Guid>, OpenIddictToken<Guid>, OpenIddictDbContext, Guid>))]
-        [InlineData(typeof(OpenIddictScopeStore<OpenIddictScope<Guid>, OpenIddictDbContext, Guid>))]
-        [InlineData(typeof(OpenIddictTokenStore<OpenIddictToken<Guid>, OpenIddictAuthorization<Guid>, OpenIddictDbContext, Guid>))]
-        public void AddEntityFramework_RegistersEntityFrameworkStores(Type type) {
+        [InlineData(typeof(OpenIddictApplicationStore<OpenIddictApplication<Guid, OpenIddictToken<Guid>>, OpenIddictToken<Guid>, DbContext, Guid>))]
+        [InlineData(typeof(OpenIddictAuthorizationStore<OpenIddictAuthorization<Guid, OpenIddictToken<Guid>>, OpenIddictToken<Guid>, DbContext, Guid>))]
+        [InlineData(typeof(OpenIddictScopeStore<OpenIddictScope<Guid>, DbContext, Guid>))]
+        [InlineData(typeof(OpenIddictTokenStore<OpenIddictToken<Guid>, OpenIddictAuthorization<Guid, OpenIddictToken<Guid>>, DbContext, Guid>))]
+        public void AddEntityFrameworkStores_RegistersEntityFrameworkStores(Type type) {
             // Arrange
             var services = new ServiceCollection();
 
-            var builder = new OpenIddictBuilder(services) {
-                ApplicationType = typeof(OpenIddictApplication<Guid>),
-                AuthorizationType = typeof(OpenIddictAuthorization<Guid>),
-                ScopeType = typeof(OpenIddictScope<Guid>),
-                TokenType = typeof(OpenIddictToken<Guid>)
-            };
-
             // Act
-            builder.AddEntityFramework<OpenIddictDbContext, Guid>();
+            services.AddOpenIddict<Guid>()
+                .AddEntityFrameworkStores<DbContext, Guid>();
 
             // Assert
             Assert.Contains(services, service => service.ImplementationType == type);
         }
 
         [Theory]
-        [InlineData(typeof(OpenIddictApplicationStore<OpenIddictApplication, OpenIddictToken, OpenIddictDbContext, string>))]
-        [InlineData(typeof(OpenIddictAuthorizationStore<OpenIddictAuthorization, OpenIddictToken, OpenIddictDbContext, string>))]
-        [InlineData(typeof(OpenIddictScopeStore<OpenIddictScope, OpenIddictDbContext, string>))]
-        [InlineData(typeof(OpenIddictTokenStore<OpenIddictToken, OpenIddictAuthorization, OpenIddictDbContext, string>))]
-        public void AddEntityFramework_KeyTypeDefaultsToString(Type type) {
+        [InlineData(typeof(OpenIddictApplicationStore<OpenIddictApplication, OpenIddictToken, DbContext, string>))]
+        [InlineData(typeof(OpenIddictAuthorizationStore<OpenIddictAuthorization, OpenIddictToken, DbContext, string>))]
+        [InlineData(typeof(OpenIddictScopeStore<OpenIddictScope, DbContext, string>))]
+        [InlineData(typeof(OpenIddictTokenStore<OpenIddictToken, OpenIddictAuthorization, DbContext, string>))]
+        public void AddEntityFrameworkStores_KeyTypeDefaultsToString(Type type) {
             // Arrange
             var services = new ServiceCollection();
 
-            var builder = new OpenIddictBuilder(services) {
-                ApplicationType = typeof(OpenIddictApplication),
-                AuthorizationType = typeof(OpenIddictAuthorization),
-                ScopeType = typeof(OpenIddictScope),
-                TokenType = typeof(OpenIddictToken)
-            };
-
             // Act
-            builder.AddEntityFramework<OpenIddictDbContext>();
+            services.AddOpenIddict()
+                .AddEntityFrameworkStores<DbContext>();
 
             // Assert
             Assert.Contains(services, service => service.ImplementationType == type);

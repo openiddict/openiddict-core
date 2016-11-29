@@ -6,7 +6,7 @@
 
 using System;
 
-namespace OpenIddict {
+namespace OpenIddict.Models {
     /// <summary>
     /// Represents an OpenIddict scope.
     /// </summary>

@@ -18,7 +18,8 @@ using Mvc.Server.Helpers;
 using Mvc.Server.Models;
 using Mvc.Server.ViewModels.Authorization;
 using Mvc.Server.ViewModels.Shared;
-using OpenIddict;
+using OpenIddict.Core;
+using OpenIddict.Models;
 
 namespace Mvc.Server {
     public class AuthorizationController : Controller {
@@ -42,7 +43,7 @@ namespace Mvc.Server {
         [Authorize, HttpGet("~/connect/authorize")]
         public async Task<IActionResult> Authorize(OpenIdConnectRequest request) {
             // Retrieve the application details from the database.
-            var application = await _applicationManager.FindByClientIdAsync(request.ClientId);
+            var application = await _applicationManager.FindByClientIdAsync(request.ClientId, HttpContext.RequestAborted);
             if (application == null) {
                 return View("Error", new ErrorViewModel {
                     Error = OpenIdConnectConstants.Errors.InvalidClient,

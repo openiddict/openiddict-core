@@ -19,20 +19,23 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
+using OpenIddict.Core;
 
-namespace OpenIddict.Infrastructure {
+namespace OpenIddict {
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task ExtractAuthorizationRequest([NotNull] ExtractAuthorizationRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
 
             // Reject requests using the unsupported request parameter.
             if (!string.IsNullOrEmpty(context.Request.Request)) {
-                services.Logger.LogError("The authorization request was rejected because it contained " +
-                                         "an unsupported parameter: {Parameter}.", "request");
+                logger.LogError("The authorization request was rejected because it contained " +
+                                "an unsupported parameter: {Parameter}.", "request");
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.RequestNotSupported,
@@ -43,8 +46,8 @@ namespace OpenIddict.Infrastructure {
 
             // Reject requests using the unsupported request_uri parameter.
             if (!string.IsNullOrEmpty(context.Request.RequestUri)) {
-                services.Logger.LogError("The authorization request was rejected because it contained " +
-                                         "an unsupported parameter: {Parameter}.", "request_uri");
+                logger.LogError("The authorization request was rejected because it contained " +
+                                "an unsupported parameter: {Parameter}.", "request_uri");
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.RequestUriNotSupported,
@@ -57,9 +60,9 @@ namespace OpenIddict.Infrastructure {
             // restore the complete authorization request from the distributed cache.
             if (!string.IsNullOrEmpty(context.Request.RequestId)) {
                 // Return an error if request caching support was not enabled.
-                if (!services.Options.EnableRequestCaching) {
-                    services.Logger.LogError("The authorization request was rejected because " +
-                                             "request caching support was not enabled.");
+                if (!options.Value.EnableRequestCaching) {
+                    logger.LogError("The authorization request was rejected because " +
+                                    "request caching support was not enabled.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -72,10 +75,10 @@ namespace OpenIddict.Infrastructure {
                 // to avoid collisions with the other types of cached requests.
                 var key = OpenIddictConstants.Environment.AuthorizationRequest + context.Request.RequestId;
 
-                var payload = await services.Options.Cache.GetAsync(key);
+                var payload = await options.Value.Cache.GetAsync(key);
                 if (payload == null) {
-                    services.Logger.LogError("The authorization request was rejected because an unknown " +
-                                             "or invalid request_id parameter was specified.");
+                    logger.LogError("The authorization request was rejected because an unknown " +
+                                    "or invalid request_id parameter was specified.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -99,14 +102,16 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
+            var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
 
             // Note: the OpenID Connect server middleware supports authorization code, implicit, hybrid,
             // none and custom flows but OpenIddict uses a stricter policy rejecting unknown flows.
             if (!context.Request.IsAuthorizationCodeFlow() && !context.Request.IsHybridFlow() &&
                 !context.Request.IsImplicitFlow() && !context.Request.IsNoneFlow()) {
-                services.Logger.LogError("The authorization request was rejected because the '{ResponseType}' " +
-                                         "response type is not supported.", context.Request.ResponseType);
+                logger.LogError("The authorization request was rejected because the '{ResponseType}' " +
+                                "response type is not supported.", context.Request.ResponseType);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
@@ -116,9 +121,9 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject code flow authorization requests if the authorization code flow is not enabled.
-            if (context.Request.IsAuthorizationCodeFlow() && !services.Options.IsAuthorizationCodeFlowEnabled()) {
-                services.Logger.LogError("The authorization request was rejected because " +
-                                         "the authorization code flow was not enabled.");
+            if (context.Request.IsAuthorizationCodeFlow() && !options.Value.IsAuthorizationCodeFlowEnabled()) {
+                logger.LogError("The authorization request was rejected because " +
+                                "the authorization code flow was not enabled.");
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
@@ -128,8 +133,8 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject implicit flow authorization requests if the implicit flow is not enabled.
-            if (context.Request.IsImplicitFlow() && !services.Options.IsImplicitFlowEnabled()) {
-                services.Logger.LogError("The authorization request was rejected because the implicit flow was not enabled.");
+            if (context.Request.IsImplicitFlow() && !options.Value.IsImplicitFlowEnabled()) {
+                logger.LogError("The authorization request was rejected because the implicit flow was not enabled.");
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
@@ -139,10 +144,10 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject hybrid flow authorization requests if the authorization code or the implicit flows are not enabled.
-            if (context.Request.IsHybridFlow() && (!services.Options.IsAuthorizationCodeFlowEnabled() ||
-                                                   !services.Options.IsImplicitFlowEnabled())) {
-                services.Logger.LogError("The authorization request was rejected because the " +
-                                         "authorization code flow or the implicit flow was not enabled.");
+            if (context.Request.IsHybridFlow() && (!options.Value.IsAuthorizationCodeFlowEnabled() ||
+                                                   !options.Value.IsImplicitFlowEnabled())) {
+                logger.LogError("The authorization request was rejected because the " +
+                                "authorization code flow or the implicit flow was not enabled.");
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
@@ -152,7 +157,7 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
-            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) && !services.Options.IsRefreshTokenFlowEnabled()) {
+            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) && !options.Value.IsRefreshTokenFlowEnabled()) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "The 'offline_access' scope is not allowed.");
@@ -166,8 +171,8 @@ namespace OpenIddict.Infrastructure {
             if (!string.IsNullOrEmpty(context.Request.ResponseMode) && !context.Request.IsFormPostResponseMode() &&
                                                                        !context.Request.IsFragmentResponseMode() &&
                                                                        !context.Request.IsQueryResponseMode()) {
-                services.Logger.LogError("The authorization request was rejected because the '{ResponseMode}' " +
-                                         "response mode is not supported.", context.Request.ResponseMode);
+                logger.LogError("The authorization request was rejected because the '{ResponseMode}' " +
+                                "response mode is not supported.", context.Request.ResponseMode);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -194,8 +199,8 @@ namespace OpenIddict.Infrastructure {
                 // Since the default challenge method (plain) is explicitly disallowed,
                 // reject the authorization request if the code_challenge_method is missing.
                 if (string.IsNullOrEmpty(context.Request.CodeChallengeMethod)) {
-                    services.Logger.LogError("The authorization request was rejected because the " +
-                                             "required 'code_challenge_method' parameter was missing.");
+                    logger.LogError("The authorization request was rejected because the " +
+                                    "required 'code_challenge_method' parameter was missing.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -207,8 +212,8 @@ namespace OpenIddict.Infrastructure {
                 // Disallow the use of the unsecure code_challenge_method=plain method.
                 // See https://tools.ietf.org/html/rfc7636#section-7.2 for more information.
                 if (string.Equals(context.Request.CodeChallengeMethod, OpenIdConnectConstants.CodeChallengeMethods.Plain)) {
-                    services.Logger.LogError("The authorization request was rejected because the " +
-                                             "'code_challenge_method' parameter was set to 'plain'.");
+                    logger.LogError("The authorization request was rejected because the " +
+                                    "'code_challenge_method' parameter was set to 'plain'.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -219,8 +224,8 @@ namespace OpenIddict.Infrastructure {
 
                 // Reject authorization requests that contain response_type=token when a code_challenge is specified.
                 if (context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token)) {
-                    services.Logger.LogError("The authorization request was rejected because the " +
-                                             "specified response type was not compatible with PKCE.");
+                    logger.LogError("The authorization request was rejected because the " +
+                                    "specified response type was not compatible with PKCE.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -231,10 +236,10 @@ namespace OpenIddict.Infrastructure {
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await services.Applications.FindByClientIdAsync(context.ClientId);
+            var application = await applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
             if (application == null) {
-                services.Logger.LogError("The authorization request was rejected because the client " +
-                                         "application was not found: '{ClientId}'.", context.ClientId);
+                logger.LogError("The authorization request was rejected because the client " +
+                                "application was not found: '{ClientId}'.", context.ClientId);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -243,9 +248,9 @@ namespace OpenIddict.Infrastructure {
                 return;
             }
 
-            if (!await services.Applications.ValidateRedirectUriAsync(application, context.RedirectUri)) {
-                services.Logger.LogError("The authorization request was rejected because the redirect_uri " +
-                                         "was invalid: '{RedirectUri}'.", context.RedirectUri);
+            if (!await applications.ValidateRedirectUriAsync(application, context.RedirectUri, context.HttpContext.RequestAborted)) {
+                logger.LogError("The authorization request was rejected because the redirect_uri " +
+                                "was invalid: '{RedirectUri}'.", context.RedirectUri);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -258,7 +263,7 @@ namespace OpenIddict.Infrastructure {
             // from the authorization endpoint are rejected if the client_id corresponds to a confidential application.
             // Note: when using the authorization code grant, ValidateTokenRequest is responsible of rejecting
             // the token request if the client_id corresponds to an unauthenticated confidential client.
-            if (await services.Applications.IsConfidentialAsync(application) &&
+            if (await applications.IsConfidentialAsync(application, context.HttpContext.RequestAborted) &&
                 context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -273,7 +278,7 @@ namespace OpenIddict.Infrastructure {
                 // If the user is not authenticated, return an error to the client application.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#Authenticates
                 if (!context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
-                    services.Logger.LogError("The prompt=none authorization request was rejected because the user was not logged in.");
+                    logger.LogError("The prompt=none authorization request was rejected because the user was not logged in.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.LoginRequired,
@@ -285,8 +290,8 @@ namespace OpenIddict.Infrastructure {
                 // Ensure that the authentication cookie contains the required NameIdentifier claim.
                 var identifier = context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(identifier)) {
-                    services.Logger.LogError("The prompt=none authorization request was rejected because the user session " +
-                                             "was invalid and didn't contain the mandatory ClaimTypes.NameIdentifier claim.");
+                    logger.LogError("The prompt=none authorization request was rejected because the user session " +
+                                    "was invalid and didn't contain the mandatory ClaimTypes.NameIdentifier claim.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.ServerError,
@@ -310,7 +315,7 @@ namespace OpenIddict.Infrastructure {
                 // and that the identity token corresponds to the authenticated user.
                 if (!principal.HasClaim(OpenIdConnectConstants.Claims.Audience, context.Request.ClientId) ||
                     !principal.HasClaim(ClaimTypes.NameIdentifier, identifier)) {
-                    services.Logger.LogError("The prompt=none authorization request was rejected because the id_token_hint was invalid.");
+                    logger.LogError("The prompt=none authorization request was rejected because the id_token_hint was invalid.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -324,12 +329,12 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
+            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
 
             // If no request_id parameter can be found in the current request, assume the OpenID Connect request
             // was not serialized yet and store the entire payload in the distributed cache to make it easier
             // to flow across requests and internal/external authentication/registration workflows.
-            if (services.Options.EnableRequestCaching && string.IsNullOrEmpty(context.Request.RequestId)) {
+            if (options.Value.EnableRequestCaching && string.IsNullOrEmpty(context.Request.RequestId)) {
                 // Generate a request identifier. Note: using a crypto-secure
                 // random number generator is not necessary in this case.
                 context.Request.RequestId = Guid.NewGuid().ToString();
@@ -347,7 +352,7 @@ namespace OpenIddict.Infrastructure {
                 // to avoid collisions with the other types of cached requests.
                 var key = OpenIddictConstants.Environment.AuthorizationRequest + context.Request.RequestId;
 
-                await services.Options.Cache.SetAsync(key, stream.ToArray(), new DistributedCacheEntryOptions {
+                await options.Value.Cache.SetAsync(key, stream.ToArray(), new DistributedCacheEntryOptions {
                     AbsoluteExpiration = context.Options.SystemClock.UtcNow + TimeSpan.FromMinutes(30),
                     SlidingExpiration = TimeSpan.FromMinutes(10)
                 });
@@ -371,10 +376,10 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task ApplyAuthorizationResponse([NotNull] ApplyAuthorizationResponseContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
+            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
 
             // Remove the authorization request from the distributed cache.
-            if (services.Options.EnableRequestCaching && !string.IsNullOrEmpty(context.Request.RequestId)) {
+            if (options.Value.EnableRequestCaching && !string.IsNullOrEmpty(context.Request.RequestId)) {
                 // Note: the cache key is always prefixed with a specific marker
                 // to avoid collisions with the other types of cached requests.
                 var key = OpenIddictConstants.Environment.AuthorizationRequest + context.Request.RequestId;
@@ -382,11 +387,11 @@ namespace OpenIddict.Infrastructure {
                 // Note: the ApplyAuthorizationResponse event is called for both successful
                 // and errored authorization responses but discrimination is not necessary here,
                 // as the authorization request must be removed from the distributed cache in both cases.
-                await services.Options.Cache.RemoveAsync(key);
+                await options.Value.Cache.RemoveAsync(key);
             }
 
-            if (!context.Options.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Response.Error) &&
-                                                                 string.IsNullOrEmpty(context.Response.RedirectUri)) {
+            if (!options.Value.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Response.Error) &&
+                                                               string.IsNullOrEmpty(context.Response.RedirectUri)) {
                 // Determine if the status code pages middleware has been enabled for this request.
                 // If it was not registered or enabled, let the OpenID Connect server middleware render
                 // a default error page instead of delegating the rendering to the status code middleware.

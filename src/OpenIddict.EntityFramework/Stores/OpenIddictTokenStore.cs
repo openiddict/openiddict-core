@@ -8,9 +8,12 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Core;
+using OpenIddict.Models;
 
-namespace OpenIddict {
+namespace OpenIddict.EntityFramework {
     /// <summary>
     /// Provides methods allowing to manage the tokens stored in a database.
     /// </summary>
@@ -23,7 +26,11 @@ namespace OpenIddict {
         where TAuthorization : OpenIddictAuthorization<TKey, TToken>
         where TContext : DbContext
         where TKey : IEquatable<TKey> {
-        public OpenIddictTokenStore(TContext context) {
+        public OpenIddictTokenStore([NotNull] TContext context) {
+            if (context == null) {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Context = context;
         }
 

@@ -10,12 +10,14 @@ using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using OpenIddict.Core;
 
-namespace OpenIddict.Infrastructure {
+namespace OpenIddict {
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
+            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
 
             // Note: though it's natively supported by the OpenID Connect server middleware,
             // OpenIddict disallows the use of the unsecure code_challenge_method=plain method,
@@ -30,7 +32,7 @@ namespace OpenIddict.Infrastructure {
             context.GrantTypes.Clear();
 
             // Copy the supported grant types list to the discovery document.
-            foreach (var type in services.Options.GrantTypes) {
+            foreach (var type in options.Value.GrantTypes) {
                 context.GrantTypes.Add(type);
             }
 
@@ -43,7 +45,7 @@ namespace OpenIddict.Infrastructure {
 
             // Only add the "offline_access" scope if the refresh
             // token flow is enabled in the OpenIddict options.
-            if (services.Options.IsRefreshTokenFlowEnabled()) {
+            if (options.Value.IsRefreshTokenFlowEnabled()) {
                 context.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
             }
 

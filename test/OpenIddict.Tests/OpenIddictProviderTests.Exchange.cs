@@ -1,16 +1,20 @@
 ﻿using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using OpenIddict.Core;
+using OpenIddict.Models;
 using Xunit;
 
-namespace OpenIddict.Core.Tests.Infrastructure {
+namespace OpenIddict.Tests {
     public partial class OpenIddictProviderTests {
         [Theory]
         [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
@@ -124,7 +128,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
         public async Task ValidateTokenRequest_RequestIsRejectedWhenClientCannotBeFound() {
             // Arrange
             var manager = CreateApplicationManager(instance => {
-                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(null);
             });
 
@@ -146,19 +150,19 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("Application not found in the database: ensure that your client_id is correct.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam"), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
         public async Task ValidateTokenRequest_ClientCredentialsRequestFromPublicClientIsRejected() {
             // Arrange
-            var application = Mock.Of<object>();
+            var application = new OpenIddictApplication();
 
             var manager = CreateApplicationManager(instance => {
-                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                instance.Setup(mock => mock.GetClientTypeAsync(application))
+                instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
             });
 
@@ -179,20 +183,20 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal("Public clients are not allowed to use the client credentials grant.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
         public async Task ValidateTokenRequest_ClientSecretCannotBeUsedByPublicClients() {
             // Arrange
-            var application = Mock.Of<object>();
+            var application = new OpenIddictApplication();
 
             var manager = CreateApplicationManager(instance => {
-                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                instance.Setup(mock => mock.GetClientTypeAsync(application))
+                instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
             });
 
@@ -215,20 +219,20 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("Public clients are not allowed to send a client_secret.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
         public async Task ValidateTokenRequest_ClientSecretIsRequiredForConfidentialClients() {
             // Arrange
-            var application = Mock.Of<object>();
+            var application = new OpenIddictApplication();
 
             var manager = CreateApplicationManager(instance => {
-                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                instance.Setup(mock => mock.GetClientTypeAsync(application))
+                instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
             });
 
@@ -251,23 +255,23 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("Missing credentials: ensure that you specified a client_secret.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
         public async Task ValidateTokenRequest_RequestIsRejectedWhenClientCredentialsAreInvalid() {
             // Arrange
-            var application = Mock.Of<object>();
+            var application = new OpenIddictApplication();
 
             var manager = CreateApplicationManager(instance => {
-                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                instance.Setup(mock => mock.GetClientTypeAsync(application))
+                instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
 
-                instance.Setup(mock => mock.ValidateSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw"))
+                instance.Setup(mock => mock.ValidateSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
             });
 
@@ -290,9 +294,9 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("Invalid credentials: ensure that you specified a correct client_secret.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.ValidateSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw"), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.ValidateSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -313,18 +317,18 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                 .Returns(ticket);
 
             var manager = CreateTokenManager(instance => {
-                instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56"))
+                instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(null);
             });
 
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.GetClientTypeAsync(application))
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
                 }));
 
@@ -346,7 +350,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The authorization code is no longer valid.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56"), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -366,18 +370,18 @@ namespace OpenIddict.Core.Tests.Infrastructure {
                 .Returns(ticket);
 
             var manager = CreateTokenManager(instance => {
-                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103"))
+                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(null);
             });
 
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.GetClientTypeAsync(application))
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
                 }));
 
@@ -398,7 +402,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The refresh token is no longer valid.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103"), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -421,21 +425,21 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             format.Setup(mock => mock.Unprotect("SplxlOBeZQQYbYS6WxSbIA"))
                 .Returns(ticket);
 
-            var token = Mock.Of<object>();
+            var token = new OpenIddictToken();
 
             var manager = CreateTokenManager(instance => {
-                instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56"))
+                instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
             });
 
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.GetClientTypeAsync(application))
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
                 }));
 
@@ -454,8 +458,8 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             });
 
             // Assert
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.RevokeAsync(token), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.RevokeAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -477,21 +481,21 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
                 .Returns(ticket);
 
-            var token = Mock.Of<object>();
+            var token = new OpenIddictToken();
 
             var manager = CreateTokenManager(instance => {
-                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103"))
+                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
             });
 
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.GetClientTypeAsync(application))
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
                 }));
 
@@ -509,8 +513,8 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             });
 
             // Assert
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.RevokeAsync(token), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.RevokeAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Theory]
@@ -536,24 +540,24 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
                 .Returns(ticket);
 
-            var token = Mock.Of<object>();
+            var token = new OpenIddictToken();
 
             var manager = CreateTokenManager(instance => {
-                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103"))
+                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
             });
 
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam"))
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.GetClientTypeAsync(application))
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
 
-                    instance.Setup(mock => mock.ValidateSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw"))
+                    instance.Setup(mock => mock.ValidateSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
                 }));
 

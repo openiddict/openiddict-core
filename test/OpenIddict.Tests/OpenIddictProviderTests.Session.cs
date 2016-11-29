@@ -1,13 +1,17 @@
 ﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using OpenIddict.Core;
+using OpenIddict.Models;
 using Xunit;
 
-namespace OpenIddict.Core.Tests.Infrastructure {
+namespace OpenIddict.Tests {
     public partial class OpenIddictProviderTests {
         [Fact]
         public async Task ExtractLogoutRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled() {
@@ -51,7 +55,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
         public async Task ValidateLogoutRequest_RequestIsRejectedWhenRedirectUriIsInvalid() {
             // Arrange
             var manager = CreateApplicationManager(instance => {
-                instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path"))
+                instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(null);
             });
 
@@ -70,7 +74,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("Invalid post_logout_redirect_uri.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path"), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -80,9 +84,9 @@ namespace OpenIddict.Core.Tests.Infrastructure {
 
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path"))
+                    instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
                 }));
 
@@ -115,9 +119,9 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             // Arrange
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    var application = Mock.Of<object>();
+                    var application = new OpenIddictApplication();
 
-                    instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path"))
+                    instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
                 }));
             });
@@ -139,7 +143,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
             // Arrange
             var server = CreateAuthorizationServer(builder => {
                 builder.Services.AddSingleton(CreateApplicationManager(instance => {
-                    instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path"))
+                    instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(null);
                 }));
 

@@ -10,9 +10,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Core;
+using OpenIddict.Models;
 
-namespace OpenIddict {
+namespace OpenIddict.EntityFramework {
     /// <summary>
     /// Provides methods allowing to manage the applications stored in a database.
     /// </summary>
@@ -25,7 +28,11 @@ namespace OpenIddict {
         where TToken : OpenIddictToken<TKey>, new()
         where TContext : DbContext
         where TKey : IEquatable<TKey> {
-        public OpenIddictApplicationStore(TContext context) {
+        public OpenIddictApplicationStore([NotNull] TContext context) {
+            if (context == null) {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Context = context;
         }
 

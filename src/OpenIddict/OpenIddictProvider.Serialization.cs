@@ -11,14 +11,15 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using OpenIddict.Core;
 
-namespace OpenIddict.Infrastructure {
+namespace OpenIddict {
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
         public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
+            var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
-            var identifier = await services.Tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode);
+            var identifier = await tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, context.HttpContext.RequestAborted);
             if (string.IsNullOrEmpty(identifier)) {
                 throw new InvalidOperationException("The unique key associated with an authorization code cannot be null or empty.");
             }
@@ -30,9 +31,9 @@ namespace OpenIddict.Infrastructure {
         }
 
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context) {
-            var services = context.HttpContext.RequestServices.GetRequiredService<OpenIddictServices<TApplication, TAuthorization, TScope, TToken>>();
+            var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
-            var identifier = await services.Tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken);
+            var identifier = await tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken, context.HttpContext.RequestAborted);
             if (string.IsNullOrEmpty(identifier)) {
                 throw new InvalidOperationException("The unique key associated with a refresh token cannot be null or empty.");
             }

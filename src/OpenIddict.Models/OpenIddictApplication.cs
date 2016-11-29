@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace OpenIddict {
+namespace OpenIddict.Models {
     /// <summary>
     /// Represents an OpenIddict application.
     /// </summary>
@@ -73,6 +73,6 @@ namespace OpenIddict {
         /// Gets or sets the application type
         /// associated with the current application.
         /// </summary>
-        public virtual string Type { get; set; } = OpenIddictConstants.ClientTypes.Public;
+        public virtual string Type { get; set; } = "public";
     }
 }

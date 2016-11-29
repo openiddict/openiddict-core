@@ -7,10 +7,9 @@
 using System;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Mvc;
 
-namespace Microsoft.AspNetCore.Builder {
+namespace Microsoft.Extensions.DependencyInjection {
     public static class OpenIddictExtensions {
         /// <summary>
         /// Registers the ASP.NET Core MVC model binders used by OpenIddict.
@@ -23,6 +22,14 @@ namespace Microsoft.AspNetCore.Builder {
             }
 
             builder.Services.Configure<MvcOptions>(options => {
+                // Skip the binder registration if it was already added to the providers collection.
+                for (var index = 0; index < options.ModelBinderProviders.Count; index++) {
+                    var provider = options.ModelBinderProviders[index];
+                    if (provider is OpenIddictModelBinder) {
+                        return;
+                    }
+                }
+
                 options.ModelBinderProviders.Insert(0, new OpenIddictModelBinder());
             });
 

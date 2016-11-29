@@ -8,7 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
 using NWebsec.AspNetCore.Middleware;
-using OpenIddict;
+using OpenIddict.Core;
+using OpenIddict.Models;
 
 namespace Mvc.Server {
     public class Startup {
@@ -28,8 +29,11 @@ namespace Mvc.Server {
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            // Register the OpenIddict services, including the default Entity Framework stores.
-            services.AddOpenIddict<ApplicationDbContext>()
+            // Register the OpenIddict services.
+            services.AddOpenIddict()
+                // Register the Entity Framework stores.
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+
                 // Register the ASP.NET Core MVC binder used by OpenIddict.
                 // Note: if you don't call this method, you won't be able to
                 // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
@@ -68,14 +72,14 @@ namespace Mvc.Server {
             // On production, using a X.509 certificate stored in the machine store is recommended.
             // You can generate a self-signed certificate using Pluralsight's self-cert utility:
             // https://s3.amazonaws.com/pluralsight-free/keith-brown/samples/SelfCert.zip
-            // 
-            // services.AddOpenIddict<ApplicationDbContext>()
+            //
+            // services.AddOpenIddict()
             //     .AddSigningCertificate("7D2A741FE34CC2C7369237A5F2078988E17A6A75");
-            // 
+            //
             // Alternatively, you can also store the certificate as an embedded .pfx resource
             // directly in this assembly or in a file published alongside this project:
-            // 
-            // services.AddOpenIddict<ApplicationDbContext>()
+            //
+            // services.AddOpenIddict()
             //     .AddSigningCertificate(
             //          assembly: typeof(Startup).GetTypeInfo().Assembly,
             //          resource: "Mvc.Server.Certificate.pfx",
@@ -97,7 +101,7 @@ namespace Mvc.Server {
             // Alternatively, you can also use the introspection middleware.
             // Using it is recommended if your resource server is in a
             // different application/separated from the authorization server.
-            // 
+            //
             // app.UseOAuthIntrospection(options => {
             //     options.AutomaticAuthenticate = true;
             //     options.AutomaticChallenge = true;
@@ -143,11 +147,13 @@ namespace Mvc.Server {
                 app.ApplicationServices.GetRequiredService<DbContextOptions<ApplicationDbContext>>())) {
                 context.Database.EnsureCreated();
 
+                var applications = context.Set<OpenIddictApplication>();
+
                 // Add Mvc.Client to the known applications.
-                if (!context.Applications.Any()) {
+                if (!applications.Any()) {
                     // Note: when using the introspection middleware, your resource server
                     // MUST be registered as an OAuth2 client and have valid credentials.
-                    // 
+                    //
                     // context.Applications.Add(new OpenIddictApplication {
                     //     Id = "resource_server",
                     //     DisplayName = "Main resource server",
@@ -155,7 +161,7 @@ namespace Mvc.Server {
                     //     Type = OpenIddictConstants.ClientTypes.Confidential
                     // });
 
-                    context.Applications.Add(new OpenIddictApplication {
+                    applications.Add(new OpenIddictApplication {
                         ClientId = "myClient",
                         ClientSecret = Crypto.HashPassword("secret_secret_secret"),
                         DisplayName = "My client application",
@@ -165,7 +171,7 @@ namespace Mvc.Server {
                     });
 
                     // To test this sample with Postman, use the following settings:
-                    // 
+                    //
                     // * Authorization URL: http://localhost:54540/connect/authorize
                     // * Access token URL: http://localhost:54540/connect/token
                     // * Client ID: postman
@@ -173,7 +179,7 @@ namespace Mvc.Server {
                     // * Scope: openid email profile roles
                     // * Grant type: authorization code
                     // * Request access token locally: yes
-                    context.Applications.Add(new OpenIddictApplication {
+                    applications.Add(new OpenIddictApplication {
                         ClientId = "postman",
                         DisplayName = "Postman",
                         RedirectUri = "https://www.getpostman.com/oauth2/callback",

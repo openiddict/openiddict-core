@@ -24,6 +24,7 @@
     "Microsoft.AspNetCore.Authentication.Google": "1.0.0",
     "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0",
+    "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0",
     "Microsoft.AspNetCore.Mvc": "1.0.0",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
@@ -36,6 +37,7 @@
     "Microsoft.Extensions.Logging.Debug": "1.0.0",
     "NWebsec.AspNetCore.Middleware": "1.0.0-gamma1-15",
     "OpenIddict": { "target": "project" },
+    "OpenIddict.EntityFramework": { "target": "project" },
     "OpenIddict.Mvc": { "target": "project" }
   },
 

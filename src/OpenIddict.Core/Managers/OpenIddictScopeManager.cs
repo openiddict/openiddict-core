@@ -4,37 +4,21 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
-using System.Threading;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace OpenIddict {
+namespace OpenIddict.Core {
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in the store.
     /// </summary>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
     public class OpenIddictScopeManager<TScope> where TScope : class {
         public OpenIddictScopeManager(
-            [NotNull] IServiceProvider services,
             [NotNull] IOpenIddictScopeStore<TScope> store,
             [NotNull] ILogger<OpenIddictScopeManager<TScope>> logger) {
-            Context = services?.GetService<IHttpContextAccessor>()?.HttpContext;
             Logger = logger;
             Store = store;
         }
-
-        /// <summary>
-        /// Gets the HTTP context associated with the current manager.
-        /// </summary>
-        protected HttpContext Context { get; }
-
-        /// <summary>
-        /// Gets the cancellation token used to abort async operations.
-        /// </summary>
-        protected CancellationToken CancellationToken => Context?.RequestAborted ?? CancellationToken.None;
 
         /// <summary>
         /// Gets the logger associated with the current manager.

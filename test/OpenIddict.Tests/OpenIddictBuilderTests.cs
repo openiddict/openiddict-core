@@ -3,7 +3,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,115 +12,7 @@ using Moq;
 using Xunit;
 
 namespace OpenIddict.Tests {
-    public class OpenIddictExtensionsTests {
-        [Fact]
-        public void UseOpenIddict_AnExceptionIsThrownWhenServicesAreNotRegistered() {
-            // Arrange
-            var services = new ServiceCollection();
-
-            var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
-
-            Assert.Equal("The OpenIddict services cannot be resolved from the dependency injection container. " +
-                         "Make sure 'services.AddOpenIddict()' is correctly called from 'ConfigureServices()'.", exception.Message);
-        }
-
-        [Fact]
-        public void UseOpenIddict_AnExceptionIsThrownWhenNoDistributedCacheIsRegisteredIfRequestCachingIsEnabled() {
-            // Arrange
-            var services = new ServiceCollection();
-
-            services.AddOpenIddict()
-                .EnableRequestCaching();
-
-            var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
-
-            Assert.Equal("A distributed cache implementation must be registered in the OpenIddict options " +
-                         "or in the dependency injection container when enabling request caching support.", exception.Message);
-        }
-
-        [Fact]
-        public void UseOpenIddict_AnExceptionIsThrownWhenNoSigningCredentialsIsRegistered() {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddOpenIddict();
-
-            var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
-
-            Assert.Equal("At least one signing key must be registered. Consider registering a X.509 " +
-                         "certificate using 'services.AddOpenIddict().AddSigningCertificate()' or call " +
-                         "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.", exception.Message);
-        }
-
-        [Fact]
-        public void UseOpenIddict_AnExceptionIsThrownWhenNoFlowIsEnabled() {
-            // Arrange
-            var services = new ServiceCollection();
-
-            services.AddOpenIddict()
-                .AddEphemeralSigningKey();
-
-            var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
-
-            Assert.Equal("At least one OAuth2/OpenID Connect flow must be enabled.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Implicit)]
-        public void UseOpenIddict_AnExceptionIsThrownWhenAuthorizationEndpointIsDisabled(string flow) {
-            // Arrange
-            var services = new ServiceCollection();
-
-            services.AddOpenIddict()
-                .AddEphemeralSigningKey()
-                .Configure(options => options.GrantTypes.Add(flow))
-                .Configure(options => options.AuthorizationEndpointPath = PathString.Empty);
-
-            var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
-
-            Assert.Equal("The authorization endpoint must be enabled to use " +
-                         "the authorization code and implicit flows.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.ClientCredentials)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Password)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.RefreshToken)]
-        public void UseOpenIddict_AnExceptionIsThrownWhenTokenEndpointIsDisabled(string flow) {
-            // Arrange
-            var services = new ServiceCollection();
-
-            services.AddOpenIddict()
-                .AddEphemeralSigningKey()
-                .EnableAuthorizationEndpoint("/connect/authorize")
-                .Configure(options => options.GrantTypes.Add(flow))
-                .Configure(options => options.TokenEndpointPath = PathString.Empty);
-
-            var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
-
-            Assert.Equal("The token endpoint must be enabled to use the authorization code, " +
-                         "client credentials, password and refresh token flows.", exception.Message);
-        }
-
+    public class OpenIddictBuilderTests {
         [Fact]
         public void Configure_OptionsAreCorrectlyAmended() {
             // Arrange
@@ -138,27 +29,6 @@ namespace OpenIddict.Tests {
 
             // Assert
             Assert.Equal("OpenIddict", options.Value.Description.DisplayName);
-        }
-
-        [Fact]
-        public void UseOpenIddict_OpenIdConnectServerMiddlewareIsRegistered() {
-            // Arrange
-            var services = new ServiceCollection();
-
-            services.AddOpenIddict()
-                .AddEphemeralSigningKey()
-                .AllowImplicitFlow()
-                .EnableAuthorizationEndpoint("/connect/authorize");
-
-            var builder = new Mock<IApplicationBuilder>();
-            builder.SetupGet(mock => mock.ApplicationServices)
-                .Returns(services.BuildServiceProvider());
-
-            // Act
-            builder.Object.UseOpenIddict();
-
-            // Assert
-            builder.Verify(mock => mock.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()), Times.Once());
         }
 
         [Fact]
@@ -651,81 +521,6 @@ namespace OpenIddict.Tests {
 
             // Assert
             Assert.IsType(typeof(JwtSecurityTokenHandler), options.Value.AccessTokenHandler);
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsAuthorizationCodeFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.AuthorizationCode);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsAuthorizationCodeFlowEnabled());
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsClientCredentialsFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.ClientCredentials);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsClientCredentialsFlowEnabled());
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsImplicitFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.Implicit);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsImplicitFlowEnabled());
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsPasswordFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.Password);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsPasswordFlowEnabled());
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsRefreshTokenFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.RefreshToken);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsRefreshTokenFlowEnabled());
         }
     }
 }

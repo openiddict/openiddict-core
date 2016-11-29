@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.0-beta1-*",
+  "version": "1.0.0-beta2-*",
 
   "description": "Easy-to-use OpenID Connect server for ASP.NET Core.",
   "authors": [ "Kévin Chalet" ],
@@ -33,8 +33,11 @@
   },
 
   "dependencies": {
+    "AspNet.Security.OpenIdConnect.Server": "1.0.0-beta7-final",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
-    "OpenIddict.EntityFramework": { "target": "project" }
+    "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0",
+    "Microsoft.Extensions.Caching.Abstractions": "1.0.0",
+    "OpenIddict.Core": { "target": "project" }
   },
 
   "frameworks": {

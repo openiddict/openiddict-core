@@ -4,7 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict {
+namespace OpenIddict.Core {
     public static class OpenIddictConstants {
         public static class Claims {
             public const string Roles = "roles";

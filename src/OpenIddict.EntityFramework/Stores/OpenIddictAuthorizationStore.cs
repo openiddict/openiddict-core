@@ -5,9 +5,12 @@
  */
 
 using System;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Core;
+using OpenIddict.Models;
 
-namespace OpenIddict {
+namespace OpenIddict.EntityFramework {
     /// <summary>
     /// Provides methods allowing to manage the authorizations stored in a database.
     /// </summary>
@@ -20,7 +23,11 @@ namespace OpenIddict {
         where TToken : OpenIddictToken<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey> {
-        public OpenIddictAuthorizationStore(TContext context) {
+        public OpenIddictAuthorizationStore([NotNull] TContext context) {
+            if (context == null) {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Context = context;
         }
 
