@@ -206,13 +206,13 @@ namespace OpenIddict.Infrastructure {
 
                 // Disallow the use of the unsecure code_challenge_method=plain method.
                 // See https://tools.ietf.org/html/rfc7636#section-7.2 for more information.
-                if (context.Request.CodeChallengeMethod == OpenIdConnectConstants.CodeChallengeMethods.Plain) {
+                if (string.Equals(context.Request.CodeChallengeMethod, OpenIdConnectConstants.CodeChallengeMethods.Plain)) {
                     services.Logger.LogError("The authorization request was rejected because the " +
                                              "'code_challenge_method' parameter was set to 'plain'.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The specified response_type parameter is not allowed when using PKCE.");
+                        description: "The specified code_challenge_method parameter is not allowed.");
 
                     return;
                 }

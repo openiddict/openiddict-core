@@ -246,7 +246,7 @@ namespace OpenIddict.Core.Tests.Infrastructure {
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified response_type parameter is not allowed when using PKCE.", response.ErrorDescription);
+            Assert.Equal("The specified code_challenge_method parameter is not allowed.", response.ErrorDescription);
         }
 
         [Theory]
