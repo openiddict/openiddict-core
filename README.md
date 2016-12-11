@@ -60,6 +60,7 @@ To use OpenIddict, you need to:
 "dependencies": {
   "AspNet.Security.OAuth.Validation": "1.0.0-alpha2-final",
   "OpenIddict": "1.0.0-*",
+  "OpenIddict.EntityFrameworkCore": "1.0.0-*",
   "OpenIddict.Mvc": "1.0.0-*"
 }
 ```
@@ -71,15 +72,18 @@ public void ConfigureServices(IServiceCollection services) {
     services.AddMvc();
 
     services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));       
+        options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
 
     // Register the Identity services.
 	services.AddIdentity<ApplicationUser, IdentityRole>()
-	    .AddEntityFrameworkStores<ApplicationDbContext>()
+	    .AddEntityFrameworkCoreStores<ApplicationDbContext>()
 	    .AddDefaultTokenProviders();
 
-	// Register the OpenIddict services, including the default Entity Framework stores.
-	services.AddOpenIddict<ApplicationDbContext>()
+	// Register the OpenIddict services.
+	services.AddOpenIddict()
+        // Register the Entity Framework stores.
+        .AddEntityFrameworkCoreStores<ApplicationDbContext>()
+
         // Register the ASP.NET Core MVC binder used by OpenIddict.
         // Note: if you don't call this method, you won't be able to
         // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
@@ -121,20 +125,46 @@ public void Configure(IApplicationBuilder app) {
 
 > **Note:** `UseOpenIddict()` must be registered ***after*** `app.UseIdentity()` and the external social providers.
 
-  - **Update your Entity Framework context to inherit from `OpenIddictDbContext`**:
+  - **Update your Entity Framework context registration to register the OpenIddict entities**:
 
 ```csharp
-public class ApplicationDbContext : OpenIddictDbContext<ApplicationUser> {
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
     public ApplicationDbContext(DbContextOptions options)
-        : base(options) {
+        : base(options) { }
+
+    protected override void OnModelCreating(ModelBuilder builder) {
+        // Register the entity sets needed by OpenIddict.
+        // Note: use the generic overload if you need
+        // to replace the default OpenIddict entities.
+        builder.UseOpenIddict();
+
+        base.OnModelCreating(builder);
+
+        // Customize the ASP.NET Identity model and override the defaults if needed.
+        // For example, you can rename the ASP.NET Identity table names and more.
+        // Add your customizations after calling base.OnModelCreating(builder);
     }
 }
 ```
 
-> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure to register your Entity Framework context using the overload accepting a `TKey` generic argument:
+> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure to use the `AddEntityFrameworkCoreStores` overload accepting a `TKey` generic argument and use the generic `builder.UseOpenIddict<TKey>()` overload:
 
 ```csharp
-services.AddOpenIddict<ApplicationDbContext, long>()
+services.AddOpenIddict()
+    .AddEntityFrameworkCoreStores<ApplicationDbContext, Guid>()
+```
+
+```csharp
+protected override void OnModelCreating(ModelBuilder builder) {
+    // Register the entity sets needed by OpenIddict.
+    builder.UseOpenIddict<Guid>();
+
+    base.OnModelCreating(builder);
+
+    // Customize the ASP.NET Identity model and override the defaults if needed.
+    // For example, you can rename the ASP.NET Identity table names and more.
+    // Add your customizations after calling base.OnModelCreating(builder);
+}
 ```
 
   - **Create your own authorization controller**:
@@ -148,8 +178,11 @@ The **Mvc.Server sample comes with an [`AuthorizationController` that supports b
 
 ```csharp
 public void ConfigureServices(IServiceCollection services) {
-	// Register the OpenIddict services, including the default Entity Framework stores.
-	services.AddOpenIddict<ApplicationDbContext>()
+	// Register the OpenIddict services.
+	services.AddOpenIddict()
+        // Register the Entity Framework stores.
+        .AddEntityFrameworkCoreStores<ApplicationDbContext>()
+
         // Register the ASP.NET Core MVC binder used by OpenIddict.
         // Note: if you don't call this method, you won't be able to
         // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
@@ -179,8 +212,10 @@ using (var context = new ApplicationDbContext(
     app.ApplicationServices.GetRequiredService<DbContextOptions<ApplicationDbContext>>())) {
     context.Database.EnsureCreated();
 
-    if (!context.Applications.Any()) {
-        context.Applications.Add(new OpenIddictApplication {
+    var applications = context.Set<OpenIddictApplication>();
+
+    if (!applications.Any()) {
+        applications.Add(new OpenIddictApplication {
             // Assign a unique identifier to your client app:
             Id = "48BF1BC3-CE01-4787-BBF2-0426EAD21342",
 
