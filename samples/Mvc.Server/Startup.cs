@@ -32,7 +32,7 @@ namespace Mvc.Server {
             // Register the OpenIddict services.
             services.AddOpenIddict()
                 // Register the Entity Framework stores.
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddEntityFrameworkCoreStores<ApplicationDbContext>()
 
                 // Register the ASP.NET Core MVC binder used by OpenIddict.
                 // Note: if you don't call this method, you won't be able to

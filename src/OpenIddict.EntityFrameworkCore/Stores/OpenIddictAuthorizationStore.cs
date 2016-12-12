@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
-namespace OpenIddict.EntityFramework {
+namespace OpenIddict.EntityFrameworkCore {
     /// <summary>
     /// Provides methods allowing to manage the authorizations stored in a database.
     /// </summary>

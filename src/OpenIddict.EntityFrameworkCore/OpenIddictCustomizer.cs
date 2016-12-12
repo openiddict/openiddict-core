@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Models;
 
-namespace OpenIddict.EntityFramework {
+namespace OpenIddict.EntityFrameworkCore {
     /// <summary>
     /// Represents a model customizer able to register the entity sets
     /// required by the OpenIddict stack in an Entity Framework context.

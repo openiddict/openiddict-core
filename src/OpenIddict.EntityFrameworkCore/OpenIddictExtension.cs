@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Models;
 
-namespace OpenIddict.EntityFramework {
+namespace OpenIddict.EntityFrameworkCore {
     public class OpenIddictExtension<TApplication, TAuthorization, TScope, TToken, TKey> : IDbContextOptionsExtension
         where TApplication : OpenIddictApplication<TKey, TToken>
         where TAuthorization : OpenIddictAuthorization<TKey, TToken>

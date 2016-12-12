@@ -13,7 +13,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Mvc.Client", "samples\Mvc.C
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Mvc.Server", "samples\Mvc.Server\Mvc.Server.xproj", "{7CBEAFD2-E3D0-4424-9B78-E87AB52327A6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.EntityFramework", "src\OpenIddict.EntityFramework\OpenIddict.EntityFramework.xproj", "{D2450929-ED0E-420D-B475-327924F9701C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.EntityFrameworkCore", "src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.xproj", "{D2450929-ED0E-420D-B475-327924F9701C}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Core", "src\OpenIddict.Core\OpenIddict.Core.xproj", "{E60CF8CA-6313-4359-BE43-AFCBB927EA30}"
 EndProject
@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5FC71D6A-A
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Core.Tests", "test\OpenIddict.Core.Tests\OpenIddict.Core.Tests.xproj", "{A892B3DE-1A02-48D6-993B-DD3DFCAC84C7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.EntityFramework.Tests", "test\OpenIddict.EntityFramework.Tests\OpenIddict.EntityFramework.Tests.xproj", "{7831F17A-DF0B-42EC-841B-065A9B5BD786}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.EntityFrameworkCore.Tests", "test\OpenIddict.EntityFrameworkCore.Tests\OpenIddict.EntityFrameworkCore.Tests.xproj", "{7831F17A-DF0B-42EC-841B-065A9B5BD786}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Mvc.Tests", "test\OpenIddict.Mvc.Tests\OpenIddict.Mvc.Tests.xproj", "{8B4B0CCC-711B-4F9D-9DE6-DD32BDD3BCCA}"
 EndProject

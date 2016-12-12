@@ -4,20 +4,20 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Models;
 using Xunit;
 
-namespace OpenIddict.EntityFramework.Tests {
+namespace OpenIddict.EntityFrameworkCore.Tests {
     public class OpenIddictExtensionsTests {
         [Theory]
         [InlineData(typeof(OpenIddictApplicationStore<OpenIddictApplication<Guid, OpenIddictToken<Guid>>, OpenIddictToken<Guid>, DbContext, Guid>))]
         [InlineData(typeof(OpenIddictAuthorizationStore<OpenIddictAuthorization<Guid, OpenIddictToken<Guid>>, OpenIddictToken<Guid>, DbContext, Guid>))]
         [InlineData(typeof(OpenIddictScopeStore<OpenIddictScope<Guid>, DbContext, Guid>))]
         [InlineData(typeof(OpenIddictTokenStore<OpenIddictToken<Guid>, OpenIddictAuthorization<Guid, OpenIddictToken<Guid>>, DbContext, Guid>))]
-        public void AddEntityFrameworkStores_RegistersEntityFrameworkStores(Type type) {
+        public void AddEntityFrameworkCoreStores_RegistersEntityFrameworkStores(Type type) {
             // Arrange
             var services = new ServiceCollection();
 
             // Act
             services.AddOpenIddict<Guid>()
-                .AddEntityFrameworkStores<DbContext, Guid>();
+                .AddEntityFrameworkCoreStores<DbContext, Guid>();
 
             // Assert
             Assert.Contains(services, service => service.ImplementationType == type);
@@ -28,13 +28,13 @@ namespace OpenIddict.EntityFramework.Tests {
         [InlineData(typeof(OpenIddictAuthorizationStore<OpenIddictAuthorization, OpenIddictToken, DbContext, string>))]
         [InlineData(typeof(OpenIddictScopeStore<OpenIddictScope, DbContext, string>))]
         [InlineData(typeof(OpenIddictTokenStore<OpenIddictToken, OpenIddictAuthorization, DbContext, string>))]
-        public void AddEntityFrameworkStores_KeyTypeDefaultsToString(Type type) {
+        public void AddEntityFrameworkCoreStores_KeyTypeDefaultsToString(Type type) {
             // Arrange
             var services = new ServiceCollection();
 
             // Act
             services.AddOpenIddict()
-                .AddEntityFrameworkStores<DbContext>();
+                .AddEntityFrameworkCoreStores<DbContext>();
 
             // Assert
             Assert.Contains(services, service => service.ImplementationType == type);

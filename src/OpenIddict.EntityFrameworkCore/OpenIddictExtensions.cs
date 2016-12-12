@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
-using OpenIddict.EntityFramework;
+using OpenIddict.EntityFrameworkCore;
 using OpenIddict.Models;
 
 namespace Microsoft.Extensions.DependencyInjection {
@@ -22,9 +22,9 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddEntityFrameworkStores<TContext>([NotNull] this OpenIddictBuilder builder)
+        public static OpenIddictBuilder AddEntityFrameworkCoreStores<TContext>([NotNull] this OpenIddictBuilder builder)
             where TContext : DbContext {
-            return builder.AddEntityFrameworkStores<TContext, string>();
+            return builder.AddEntityFrameworkCoreStores<TContext, string>();
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddEntityFrameworkStores<TContext, TKey>([NotNull] this OpenIddictBuilder builder)
+        public static OpenIddictBuilder AddEntityFrameworkCoreStores<TContext, TKey>([NotNull] this OpenIddictBuilder builder)
             where TContext : DbContext
             where TKey : IEquatable<TKey> {
             if (builder == null) {
