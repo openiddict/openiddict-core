@@ -148,11 +148,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
 }
 ```
 
-> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure to use the `AddOpenIddict()`/`AddEntityFrameworkCoreStores()` overloads accepting a `TKey` generic argument and use the generic `builder.UseOpenIddict<TKey>()` overload:
+> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure to use the `services.AddOpenIddict<TKey>()`/`builder.UseOpenIddict<TKey>()` overloads accepting a `TKey` generic argument:
 
 ```csharp
 services.AddOpenIddict<Guid>()
-    .AddEntityFrameworkCoreStores<ApplicationDbContext, Guid>()
+    .AddEntityFrameworkCoreStores<ApplicationDbContext>()
 ```
 
 ```csharp
