@@ -22,8 +22,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Theory]
-        [InlineData(typeof(OpenIddictApplicationManager<OpenIddictApplication<Guid, OpenIddictToken<Guid>>>))]
-        [InlineData(typeof(OpenIddictAuthorizationManager<OpenIddictAuthorization<Guid, OpenIddictToken<Guid>>>))]
+        [InlineData(typeof(OpenIddictApplicationManager<OpenIddictApplication<Guid>>))]
+        [InlineData(typeof(OpenIddictAuthorizationManager<OpenIddictAuthorization<Guid>>))]
         [InlineData(typeof(OpenIddictScopeManager<OpenIddictScope<Guid>>))]
         [InlineData(typeof(OpenIddictTokenManager<OpenIddictToken<Guid>>))]
         public void AddOpenIddict_KeyTypeCanBeOverriden(Type type) {

@@ -39,8 +39,8 @@ namespace Microsoft.Extensions.DependencyInjection {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            return services.AddOpenIddict<OpenIddictApplication<TKey, OpenIddictToken<TKey>>,
-                                          OpenIddictAuthorization<TKey, OpenIddictToken<TKey>>,
+            return services.AddOpenIddict<OpenIddictApplication<TKey>,
+                                          OpenIddictAuthorization<TKey>,
                                           OpenIddictScope<TKey>,
                                           OpenIddictToken<TKey>>();
         }
