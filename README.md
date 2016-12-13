@@ -72,8 +72,15 @@ To use OpenIddict, you need to:
 public void ConfigureServices(IServiceCollection services) {
     services.AddMvc();
 
-    services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+    services.AddDbContext<ApplicationDbContext>(options => {
+        // Configure the context to use Microsoft SQL Server.
+        options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]);
+
+        // Register the entity sets needed by OpenIddict.
+        // Note: use the generic overload if you need
+        // to replace the default OpenIddict entities.
+        options.UseOpenIddict();
+    });
 
     // Register the Identity services.
 	services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -129,43 +136,30 @@ public void Configure(IApplicationBuilder app) {
   - **Update your Entity Framework context registration to register the OpenIddict entities**:
 
 ```csharp
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
-    public ApplicationDbContext(DbContextOptions options)
-        : base(options) { }
+services.AddDbContext<ApplicationDbContext>(options => {
+    // Configure the context to use Microsoft SQL Server.
+    options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]);
 
-    protected override void OnModelCreating(ModelBuilder builder) {
-        // Register the entity sets needed by OpenIddict.
-        // Note: use the generic overload if you need
-        // to replace the default OpenIddict entities.
-        builder.UseOpenIddict();
-
-        base.OnModelCreating(builder);
-
-        // Customize the ASP.NET Identity model and override the defaults if needed.
-        // For example, you can rename the ASP.NET Identity table names and more.
-        // Add your customizations after calling base.OnModelCreating(builder);
-    }
-}
+    // Register the entity sets needed by OpenIddict.
+    // Note: use the generic overload if you need
+    // to replace the default OpenIddict entities.
+    options.UseOpenIddict();
+});
 ```
 
-> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure to use the `services.AddOpenIddict<TKey>()`/`builder.UseOpenIddict<TKey>()` overloads accepting a `TKey` generic argument:
+> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure to use the `services.AddOpenIddict()` extension accepting a `TKey` generic argument and use the generic `options.UseOpenIddict<TKey>()` overload:
+
 
 ```csharp
 services.AddOpenIddict<Guid>()
     .AddEntityFrameworkCoreStores<ApplicationDbContext>()
-```
 
-```csharp
-protected override void OnModelCreating(ModelBuilder builder) {
-    // Register the entity sets needed by OpenIddict.
-    builder.UseOpenIddict<Guid>();
+services.AddDbContext<ApplicationDbContext>(options => {
+    // Configure the context to use Microsoft SQL Server.
+    options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]);
 
-    base.OnModelCreating(builder);
-
-    // Customize the ASP.NET Identity model and override the defaults if needed.
-    // For example, you can rename the ASP.NET Identity table names and more.
-    // Add your customizations after calling base.OnModelCreating(builder);
-}
+    options.UseOpenIddict<Guid>();
+});
 ```
 
   - **Create your own authorization controller**:
