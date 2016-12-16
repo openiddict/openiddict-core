@@ -67,7 +67,10 @@ namespace OpenIddict.Tests {
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddEphemeralSigningKey();
+                .AddSigningCertificate(
+                    assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
+                    resource: "OpenIddict.Tests.Certificate.pfx",
+                    password: "OpenIddict");
 
             var builder = new ApplicationBuilder(services.BuildServiceProvider());
 
@@ -85,7 +88,10 @@ namespace OpenIddict.Tests {
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddEphemeralSigningKey()
+                .AddSigningCertificate(
+                    assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
+                    resource: "OpenIddict.Tests.Certificate.pfx",
+                    password: "OpenIddict")
                 .Configure(options => options.GrantTypes.Add(flow))
                 .Configure(options => options.AuthorizationEndpointPath = PathString.Empty);
 
@@ -108,7 +114,10 @@ namespace OpenIddict.Tests {
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddEphemeralSigningKey()
+                .AddSigningCertificate(
+                    assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
+                    resource: "OpenIddict.Tests.Certificate.pfx",
+                    password: "OpenIddict")
                 .EnableAuthorizationEndpoint("/connect/authorize")
                 .Configure(options => options.GrantTypes.Add(flow))
                 .Configure(options => options.TokenEndpointPath = PathString.Empty);
@@ -146,7 +155,10 @@ namespace OpenIddict.Tests {
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddEphemeralSigningKey()
+                .AddSigningCertificate(
+                    assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
+                    resource: "OpenIddict.Tests.Certificate.pfx",
+                    password: "OpenIddict")
                 .AllowImplicitFlow()
                 .EnableAuthorizationEndpoint("/connect/authorize");
 
@@ -246,7 +258,7 @@ namespace OpenIddict.Tests {
 
             // Act
             builder.AddSigningCertificate(
-                assembly: typeof(OpenIddictBuilderTests).GetTypeInfo().Assembly,
+                assembly: typeof(OpenIddictExtensionsTests).GetTypeInfo().Assembly,
                 resource: "OpenIddict.Tests.Certificate.pfx",
                 password: "OpenIddict");
 
@@ -615,6 +627,24 @@ namespace OpenIddict.Tests {
 
             // Assert
             Assert.Equal(TimeSpan.FromMinutes(42), options.Value.RefreshTokenLifetime);
+        }
+
+        [Fact]
+        public void SetIssuer_AddressIsReplaced() {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOptions();
+
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.SetIssuer(new Uri("http://www.fabrikam.com/"));
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<OpenIddictOptions>>();
+
+            // Assert
+            Assert.Equal(new Uri("http://www.fabrikam.com/"), options.Value.Issuer);
         }
 
         [Fact]

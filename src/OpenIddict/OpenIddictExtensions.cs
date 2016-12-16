@@ -695,6 +695,26 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
+        /// Sets the issuer address, which is used as the base address
+        /// for the endpoint URIs returned from the discovery endpoint.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <param name="address">The issuer address.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder SetIssuer(
+            [NotNull] this OpenIddictBuilder builder, [NotNull] Uri address) {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (address == null) {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            return builder.Configure(options => options.Issuer = address);
+        }
+
+        /// <summary>
         /// Configures OpenIddict to use a specific data protection provider
         /// instead of relying on the default instance provided by the DI container.
         /// </summary>
