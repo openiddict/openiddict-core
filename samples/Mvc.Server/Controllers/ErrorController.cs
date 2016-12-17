@@ -4,7 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.ViewModels.Shared;
 

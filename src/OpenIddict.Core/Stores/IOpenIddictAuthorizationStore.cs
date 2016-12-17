@@ -4,7 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict {
+namespace OpenIddict.Core {
     /// <summary>
     /// Provides methods allowing to manage the authorizations stored in a database.
     /// </summary>

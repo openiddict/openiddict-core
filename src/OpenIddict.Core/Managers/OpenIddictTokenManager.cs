@@ -8,34 +8,20 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace OpenIddict {
+namespace OpenIddict.Core {
     /// <summary>
     /// Provides methods allowing to manage the tokens stored in the store.
     /// </summary>
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
     public class OpenIddictTokenManager<TToken> where TToken : class {
         public OpenIddictTokenManager(
-            [NotNull] IServiceProvider services,
             [NotNull] IOpenIddictTokenStore<TToken> store,
             [NotNull] ILogger<OpenIddictTokenManager<TToken>> logger) {
-            Context = services?.GetService<IHttpContextAccessor>()?.HttpContext;
             Logger = logger;
             Store = store;
         }
-
-        /// <summary>
-        /// Gets the cancellation token used to abort async operations.
-        /// </summary>
-        protected CancellationToken CancellationToken => Context?.RequestAborted ?? CancellationToken.None;
-
-        /// <summary>
-        /// Gets the HTTP context associated with the current manager.
-        /// </summary>
-        protected HttpContext Context { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -51,41 +37,44 @@ namespace OpenIddict {
         /// Creates a new token, which is not associated with a particular user or client.
         /// </summary>
         /// <param name="type">The token type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
-        public virtual Task<string> CreateAsync(string type) {
+        public virtual Task<string> CreateAsync(string type, CancellationToken cancellationToken) {
             if (string.IsNullOrEmpty(type)) {
                 throw new ArgumentException("The token type cannot be null or empty.", nameof(type));
             }
 
-            return Store.CreateAsync(type, CancellationToken);
+            return Store.CreateAsync(type, cancellationToken);
         }
 
         /// <summary>
         /// Retrieves a token using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        public virtual Task<TToken> FindByIdAsync(string identifier) {
-            return Store.FindByIdAsync(identifier, CancellationToken);
+        public virtual Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken) {
+            return Store.FindByIdAsync(identifier, cancellationToken);
         }
 
         /// <summary>
         /// Revokes a token.
         /// </summary>
         /// <param name="token">The token to revoke.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual Task RevokeAsync(TToken token) {
+        public virtual Task RevokeAsync(TToken token, CancellationToken cancellationToken) {
             if (token == null) {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            return Store.RevokeAsync(token, CancellationToken);
+            return Store.RevokeAsync(token, cancellationToken);
         }
     }
 }

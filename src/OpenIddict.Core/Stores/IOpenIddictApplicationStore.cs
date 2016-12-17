@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OpenIddict {
+namespace OpenIddict.Core {
     /// <summary>
     /// Provides methods allowing to manage the applications stored in a database.
     /// </summary>

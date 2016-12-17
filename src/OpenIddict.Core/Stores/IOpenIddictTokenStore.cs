@@ -7,7 +7,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OpenIddict {
+namespace OpenIddict.Core {
     /// <summary>
     /// Provides methods allowing to manage the tokens stored in a database.
     /// </summary>

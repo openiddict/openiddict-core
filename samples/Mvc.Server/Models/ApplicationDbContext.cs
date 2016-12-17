@@ -1,10 +1,8 @@
-﻿using System;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using OpenIddict;
 
 namespace Mvc.Server.Models {
-    public class ApplicationDbContext : OpenIddictDbContext<ApplicationUser, IdentityRole> {
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
         public ApplicationDbContext(DbContextOptions options)
             : base(options) { }
 

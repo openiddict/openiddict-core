@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OAuth.Validation;
-using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +11,7 @@ using Mvc.Server.Models;
 using Mvc.Server.Services;
 using Mvc.Server.ViewModels.Account;
 using Newtonsoft.Json.Linq;
-using OpenIddict;
+using OpenIddict.Core;
 
 namespace Mvc.Server.Controllers {
     [Authorize]
