@@ -112,7 +112,7 @@ namespace Mvc.Server {
         }
         #endregion
 
-        #region Password and refresh token flows
+        #region Password, authorization code and refresh token flows
         // Note: to support non-interactive flows like password,
         // you must provide your own token endpoint action:
 
@@ -173,17 +173,17 @@ namespace Mvc.Server {
                 return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
             }
 
-            else if (request.IsRefreshTokenGrantType()) {
-                // Retrieve the claims principal stored in the refresh token.
+            else if (request.IsAuthorizationCodeGrantType() || request.IsRefreshTokenGrantType()) {
+                // Retrieve the claims principal stored in the authorization code/refresh token.
                 var info = await HttpContext.Authentication.GetAuthenticateInfoAsync(
                     OpenIdConnectServerDefaults.AuthenticationScheme);
 
-                // Retrieve the user profile corresponding to the refresh token.
+                // Retrieve the user profile corresponding to the authorization code/refresh token.
                 var user = await _userManager.GetUserAsync(info.Principal);
                 if (user == null) {
                     return BadRequest(new OpenIdConnectResponse {
                         Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                        ErrorDescription = "The refresh token is no longer valid."
+                        ErrorDescription = "The token is no longer valid."
                     });
                 }
 
@@ -195,8 +195,8 @@ namespace Mvc.Server {
                     });
                 }
 
-                // Create a new authentication ticket, but reuse the properties stored
-                // in the refresh token, including the scopes originally granted.
+                // Create a new authentication ticket, but reuse the properties stored in the
+                // authorization code/refresh token, including the scopes originally granted.
                 var ticket = await CreateTicketAsync(request, user, info.Properties);
 
                 return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
@@ -232,7 +232,7 @@ namespace Mvc.Server {
             var ticket = new AuthenticationTicket(principal, properties,
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            if (!request.IsRefreshTokenGrantType()) {
+            if (!request.IsAuthorizationCodeGrantType() && !request.IsRefreshTokenGrantType()) {
                 // Set the list of scopes granted to the client application.
                 // Note: the offline_access scope must be granted
                 // to allow OpenIddict to return a refresh token.

@@ -207,10 +207,6 @@ namespace OpenIddict {
 
                 // Revoke the authorization code to prevent token reuse.
                 await tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
-
-                context.Validate(context.Ticket);
-
-                return;
             }
 
             else if (context.Request.IsRefreshTokenGrantType()) {

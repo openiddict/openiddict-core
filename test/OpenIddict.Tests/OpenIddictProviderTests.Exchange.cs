@@ -518,6 +518,7 @@ namespace OpenIddict.Tests {
         }
 
         [Theory]
+        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
         [InlineData(OpenIdConnectConstants.GrantTypes.ClientCredentials)]
         [InlineData(OpenIdConnectConstants.GrantTypes.Password)]
         [InlineData(OpenIdConnectConstants.GrantTypes.RefreshToken)]
@@ -533,7 +534,17 @@ namespace OpenIddict.Tests {
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
             ticket.SetTicketId("60FFF7EA-F98E-437B-937E-5073CC313103");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
+
+            switch (flow) {
+                case OpenIdConnectConstants.GrantTypes.AuthorizationCode:
+                    ticket.SetUsage(OpenIdConnectConstants.Usages.AuthorizationCode);
+                    ticket.SetPresenters("Fabrikam");
+                    break;
+
+                case OpenIdConnectConstants.GrantTypes.RefreshToken:
+                    ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
+                    break;
+            }
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -565,6 +576,7 @@ namespace OpenIddict.Tests {
 
                 builder.Services.AddSingleton(manager);
 
+                builder.Configure(options => options.AuthorizationCodeFormat = format.Object);
                 builder.Configure(options => options.RefreshTokenFormat = format.Object);
             });
 
@@ -574,6 +586,7 @@ namespace OpenIddict.Tests {
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                Code = "8xLOxBtZp8",
                 GrantType = flow,
                 RefreshToken = "8xLOxBtZp8",
                 Username = "johndoe",
