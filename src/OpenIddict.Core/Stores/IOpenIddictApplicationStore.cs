@@ -7,6 +7,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace OpenIddict.Core {
     /// <summary>
@@ -23,7 +24,7 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
-        Task<string> CreateAsync(TApplication application, CancellationToken cancellationToken);
+        Task<string> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an application using its unique identifier.
@@ -67,7 +68,7 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client type of the application (by default, "public").
         /// </returns>
-        Task<string> GetClientTypeAsync(TApplication application, CancellationToken cancellationToken);
+        Task<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the display name associated with an application.
@@ -78,7 +79,7 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the application.
         /// </returns>
-        Task<string> GetDisplayNameAsync(TApplication application, CancellationToken cancellationToken);
+        Task<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the hashed secret associated with an application.
@@ -89,7 +90,7 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the hashed secret associated with the application.
         /// </returns>
-        Task<string> GetHashedSecretAsync(TApplication application, CancellationToken cancellationToken);
+        Task<string> GetHashedSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the callback address associated with an application.
@@ -100,7 +101,7 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the redirect_uri associated with the application.
         /// </returns>
-        Task<string> GetRedirectUriAsync(TApplication application, CancellationToken cancellationToken);
+        Task<string> GetRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the token identifiers associated with an application.
@@ -111,6 +112,6 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens associated with the application.
         /// </returns>
-        Task<IEnumerable<string>> GetTokensAsync(TApplication application, CancellationToken cancellationToken);
+        Task<IEnumerable<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken);
     }
 }

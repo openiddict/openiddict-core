@@ -53,7 +53,7 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
-        public virtual async Task<string> CreateAsync(string type, CancellationToken cancellationToken) {
+        public virtual async Task<string> CreateAsync([NotNull] string type, CancellationToken cancellationToken) {
             if (string.IsNullOrEmpty(type)) {
                 throw new ArgumentException("The token type cannot be null or empty.");
             }
@@ -100,14 +100,18 @@ namespace OpenIddict.EntityFrameworkCore {
         /// <param name="token">The token to revoke.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual Task RevokeAsync(TToken token, CancellationToken cancellationToken) {
+        public virtual async Task RevokeAsync([NotNull] TToken token, CancellationToken cancellationToken) {
             if (token == null) {
                 throw new ArgumentNullException(nameof(token));
             }
 
             Context.Remove(token);
 
-            return Context.SaveChangesAsync(cancellationToken);
+            try {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (DbUpdateConcurrencyException) { }
         }
     }
 }

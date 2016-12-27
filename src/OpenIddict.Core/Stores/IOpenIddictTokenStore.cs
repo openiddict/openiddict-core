@@ -6,6 +6,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace OpenIddict.Core {
     /// <summary>
@@ -22,7 +23,7 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
-        Task<string> CreateAsync(string type, CancellationToken cancellationToken);
+        Task<string> CreateAsync([NotNull] string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an token using its unique identifier.
@@ -41,6 +42,6 @@ namespace OpenIddict.Core {
         /// <param name="token">The token to revoke.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        Task RevokeAsync(TToken token, CancellationToken cancellationToken);
+        Task RevokeAsync([NotNull] TToken token, CancellationToken cancellationToken);
     }
 }

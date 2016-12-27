@@ -52,7 +52,7 @@ namespace OpenIddict.EntityFrameworkCore {
         /// <param name="application">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async Task<string> CreateAsync(TApplication application, CancellationToken cancellationToken) {
+        public virtual async Task<string> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -128,7 +128,7 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client type of the application (by default, "public").
         /// </returns>
-        public virtual Task<string> GetClientTypeAsync(TApplication application, CancellationToken cancellationToken) {
+        public virtual Task<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -145,7 +145,7 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the application.
         /// </returns>
-        public virtual Task<string> GetDisplayNameAsync(TApplication application, CancellationToken cancellationToken) {
+        public virtual Task<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -162,7 +162,7 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the hashed secret associated with the application.
         /// </returns>
-        public virtual Task<string> GetHashedSecretAsync(TApplication application, CancellationToken cancellationToken) {
+        public virtual Task<string> GetHashedSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -179,7 +179,7 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the redirect_uri associated with the application.
         /// </returns>
-        public virtual Task<string> GetRedirectUriAsync(TApplication application, CancellationToken cancellationToken) {
+        public virtual Task<string> GetRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -196,7 +196,7 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens associated with the application.
         /// </returns>
-        public virtual async Task<IEnumerable<string>> GetTokensAsync(TApplication application, CancellationToken cancellationToken) {
+        public virtual async Task<IEnumerable<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
