@@ -6,8 +6,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -271,58 +269,6 @@ namespace OpenIddict {
                                  "an access token from the authorization endpoint.");
 
                 return;
-            }
-
-            // Run additional checks for prompt=none requests.
-            if (string.Equals(context.Request.Prompt, "none", StringComparison.Ordinal)) {
-                // If the user is not authenticated, return an error to the client application.
-                // See http://openid.net/specs/openid-connect-core-1_0.html#Authenticates
-                if (!context.HttpContext.User.Identities.Any(identity => identity.IsAuthenticated)) {
-                    logger.LogError("The prompt=none authorization request was rejected because the user was not logged in.");
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.LoginRequired,
-                        description: "The user must be authenticated.");
-
-                    return;
-                }
-
-                // Ensure that the authentication cookie contains the required NameIdentifier claim.
-                var identifier = context.HttpContext.User.GetClaim(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(identifier)) {
-                    logger.LogError("The prompt=none authorization request was rejected because the user session " +
-                                    "was invalid and didn't contain the mandatory ClaimTypes.NameIdentifier claim.");
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.ServerError,
-                        description: "The authorization request cannot be processed.");
-
-                    return;
-                }
-
-                // Extract the principal contained in the id_token_hint parameter.
-                // If no principal can be extracted, an error is returned to the client application.
-                var principal = await context.HttpContext.Authentication.AuthenticateAsync(context.Options.AuthenticationScheme);
-                if (principal == null) {
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The required id_token_hint parameter is missing.");
-
-                    return;
-                }
-
-                // Ensure the client application is listed as a valid audience in the identity token
-                // and that the identity token corresponds to the authenticated user.
-                if (!principal.HasClaim(OpenIdConnectConstants.Claims.Audience, context.Request.ClientId) ||
-                    !principal.HasClaim(ClaimTypes.NameIdentifier, identifier)) {
-                    logger.LogError("The prompt=none authorization request was rejected because the id_token_hint was invalid.");
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The id_token_hint parameter is invalid.");
-
-                    return;
-                }
             }
 
             context.Validate();
