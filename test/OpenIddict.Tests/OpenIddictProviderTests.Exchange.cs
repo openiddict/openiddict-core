@@ -7,6 +7,7 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -297,6 +298,98 @@ namespace OpenIddict.Tests {
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.ValidateSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task HandleTokenRequest_AuthorizationCodeRevocationIsIgnoredWhenTokenRevocationIsDisabled() {
+            // Arrange
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(),
+                new AuthenticationProperties(),
+                OpenIdConnectServerDefaults.AuthenticationScheme);
+
+            ticket.SetPresenters("Fabrikam");
+            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetUsage(OpenIdConnectConstants.Usages.AuthorizationCode);
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Unprotect("SplxlOBeZQQYbYS6WxSbIA"))
+                .Returns(ticket);
+
+            var server = CreateAuthorizationServer(builder => {
+                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+                    var application = new OpenIddictApplication();
+
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(application);
+
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                }));
+
+                builder.Configure(options => options.AuthorizationCodeFormat = format.Object);
+                builder.Configure(options => options.RevocationEndpointPath = PathString.Empty);
+
+                builder.DisableTokenRevocation();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest {
+                ClientId = "Fabrikam",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode
+            });
+
+            // Assert
+            Assert.NotNull(response.AccessToken);
+        }
+
+        [Fact]
+        public async Task HandleTokenRequest_RefreshTokenRevocationIsIgnoredWhenTokenRevocationIsDisabled() {
+            // Arrange
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(),
+                new AuthenticationProperties(),
+                OpenIdConnectServerDefaults.AuthenticationScheme);
+
+            ticket.SetTicketId("60FFF7EA-F98E-437B-937E-5073CC313103");
+            ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
+                .Returns(ticket);
+
+            var server = CreateAuthorizationServer(builder => {
+                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+                    var application = new OpenIddictApplication();
+
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(application);
+
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                }));
+
+                builder.Configure(options => options.RefreshTokenFormat = format.Object);
+                builder.Configure(options => options.RevocationEndpointPath = PathString.Empty);
+
+                builder.DisableTokenRevocation();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest {
+                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                RefreshToken = "8xLOxBtZp8"
+            });
+
+            // Assert
+            Assert.NotNull(response.AccessToken);
         }
 
         [Fact]

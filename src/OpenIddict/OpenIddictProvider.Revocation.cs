@@ -23,6 +23,8 @@ namespace OpenIddict {
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
 
+            Debug.Assert(!options.Value.DisableTokenRevocation, "Token revocation support shouldn't be disabled at this stage.");
+
             // When token_type_hint is specified, reject the request if it doesn't correspond to a revocable token.
             if (!string.IsNullOrEmpty(context.Request.TokenTypeHint) &&
                 !string.Equals(context.Request.TokenTypeHint, OpenIdConnectConstants.TokenTypeHints.AuthorizationCode) &&

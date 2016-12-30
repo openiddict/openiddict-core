@@ -95,6 +95,10 @@ namespace Microsoft.AspNetCore.Builder {
                                                     "client credentials, password and refresh token flows.");
             }
 
+            if (options.RevocationEndpointPath.HasValue && options.DisableTokenRevocation) {
+                throw new InvalidOperationException("The revocation endpoint cannot be enabled when token revocation is disabled.");
+            }
+
             return app.UseOpenIdConnectServer(options);
         }
 
@@ -477,6 +481,21 @@ namespace Microsoft.AspNetCore.Builder {
             }
 
             return builder.Configure(options => options.UseSlidingExpiration = false);
+        }
+
+        /// <summary>
+        /// Disables token revocation, so that authorization code and
+        /// refresh tokens are never stored and cannot be revoked.
+        /// Using this option is generally not recommended.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder DisableTokenRevocation([NotNull] this OpenIddictBuilder builder) {
+            if (builder == null) {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.Configure(options => options.DisableTokenRevocation = true);
         }
 
         /// <summary>

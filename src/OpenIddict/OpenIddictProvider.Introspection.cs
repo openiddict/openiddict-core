@@ -13,6 +13,7 @@ using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 
 namespace OpenIddict {
@@ -89,6 +90,7 @@ namespace OpenIddict {
         }
 
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context) {
+            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
             var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
@@ -110,7 +112,7 @@ namespace OpenIddict {
             }
 
             // When the received ticket is revocable, ensure it is still valid.
-            if (context.Ticket.IsAuthorizationCode() || context.Ticket.IsRefreshToken()) {
+            if (!options.Value.DisableTokenRevocation && (context.Ticket.IsAuthorizationCode() || context.Ticket.IsRefreshToken())) {
                 // Retrieve the token from the database using the unique identifier stored in the authentication ticket:
                 // if the corresponding entry cannot be found, return Active = false to indicate that is is no longer valid.
                 var token = await tokens.FindByIdAsync(context.Ticket.GetTicketId(), context.HttpContext.RequestAborted);

@@ -29,6 +29,13 @@ namespace OpenIddict {
         public IDistributedCache Cache { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether token revocation should be disabled.
+        /// When disabled, authorization code and refresh tokens are not stored
+        /// and cannot be revoked. Using this option is generally not recommended.
+        /// </summary>
+        public bool DisableTokenRevocation { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether request caching should be enabled.
         /// When enabled, both authorization and logout requests are automatically stored
         /// in the distributed cache, which allows flowing large payloads across requests.

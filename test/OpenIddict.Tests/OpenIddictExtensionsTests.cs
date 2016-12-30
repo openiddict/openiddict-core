@@ -15,7 +15,7 @@ using Xunit;
 namespace OpenIddict.Tests {
     public class OpenIddictExtensionsTests {
         [Fact]
-        public void UseOpenIddict_AnExceptionIsThrownWhenServicesAreNotRegistered() {
+        public void UseOpenIddict_ThrowsAnExceptionWhenServicesAreNotRegistered() {
             // Arrange
             var services = new ServiceCollection();
 
@@ -29,7 +29,7 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public void UseOpenIddict_AnExceptionIsThrownWhenNoDistributedCacheIsRegisteredIfRequestCachingIsEnabled() {
+        public void UseOpenIddict_ThrowsAnExceptionWhenNoDistributedCacheIsRegisteredIfRequestCachingIsEnabled() {
             // Arrange
             var services = new ServiceCollection();
 
@@ -46,7 +46,7 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public void UseOpenIddict_AnExceptionIsThrownWhenNoSigningCredentialsIsRegistered() {
+        public void UseOpenIddict_ThrowsAnExceptionWhenNoSigningCredentialsIsRegistered() {
             // Arrange
             var services = new ServiceCollection();
             services.AddOpenIddict();
@@ -62,7 +62,7 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public void UseOpenIddict_AnExceptionIsThrownWhenNoFlowIsEnabled() {
+        public void UseOpenIddict_ThrowsAnExceptionWhenNoFlowIsEnabled() {
             // Arrange
             var services = new ServiceCollection();
 
@@ -83,7 +83,7 @@ namespace OpenIddict.Tests {
         [Theory]
         [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
         [InlineData(OpenIdConnectConstants.GrantTypes.Implicit)]
-        public void UseOpenIddict_AnExceptionIsThrownWhenAuthorizationEndpointIsDisabled(string flow) {
+        public void UseOpenIddict_ThrowsAnExceptionWhenAuthorizationEndpointIsDisabled(string flow) {
             // Arrange
             var services = new ServiceCollection();
 
@@ -109,7 +109,7 @@ namespace OpenIddict.Tests {
         [InlineData(OpenIdConnectConstants.GrantTypes.ClientCredentials)]
         [InlineData(OpenIdConnectConstants.GrantTypes.Password)]
         [InlineData(OpenIdConnectConstants.GrantTypes.RefreshToken)]
-        public void UseOpenIddict_AnExceptionIsThrownWhenTokenEndpointIsDisabled(string flow) {
+        public void UseOpenIddict_ThrowsAnExceptionWhenTokenEndpointIsDisabled(string flow) {
             // Arrange
             var services = new ServiceCollection();
 
@@ -129,6 +129,29 @@ namespace OpenIddict.Tests {
 
             Assert.Equal("The token endpoint must be enabled to use the authorization code, " +
                          "client credentials, password and refresh token flows.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddict_ThrowsAnExceptionWhenTokenRevocationIsDisabled() {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict()
+                .AddSigningCertificate(
+                    assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
+                    resource: "OpenIddict.Tests.Certificate.pfx",
+                    password: "OpenIddict")
+                .EnableAuthorizationEndpoint("/connect/authorize")
+                .EnableRevocationEndpoint("/connect/revocation")
+                .AllowImplicitFlow()
+                .DisableTokenRevocation();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
+
+            Assert.Equal("The revocation endpoint cannot be enabled when token revocation is disabled.", exception.Message);
         }
 
         [Fact]
@@ -411,6 +434,42 @@ namespace OpenIddict.Tests {
 
             // Assert
             Assert.Equal(PathString.Empty, options.Value.CryptographyEndpointPath);
+        }
+
+        [Fact]
+        public void DisableSlidingExpiration_SlidingExpirationIsDisabled() {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOptions();
+
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.DisableSlidingExpiration();
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<OpenIddictOptions>>();
+
+            // Assert
+            Assert.False(options.Value.UseSlidingExpiration);
+        }
+
+        [Fact]
+        public void DisableTokenRevocation_TokenRevocationIsDisabled() {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOptions();
+
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.DisableTokenRevocation();
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<OpenIddictOptions>>();
+
+            // Assert
+            Assert.True(options.Value.DisableTokenRevocation);
         }
 
         [Fact]
