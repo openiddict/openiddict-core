@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
-using NWebsec.AspNetCore.Middleware;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
@@ -118,20 +117,6 @@ namespace Mvc.Server {
             //     options.ClientId = "resource_server";
             //     options.ClientSecret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd";
             // });
-
-            app.UseCsp(options => options.DefaultSources(directive => directive.Self())
-                .ImageSources(directive => directive.Self()
-                    .CustomSources("*"))
-                .ScriptSources(directive => directive.Self()
-                    .UnsafeInline())
-                .StyleSources(directive => directive.Self()
-                    .UnsafeInline()));
-
-            app.UseXContentTypeOptions();
-
-            app.UseXfo(options => options.Deny());
-
-            app.UseXXssProtection(options => options.EnabledWithBlockMode());
 
             app.UseIdentity();
 
