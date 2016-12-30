@@ -88,6 +88,8 @@ public void ConfigureServices(IServiceCollection services) {
 	    .AddDefaultTokenProviders();
 
 	// Register the OpenIddict services.
+    // Note: use the generic overload if you need
+    // to replace the default OpenIddict entities.
 	services.AddOpenIddict()
         // Register the Entity Framework stores.
         .AddEntityFrameworkCoreStores<ApplicationDbContext>()
@@ -174,6 +176,8 @@ The **Mvc.Server sample comes with an [`AuthorizationController` that supports b
 ```csharp
 public void ConfigureServices(IServiceCollection services) {
 	// Register the OpenIddict services.
+    // Note: use the generic overload if you need
+    // to replace the default OpenIddict entities.
 	services.AddOpenIddict()
         // Register the Entity Framework stores.
         .AddEntityFrameworkCoreStores<ApplicationDbContext>()
@@ -203,33 +207,21 @@ public void ConfigureServices(IServiceCollection services) {
   - **Register your client application**:
 
 ```csharp
-using (var context = new ApplicationDbContext(
-    app.ApplicationServices.GetRequiredService<DbContextOptions<ApplicationDbContext>>())) {
-    context.Database.EnsureCreated();
+// Create a new service scope to ensure the database context is correctly disposed when this methods returns.
+using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope()) {
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.EnsureCreatedAsync();
 
-    var applications = context.Set<OpenIddictApplication>();
+    // Note: when using a custom entity or a custom key type, replace OpenIddictApplication by the appropriate type.
+    var manager = scope.ServiceProvider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
 
-    if (!applications.Any()) {
-        applications.Add(new OpenIddictApplication {
-            // Assign a unique identifier to your client app:
-            Id = "48BF1BC3-CE01-4787-BBF2-0426EAD21342",
-
-            // Assign a display named used in the consent form page:
-            DisplayName = "MVC Core client application",
-
-            // Register the appropriate redirect_uri and post_logout_redirect_uri:
-            RedirectUri = "http://localhost:53507/signin-oidc",
-            LogoutRedirectUri = "http://localhost:53507/",
-
-            // Generate a new derived key from the client secret:
-            Secret = Crypto.HashPassword("secret_secret_secret"),
-
-            // Note: use "public" for JS/mobile/desktop applications
-            // and "confidential" for server-side applications.
-            Type = OpenIddictConstants.ClientTypes.Confidential
-        });
-
-        context.SaveChanges();
+    if (await manager.FindByClientIdAsync("[client identifier]", cancellationToken) == null) {
+        var application = new OpenIddictApplication {
+            ClientId = "[client identifier]",
+            RedirectUri = "[redirect uri]"
+        };
+    
+        await manager.CreateAsync(application, "[client secret]", cancellationToken);
     }
 }
 ```
