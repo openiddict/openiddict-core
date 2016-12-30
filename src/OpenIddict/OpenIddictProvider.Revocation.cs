@@ -104,7 +104,7 @@ namespace OpenIddict {
                 return;
             }
 
-            if (!await applications.ValidateSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted)) {
+            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
                     description: "Invalid credentials: ensure that you specified a correct client_secret.");

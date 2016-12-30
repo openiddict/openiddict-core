@@ -27,6 +27,16 @@ namespace OpenIddict.Core {
         Task<string> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Removes an existing application.
+        /// </summary>
+        /// <param name="application">The application to delete.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves an application using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the application.</param>
@@ -58,6 +68,17 @@ namespace OpenIddict.Core {
         /// returns the client application corresponding to the post_logout_redirect_uri.
         /// </returns>
         Task<TApplication> FindByLogoutRedirectUri(string url, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the client identifier associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client identifier associated with the application.
+        /// </returns>
+        Task<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the client type associated with an application.
@@ -113,5 +134,37 @@ namespace OpenIddict.Core {
         /// whose result returns the tokens associated with the application.
         /// </returns>
         Task<IEnumerable<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the client type associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="type">The client type associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetClientTypeAsync([NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the hashed secret associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="hash">The hashed client secret associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetHashedSecretAsync([NotNull] TApplication application, [NotNull] string hash, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates an existing application.
+        /// </summary>
+        /// <param name="application">The application to update.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
     }
 }

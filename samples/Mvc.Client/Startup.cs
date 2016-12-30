@@ -31,8 +31,8 @@ namespace Mvc.Client {
             app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions {
                 // Note: these settings must match the application details
                 // inserted in the database at the server level.
-                ClientId = "myClient",
-                ClientSecret = "secret_secret_secret",
+                ClientId = "mvc",
+                ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                 PostLogoutRedirectUri = "http://localhost:53507/",
 
                 RequireHttpsMetadata = false,

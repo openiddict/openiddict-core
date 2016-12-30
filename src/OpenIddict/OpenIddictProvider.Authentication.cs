@@ -246,6 +246,19 @@ namespace OpenIddict {
                 return;
             }
 
+            // Ensure a redirect_uri was associated with the application.
+            if (!await applications.HasRedirectUriAsync(application, context.HttpContext.RequestAborted)) {
+                logger.LogError("The authorization request was rejected because no redirect_uri " +
+                                "was registered with the application '{ClientId}'.", context.ClientId);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    description: "The client application is not allowed to use interactive flows.");
+
+                return;
+            }
+
+            // Ensure the redirect_uri is valid.
             if (!await applications.ValidateRedirectUriAsync(application, context.RedirectUri, context.HttpContext.RequestAborted)) {
                 logger.LogError("The authorization request was rejected because the redirect_uri " +
                                 "was invalid: '{RedirectUri}'.", context.RedirectUri);

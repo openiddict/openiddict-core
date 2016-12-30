@@ -75,7 +75,7 @@ namespace OpenIddict {
             }
 
             // Validate the client credentials.
-            if (!await applications.ValidateSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted)) {
+            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted)) {
                 logger.LogError("The introspection request was rejected because the confidential application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 

@@ -167,7 +167,7 @@ namespace OpenIddict {
                 return;
             }
 
-            if (!await applications.ValidateSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted)) {
+            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted)) {
                 logger.LogError("The token request was rejected because the confidential application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 

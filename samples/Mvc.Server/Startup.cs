@@ -1,5 +1,6 @@
-using System.Linq;
-using CryptoHelper;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -150,50 +151,47 @@ namespace Mvc.Server {
 
             app.UseMvcWithDefaultRoute();
 
-            using (var context = new ApplicationDbContext(
-                app.ApplicationServices.GetRequiredService<DbContextOptions<ApplicationDbContext>>())) {
-                context.Database.EnsureCreated();
+            // Seed the database with the sample applications.
+            // Note: in a real world application, this step should be part of a setup script.
+            InitializeAsync(app.ApplicationServices, CancellationToken.None).GetAwaiter().GetResult();
+        }
 
-                var applications = context.Set<OpenIddictApplication>();
+        private async Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken) {
+            // Create a new service scope to ensure the database context is correctly disposed when this methods returns.
+            using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope()) {
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await context.Database.EnsureCreatedAsync();
 
-                // Add Mvc.Client to the known applications.
-                if (!applications.Any()) {
-                    // Note: when using the introspection middleware, your resource server
-                    // MUST be registered as an OAuth2 client and have valid credentials.
-                    //
-                    // context.Applications.Add(new OpenIddictApplication {
-                    //     Id = "resource_server",
-                    //     DisplayName = "Main resource server",
-                    //     Secret = Crypto.HashPassword("secret_secret_secret"),
-                    //     Type = OpenIddictConstants.ClientTypes.Confidential
-                    // });
+                var manager = scope.ServiceProvider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
 
-                    applications.Add(new OpenIddictApplication {
-                        ClientId = "myClient",
-                        ClientSecret = Crypto.HashPassword("secret_secret_secret"),
-                        DisplayName = "My client application",
+                if (await manager.FindByClientIdAsync("mvc", cancellationToken) == null) {
+                    var application = new OpenIddictApplication {
+                        ClientId = "mvc",
+                        DisplayName = "MVC client application",
                         LogoutRedirectUri = "http://localhost:53507/",
-                        RedirectUri = "http://localhost:53507/signin-oidc",
-                        Type = OpenIddictConstants.ClientTypes.Confidential
-                    });
+                        RedirectUri = "http://localhost:53507/signin-oidc"
+                    };
 
-                    // To test this sample with Postman, use the following settings:
-                    //
-                    // * Authorization URL: http://localhost:54540/connect/authorize
-                    // * Access token URL: http://localhost:54540/connect/token
-                    // * Client ID: postman
-                    // * Client secret: [blank] (not used with public clients)
-                    // * Scope: openid email profile roles
-                    // * Grant type: authorization code
-                    // * Request access token locally: yes
-                    applications.Add(new OpenIddictApplication {
+                    await manager.CreateAsync(application, "901564A5-E7FE-42CB-B10D-61EF6A8F3654", cancellationToken);
+                }
+
+                // To test this sample with Postman, use the following settings:
+                //
+                // * Authorization URL: http://localhost:54540/connect/authorize
+                // * Access token URL: http://localhost:54540/connect/token
+                // * Client ID: postman
+                // * Client secret: [blank] (not used with public clients)
+                // * Scope: openid email profile roles
+                // * Grant type: authorization code
+                // * Request access token locally: yes
+                if (await manager.FindByClientIdAsync("postman", cancellationToken) == null) {
+                    var application = new OpenIddictApplication {
                         ClientId = "postman",
                         DisplayName = "Postman",
-                        RedirectUri = "https://www.getpostman.com/oauth2/callback",
-                        Type = OpenIddictConstants.ClientTypes.Public
-                    });
+                        RedirectUri = "https://www.getpostman.com/oauth2/callback"
+                    };
 
-                    context.SaveChanges();
+                    await manager.CreateAsync(application, cancellationToken);
                 }
             }
         }

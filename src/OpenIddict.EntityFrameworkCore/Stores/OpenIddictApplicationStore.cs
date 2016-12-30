@@ -71,6 +71,28 @@ namespace OpenIddict.EntityFrameworkCore {
         }
 
         /// <summary>
+        /// Removes an existing application.
+        /// </summary>
+        /// <param name="application">The application to delete.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            Context.Remove(application);
+
+            try {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (DbUpdateConcurrencyException) { }
+        }
+
+        /// <summary>
         /// Retrieves an application using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the application.</param>
@@ -117,6 +139,23 @@ namespace OpenIddict.EntityFrameworkCore {
         /// </returns>
         public virtual Task<TApplication> FindByLogoutRedirectUri(string url, CancellationToken cancellationToken) {
             return Applications.SingleOrDefaultAsync(application => application.LogoutRedirectUri == url, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the client identifier associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client identifier associated with the application.
+        /// </returns>
+        public virtual Task<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.ClientId);
         }
 
         /// <summary>
@@ -219,6 +258,75 @@ namespace OpenIddict.EntityFrameworkCore {
             }
 
             return tokens;
+        }
+
+        /// <summary>
+        /// Sets the client type associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="type">The client type associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetClientTypeAsync([NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(type)) {
+                throw new ArgumentException("The client type cannot be null or empty.", nameof(type));
+            }
+
+            application.Type = type;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Sets the hashed secret associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="hash">The hashed client secret associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetHashedSecretAsync([NotNull] TApplication application, [NotNull] string hash, CancellationToken cancellationToken) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(hash)) {
+                throw new ArgumentException("The client secret hash cannot be null or empty.", nameof(hash));
+            }
+
+            application.ClientSecret = hash;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Updates an existing application.
+        /// </summary>
+        /// <param name="application">The application to update.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            Context.Attach(application);
+            Context.Update(application);
+
+            try {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (DbUpdateConcurrencyException) { }
         }
     }
 }
