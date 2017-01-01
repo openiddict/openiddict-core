@@ -503,7 +503,12 @@ namespace OpenIddict.Tests {
                 }));
 
                 builder.Services.AddSingleton(CreateTokenManager(instance => {
-                    instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, It.IsAny<CancellationToken>()))
+                    var token = new OpenIddictToken();
+
+                    instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(token);
+
+                    instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
                 }));
             });

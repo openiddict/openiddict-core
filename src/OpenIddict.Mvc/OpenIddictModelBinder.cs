@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -17,7 +18,7 @@ namespace OpenIddict.Mvc {
         /// </summary>
         /// <param name="context">The model binding context.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public Task BindModelAsync(ModelBindingContext context) {
+        public Task BindModelAsync([NotNull] ModelBindingContext context) {
             if (context == null) {
                 throw new ArgumentNullException(nameof(context));
             }
@@ -65,7 +66,7 @@ namespace OpenIddict.Mvc {
         /// </summary>
         /// <param name="context">The model binding context.</param>
         /// <returns>The current instance or <c>null</c> if the model is not supported.</returns>
-        public IModelBinder GetBinder(ModelBinderProviderContext context) {
+        public IModelBinder GetBinder([NotNull] ModelBinderProviderContext context) {
             if (context == null) {
                 throw new ArgumentNullException(nameof(context));
             }

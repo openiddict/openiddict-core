@@ -19,13 +19,39 @@ namespace OpenIddict.EntityFrameworkCore {
     /// <summary>
     /// Provides methods allowing to manage the applications stored in a database.
     /// </summary>
+    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
+    public class OpenIddictApplicationStore<TContext> : OpenIddictApplicationStore<OpenIddictApplication,
+                                                                                   OpenIddictAuthorization,
+                                                                                   OpenIddictToken, TContext, string>
+        where TContext : DbContext {
+        public OpenIddictApplicationStore([NotNull] TContext context) : base(context) { }
+    }
+
+    /// <summary>
+    /// Provides methods allowing to manage the applications stored in a database.
+    /// </summary>
+    /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
+    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+    public class OpenIddictApplicationStore<TContext, TKey> : OpenIddictApplicationStore<OpenIddictApplication<TKey>,
+                                                                                         OpenIddictAuthorization<TKey>,
+                                                                                         OpenIddictToken<TKey>, TContext, TKey>
+        where TContext : DbContext
+        where TKey : IEquatable<TKey> {
+        public OpenIddictApplicationStore([NotNull] TContext context) : base(context) { }
+    }
+
+    /// <summary>
+    /// Provides methods allowing to manage the applications stored in a database.
+    /// </summary>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
+    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-    public class OpenIddictApplicationStore<TApplication, TToken, TContext, TKey> : IOpenIddictApplicationStore<TApplication>
-        where TApplication : OpenIddictApplication<TKey, TToken>
-        where TToken : OpenIddictToken<TKey>, new()
+    public class OpenIddictApplicationStore<TApplication, TAuthorization, TToken, TContext, TKey> : IOpenIddictApplicationStore<TApplication>
+        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
+        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
+        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
         where TContext : DbContext
         where TKey : IEquatable<TKey> {
         public OpenIddictApplicationStore([NotNull] TContext context) {
@@ -51,23 +77,19 @@ namespace OpenIddict.EntityFrameworkCore {
         /// </summary>
         /// <param name="application">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async Task<string> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
+        /// </returns>
+        public virtual async Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
-            }
-
-            // Ensure that the key type can be serialized.
-            var converter = TypeDescriptor.GetConverter(typeof(TKey));
-            if (!converter.CanConvertTo(typeof(string))) {
-                throw new InvalidOperationException($"The '{typeof(TKey).Name}' key type is not supported.");
             }
 
             Context.Add(application);
 
             await Context.SaveChangesAsync(cancellationToken);
 
-            return converter.ConvertToInvariantString(application.Id);
+            return application;
         }
 
         /// <summary>
@@ -102,15 +124,7 @@ namespace OpenIddict.EntityFrameworkCore {
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
         public virtual Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken) {
-            var converter = TypeDescriptor.GetConverter(typeof(TKey));
-
-            // If the string key cannot be converted to TKey, return null
-            // to indicate that the requested application doesn't exist.
-            if (!converter.CanConvertFrom(typeof(string))) {
-                return Task.FromResult<TApplication>(null);
-            }
-
-            var key = (TKey) converter.ConvertFromInvariantString(identifier);
+            var key = ConvertIdentifierFromString(identifier);
 
             return Applications.SingleOrDefaultAsync(application => application.Id.Equals(key), cancellationToken);
         }
@@ -210,6 +224,23 @@ namespace OpenIddict.EntityFrameworkCore {
         }
 
         /// <summary>
+        /// Retrieves the unique identifier associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the application.
+        /// </returns>
+        public virtual Task<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(ConvertIdentifierToString(application.Id));
+        }
+
+        /// <summary>
         /// Retrieves the logout callback address associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -257,12 +288,6 @@ namespace OpenIddict.EntityFrameworkCore {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            // Ensure that the key type can be serialized.
-            var converter = TypeDescriptor.GetConverter(typeof(TKey));
-            if (!converter.CanConvertTo(typeof(string))) {
-                throw new InvalidOperationException($"The '{typeof(TKey).Name}' key type is not supported.");
-            }
-
             var query = from entity in Applications
                         where entity.Id.Equals(application.Id)
                         from token in entity.Tokens
@@ -271,7 +296,7 @@ namespace OpenIddict.EntityFrameworkCore {
             var tokens = new List<string>();
 
             foreach (var identifier in await query.ToArrayAsync()) {
-                tokens.Add(converter.ConvertToInvariantString(identifier));
+                tokens.Add(ConvertIdentifierToString(identifier));
             }
 
             return tokens;
@@ -344,6 +369,34 @@ namespace OpenIddict.EntityFrameworkCore {
             }
 
             catch (DbUpdateConcurrencyException) { }
+        }
+
+        /// <summary>
+        /// Converts the provided identifier to a strongly typed key object.
+        /// </summary>
+        /// <param name="identifier">The identifier to convert.</param>
+        /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
+        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier) {
+            if (string.IsNullOrEmpty(identifier)) {
+                return default(TKey);
+            }
+
+            return (TKey) TypeDescriptor.GetConverter(typeof(TKey))
+                                        .ConvertFromInvariantString(identifier);
+        }
+
+        /// <summary>
+        /// Converts the provided identifier to its string representation.
+        /// </summary>
+        /// <param name="identifier">The identifier to convert.</param>
+        /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
+        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier) {
+            if (Equals(identifier, default(TKey))) {
+                return null;
+            }
+
+            return TypeDescriptor.GetConverter(typeof(TKey))
+                                 .ConvertToInvariantString(identifier);
         }
     }
 }

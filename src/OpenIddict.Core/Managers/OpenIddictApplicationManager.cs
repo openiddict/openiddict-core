@@ -44,7 +44,7 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
-        public virtual async Task<string> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
+        public virtual async Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
             if (application == null) {
                 throw new ArgumentNullException(nameof(application));
             }
@@ -73,7 +73,7 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
-        public virtual async Task<string> CreateAsync(
+        public virtual async Task<TApplication> CreateAsync(
             [NotNull] TApplication application,
             [NotNull] string secret, CancellationToken cancellationToken) {
             if (application == null) {
@@ -194,6 +194,23 @@ namespace OpenIddict.Core {
             }
 
             return Store.GetDisplayNameAsync(application, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the unique identifier associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the application.
+        /// </returns>
+        public virtual Task<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Store.GetIdAsync(application, cancellationToken);
         }
 
         /// <summary>

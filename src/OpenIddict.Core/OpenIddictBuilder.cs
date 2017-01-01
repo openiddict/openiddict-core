@@ -8,6 +8,7 @@ using System;
 using System.ComponentModel;
 using JetBrains.Annotations;
 using OpenIddict.Core;
+using OpenIddict.Models;
 
 #if NETSTANDARD1_3
 using System.Reflection;
@@ -34,25 +35,25 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// Gets or sets the type corresponding to the Application entity.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Type ApplicationType { get; set; }
+        public Type ApplicationType { get; set; } = typeof(OpenIddictApplication);
 
         /// <summary>
         /// Gets or sets the type corresponding to the Authorization entity.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Type AuthorizationType { get; set; }
+        public Type AuthorizationType { get; set; } = typeof(OpenIddictAuthorization);
 
         /// <summary>
         /// Gets or sets the type corresponding to the Scope entity.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Type ScopeType { get; set; }
+        public Type ScopeType { get; set; } = typeof(OpenIddictScope);
 
         /// <summary>
         /// Gets or sets the type corresponding to the Token entity.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public Type TokenType { get; set; }
+        public Type TokenType { get; set; } = typeof(OpenIddictToken);
 
         /// <summary>
         /// Gets the services collection.

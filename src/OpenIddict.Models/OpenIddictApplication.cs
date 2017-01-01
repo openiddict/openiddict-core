@@ -11,7 +11,7 @@ namespace OpenIddict.Models {
     /// <summary>
     /// Represents an OpenIddict application.
     /// </summary>
-    public class OpenIddictApplication : OpenIddictApplication<string, OpenIddictToken> {
+    public class OpenIddictApplication : OpenIddictApplication<string, OpenIddictAuthorization, OpenIddictToken> {
         public OpenIddictApplication() {
             // Generate a new string identifier.
             Id = Guid.NewGuid().ToString();
@@ -21,13 +21,18 @@ namespace OpenIddict.Models {
     /// <summary>
     /// Represents an OpenIddict application.
     /// </summary>
-    public class OpenIddictApplication<TKey> : OpenIddictApplication<TKey, OpenIddictToken<TKey>>
+    public class OpenIddictApplication<TKey> : OpenIddictApplication<TKey, OpenIddictAuthorization<TKey>, OpenIddictToken<TKey>>
         where TKey : IEquatable<TKey> { }
 
     /// <summary>
     /// Represents an OpenIddict application.
     /// </summary>
-    public class OpenIddictApplication<TKey, TToken> where TKey : IEquatable<TKey> {
+    public class OpenIddictApplication<TKey, TAuthorization, TToken> where TKey : IEquatable<TKey> {
+        /// <summary>
+        /// Gets the list of the authorizations associated with this application.
+        /// </summary>
+        public virtual IList<TAuthorization> Authorizations { get; } = new List<TAuthorization>();
+
         /// <summary>
         /// Gets or sets the client identifier
         /// associated with the current application.

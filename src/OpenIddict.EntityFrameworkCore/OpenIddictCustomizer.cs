@@ -17,10 +17,10 @@ namespace OpenIddict.EntityFrameworkCore {
     /// required by the OpenIddict stack in an Entity Framework context.
     /// </summary>
     public class OpenIddictCustomizer<TApplication, TAuthorization, TScope, TToken, TKey> : ModelCustomizer
-        where TApplication : OpenIddictApplication<TKey, TToken>
-        where TAuthorization : OpenIddictAuthorization<TKey, TToken>
-        where TScope : OpenIddictScope<TKey>
-        where TToken : OpenIddictToken<TKey>
+        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
+        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
+        where TScope : OpenIddictScope<TKey>, new()
+        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
         where TKey : IEquatable<TKey> {
         public override void Customize([NotNull] ModelBuilder builder, [NotNull] DbContext context) {
             if (builder == null) {

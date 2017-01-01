@@ -21,10 +21,9 @@ namespace OpenIddict.Core {
         /// <param name="application">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the unique identifier associated with the application.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
         /// </returns>
-        Task<string> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes an existing application.
@@ -112,6 +111,17 @@ namespace OpenIddict.Core {
         /// whose result returns the hashed secret associated with the application.
         /// </returns>
         Task<string> GetHashedSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the unique identifier associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the application.
+        /// </returns>
+        Task<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the logout callback address associated with an application.

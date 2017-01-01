@@ -133,6 +133,8 @@ namespace OpenIddict.Tests {
 
                         ticket.SetScopes(request.GetScopes());
 
+                        ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70");
+
                         return context.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
                     }
 
@@ -160,6 +162,16 @@ namespace OpenIddict.Tests {
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
                 Mock.Of<IOpenIddictApplicationStore<OpenIddictApplication>>(),
                 Mock.Of<ILogger<OpenIddictApplicationManager<OpenIddictApplication>>>());
+
+            setup?.Invoke(manager);
+
+            return manager.Object;
+        }
+
+        private static OpenIddictAuthorizationManager<OpenIddictAuthorization> CreateAuthorizationManager(Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> setup = null) {
+            var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
+                Mock.Of<IOpenIddictAuthorizationStore<OpenIddictAuthorization>>(),
+                Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>());
 
             setup?.Invoke(manager);
 

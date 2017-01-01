@@ -24,6 +24,10 @@ namespace OpenIddict.Core {
             public const string ExternalProvidersSupported = "external_providers_supported";
         }
 
+        public static class Properties {
+            public const string AuthorizationId = ".authorization_id";
+        }
+
         public static class Scopes {
             public const string Roles = "roles";
         }

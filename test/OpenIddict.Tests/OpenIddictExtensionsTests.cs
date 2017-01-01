@@ -18,7 +18,6 @@ namespace OpenIddict.Tests {
         public void UseOpenIddict_ThrowsAnExceptionWhenServicesAreNotRegistered() {
             // Arrange
             var services = new ServiceCollection();
-
             var builder = new ApplicationBuilder(services.BuildServiceProvider());
 
             // Act and assert

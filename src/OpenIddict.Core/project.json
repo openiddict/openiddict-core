@@ -33,6 +33,7 @@
   },
 
   "dependencies": {
+    "AspNet.Security.OpenIdConnect.Primitives": "1.0.0-rc1-*",
     "CryptoHelper": "2.0.0",
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0",
@@ -46,7 +47,8 @@
 
     "netstandard1.3": {
       "dependencies": {
-        "System.Reflection.TypeExtensions": "4.1.0"
+        "System.Reflection.TypeExtensions": "4.1.0",
+        "System.Security.Claims": "4.0.1"
       },
 
       "imports": [
