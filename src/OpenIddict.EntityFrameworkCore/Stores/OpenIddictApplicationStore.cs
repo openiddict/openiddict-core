@@ -210,6 +210,23 @@ namespace OpenIddict.EntityFrameworkCore {
         }
 
         /// <summary>
+        /// Retrieves the logout callback address associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the post_logout_redirect_uri associated with the application.
+        /// </returns>
+        public virtual Task<string> GetLogoutRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken) {
+            if (application == null) {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.LogoutRedirectUri);
+        }
+
+        /// <summary>
         /// Retrieves the callback address associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>

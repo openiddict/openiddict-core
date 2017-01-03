@@ -84,6 +84,13 @@ namespace OpenIddict.Core {
                 throw new ArgumentException("The client secret hash cannot be directly set on the application entity.");
             }
 
+            var type = await Store.GetClientTypeAsync(application, cancellationToken);
+            if (!string.IsNullOrEmpty(type) &&
+                !string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase)) {
+                throw new InvalidOperationException("The client type must be set to 'confidential' when creating an application with a client secret." +
+                                                    "To create a public application, use the CreateAsync() overload that doesn't take a secret parameter.");
+            }
+
             await Store.SetClientTypeAsync(application, OpenIddictConstants.ClientTypes.Confidential, cancellationToken);
             await Store.SetHashedSecretAsync(application, Crypto.HashPassword(secret), cancellationToken);
             await ValidateAsync(application, cancellationToken);
@@ -362,7 +369,7 @@ namespace OpenIddict.Core {
             }
 
             // When a redirect_uri is specified, ensure it is valid and spec-compliant.
-                // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
+            // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
             var address = await Store.GetRedirectUriAsync(application, cancellationToken);
             if (!string.IsNullOrEmpty(address)) {
                 Uri uri;
@@ -374,6 +381,21 @@ namespace OpenIddict.Core {
                 // Ensure the redirect_uri doesn't contain a fragment.
                 if (!string.IsNullOrEmpty(uri.Fragment)) {
                     throw new ArgumentException("The redirect_uri cannot contain a fragment.");
+                }
+            }
+
+            // When a post_logout_redirect_uri is specified, ensure it is valid.
+            address = await Store.GetLogoutRedirectUriAsync(application, cancellationToken);
+            if (!string.IsNullOrEmpty(address)) {
+                Uri uri;
+                // Ensure the post_logout_redirect_uri is a valid and absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out uri)) {
+                    throw new ArgumentException("The post_logout_redirect_uri must be an absolute URL.");
+                }
+
+                // Ensure the post_logout_redirect_uri doesn't contain a fragment.
+                if (!string.IsNullOrEmpty(uri.Fragment)) {
+                    throw new ArgumentException("The post_logout_redirect_uri cannot contain a fragment.");
                 }
             }
         }
