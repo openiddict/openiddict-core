@@ -120,9 +120,9 @@ namespace OpenIddict.Tests {
                 app.UseOpenIddict();
 
                 app.Run(context => {
-                    if (context.Request.Path == AuthorizationEndpoint || context.Request.Path == TokenEndpoint) {
-                        var request = context.GetOpenIdConnectRequest();
+                    var request = context.GetOpenIdConnectRequest();
 
+                    if (context.Request.Path == AuthorizationEndpoint || context.Request.Path == TokenEndpoint) {
                         var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
                         identity.AddClaim(ClaimTypes.NameIdentifier, "Bob le Magnifique");
 
@@ -144,6 +144,7 @@ namespace OpenIddict.Tests {
                         context.Response.Headers[HeaderNames.ContentType] = "application/json";
 
                         return context.Response.WriteAsync(JsonConvert.SerializeObject(new {
+                            access_token = request.AccessToken,
                             sub = "Bob le Bricoleur"
                         }));
                     }
