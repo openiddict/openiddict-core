@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Mvc.Server.Extensions;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
 using OpenIddict.Core;
@@ -50,7 +51,7 @@ namespace Mvc.Server {
                 .EnableAuthorizationEndpoint("/connect/authorize")
                 .EnableLogoutEndpoint("/connect/logout")
                 .EnableTokenEndpoint("/connect/token")
-                .EnableUserinfoEndpoint("/Account/Userinfo")
+                .EnableUserinfoEndpoint("/api/userinfo")
 
                 // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
                 // can enable the other flows if you need to support implicit or client credentials.
@@ -101,36 +102,40 @@ namespace Mvc.Server {
 
             app.UseStaticFiles();
 
-            // Add a middleware used to validate access
-            // tokens and protect the API endpoints.
-            app.UseOAuthValidation();
+            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"), branch => {
+                // Add a middleware used to validate access
+                // tokens and protect the API endpoints.
+                branch.UseOAuthValidation();
 
-            // Alternatively, you can also use the introspection middleware.
-            // Using it is recommended if your resource server is in a
-            // different application/separated from the authorization server.
-            //
-            // app.UseOAuthIntrospection(options => {
-            //     options.AutomaticAuthenticate = true;
-            //     options.AutomaticChallenge = true;
-            //     options.Authority = "http://localhost:54540/";
-            //     options.Audience = "resource_server";
-            //     options.ClientId = "resource_server";
-            //     options.ClientSecret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd";
-            // });
-
-            app.UseIdentity();
-
-            app.UseGoogleAuthentication(new GoogleOptions {
-                ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
-                ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f"
+                // Alternatively, you can also use the introspection middleware.
+                // Using it is recommended if your resource server is in a
+                // different application/separated from the authorization server.
+                //
+                // branch.UseOAuthIntrospection(options => {
+                //     options.AutomaticAuthenticate = true;
+                //     options.AutomaticChallenge = true;
+                //     options.Authority = "http://localhost:54540/";
+                //     options.Audiences.Add("resource_server");
+                //     options.ClientId = "resource_server";
+                //     options.ClientSecret = "875sqd4s5d748z78z7ds1ff8zz8814ff88ed8ea4z4zzd";
+                // });
             });
 
-            app.UseTwitterAuthentication(new TwitterOptions {
-                ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
-                ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
-            });
+            app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api"), branch => {
+                branch.UseStatusCodePagesWithReExecute("/error");
 
-            app.UseStatusCodePagesWithReExecute("/error");
+                branch.UseIdentity();
+
+                branch.UseGoogleAuthentication(new GoogleOptions {
+                    ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
+                    ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f"
+                });
+
+                branch.UseTwitterAuthentication(new TwitterOptions {
+                    ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
+                    ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
+                });
+            });
 
             app.UseOpenIddict();
 

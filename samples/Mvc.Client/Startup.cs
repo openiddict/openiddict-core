@@ -1,3 +1,4 @@
+using System.Net.Http;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +14,8 @@ namespace Mvc.Client {
             });
 
             services.AddMvc();
+
+            services.AddSingleton<HttpClient>();
         }
 
         public void Configure(IApplicationBuilder app) {
