@@ -105,7 +105,6 @@ namespace OpenIddict {
                                   "token '{Identifier}' because it's not listed as a valid audience.",
                                   context.Request.ClientId, context.Ticket.GetTicketId());
 
-                context.Claims.RemoveAll();
                 context.Active = false;
 
                 return;
@@ -120,7 +119,6 @@ namespace OpenIddict {
                     logger.LogInformation("The token {Identifier} was declared as inactive because " +
                                           "it was revoked.", context.Ticket.GetTicketId());
 
-                    context.Claims.RemoveAll();
                     context.Active = false;
 
                     return;

@@ -47,7 +47,7 @@ namespace OpenIddict {
         /// <summary>
         /// Gets the OAuth2/OpenID Connect flows enabled for this application.
         /// </summary>
-        public ICollection<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public ISet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets a boolean determining whether client identification is required.

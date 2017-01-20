@@ -23,20 +23,14 @@ namespace OpenIddict {
 
             // Note: though it's natively supported by the OpenID Connect server middleware,
             // OpenIddict disallows the use of the unsecure code_challenge_method=plain method,
-            // which must be manually removed from the code_challenge_methods_supported property.
+            // which is manually removed from the code_challenge_methods_supported property.
             // See https://tools.ietf.org/html/rfc7636#section-7.2 for more information.
-            context.CodeChallengeMethods.Clear();
-            context.CodeChallengeMethods.Add(OpenIdConnectConstants.CodeChallengeMethods.Sha256);
+            context.CodeChallengeMethods.Remove(OpenIdConnectConstants.CodeChallengeMethods.Plain);
 
             // Note: the OpenID Connect server middleware automatically populates grant_types_supported
             // by determining whether the authorization and token endpoints are enabled or not but
-            // OpenIddict uses a different approach and relies on a configurable "supported list".
-            context.GrantTypes.Clear();
-
-            // Copy the supported grant types list to the discovery document.
-            foreach (var type in options.Value.GrantTypes) {
-                context.GrantTypes.Add(type);
-            }
+            // OpenIddict uses a different approach and relies on a configurable "grants list".
+            context.GrantTypes.IntersectWith(options.Value.GrantTypes);
 
             // Note: the "openid" scope is automatically
             // added by the OpenID Connect server middleware.
@@ -51,7 +45,7 @@ namespace OpenIddict {
                 context.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
             }
 
-            context.Metadata[OpenIddictConstants.Metadata.ExternalProvidersSupported] = JArray.FromObject(
+            context.Metadata[OpenIddictConstants.Metadata.ExternalProvidersSupported] = new JArray(
                 from provider in context.HttpContext.Authentication.GetAuthenticationSchemes()
                 where !string.IsNullOrEmpty(provider.DisplayName)
                 select provider.AuthenticationScheme);

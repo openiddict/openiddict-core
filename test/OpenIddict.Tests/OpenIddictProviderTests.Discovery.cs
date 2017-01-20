@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Builder;
+using Newtonsoft.Json.Linq;
 using OpenIddict.Core;
 using Xunit;
 
@@ -24,7 +25,7 @@ namespace OpenIddict.Tests {
             // Assert
             Assert.DoesNotContain(
                 OpenIdConnectConstants.CodeChallengeMethods.Plain,
-                response[OpenIdConnectConstants.Metadata.CodeChallengeMethodsSupported].Values<string>());
+                ((JArray) response[OpenIdConnectConstants.Metadata.CodeChallengeMethodsSupported]).Values<string>());
         }
 
         [Theory]
@@ -46,7 +47,7 @@ namespace OpenIddict.Tests {
 
             // Act
             var response = await client.GetAsync(ConfigurationEndpoint);
-            var types = response[OpenIdConnectConstants.Metadata.GrantTypesSupported].Values<string>();
+            var types = ((JArray) response[OpenIdConnectConstants.Metadata.GrantTypesSupported]).Values<string>();
 
             // Assert
             Assert.Equal(1, types.Count());
@@ -68,7 +69,7 @@ namespace OpenIddict.Tests {
             var response = await client.GetAsync(ConfigurationEndpoint);
 
             // Assert
-            Assert.Contains(scope, response[OpenIdConnectConstants.Metadata.ScopesSupported].Values<string>());
+            Assert.Contains(scope, ((JArray) response[OpenIdConnectConstants.Metadata.ScopesSupported]).Values<string>());
         }
 
         [Fact]
@@ -83,7 +84,7 @@ namespace OpenIddict.Tests {
 
             // Assert
             Assert.Contains(OpenIdConnectConstants.Scopes.OfflineAccess,
-                response[OpenIdConnectConstants.Metadata.ScopesSupported].Values<string>());
+                ((JArray) response[OpenIdConnectConstants.Metadata.ScopesSupported]).Values<string>());
         }
 
         [Fact]
@@ -104,7 +105,7 @@ namespace OpenIddict.Tests {
 
             // Assert
             Assert.DoesNotContain(OpenIdConnectConstants.Scopes.OfflineAccess,
-                response[OpenIdConnectConstants.Metadata.ScopesSupported].Values<string>());
+                ((JArray) response[OpenIdConnectConstants.Metadata.ScopesSupported]).Values<string>());
         }
 
         [Fact]
@@ -116,7 +117,7 @@ namespace OpenIddict.Tests {
 
             // Act
             var response = await client.GetAsync(ConfigurationEndpoint);
-            var providers = response[OpenIddictConstants.Metadata.ExternalProvidersSupported].Values<string>();
+            var providers = ((JArray) response[OpenIddictConstants.Metadata.ExternalProvidersSupported]).Values<string>();
 
             // Assert
             Assert.DoesNotContain(CookieAuthenticationDefaults.AuthenticationScheme, providers);
