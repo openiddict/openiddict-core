@@ -84,8 +84,8 @@ public void ConfigureServices(IServiceCollection services) {
 
     // Register the Identity services.
 	services.AddIdentity<ApplicationUser, IdentityRole>()
-	    .AddEntityFrameworkCoreStores<ApplicationDbContext>()
-	    .AddDefaultTokenProviders();
+        .AddEntityFrameworkCoreStores<ApplicationDbContext>()
+        .AddDefaultTokenProviders();
 
 	// Register the OpenIddict services.
     // Note: use the generic overload if you need
@@ -105,13 +105,8 @@ public void ConfigureServices(IServiceCollection services) {
         // Allow client applications to use the grant_type=password flow.
         .AllowPasswordFlow()
 
-	    // During development, you can disable the HTTPS requirement.
-	    .DisableHttpsRequirement()
-
-        // Register a new ephemeral key, that is discarded when the application
-        // shuts down. Tokens signed using this key are automatically invalidated.
-        // This method should only be used during development.
-        .AddEphemeralSigningKey();
+        // During development, you can disable the HTTPS requirement.
+        .DisableHttpsRequirement();
 }
 ```
 
@@ -175,7 +170,7 @@ The **Mvc.Server sample comes with an [`AuthorizationController` that supports b
 
 ```csharp
 public void ConfigureServices(IServiceCollection services) {
-	// Register the OpenIddict services.
+    // Register the OpenIddict services.
     // Note: use the generic overload if you need
     // to replace the default OpenIddict entities.
 	services.AddOpenIddict()
@@ -194,13 +189,8 @@ public void ConfigureServices(IServiceCollection services) {
         // Allow client applications to use the code flow.
         .AllowAuthorizationCodeFlow()
 
-	    // During development, you can disable the HTTPS requirement.
-	    .DisableHttpsRequirement()
-
-        // Register a new ephemeral key, that is discarded when the application
-        // shuts down. Tokens signed using this key are automatically invalidated.
-        // This method should only be used during development.
-        .AddEphemeralSigningKey();
+        // During development, you can disable the HTTPS requirement.
+        .DisableHttpsRequirement();
 }
 ```
 
