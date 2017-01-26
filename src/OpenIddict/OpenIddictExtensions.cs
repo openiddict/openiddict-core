@@ -7,6 +7,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -65,13 +66,6 @@ namespace Microsoft.AspNetCore.Builder {
                 }
             }
 
-            // Ensure at least one signing certificate/key has been registered.
-            if (options.SigningCredentials.Count == 0) {
-                throw new InvalidOperationException("At least one signing key must be registered. Consider registering a X.509 " +
-                                                    "certificate using 'services.AddOpenIddict().AddSigningCertificate()' or call " +
-                                                    "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
-            }
-
             // Ensure at least one flow has been enabled.
             if (options.GrantTypes.Count == 0) {
                 throw new InvalidOperationException("At least one OAuth2/OpenID Connect flow must be enabled.");
@@ -79,24 +73,32 @@ namespace Microsoft.AspNetCore.Builder {
 
             // Ensure the authorization endpoint has been enabled when
             // the authorization code or implicit grants are supported.
-            if (!options.AuthorizationEndpointPath.HasValue && (options.IsAuthorizationCodeFlowEnabled() ||
-                                                                options.IsImplicitFlowEnabled())) {
+            if (!options.AuthorizationEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
+                                                                options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))) {
                 throw new InvalidOperationException("The authorization endpoint must be enabled to use " +
                                                     "the authorization code and implicit flows.");
             }
 
             // Ensure the token endpoint has been enabled when the authorization code,
             // client credentials, password or refresh token grants are supported.
-            if (!options.TokenEndpointPath.HasValue && (options.IsAuthorizationCodeFlowEnabled() ||
-                                                        options.IsClientCredentialsFlowEnabled() ||
-                                                        options.IsPasswordFlowEnabled() ||
-                                                        options.IsRefreshTokenFlowEnabled())) {
+            if (!options.TokenEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
+                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials) ||
+                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password) ||
+                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))) {
                 throw new InvalidOperationException("The token endpoint must be enabled to use the authorization code, " +
                                                     "client credentials, password and refresh token flows.");
             }
 
             if (options.RevocationEndpointPath.HasValue && options.DisableTokenRevocation) {
                 throw new InvalidOperationException("The revocation endpoint cannot be enabled when token revocation is disabled.");
+            }
+
+            // Ensure at least one asymmetric signing certificate/key was registered if the implicit flow was enabled.
+            if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey) &&
+                 options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit)) {
+                throw new InvalidOperationException("At least one asymmetric signing key must be registered when enabling the implicit flow. "+
+                                                    "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
+                                                    "or call 'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
             }
 
             return app.UseOpenIdConnectServer(options);
@@ -126,7 +128,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a new ephemeral key used to sign the tokens issued by OpenIddict: the key
+        /// Registers a new ephemeral key used to sign the JWT tokens issued by OpenIddict: the key
         /// is discarded when the application shuts down and tokens signed using this key are
         /// automatically invalidated. This method should only be used during development.
         /// On production, using a X.509 certificate stored in the machine store is recommended.
@@ -142,7 +144,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a new ephemeral key used to sign the tokens issued by OpenIddict: the key
+        /// Registers a new ephemeral key used to sign the JWT tokens issued by OpenIddict: the key
         /// is discarded when the application shuts down and tokens signed using this key are
         /// automatically invalidated. This method should only be used during development.
         /// On production, using a X.509 certificate stored in the machine store is recommended.
@@ -164,7 +166,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a <see cref="X509Certificate2"/> that is used to sign the tokens issued by OpenIddict.
+        /// Registers a <see cref="X509Certificate2"/> that is used to sign the JWT tokens issued by OpenIddict.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="certificate">The certificate used to sign the security tokens issued by the server.</param>
@@ -189,7 +191,7 @@ namespace Microsoft.AspNetCore.Builder {
 
         /// <summary>
         /// Registers a <see cref="X509Certificate2"/> retrieved from an
-        /// embedded resource and used to sign the tokens issued by OpenIddict.
+        /// embedded resource and used to sign the JWT tokens issued by OpenIddict.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="assembly">The assembly containing the certificate.</param>
@@ -220,7 +222,7 @@ namespace Microsoft.AspNetCore.Builder {
 
         /// <summary>
         /// Registers a <see cref="X509Certificate2"/> extracted from a
-        /// stream and used to sign the tokens issued by OpenIddict.
+        /// stream and used to sign the JWT tokens issued by OpenIddict.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="stream">The stream containing the certificate.</param>
@@ -246,7 +248,7 @@ namespace Microsoft.AspNetCore.Builder {
 
         /// <summary>
         /// Registers a <see cref="X509Certificate2"/> extracted from a
-        /// stream and used to sign the tokens issued by OpenIddict.
+        /// stream and used to sign the JWT tokens issued by OpenIddict.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="stream">The stream containing the certificate.</param>
@@ -276,7 +278,7 @@ namespace Microsoft.AspNetCore.Builder {
 
         /// <summary>
         /// Registers a <see cref="X509Certificate2"/> retrieved from the X.509
-        /// machine store and used to sign the tokens issued by OpenIddict.
+        /// machine store and used to sign the JWT tokens issued by OpenIddict.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
@@ -296,7 +298,7 @@ namespace Microsoft.AspNetCore.Builder {
 
         /// <summary>
         /// Registers a <see cref="X509Certificate2"/> retrieved from the given
-        /// X.509 store and used to sign the tokens issued by OpenIddict.
+        /// X.509 store and used to sign the JWT tokens issued by OpenIddict.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
@@ -318,7 +320,7 @@ namespace Microsoft.AspNetCore.Builder {
         }
 
         /// <summary>
-        /// Registers a <see cref="SecurityKey"/> used to sign the tokens issued by OpenIddict.
+        /// Registers a <see cref="SecurityKey"/> used to sign the JWT tokens issued by OpenIddict.
         /// Note: using <see cref="RsaSecurityKey"/> asymmetric keys is recommended on production.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
@@ -764,71 +766,6 @@ namespace Microsoft.AspNetCore.Builder {
             }
 
             return builder.Configure(options => options.AccessTokenHandler = new JwtSecurityTokenHandler());
-        }
-
-        /// <summary>
-        /// Determines whether the authorization code flow has been enabled.
-        /// </summary>
-        /// <param name="options">The OpenIddict options.</param>
-        /// <returns><c>true</c> if the authorization code flow has been enabled, <c>false</c> otherwise.</returns>
-        public static bool IsAuthorizationCodeFlowEnabled([NotNull] this OpenIddictOptions options) {
-            if (options == null) {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode);
-        }
-
-        /// <summary>
-        /// Determines whether the client credentials flow has been enabled.
-        /// </summary>
-        /// <param name="options">The OpenIddict options.</param>
-        /// <returns><c>true</c> if the client credentials flow has been enabled, <c>false</c> otherwise.</returns>
-        public static bool IsClientCredentialsFlowEnabled([NotNull] this OpenIddictOptions options) {
-            if (options == null) {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials);
-        }
-
-        /// <summary>
-        /// Determines whether the implicit flow has been enabled.
-        /// </summary>
-        /// <param name="options">The OpenIddict options.</param>
-        /// <returns><c>true</c> if the implicit flow has been enabled, <c>false</c> otherwise.</returns>
-        public static bool IsImplicitFlowEnabled([NotNull] this OpenIddictOptions options) {
-            if (options == null) {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit);
-        }
-
-        /// <summary>
-        /// Determines whether the password flow has been enabled.
-        /// </summary>
-        /// <param name="options">The OpenIddict options.</param>
-        /// <returns><c>true</c> if the password flow has been enabled, <c>false</c> otherwise.</returns>
-        public static bool IsPasswordFlowEnabled([NotNull] this OpenIddictOptions options) {
-            if (options == null) {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password);
-        }
-
-        /// <summary>
-        /// Determines whether the refresh token flow has been enabled.
-        /// </summary>
-        /// <param name="options">The OpenIddict options.</param>
-        /// <returns><c>true</c> if the refresh token flow has been enabled, <c>false</c> otherwise.</returns>
-        public static bool IsRefreshTokenFlowEnabled([NotNull] this OpenIddictOptions options) {
-            if (options == null) {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            return options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken);
         }
     }
 }

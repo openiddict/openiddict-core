@@ -45,31 +45,10 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public void UseOpenIddict_ThrowsAnExceptionWhenNoSigningCredentialsIsRegistered() {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddOpenIddict();
-
-            var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
-
-            Assert.Equal("At least one signing key must be registered. Consider registering a X.509 " +
-                         "certificate using 'services.AddOpenIddict().AddSigningCertificate()' or call " +
-                         "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.", exception.Message);
-        }
-
-        [Fact]
         public void UseOpenIddict_ThrowsAnExceptionWhenNoFlowIsEnabled() {
             // Arrange
             var services = new ServiceCollection();
-
-            services.AddOpenIddict()
-                .AddSigningCertificate(
-                    assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
-                    resource: "OpenIddict.Tests.Certificate.pfx",
-                    password: "OpenIddict");
+            services.AddOpenIddict();
 
             var builder = new ApplicationBuilder(services.BuildServiceProvider());
 
@@ -87,10 +66,6 @@ namespace OpenIddict.Tests {
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddSigningCertificate(
-                    assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
-                    resource: "OpenIddict.Tests.Certificate.pfx",
-                    password: "OpenIddict")
                 .Configure(options => options.GrantTypes.Add(flow))
                 .Configure(options => options.AuthorizationEndpointPath = PathString.Empty);
 
@@ -113,10 +88,6 @@ namespace OpenIddict.Tests {
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddSigningCertificate(
-                    assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
-                    resource: "OpenIddict.Tests.Certificate.pfx",
-                    password: "OpenIddict")
                 .EnableAuthorizationEndpoint("/connect/authorize")
                 .Configure(options => options.GrantTypes.Add(flow))
                 .Configure(options => options.TokenEndpointPath = PathString.Empty);
@@ -136,10 +107,6 @@ namespace OpenIddict.Tests {
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddSigningCertificate(
-                    assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
-                    resource: "OpenIddict.Tests.Certificate.pfx",
-                    password: "OpenIddict")
                 .EnableAuthorizationEndpoint("/connect/authorize")
                 .EnableRevocationEndpoint("/connect/revocation")
                 .AllowImplicitFlow()
@@ -151,6 +118,25 @@ namespace OpenIddict.Tests {
             var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
 
             Assert.Equal("The revocation endpoint cannot be enabled when token revocation is disabled.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddict_ThrowsAnExceptionWhenNoSigningKeyIsRegisteredIfTheImplicitFlowIsEnabled() {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict()
+                .EnableAuthorizationEndpoint("/connect/authorize")
+                .AllowImplicitFlow();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
+
+            Assert.Equal("At least one asymmetric signing key must be registered when enabling the implicit flow. " +
+                         "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
+                         "or call 'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.", exception.Message);
         }
 
         [Fact]
@@ -739,81 +725,6 @@ namespace OpenIddict.Tests {
 
             // Assert
             Assert.IsType(typeof(JwtSecurityTokenHandler), options.Value.AccessTokenHandler);
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsAuthorizationCodeFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.AuthorizationCode);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsAuthorizationCodeFlowEnabled());
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsClientCredentialsFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.ClientCredentials);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsClientCredentialsFlowEnabled());
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsImplicitFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.Implicit);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsImplicitFlowEnabled());
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsPasswordFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.Password);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsPasswordFlowEnabled());
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IsRefreshTokenFlowEnabled_ReturnsAppropriateResult(bool enabled) {
-            // Arrange
-            var options = new OpenIddictOptions();
-
-            if (enabled) {
-                options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.RefreshToken);
-            }
-
-            // Act and assert
-            Assert.Equal(enabled, options.IsRefreshTokenFlowEnabled());
         }
     }
 }

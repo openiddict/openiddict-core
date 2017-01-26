@@ -39,9 +39,8 @@ namespace OpenIddict {
             context.Scopes.Add(OpenIdConnectConstants.Scopes.Phone);
             context.Scopes.Add(OpenIddictConstants.Scopes.Roles);
 
-            // Only add the "offline_access" scope if the refresh
-            // token flow is enabled in the OpenIddict options.
-            if (options.Value.IsRefreshTokenFlowEnabled()) {
+            // Only add the "offline_access" scope if the refresh token grant is enabled.
+            if (context.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
                 context.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
             }
 

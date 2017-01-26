@@ -121,8 +121,7 @@ namespace OpenIddict.Tests {
 
                 app.Run(context => {
                     var request = context.GetOpenIdConnectRequest();
-
-                    if (context.Request.Path == AuthorizationEndpoint || context.Request.Path == TokenEndpoint) {
+                    if (request.IsAuthorizationRequest() || request.IsTokenRequest()) {
                         var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
                         identity.AddClaim(ClaimTypes.NameIdentifier, "Bob le Magnifique");
 
@@ -138,11 +137,11 @@ namespace OpenIddict.Tests {
                         return context.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
                     }
 
-                    else if (context.Request.Path == LogoutEndpoint) {
+                    else if (request.IsLogoutRequest()) {
                         return context.Authentication.SignOutAsync(OpenIdConnectServerDefaults.AuthenticationScheme);
                     }
 
-                    else if (context.Request.Path == UserinfoEndpoint) {
+                    else if (request.IsUserinfoRequest()) {
                         context.Response.Headers[HeaderNames.ContentType] = "application/json";
 
                         return context.Response.WriteAsync(JsonConvert.SerializeObject(new {

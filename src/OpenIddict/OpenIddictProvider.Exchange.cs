@@ -10,7 +10,6 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -37,7 +36,8 @@ namespace OpenIddict {
             }
 
             // Reject token requests that specify scope=offline_access if the refresh token flow is not enabled.
-            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) && !options.Value.IsRefreshTokenFlowEnabled()) {
+            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
+               !options.Value.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "The 'offline_access' scope is not allowed.");
