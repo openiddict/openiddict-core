@@ -16,10 +16,6 @@ namespace OpenIddict {
     public class OpenIddictOptions : OpenIdConnectServerOptions {
         public OpenIddictOptions() {
             Provider = null;
-
-            // Use the same lifespan as the default security stamp
-            // verification interval used by ASP.NET Core Identity.
-            AccessTokenLifetime = TimeSpan.FromMinutes(30);
         }
 
         /// <summary>
