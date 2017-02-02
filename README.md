@@ -226,6 +226,7 @@ using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFacto
 - **[Creating your own OpenID Connect server with ASOS](http://kevinchalet.com/2016/07/13/creating-your-own-openid-connect-server-with-asos-introduction/)** by [Kévin Chalet](https://github.com/PinpointTownes)
 - **[Bearer Token Authentication in ASP.NET Core](https://blogs.msdn.microsoft.com/webdev/2016/10/27/bearer-token-authentication-in-asp-net-core/)** by [Mike Rousos](https://github.com/mjrousos) (for the Microsoft .NET Web Development and Tools blog)
 - **[ASP.NET Core and Angular 2](https://www.amazon.com/ASP-NET-Core-Angular-Valerio-Sanctis-ebook/dp/B01DZQHCVU/)** by [Valerio De Sanctis](https://github.com/Darkseal)
+- **[Implementing simple token authentication in ASP.NET Core with OpenIddict](http://kevinchalet.com/2017/01/30/implementing-simple-token-authentication-in-aspnet-core-with-openiddict/)** by [Kévin Chalet](https://github.com/PinpointTownes)
 
 ## Support
 
