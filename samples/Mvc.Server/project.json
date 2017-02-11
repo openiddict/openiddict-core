@@ -19,8 +19,8 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OAuth.Introspection": "1.0.0-alpha3-final",
-    "AspNet.Security.OAuth.Validation": "1.0.0-alpha3-final",
+    "AspNet.Security.OAuth.Introspection": "1.0.0-*",
+    "AspNet.Security.OAuth.Validation": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Google": "1.0.0",
     "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0",
