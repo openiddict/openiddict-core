@@ -59,7 +59,7 @@ To use OpenIddict, you need to:
 
 ```json
 "dependencies": {
-  "AspNet.Security.OAuth.Validation": "1.0.0-alpha2-final",
+  "AspNet.Security.OAuth.Validation": "1.0.0-*",
   "OpenIddict": "1.0.0-*",
   "OpenIddict.EntityFrameworkCore": "1.0.0-*",
   "OpenIddict.Mvc": "1.0.0-*"
