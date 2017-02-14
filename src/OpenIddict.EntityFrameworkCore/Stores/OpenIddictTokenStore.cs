@@ -14,7 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
-namespace OpenIddict.EntityFrameworkCore {
+namespace OpenIddict.EntityFrameworkCore
+{
     /// <summary>
     /// Provides methods allowing to manage the tokens stored in a database.
     /// </summary>
@@ -22,7 +23,8 @@ namespace OpenIddict.EntityFrameworkCore {
     public class OpenIddictTokenStore<TContext> : OpenIddictTokenStore<OpenIddictToken,
                                                                        OpenIddictApplication,
                                                                        OpenIddictAuthorization, TContext, string>
-        where TContext : DbContext {
+        where TContext : DbContext
+    {
         public OpenIddictTokenStore([NotNull] TContext context) : base(context) { }
     }
 
@@ -35,7 +37,8 @@ namespace OpenIddict.EntityFrameworkCore {
                                                                              OpenIddictApplication<TKey>,
                                                                              OpenIddictAuthorization<TKey>, TContext, TKey>
         where TContext : DbContext
-        where TKey : IEquatable<TKey> {
+        where TKey : IEquatable<TKey>
+    {
         public OpenIddictTokenStore([NotNull] TContext context) : base(context) { }
     }
 
@@ -52,9 +55,12 @@ namespace OpenIddict.EntityFrameworkCore {
         where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
         where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
         where TContext : DbContext
-        where TKey : IEquatable<TKey> {
-        public OpenIddictTokenStore([NotNull] TContext context) {
-            if (context == null) {
+        where TKey : IEquatable<TKey>
+    {
+        public OpenIddictTokenStore([NotNull] TContext context)
+        {
+            if (context == null)
+            {
                 throw new ArgumentNullException(nameof(context));
             }
 
@@ -89,8 +95,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual async Task<TToken> CreateAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual async Task<TToken> CreateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -110,8 +118,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, CancellationToken cancellationToken) {
-            if (string.IsNullOrEmpty(type)) {
+        public virtual Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(type))
+            {
                 throw new ArgumentException("The token type cannot be null or empty.");
             }
 
@@ -127,7 +137,8 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        public virtual Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken) {
+        public virtual Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        {
             var key = ConvertIdentifierFromString(identifier);
 
             return Tokens.SingleOrDefaultAsync(token => token.Id.Equals(key), cancellationToken);
@@ -142,7 +153,8 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified subject.
         /// </returns>
-        public virtual Task<TToken[]> FindBySubjectAsync(string subject, CancellationToken cancellationToken) {
+        public virtual Task<TToken[]> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
+        {
             return Tokens.Where(token => token.Subject == subject).ToArrayAsync();
         }
 
@@ -155,8 +167,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
-        public virtual Task<string> GetIdAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual Task<string> GetIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -172,8 +186,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token type associated with the specified token.
         /// </returns>
-        public virtual Task<string> GetTokenTypeAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual Task<string> GetTokenTypeAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -189,8 +205,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the subject associated with the specified token.
         /// </returns>
-        public virtual Task<string> GetSubjectAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual Task<string> GetSubjectAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -203,14 +221,17 @@ namespace OpenIddict.EntityFrameworkCore {
         /// <param name="token">The token to revoke.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async Task RevokeAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual async Task RevokeAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
             Context.Remove(token);
 
-            try {
+            try
+            {
                 await Context.SaveChangesAsync(cancellationToken);
             }
 
@@ -226,29 +247,35 @@ namespace OpenIddict.EntityFrameworkCore {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task SetAuthorizationAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual async Task SetAuthorizationAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (!string.IsNullOrEmpty(identifier)) {
+            if (!string.IsNullOrEmpty(identifier))
+            {
                 var key = ConvertIdentifierFromString(identifier);
 
                 var authorization = await Authorizations.SingleOrDefaultAsync(element => element.Id.Equals(key));
-                if (authorization == null) {
+                if (authorization == null)
+                {
                     throw new InvalidOperationException("The authorization associated with the token cannot be found.");
                 }
 
                 authorization.Tokens.Add(token);
             }
 
-            else {
+            else
+            {
                 var key = await GetIdAsync(token, cancellationToken);
 
                 // Try to retrieve the authorization associated with the token.
                 // If none can be found, assume that no authorization is attached.
                 var authorization = await Authorizations.SingleOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
-                if (authorization != null) {
+                if (authorization != null)
+                {
                     authorization.Tokens.Remove(token);
                 }
             }
@@ -263,29 +290,35 @@ namespace OpenIddict.EntityFrameworkCore {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task SetClientAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual async Task SetClientAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (!string.IsNullOrEmpty(identifier)) {
+            if (!string.IsNullOrEmpty(identifier))
+            {
                 var key = ConvertIdentifierFromString(identifier);
 
                 var application = await Applications.SingleOrDefaultAsync(element => element.Id.Equals(key));
-                if (application == null) {
+                if (application == null)
+                {
                     throw new InvalidOperationException("The application associated with the token cannot be found.");
                 }
 
                 application.Tokens.Add(token);
             }
 
-            else {
+            else
+            {
                 var key = await GetIdAsync(token, cancellationToken);
 
                 // Try to retrieve the application associated with the token.
                 // If none can be found, assume that no application is attached.
                 var application = await Applications.SingleOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
-                if (application != null) {
+                if (application != null)
+                {
                     application.Tokens.Remove(token);
                 }
             }
@@ -299,15 +332,18 @@ namespace OpenIddict.EntityFrameworkCore {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual async Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
             Context.Attach(token);
             Context.Update(token);
 
-            try {
+            try
+            {
                 await Context.SaveChangesAsync(cancellationToken);
             }
 
@@ -319,8 +355,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
-        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier) {
-            if (string.IsNullOrEmpty(identifier)) {
+        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
                 return default(TKey);
             }
 
@@ -333,8 +371,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
-        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier) {
-            if (Equals(identifier, default(TKey))) {
+        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier)
+        {
+            if (Equals(identifier, default(TKey)))
+            {
                 return null;
             }
 

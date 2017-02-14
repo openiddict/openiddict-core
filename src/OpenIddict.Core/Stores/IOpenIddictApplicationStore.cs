@@ -9,12 +9,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace OpenIddict.Core {
+namespace OpenIddict.Core
+{
     /// <summary>
     /// Provides methods allowing to manage the applications stored in a database.
     /// </summary>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-    public interface IOpenIddictApplicationStore<TApplication> where TApplication : class {
+    public interface IOpenIddictApplicationStore<TApplication> where TApplication : class
+    {
         /// <summary>
         /// Creates a new application.
         /// </summary>

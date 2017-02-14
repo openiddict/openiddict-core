@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Mvc.Server.ViewModels.Account {
-    public class ResetPasswordViewModel {
+namespace Mvc.Server.ViewModels.Account
+{
+    public class ResetPasswordViewModel
+    {
         [Required]
         [EmailAddress]
         public string Email { get; set; }

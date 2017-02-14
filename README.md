@@ -69,10 +69,12 @@ To use OpenIddict, you need to:
   - **Configure the OpenIddict services** in `Startup.ConfigureServices`:
 
 ```csharp
-public void ConfigureServices(IServiceCollection services) {
+public void ConfigureServices(IServiceCollection services)
+{
     services.AddMvc();
 
-    services.AddDbContext<ApplicationDbContext>(options => {
+    services.AddDbContext<ApplicationDbContext>(options =>
+    {
         // Configure the context to use Microsoft SQL Server.
         options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]);
 
@@ -90,23 +92,25 @@ public void ConfigureServices(IServiceCollection services) {
 	// Register the OpenIddict services.
     // Note: use the generic overload if you need
     // to replace the default OpenIddict entities.
-	services.AddOpenIddict()
+	services.AddOpenIddict(options =>
+    {
         // Register the Entity Framework stores.
-        .AddEntityFrameworkCoreStores<ApplicationDbContext>()
+        options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
 
         // Register the ASP.NET Core MVC binder used by OpenIddict.
         // Note: if you don't call this method, you won't be able to
         // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
-        .AddMvcBinders()
+        options.AddMvcBinders();
 
         // Enable the token endpoint (required to use the password flow).
-        .EnableTokenEndpoint("/connect/token")
+        options.EnableTokenEndpoint("/connect/token");
 
         // Allow client applications to use the grant_type=password flow.
-        .AllowPasswordFlow()
+        options.AllowPasswordFlow();
 
         // During development, you can disable the HTTPS requirement.
-        .DisableHttpsRequirement();
+        options.DisableHttpsRequirement();
+    });
 }
 ```
 
@@ -133,7 +137,8 @@ public void Configure(IApplicationBuilder app) {
   - **Update your Entity Framework context registration to register the OpenIddict entities**:
 
 ```csharp
-services.AddDbContext<ApplicationDbContext>(options => {
+services.AddDbContext<ApplicationDbContext>(options =>
+{
     // Configure the context to use Microsoft SQL Server.
     options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]);
 
@@ -151,7 +156,8 @@ services.AddDbContext<ApplicationDbContext>(options => {
 services.AddOpenIddict<Guid>()
     .AddEntityFrameworkCoreStores<ApplicationDbContext>()
 
-services.AddDbContext<ApplicationDbContext>(options => {
+services.AddDbContext<ApplicationDbContext>(options =>
+{
     // Configure the context to use Microsoft SQL Server.
     options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]);
 
@@ -169,28 +175,31 @@ The **Mvc.Server sample comes with an [`AuthorizationController` that supports b
   - **Enable the corresponding flows in the OpenIddict options**:
 
 ```csharp
-public void ConfigureServices(IServiceCollection services) {
+public void ConfigureServices(IServiceCollection services)
+{
     // Register the OpenIddict services.
     // Note: use the generic overload if you need
     // to replace the default OpenIddict entities.
-	services.AddOpenIddict()
+	services.AddOpenIddict(options =>
+    {
         // Register the Entity Framework stores.
-        .AddEntityFrameworkCoreStores<ApplicationDbContext>()
+        options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
 
         // Register the ASP.NET Core MVC binder used by OpenIddict.
         // Note: if you don't call this method, you won't be able to
         // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
-        .AddMvcBinders()
+        options.AddMvcBinders();
 
         // Enable the authorization and token endpoints (required to use the code flow).
-        .EnableAuthorizationEndpoint("/connect/authorize")
-        .EnableTokenEndpoint("/connect/token")
+        options.EnableAuthorizationEndpoint("/connect/authorize")
+               .EnableTokenEndpoint("/connect/token");
 
         // Allow client applications to use the code flow.
-        .AllowAuthorizationCodeFlow()
+        options.AllowAuthorizationCodeFlow();
 
         // During development, you can disable the HTTPS requirement.
-        .DisableHttpsRequirement();
+        options.DisableHttpsRequirement();
+    });
 }
 ```
 
@@ -198,15 +207,18 @@ public void ConfigureServices(IServiceCollection services) {
 
 ```csharp
 // Create a new service scope to ensure the database context is correctly disposed when this methods returns.
-using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope()) {
+using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+{
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await context.Database.EnsureCreatedAsync();
 
     // Note: when using a custom entity or a custom key type, replace OpenIddictApplication by the appropriate type.
     var manager = scope.ServiceProvider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
 
-    if (await manager.FindByClientIdAsync("[client identifier]", cancellationToken) == null) {
-        var application = new OpenIddictApplication {
+    if (await manager.FindByClientIdAsync("[client identifier]", cancellationToken) == null)
+    {
+        var application = new OpenIddictApplication
+        {
             ClientId = "[client identifier]",
             RedirectUri = "[redirect uri]"
         };

@@ -4,7 +4,8 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict.Core {
+namespace OpenIddict.Core
+{
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in a database.
     /// </summary>

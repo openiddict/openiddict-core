@@ -11,15 +11,18 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
-namespace OpenIddict.Core {
+namespace OpenIddict.Core
+{
     /// <summary>
     /// Provides methods allowing to manage the tokens stored in the store.
     /// </summary>
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    public class OpenIddictTokenManager<TToken> where TToken : class {
+    public class OpenIddictTokenManager<TToken> where TToken : class
+    {
         public OpenIddictTokenManager(
             [NotNull] IOpenIddictTokenStore<TToken> store,
-            [NotNull] ILogger<OpenIddictTokenManager<TToken>> logger) {
+            [NotNull] ILogger<OpenIddictTokenManager<TToken>> logger)
+        {
             Logger = logger;
             Store = store;
         }
@@ -42,8 +45,10 @@ namespace OpenIddict.Core {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual async Task<TToken> CreateAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual async Task<TToken> CreateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -60,17 +65,21 @@ namespace OpenIddict.Core {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual async Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, CancellationToken cancellationToken) {
-            if (string.IsNullOrEmpty(type)) {
+        public virtual async Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(type))
+            {
                 throw new ArgumentException("The token type cannot be null or empty.", nameof(type));
             }
 
             if (!string.Equals(type, OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIdConnectConstants.TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase)) {
+                !string.Equals(type, OpenIdConnectConstants.TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase))
+            {
                 throw new ArgumentException("The specified token type is not supported by the default token manager.");
             }
 
-            if (string.IsNullOrEmpty(subject)) {
+            if (string.IsNullOrEmpty(subject))
+            {
                 throw new ArgumentException("The subject cannot be null or empty.");
             }
 
@@ -86,7 +95,8 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        public virtual Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken) {
+        public virtual Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        {
             return Store.FindByIdAsync(identifier, cancellationToken);
         }
 
@@ -99,7 +109,8 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified subject.
         /// </returns>
-        public virtual Task<TToken[]> FindBySubjectAsync(string subject, CancellationToken cancellationToken) {
+        public virtual Task<TToken[]> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
+        {
             return Store.FindBySubjectAsync(subject, cancellationToken);
         }
 
@@ -112,8 +123,10 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the token.
         /// </returns>
-        public virtual Task<string> GetIdAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual Task<string> GetIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -126,8 +139,10 @@ namespace OpenIddict.Core {
         /// <param name="token">The token to revoke.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual Task RevokeAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual Task RevokeAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -143,8 +158,10 @@ namespace OpenIddict.Core {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task SetAuthorizationAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual async Task SetAuthorizationAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -161,8 +178,10 @@ namespace OpenIddict.Core {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task SetClientAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual async Task SetClientAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -178,8 +197,10 @@ namespace OpenIddict.Core {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        public virtual Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
@@ -194,22 +215,27 @@ namespace OpenIddict.Core {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        protected virtual async Task ValidateAsync([NotNull] TToken token, CancellationToken cancellationToken) {
-            if (token == null) {
+        protected virtual async Task ValidateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
                 throw new ArgumentNullException(nameof(token));
             }
 
             var type = await Store.GetTokenTypeAsync(token, cancellationToken);
-            if (string.IsNullOrEmpty(type)) {
+            if (string.IsNullOrEmpty(type))
+            {
                 throw new ArgumentException("The token type cannot be null or empty.", nameof(token));
             }
 
             if (!string.Equals(type, OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIdConnectConstants.TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase)) {
+                !string.Equals(type, OpenIdConnectConstants.TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase))
+            {
                 throw new ArgumentException("The specified token type is not supported by the default token manager.");
             }
 
-            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(token, cancellationToken))) {
+            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(token, cancellationToken)))
+            {
                 throw new ArgumentException("The subject cannot be null or empty.");
             }
         }

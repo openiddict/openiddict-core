@@ -8,12 +8,15 @@ using Mvc.Server.Models;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Core;
 
-namespace Mvc.Server.Controllers {
+namespace Mvc.Server.Controllers
+{
     [Route("api")]
-    public class UserinfoController : Controller {
+    public class UserinfoController : Controller
+    {
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserinfoController(UserManager<ApplicationUser> userManager) {
+        public UserinfoController(UserManager<ApplicationUser> userManager)
+        {
             _userManager = userManager;
         }
 
@@ -21,10 +24,13 @@ namespace Mvc.Server.Controllers {
         // GET: /api/userinfo
         [Authorize(ActiveAuthenticationSchemes = OAuthValidationDefaults.AuthenticationScheme)]
         [HttpGet("userinfo"), Produces("application/json")]
-        public async Task<IActionResult> Userinfo() {
+        public async Task<IActionResult> Userinfo()
+        {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) {
-                return BadRequest(new OpenIdConnectResponse {
+            if (user == null)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
                     Error = OpenIdConnectConstants.Errors.InvalidGrant,
                     ErrorDescription = "The user profile is no longer available."
                 });
@@ -35,17 +41,20 @@ namespace Mvc.Server.Controllers {
             // Note: the "sub" claim is a mandatory claim and must be included in the JSON response.
             claims[OpenIdConnectConstants.Claims.Subject] = await _userManager.GetUserIdAsync(user);
 
-            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Email)) {
+            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Email))
+            {
                 claims[OpenIdConnectConstants.Claims.Email] = await _userManager.GetEmailAsync(user);
                 claims[OpenIdConnectConstants.Claims.EmailVerified] = await _userManager.IsEmailConfirmedAsync(user);
             }
 
-            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Phone)) {
+            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Phone))
+            {
                 claims[OpenIdConnectConstants.Claims.PhoneNumber] = await _userManager.GetPhoneNumberAsync(user);
                 claims[OpenIdConnectConstants.Claims.PhoneNumberVerified] = await _userManager.IsPhoneNumberConfirmedAsync(user);
             }
 
-            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIddictConstants.Scopes.Roles)) {
+            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIddictConstants.Scopes.Roles))
+            {
                 claims[OpenIddictConstants.Claims.Roles] = JArray.FromObject(await _userManager.GetRolesAsync(user));
             }
 

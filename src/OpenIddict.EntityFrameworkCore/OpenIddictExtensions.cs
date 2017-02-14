@@ -16,8 +16,10 @@ using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore;
 using OpenIddict.Models;
 
-namespace Microsoft.Extensions.DependencyInjection {
-    public static class OpenIddictExtensions {
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static class OpenIddictExtensions
+    {
         /// <summary>
         /// Registers the Entity Framework Core stores. Note: when using the Entity Framework Core stores,
         /// the entities MUST be derived from the models contained in the OpenIddict.Models package.
@@ -25,8 +27,10 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddEntityFrameworkCoreStores<TContext>([NotNull] this OpenIddictBuilder builder)
-            where TContext : DbContext {
-            if (builder == null) {
+            where TContext : DbContext
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -36,32 +40,37 @@ namespace Microsoft.Extensions.DependencyInjection {
                          builder.TokenType != null, "The entity types exposed by OpenIddictBuilder shouldn't be null.");
 
             var application = FindGenericBaseType(builder.ApplicationType, typeof(OpenIddictApplication<,,>));
-            if (application == null) {
+            if (application == null)
+            {
                 throw new InvalidOperationException("The Entity Framework Core stores can only be used " +
                                                     "with the built-in OpenIddictApplication entity.");
             }
 
             var authorization = FindGenericBaseType(builder.AuthorizationType, typeof(OpenIddictAuthorization<,,>));
-            if (authorization == null) {
+            if (authorization == null)
+            {
                 throw new InvalidOperationException("The Entity Framework Core stores can only be used " +
                                                     "with the built-in OpenIddictAuthorization entity.");
             }
 
             var scope = FindGenericBaseType(builder.ScopeType, typeof(OpenIddictScope<>));
-            if (scope == null) {
+            if (scope == null)
+            {
                 throw new InvalidOperationException("The Entity Framework Core stores can only be used " +
                                                     "with the built-in OpenIddictScope entity.");
             }
 
             var token = FindGenericBaseType(builder.TokenType, typeof(OpenIddictToken<,,>));
-            if (token == null) {
+            if (token == null)
+            {
                 throw new InvalidOperationException("The Entity Framework Core stores can only be used " +
                                                     "with the built-in OpenIddictToken entity.");
             }
 
             var converter = TypeDescriptor.GetConverter(application.GenericTypeArguments[0]);
             if (converter == null || !converter.CanConvertFrom(typeof(string)) ||
-                                     !converter.CanConvertTo(typeof(string))) {
+                                     !converter.CanConvertTo(typeof(string)))
+            {
                 throw new InvalidOperationException("The specified entity key type is not supported.");
             }
 
@@ -112,7 +121,8 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbContextOptionsBuilder UseOpenIddict([NotNull] this DbContextOptionsBuilder builder) {
+        public static DbContextOptionsBuilder UseOpenIddict([NotNull] this DbContextOptionsBuilder builder)
+        {
             return builder.UseOpenIddict<OpenIddictApplication,
                                          OpenIddictAuthorization,
                                          OpenIddictScope,
@@ -125,7 +135,8 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbContextOptionsBuilder UseOpenIddict<TKey>([NotNull] this DbContextOptionsBuilder builder) where TKey : IEquatable<TKey> {
+        public static DbContextOptionsBuilder UseOpenIddict<TKey>([NotNull] this DbContextOptionsBuilder builder) where TKey : IEquatable<TKey>
+        {
             return builder.UseOpenIddict<OpenIddictApplication<TKey>,
                                          OpenIddictAuthorization<TKey>,
                                          OpenIddictScope<TKey>,
@@ -143,8 +154,10 @@ namespace Microsoft.Extensions.DependencyInjection {
             where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
             where TScope : OpenIddictScope<TKey>, new()
             where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
-            where TKey : IEquatable<TKey> {
-            if (builder == null) {
+            where TKey : IEquatable<TKey>
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -160,7 +173,8 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static ModelBuilder UseOpenIddict([NotNull] this ModelBuilder builder) {
+        public static ModelBuilder UseOpenIddict([NotNull] this ModelBuilder builder)
+        {
             return builder.UseOpenIddict<OpenIddictApplication,
                                          OpenIddictAuthorization,
                                          OpenIddictScope,
@@ -173,7 +187,8 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static ModelBuilder UseOpenIddict<TKey>([NotNull] this ModelBuilder builder) where TKey : IEquatable<TKey> {
+        public static ModelBuilder UseOpenIddict<TKey>([NotNull] this ModelBuilder builder) where TKey : IEquatable<TKey>
+        {
             return builder.UseOpenIddict<OpenIddictApplication<TKey>,
                                          OpenIddictAuthorization<TKey>,
                                          OpenIddictScope<TKey>,
@@ -191,8 +206,10 @@ namespace Microsoft.Extensions.DependencyInjection {
             where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
             where TScope : OpenIddictScope<TKey>, new()
             where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
-            where TKey : IEquatable<TKey> {
-            if (builder == null) {
+            where TKey : IEquatable<TKey>
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -201,7 +218,8 @@ namespace Microsoft.Extensions.DependencyInjection {
             // being non-nullable when using value types like short, int, long or Guid.
 
             // Configure the TApplication entity.
-            builder.Entity<TApplication>(entity => {
+            builder.Entity<TApplication>(entity =>
+            {
                 entity.HasKey(application => application.Id);
 
                 entity.HasIndex(application => application.ClientId)
@@ -221,7 +239,8 @@ namespace Microsoft.Extensions.DependencyInjection {
             });
 
             // Configure the TAuthorization entity.
-            builder.Entity<TAuthorization>(entity => {
+            builder.Entity<TAuthorization>(entity =>
+            {
                 entity.HasKey(authorization => authorization.Id);
 
                 entity.HasMany(application => application.Tokens)
@@ -233,14 +252,16 @@ namespace Microsoft.Extensions.DependencyInjection {
             });
 
             // Configure the TScope entity.
-            builder.Entity<TScope>(entity => {
+            builder.Entity<TScope>(entity =>
+            {
                 entity.HasKey(scope => scope.Id);
 
                 entity.ToTable("OpenIddictScopes");
             });
 
             // Configure the TToken entity.
-            builder.Entity<TToken>(entity => {
+            builder.Entity<TToken>(entity =>
+            {
                 entity.HasKey(token => token.Id);
 
                 entity.ToTable("OpenIddictTokens");
@@ -249,17 +270,22 @@ namespace Microsoft.Extensions.DependencyInjection {
             return builder;
         }
 
-        private static TypeInfo FindGenericBaseType(Type type, Type definition) {
-            if (type == null) {
+        private static TypeInfo FindGenericBaseType(Type type, Type definition)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (definition == null) {
+            if (definition == null)
+            {
                 throw new ArgumentNullException(nameof(definition));
             }
 
-            for (var candidate = type.GetTypeInfo(); candidate != null; candidate = candidate.BaseType?.GetTypeInfo()) {
-                if (candidate.IsGenericType && candidate.GetGenericTypeDefinition() == definition) {
+            for (var candidate = type.GetTypeInfo(); candidate != null; candidate = candidate.BaseType?.GetTypeInfo())
+            {
+                if (candidate.IsGenericType && candidate.GetGenericTypeDefinition() == definition)
+                {
                     return candidate;
                 }
             }

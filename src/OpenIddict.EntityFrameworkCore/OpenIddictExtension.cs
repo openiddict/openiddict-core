@@ -10,15 +10,19 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Models;
 
-namespace OpenIddict.EntityFrameworkCore {
+namespace OpenIddict.EntityFrameworkCore
+{
     public class OpenIddictExtension<TApplication, TAuthorization, TScope, TToken, TKey> : IDbContextOptionsExtension
         where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
         where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
         where TScope : OpenIddictScope<TKey>, new()
         where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
-        where TKey : IEquatable<TKey> {
-        public void ApplyServices([NotNull] IServiceCollection services) {
-            if (services == null) {
+        where TKey : IEquatable<TKey>
+    {
+        public void ApplyServices([NotNull] IServiceCollection services)
+        {
+            if (services == null)
+            {
                 throw new ArgumentNullException(nameof(services));
             }
 

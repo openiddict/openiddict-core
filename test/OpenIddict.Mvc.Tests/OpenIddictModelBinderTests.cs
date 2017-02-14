@@ -12,23 +12,28 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Moq;
 using Xunit;
 
-namespace OpenIddict.Mvc.Tests {
-    public class OpenIddictModelBinderTests {
+namespace OpenIddict.Mvc.Tests
+{
+    public class OpenIddictModelBinderTests
+    {
         [Theory]
         [InlineData(typeof(object))]
         [InlineData(typeof(IList<int>))]
         [InlineData(typeof(int[]))]
-        public async Task BindModelAsync_ThrowsAnExceptionForUnsupportedTypes(Type type) {
+        public async Task BindModelAsync_ThrowsAnExceptionForUnsupportedTypes(Type type)
+        {
             // Arrange
             var binder = new OpenIddictModelBinder();
             var provider = new EmptyModelMetadataProvider();
 
-            var context = new DefaultModelBindingContext {
+            var context = new DefaultModelBindingContext
+            {
                 ModelMetadata = provider.GetMetadataForType(type)
             };
 
             // Act and assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
                 return binder.BindModelAsync(context);
             });
 
@@ -36,13 +41,16 @@ namespace OpenIddict.Mvc.Tests {
         }
 
         [Fact]
-        public async Task BindModelAsync_ThrowsAnExceptionWhenRequestCannotBeFound() {
+        public async Task BindModelAsync_ThrowsAnExceptionWhenRequestCannotBeFound()
+        {
             // Arrange
             var binder = new OpenIddictModelBinder();
             var provider = new EmptyModelMetadataProvider();
 
-            var context = new DefaultModelBindingContext {
-                ActionContext = new ActionContext() {
+            var context = new DefaultModelBindingContext
+            {
+                ActionContext = new ActionContext()
+                {
                     HttpContext = new DefaultHttpContext(),
                 },
 
@@ -50,7 +58,8 @@ namespace OpenIddict.Mvc.Tests {
             };
 
             // Act and assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
                 return binder.BindModelAsync(context);
             });
 
@@ -61,13 +70,16 @@ namespace OpenIddict.Mvc.Tests {
         }
 
         [Fact]
-        public async Task BindModelAsync_ReturnsNullWhenResponseCannotBeFound() {
+        public async Task BindModelAsync_ReturnsNullWhenResponseCannotBeFound()
+        {
             // Arrange
             var binder = new OpenIddictModelBinder();
             var provider = new EmptyModelMetadataProvider();
 
-            var context = new DefaultModelBindingContext {
-                ActionContext = new ActionContext() {
+            var context = new DefaultModelBindingContext
+            {
+                ActionContext = new ActionContext()
+                {
                     HttpContext = new DefaultHttpContext(),
                 },
 
@@ -85,7 +97,8 @@ namespace OpenIddict.Mvc.Tests {
         }
 
         [Fact]
-        public async Task BindModelAsync_ReturnsAmbientRequest() {
+        public async Task BindModelAsync_ReturnsAmbientRequest()
+        {
             // Arrange
             var binder = new OpenIddictModelBinder();
             var provider = new EmptyModelMetadataProvider();
@@ -93,12 +106,15 @@ namespace OpenIddict.Mvc.Tests {
             var request = new OpenIdConnectRequest();
 
             var features = new FeatureCollection();
-            features.Set(new OpenIdConnectServerFeature {
+            features.Set(new OpenIdConnectServerFeature
+            {
                 Request = request
             });
 
-            var context = new DefaultModelBindingContext {
-                ActionContext = new ActionContext() {
+            var context = new DefaultModelBindingContext
+            {
+                ActionContext = new ActionContext()
+                {
                     HttpContext = new DefaultHttpContext(features),
                 },
 
@@ -117,7 +133,8 @@ namespace OpenIddict.Mvc.Tests {
         }
 
         [Fact]
-        public async Task BindModelAsync_ReturnsAmbientResponse() {
+        public async Task BindModelAsync_ReturnsAmbientResponse()
+        {
             // Arrange
             var binder = new OpenIddictModelBinder();
             var provider = new EmptyModelMetadataProvider();
@@ -125,12 +142,15 @@ namespace OpenIddict.Mvc.Tests {
             var response = new OpenIdConnectResponse();
 
             var features = new FeatureCollection();
-            features.Set(new OpenIdConnectServerFeature {
+            features.Set(new OpenIdConnectServerFeature
+            {
                 Response = response
             });
 
-            var context = new DefaultModelBindingContext {
-                ActionContext = new ActionContext() {
+            var context = new DefaultModelBindingContext
+            {
+                ActionContext = new ActionContext()
+                {
                     HttpContext = new DefaultHttpContext(features),
                 },
 
@@ -152,7 +172,8 @@ namespace OpenIddict.Mvc.Tests {
         [InlineData(typeof(object))]
         [InlineData(typeof(IList<int>))]
         [InlineData(typeof(int[]))]
-        public void GetBinder_ReturnsNullForUnsupportedTypes(Type type) {
+        public void GetBinder_ReturnsNullForUnsupportedTypes(Type type)
+        {
             // Arrange
             var provider = new OpenIddictModelBinder();
 
@@ -172,7 +193,8 @@ namespace OpenIddict.Mvc.Tests {
         [Theory]
         [InlineData(typeof(OpenIdConnectRequest))]
         [InlineData(typeof(OpenIdConnectResponse))]
-        public void GetBinder_ReturnsNonNullForSupportedTypes(Type type) {
+        public void GetBinder_ReturnsNonNullForSupportedTypes(Type type)
+        {
             // Arrange
             var binder = new OpenIddictModelBinder();
 

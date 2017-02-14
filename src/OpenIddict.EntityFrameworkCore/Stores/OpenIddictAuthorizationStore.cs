@@ -14,7 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
-namespace OpenIddict.EntityFrameworkCore {
+namespace OpenIddict.EntityFrameworkCore
+{
     /// <summary>
     /// Provides methods allowing to manage the authorizations stored in a database.
     /// </summary>
@@ -22,7 +23,8 @@ namespace OpenIddict.EntityFrameworkCore {
     public class OpenIddictAuthorizationStore<TContext> : OpenIddictAuthorizationStore<OpenIddictAuthorization,
                                                                                        OpenIddictApplication,
                                                                                        OpenIddictToken, TContext, string>
-        where TContext : DbContext {
+        where TContext : DbContext
+    {
         public OpenIddictAuthorizationStore([NotNull] TContext context) : base(context) { }
     }
 
@@ -35,7 +37,8 @@ namespace OpenIddict.EntityFrameworkCore {
                                                                                              OpenIddictApplication<TKey>,
                                                                                              OpenIddictToken<TKey>, TContext, TKey>
         where TContext : DbContext
-        where TKey : IEquatable<TKey> {
+        where TKey : IEquatable<TKey>
+    {
         public OpenIddictAuthorizationStore([NotNull] TContext context) : base(context) { }
     }
 
@@ -52,9 +55,12 @@ namespace OpenIddict.EntityFrameworkCore {
         where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
         where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
         where TContext : DbContext
-        where TKey : IEquatable<TKey> {
-        public OpenIddictAuthorizationStore([NotNull] TContext context) {
-            if (context == null) {
+        where TKey : IEquatable<TKey>
+    {
+        public OpenIddictAuthorizationStore([NotNull] TContext context)
+        {
+            if (context == null)
+            {
                 throw new ArgumentNullException(nameof(context));
             }
 
@@ -84,8 +90,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        public virtual async Task<TAuthorization> CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken) {
-            if (authorization == null) {
+        public virtual async Task<TAuthorization> CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
@@ -106,7 +114,8 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the subject/client.
         /// </returns>
-        public virtual Task<TAuthorization> FindAsync(string subject, string client, CancellationToken cancellationToken) {
+        public virtual Task<TAuthorization> FindAsync(string subject, string client, CancellationToken cancellationToken)
+        {
             var key = ConvertIdentifierFromString(client);
 
             return (from application in Applications
@@ -125,7 +134,8 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        public virtual Task<TAuthorization> FindByIdAsync(string identifier, CancellationToken cancellationToken) {
+        public virtual Task<TAuthorization> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        {
             var key = ConvertIdentifierFromString(identifier);
 
             return Authorizations.SingleOrDefaultAsync(authorization => authorization.Id.Equals(key), cancellationToken);
@@ -140,8 +150,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the authorization.
         /// </returns>
-        public virtual Task<string> GetIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken) {
-            if (authorization == null) {
+        public virtual Task<string> GetIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
@@ -157,8 +169,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the subject associated with the specified authorization.
         /// </returns>
-        public virtual Task<string> GetSubjectAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken) {
-            if (authorization == null) {
+        public virtual Task<string> GetSubjectAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
@@ -170,8 +184,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
-        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier) {
-            if (string.IsNullOrEmpty(identifier)) {
+        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
                 return default(TKey);
             }
 
@@ -184,8 +200,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
-        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier) {
-            if (Equals(identifier, default(TKey))) {
+        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier)
+        {
+            if (Equals(identifier, default(TKey)))
+            {
                 return null;
             }
 

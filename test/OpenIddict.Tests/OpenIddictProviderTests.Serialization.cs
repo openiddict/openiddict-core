@@ -10,15 +10,20 @@ using OpenIddict.Core;
 using OpenIddict.Models;
 using Xunit;
 
-namespace OpenIddict.Tests {
-    public partial class OpenIddictProviderTests {
+namespace OpenIddict.Tests
+{
+    public partial class OpenIddictProviderTests
+    {
         [Fact]
-        public async Task SerializeAuthorizationCode_AuthorizationCodeIsNotPersistedWhenRevocationIsDisabled() {
+        public async Task SerializeAuthorizationCode_AuthorizationCodeIsNotPersistedWhenRevocationIsDisabled()
+        {
             // Arrange
             var manager = CreateTokenManager();
 
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
@@ -44,7 +49,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code
@@ -57,11 +63,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task SerializeAuthorizationCode_AuthorizationCodeIsCorrectlyPersisted() {
+        public async Task SerializeAuthorizationCode_AuthorizationCodeIsCorrectlyPersisted()
+        {
             // Arrange
             var token = new OpenIddictToken();
 
-            var manager = CreateTokenManager(instance => {
+            var manager = CreateTokenManager(instance =>
+            {
                 instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
@@ -69,8 +77,10 @@ namespace OpenIddict.Tests {
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
             });
 
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
@@ -92,7 +102,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code
@@ -106,11 +117,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task SerializeAuthorizationCode_ClientApplicationIsAutomaticallyAttached() {
+        public async Task SerializeAuthorizationCode_ClientApplicationIsAutomaticallyAttached()
+        {
             // Arrange
             var token = new OpenIddictToken();
 
-            var manager = CreateTokenManager(instance => {
+            var manager = CreateTokenManager(instance =>
+            {
                 instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
@@ -121,8 +134,10 @@ namespace OpenIddict.Tests {
                     .Returns(Task.FromResult(0));
             });
 
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
@@ -147,7 +162,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code
@@ -160,11 +176,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task SerializeAuthorizationCode_AuthorizationIsAutomaticallyAttached() {
+        public async Task SerializeAuthorizationCode_AuthorizationIsAutomaticallyAttached()
+        {
             // Arrange
             var token = new OpenIddictToken();
 
-            var manager = CreateTokenManager(instance => {
+            var manager = CreateTokenManager(instance =>
+            {
                 instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
@@ -178,8 +196,10 @@ namespace OpenIddict.Tests {
                     .Returns(Task.FromResult(0));
             });
 
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
@@ -198,7 +218,8 @@ namespace OpenIddict.Tests {
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
                 }));
 
-                builder.Services.AddSingleton(CreateAuthorizationManager(instance => {
+                builder.Services.AddSingleton(CreateAuthorizationManager(instance =>
+                {
                     instance.Setup(mock => mock.FindByIdAsync("1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(new OpenIddictAuthorization());
                 }));
@@ -209,7 +230,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code,
@@ -222,11 +244,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task SerializeRefreshToken_RefreshTokenIsNotPersistedWhenRevocationIsDisabled() {
+        public async Task SerializeRefreshToken_RefreshTokenIsNotPersistedWhenRevocationIsDisabled()
+        {
             // Arrange
             var manager = CreateTokenManager();
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
 
                 builder.Configure(options => options.RevocationEndpointPath = PathString.Empty);
@@ -237,7 +261,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
                 GrantType = OpenIdConnectConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w",
@@ -251,11 +276,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task SerializeRefreshToken_RefreshTokenIsCorrectlyPersisted() {
+        public async Task SerializeRefreshToken_RefreshTokenIsCorrectlyPersisted()
+        {
             // Arrange
             var token = new OpenIddictToken();
 
-            var manager = CreateTokenManager(instance => {
+            var manager = CreateTokenManager(instance =>
+            {
                 instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
@@ -263,14 +290,16 @@ namespace OpenIddict.Tests {
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
                 GrantType = OpenIdConnectConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w",
@@ -285,11 +314,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task SerializeRefreshToken_ClientApplicationIsAutomaticallyAttached() {
+        public async Task SerializeRefreshToken_ClientApplicationIsAutomaticallyAttached()
+        {
             // Arrange
             var token = new OpenIddictToken();
 
-            var manager = CreateTokenManager(instance => {
+            var manager = CreateTokenManager(instance =>
+            {
                 instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
@@ -300,8 +331,10 @@ namespace OpenIddict.Tests {
                     .Returns(Task.FromResult(0));
             });
 
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
@@ -320,7 +353,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 GrantType = OpenIdConnectConstants.GrantTypes.Password,
                 Username = "johndoe",
@@ -335,11 +369,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task SerializeRefreshToken_AuthorizationIsAutomaticallyAttached() {
+        public async Task SerializeRefreshToken_AuthorizationIsAutomaticallyAttached()
+        {
             // Arrange
             var token = new OpenIddictToken();
 
-            var manager = CreateTokenManager(instance => {
+            var manager = CreateTokenManager(instance =>
+            {
                 instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
@@ -350,8 +386,10 @@ namespace OpenIddict.Tests {
                     .Returns(Task.FromResult(0));
             });
 
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateAuthorizationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateAuthorizationManager(instance =>
+                {
                     instance.Setup(mock => mock.FindByIdAsync("1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(new OpenIddictAuthorization());
                 }));
@@ -362,7 +400,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
                 GrantType = OpenIdConnectConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w",

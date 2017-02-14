@@ -22,8 +22,10 @@ using Newtonsoft.Json;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
-namespace OpenIddict.Tests {
-    public partial class OpenIddictProviderTests {
+namespace OpenIddict.Tests
+{
+    public partial class OpenIddictProviderTests
+    {
         public const string AuthorizationEndpoint = "/connect/authorize";
         public const string ConfigurationEndpoint = "/.well-known/openid-configuration";
         public const string IntrospectionEndpoint = "/connect/introspect";
@@ -32,14 +34,16 @@ namespace OpenIddict.Tests {
         public const string TokenEndpoint = "/connect/token";
         public const string UserinfoEndpoint = "/connect/userinfo";
 
-        private static TestServer CreateAuthorizationServer(Action<OpenIddictBuilder> configuration = null) {
+        private static TestServer CreateAuthorizationServer(Action<OpenIddictBuilder> configuration = null)
+        {
             var builder = new WebHostBuilder();
 
             builder.UseEnvironment("Testing");
 
             builder.ConfigureLogging(options => options.AddDebug());
 
-            builder.ConfigureServices(services => {
+            builder.ConfigureServices(services =>
+            {
                 services.AddAuthentication();
                 services.AddOptions();
 
@@ -82,18 +86,23 @@ namespace OpenIddict.Tests {
                 configuration?.Invoke(instance);
             });
 
-            builder.Configure(app => {
-                app.UseStatusCodePages(context => {
+            builder.Configure(app =>
+            {
+                app.UseStatusCodePages(context =>
+                {
                     context.HttpContext.Response.Headers[HeaderNames.ContentType] = "application/json";
 
-                    return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(new {
+                    return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(new
+                    {
                         error_custom = OpenIdConnectConstants.Errors.InvalidRequest
                     }));
                 });
 
-                app.Use(next => context => {
+                app.Use(next => context =>
+                {
                     if (context.Request.Path != "/authorize-status-code-middleware" &&
-                        context.Request.Path != "/logout-status-code-middleware") {
+                        context.Request.Path != "/logout-status-code-middleware")
+                    {
                         var feature = context.Features.Get<IStatusCodePagesFeature>();
                         feature.Enabled = false;
                     }
@@ -105,13 +114,15 @@ namespace OpenIddict.Tests {
 
                 // Note: the following client_id/client_secret are fake and are only
                 // used to test the metadata returned by the discovery endpoint.
-                app.UseFacebookAuthentication(new FacebookOptions {
+                app.UseFacebookAuthentication(new FacebookOptions
+                {
                     ClientId = "16018790-E88E-4553-8036-BB342579FF19",
                     ClientSecret = "3D6499AF-5607-489B-815A-F3ACF1617296",
                     SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme
                 });
 
-                app.UseGoogleAuthentication(new GoogleOptions {
+                app.UseGoogleAuthentication(new GoogleOptions
+                {
                     ClientId = "BAF437A5-87FA-4D06-8EFD-F9BA96CCEDC4",
                     ClientSecret = "27DF07D3-6B03-4EE0-95CD-3AC16782216B",
                     SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme
@@ -119,9 +130,11 @@ namespace OpenIddict.Tests {
 
                 app.UseOpenIddict();
 
-                app.Run(context => {
+                app.Run(context =>
+                {
                     var request = context.GetOpenIdConnectRequest();
-                    if (request.IsAuthorizationRequest() || request.IsTokenRequest()) {
+                    if (request.IsAuthorizationRequest() || request.IsTokenRequest())
+                    {
                         var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
                         identity.AddClaim(ClaimTypes.NameIdentifier, "Bob le Magnifique");
 
@@ -137,14 +150,17 @@ namespace OpenIddict.Tests {
                         return context.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
                     }
 
-                    else if (request.IsLogoutRequest()) {
+                    else if (request.IsLogoutRequest())
+                    {
                         return context.Authentication.SignOutAsync(OpenIdConnectServerDefaults.AuthenticationScheme);
                     }
 
-                    else if (request.IsUserinfoRequest()) {
+                    else if (request.IsUserinfoRequest())
+                    {
                         context.Response.Headers[HeaderNames.ContentType] = "application/json";
 
-                        return context.Response.WriteAsync(JsonConvert.SerializeObject(new {
+                        return context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                        {
                             access_token = request.AccessToken,
                             sub = "Bob le Bricoleur"
                         }));
@@ -157,7 +173,8 @@ namespace OpenIddict.Tests {
             return new TestServer(builder);
         }
 
-        private static OpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>> setup = null) {
+        private static OpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>> setup = null)
+        {
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
                 Mock.Of<IOpenIddictApplicationStore<OpenIddictApplication>>(),
                 Mock.Of<ILogger<OpenIddictApplicationManager<OpenIddictApplication>>>());
@@ -167,7 +184,8 @@ namespace OpenIddict.Tests {
             return manager.Object;
         }
 
-        private static OpenIddictAuthorizationManager<OpenIddictAuthorization> CreateAuthorizationManager(Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> setup = null) {
+        private static OpenIddictAuthorizationManager<OpenIddictAuthorization> CreateAuthorizationManager(Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> setup = null)
+        {
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationStore<OpenIddictAuthorization>>(),
                 Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>());
@@ -177,7 +195,8 @@ namespace OpenIddict.Tests {
             return manager.Object;
         }
 
-        private static OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> setup = null) {
+        private static OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> setup = null)
+        {
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
                 Mock.Of<IOpenIddictTokenStore<OpenIddictToken>>(),
                 Mock.Of<ILogger<OpenIddictTokenManager<OpenIddictToken>>>());

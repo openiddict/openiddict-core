@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Mvc.Server.ViewModels.Manage {
-    public class ChangePasswordViewModel {
+namespace Mvc.Server.ViewModels.Manage
+{
+    public class ChangePasswordViewModel
+    {
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Current password")]

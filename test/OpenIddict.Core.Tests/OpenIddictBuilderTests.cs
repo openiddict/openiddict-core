@@ -4,10 +4,13 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace OpenIddict.Core.Tests {
-    public class OpenIddictBuilderTests {
+namespace OpenIddict.Core.Tests
+{
+    public class OpenIddictBuilderTests
+    {
         [Fact]
-        public void AddApplicationManager_ThrowsAnExceptionForInvalidManager() {
+        public void AddApplicationManager_ThrowsAnExceptionForInvalidManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -22,7 +25,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddApplicationManager_OverridesDefaultManager() {
+        public void AddApplicationManager_OverridesDefaultManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -45,7 +49,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddApplicationStore_ThrowsAnExceptionForInvalidStore() {
+        public void AddApplicationStore_ThrowsAnExceptionForInvalidStore()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -60,7 +65,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddApplicationStore_OverridesDefaultManager() {
+        public void AddApplicationStore_OverridesDefaultManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -81,7 +87,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddAuthorizationManager_ThrowsAnExceptionForInvalidManager() {
+        public void AddAuthorizationManager_ThrowsAnExceptionForInvalidManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -96,7 +103,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddAuthorizationManager_OverridesDefaultManager() {
+        public void AddAuthorizationManager_OverridesDefaultManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -119,7 +127,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddAuthorizationStore_ThrowsAnExceptionForInvalidStore() {
+        public void AddAuthorizationStore_ThrowsAnExceptionForInvalidStore()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -134,7 +143,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddAuthorizationStore_OverridesDefaultManager() {
+        public void AddAuthorizationStore_OverridesDefaultManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -155,7 +165,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddScopeManager_ThrowsAnExceptionForInvalidManager() {
+        public void AddScopeManager_ThrowsAnExceptionForInvalidManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -170,7 +181,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddScopeManager_OverridesDefaultManager() {
+        public void AddScopeManager_OverridesDefaultManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -193,7 +205,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddScopeStore_ThrowsAnExceptionForInvalidStore() {
+        public void AddScopeStore_ThrowsAnExceptionForInvalidStore()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -208,7 +221,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddScopeStore_OverridesDefaultManager() {
+        public void AddScopeStore_OverridesDefaultManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -229,7 +243,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddTokenManager_ThrowsAnExceptionForInvalidManager() {
+        public void AddTokenManager_ThrowsAnExceptionForInvalidManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -244,7 +259,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddTokenManager_OverridesDefaultManager() {
+        public void AddTokenManager_OverridesDefaultManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -267,7 +283,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddTokenStore_ThrowsAnExceptionForInvalidStore() {
+        public void AddTokenStore_ThrowsAnExceptionForInvalidStore()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();
@@ -282,7 +299,8 @@ namespace OpenIddict.Core.Tests {
         }
 
         [Fact]
-        public void AddTokenStore_OverridesDefaultManager() {
+        public void AddTokenStore_OverridesDefaultManager()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();

@@ -18,19 +18,23 @@ using OpenIddict.Core;
 using OpenIddict.Models;
 using Xunit;
 
-namespace OpenIddict.Tests {
-    public partial class OpenIddictProviderTests {
+namespace OpenIddict.Tests
+{
+    public partial class OpenIddictProviderTests
+    {
         [Theory]
         [InlineData(OpenIdConnectConstants.TokenTypeHints.AccessToken)]
         [InlineData(OpenIdConnectConstants.TokenTypeHints.IdToken)]
-        public async Task ValidateRevocationRequest_UnknownTokenTokenHintIsRejected(string hint) {
+        public async Task ValidateRevocationRequest_UnknownTokenTokenHintIsRejected(string hint)
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 Token = "SlAV32hkKG",
                 TokenTypeHint = hint
             });
@@ -42,14 +46,16 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateRevocationRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired() {
+        public async Task ValidateRevocationRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
+        {
             // Arrange
             var server = CreateAuthorizationServer(builder => builder.RequireClientIdentification());
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 Token = "SlAV32hkKG",
                 TokenTypeHint = OpenIdConnectConstants.TokenTypeHints.RefreshToken
             });
@@ -60,21 +66,25 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientCannotBeFound() {
+        public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientCannotBeFound()
+        {
             // Arrange
-            var manager = CreateApplicationManager(instance => {
+            var manager = CreateApplicationManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(null);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 Token = "SlAV32hkKG",
                 TokenTypeHint = OpenIdConnectConstants.TokenTypeHints.RefreshToken
@@ -88,11 +98,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateRevocationRequest_ClientSecretCannotBeUsedByPublicClients() {
+        public async Task ValidateRevocationRequest_ClientSecretCannotBeUsedByPublicClients()
+        {
             // Arrange
             var application = new OpenIddictApplication();
 
-            var manager = CreateApplicationManager(instance => {
+            var manager = CreateApplicationManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
@@ -100,14 +112,16 @@ namespace OpenIddict.Tests {
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
                 Token = "SlAV32hkKG",
@@ -123,11 +137,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateRevocationRequest_ClientSecretIsRequiredForConfidentialClients() {
+        public async Task ValidateRevocationRequest_ClientSecretIsRequiredForConfidentialClients()
+        {
             // Arrange
             var application = new OpenIddictApplication();
 
-            var manager = CreateApplicationManager(instance => {
+            var manager = CreateApplicationManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
@@ -135,14 +151,16 @@ namespace OpenIddict.Tests {
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 ClientSecret = null,
                 Token = "SlAV32hkKG",
@@ -158,11 +176,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientCredentialsAreInvalid() {
+        public async Task ValidateRevocationRequest_RequestIsRejectedWhenClientCredentialsAreInvalid()
+        {
             // Arrange
             var application = new OpenIddictApplication();
 
-            var manager = CreateApplicationManager(instance => {
+            var manager = CreateApplicationManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
@@ -173,14 +193,16 @@ namespace OpenIddict.Tests {
                     .ReturnsAsync(false);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
                 Token = "SlAV32hkKG",
@@ -197,7 +219,8 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleRevocationRequest_RequestIsRejectedWhenTokenIsAnAccessToken() {
+        public async Task HandleRevocationRequest_RequestIsRejectedWhenTokenIsAnAccessToken()
+        {
             // Arrange
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
@@ -212,14 +235,16 @@ namespace OpenIddict.Tests {
             format.Setup(mock => mock.Unprotect("SlAV32hkKG"))
                 .Returns(ticket);
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Configure(options => options.AccessTokenFormat = format.Object);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 Token = "SlAV32hkKG"
             });
 
@@ -231,7 +256,8 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleRevocationRequest_RequestIsNotRejectedWhenTokenIsAnIdentityToken() {
+        public async Task HandleRevocationRequest_RequestIsNotRejectedWhenTokenIsAnIdentityToken()
+        {
             // Arrange
             var token = Mock.Of<SecurityToken>(mock =>
                 mock.ValidFrom == DateTime.UtcNow.AddDays(-1) &&
@@ -249,14 +275,16 @@ namespace OpenIddict.Tests {
                 .Setup(mock => mock.ValidateToken("SlAV32hkKG", It.IsAny<TokenValidationParameters>(), out token))
                 .Returns(new ClaimsPrincipal(identity));
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Configure(options => options.IdentityTokenHandler = handler.Object);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 Token = "SlAV32hkKG"
             });
 
@@ -272,7 +300,8 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleRevocationRequest_TokenIsNotRevokedWhenItIsAlreadyInvalid() {
+        public async Task HandleRevocationRequest_TokenIsNotRevokedWhenItIsAlreadyInvalid()
+        {
             // Arrange
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
@@ -287,12 +316,14 @@ namespace OpenIddict.Tests {
             format.Setup(mock => mock.Unprotect("SlAV32hkKG"))
                 .Returns(ticket);
 
-            var manager = CreateTokenManager(instance => {
+            var manager = CreateTokenManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(null);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
 
                 builder.Configure(options => options.AccessTokenFormat = format.Object);
@@ -301,7 +332,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 Token = "SlAV32hkKG"
             });
 
@@ -313,7 +345,8 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleRevocationRequest_TokenIsSuccessfullyRevoked() {
+        public async Task HandleRevocationRequest_TokenIsSuccessfullyRevoked()
+        {
             // Arrange
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
@@ -330,12 +363,14 @@ namespace OpenIddict.Tests {
 
             var token = new OpenIddictToken();
 
-            var manager = CreateTokenManager(instance => {
+            var manager = CreateTokenManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
 
                 builder.Configure(options => options.AccessTokenFormat = format.Object);
@@ -344,7 +379,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
                 Token = "SlAV32hkKG"
             });
 

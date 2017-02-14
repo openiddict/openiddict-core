@@ -11,13 +11,15 @@ using Microsoft.EntityFrameworkCore;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
-namespace OpenIddict.EntityFrameworkCore {
+namespace OpenIddict.EntityFrameworkCore
+{
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in a database.
     /// </summary>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     public class OpenIddictScopeStore<TContext> : OpenIddictScopeStore<OpenIddictScope, TContext, string>
-        where TContext : DbContext {
+        where TContext : DbContext
+    {
         public OpenIddictScopeStore([NotNull] TContext context) : base(context) { }
     }
 
@@ -28,7 +30,8 @@ namespace OpenIddict.EntityFrameworkCore {
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
     public class OpenIddictScopeStore<TContext, TKey> : OpenIddictScopeStore<OpenIddictScope<TKey>, TContext, TKey>
         where TContext : DbContext
-        where TKey : IEquatable<TKey> {
+        where TKey : IEquatable<TKey>
+    {
         public OpenIddictScopeStore([NotNull] TContext context) : base(context) { }
     }
 
@@ -41,9 +44,12 @@ namespace OpenIddict.EntityFrameworkCore {
     public class OpenIddictScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
         where TScope : OpenIddictScope<TKey>, new()
         where TContext : DbContext
-        where TKey : IEquatable<TKey> {
-        public OpenIddictScopeStore([NotNull] TContext context) {
-            if (context == null) {
+        where TKey : IEquatable<TKey>
+    {
+        public OpenIddictScopeStore([NotNull] TContext context)
+        {
+            if (context == null)
+            {
                 throw new ArgumentNullException(nameof(context));
             }
 
@@ -65,8 +71,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
-        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier) {
-            if (string.IsNullOrEmpty(identifier)) {
+        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
                 return default(TKey);
             }
 
@@ -79,8 +87,10 @@ namespace OpenIddict.EntityFrameworkCore {
         /// </summary>
         /// <param name="identifier">The identifier to convert.</param>
         /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
-        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier) {
-            if (Equals(identifier, default(TKey))) {
+        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier)
+        {
+            if (Equals(identifier, default(TKey)))
+            {
                 return null;
             }
 

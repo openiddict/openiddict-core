@@ -6,12 +6,15 @@
 
 using System;
 
-namespace OpenIddict.Models {
+namespace OpenIddict.Models
+{
     /// <summary>
     /// Represents an OpenIddict token.
     /// </summary>
-    public class OpenIddictToken : OpenIddictToken<string, OpenIddictApplication, OpenIddictAuthorization> {
-        public OpenIddictToken() {
+    public class OpenIddictToken : OpenIddictToken<string, OpenIddictApplication, OpenIddictAuthorization>
+    {
+        public OpenIddictToken()
+        {
             // Generate a new string identifier.
             Id = Guid.NewGuid().ToString();
         }
@@ -21,13 +24,15 @@ namespace OpenIddict.Models {
     /// Represents an OpenIddict token.
     /// </summary>
     public class OpenIddictToken<TKey> : OpenIddictToken<TKey, OpenIddictApplication<TKey>, OpenIddictAuthorization<TKey>>
-        where TKey : IEquatable<TKey> {
+        where TKey : IEquatable<TKey>
+    {
     }
 
     /// <summary>
     /// Represents an OpenIddict token.
     /// </summary>
-    public class OpenIddictToken<TKey, TApplication, TAuthorization> where TKey : IEquatable<TKey> {
+    public class OpenIddictToken<TKey, TApplication, TAuthorization> where TKey : IEquatable<TKey>
+    {
         /// <summary>
         /// Gets or sets the application associated with the current token.
         /// </summary>

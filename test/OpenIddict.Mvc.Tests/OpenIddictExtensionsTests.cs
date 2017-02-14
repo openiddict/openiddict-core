@@ -3,10 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace OpenIddict.Mvc.Tests {
-    public class OpenIddictExtensionsTests {
+namespace OpenIddict.Mvc.Tests
+{
+    public class OpenIddictExtensionsTests
+    {
         [Fact]
-        public void AddMvcBinders_RegistersModelBinderProvider() {
+        public void AddMvcBinders_RegistersModelBinderProvider()
+        {
             // Arrange
             var services = new ServiceCollection();
             services.AddOptions();

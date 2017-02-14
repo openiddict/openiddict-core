@@ -7,15 +7,18 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
-namespace OpenIddict.Core {
+namespace OpenIddict.Core
+{
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in the store.
     /// </summary>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-    public class OpenIddictScopeManager<TScope> where TScope : class {
+    public class OpenIddictScopeManager<TScope> where TScope : class
+    {
         public OpenIddictScopeManager(
             [NotNull] IOpenIddictScopeStore<TScope> store,
-            [NotNull] ILogger<OpenIddictScopeManager<TScope>> logger) {
+            [NotNull] ILogger<OpenIddictScopeManager<TScope>> logger)
+        {
             Logger = logger;
             Store = store;
         }

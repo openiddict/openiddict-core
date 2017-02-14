@@ -8,12 +8,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace OpenIddict.Core {
+namespace OpenIddict.Core
+{
     /// <summary>
     /// Provides methods allowing to manage the tokens stored in a database.
     /// </summary>
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    public interface IOpenIddictTokenStore<TToken> where TToken : class {
+    public interface IOpenIddictTokenStore<TToken> where TToken : class
+    {
         /// <summary>
         /// Creates a new token.
         /// </summary>

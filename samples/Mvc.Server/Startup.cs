@@ -12,9 +12,12 @@ using Mvc.Server.Services;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
-namespace Mvc.Server {
-    public class Startup {
-        public void ConfigureServices(IServiceCollection services) {
+namespace Mvc.Server
+{
+    public class Startup
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("config.json")
                 .AddEnvironmentVariables()
@@ -22,7 +25,8 @@ namespace Mvc.Server {
 
             services.AddMvc();
 
-            services.AddDbContext<ApplicationDbContext>(options => {
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
                 // Configure the context to use Microsoft SQL Server.
                 options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]);
 
@@ -65,6 +69,8 @@ namespace Mvc.Server {
                 // During development, you can disable the HTTPS requirement.
                 .DisableHttpsRequirement()
 
+                .SetAccessTokenLifetime(TimeSpan.FromSeconds(15))
+
                 // When request caching is enabled, authorization and logout requests
                 // are stored in the distributed cache by OpenIddict and the user agent
                 // is redirected to the same page with a single parameter (request_id).
@@ -76,12 +82,14 @@ namespace Mvc.Server {
             services.AddTransient<ISmsSender, AuthMessageSender>();
         }
 
-        public void Configure(IApplicationBuilder app) {
+        public void Configure(IApplicationBuilder app)
+        {
             app.UseDeveloperExceptionPage();
 
             app.UseStaticFiles();
 
-            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"), branch => {
+            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"), branch =>
+            {
                 // Add a middleware used to validate access
                 // tokens and protect the API endpoints.
                 branch.UseOAuthValidation();
@@ -90,7 +98,8 @@ namespace Mvc.Server {
                 // Using it is recommended if your resource server is in a
                 // different application/separated from the authorization server.
                 //
-                // branch.UseOAuthIntrospection(options => {
+                // branch.UseOAuthIntrospection(options =>
+                // {
                 //     options.AutomaticAuthenticate = true;
                 //     options.AutomaticChallenge = true;
                 //     options.Authority = "http://localhost:54540/";
@@ -100,17 +109,20 @@ namespace Mvc.Server {
                 // });
             });
 
-            app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api"), branch => {
+            app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api"), branch =>
+            {
                 branch.UseStatusCodePagesWithReExecute("/error");
 
                 branch.UseIdentity();
 
-                branch.UseGoogleAuthentication(new GoogleOptions {
+                branch.UseGoogleAuthentication(new GoogleOptions
+                {
                     ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
                     ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f"
                 });
 
-                branch.UseTwitterAuthentication(new TwitterOptions {
+                branch.UseTwitterAuthentication(new TwitterOptions
+                {
                     ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g",
                     ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI"
                 });
@@ -125,16 +137,20 @@ namespace Mvc.Server {
             InitializeAsync(app.ApplicationServices, CancellationToken.None).GetAwaiter().GetResult();
         }
 
-        private async Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken) {
+        private async Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken)
+        {
             // Create a new service scope to ensure the database context is correctly disposed when this methods returns.
-            using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope()) {
+            using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 await context.Database.EnsureCreatedAsync();
 
                 var manager = scope.ServiceProvider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
 
-                if (await manager.FindByClientIdAsync("mvc", cancellationToken) == null) {
-                    var application = new OpenIddictApplication {
+                if (await manager.FindByClientIdAsync("mvc", cancellationToken) == null)
+                {
+                    var application = new OpenIddictApplication
+                    {
                         ClientId = "mvc",
                         DisplayName = "MVC client application",
                         LogoutRedirectUri = "http://localhost:53507/",
@@ -153,8 +169,10 @@ namespace Mvc.Server {
                 // * Scope: openid email profile roles
                 // * Grant type: authorization code
                 // * Request access token locally: yes
-                if (await manager.FindByClientIdAsync("postman", cancellationToken) == null) {
-                    var application = new OpenIddictApplication {
+                if (await manager.FindByClientIdAsync("postman", cancellationToken) == null)
+                {
+                    var application = new OpenIddictApplication
+                    {
                         ClientId = "postman",
                         DisplayName = "Postman",
                         RedirectUri = "https://www.getpostman.com/oauth2/callback"

@@ -8,12 +8,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace OpenIddict.Core {
+namespace OpenIddict.Core
+{
     /// <summary>
     /// Provides methods allowing to manage the authorizations stored in a database.
     /// </summary>
     /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    public interface IOpenIddictAuthorizationStore<TAuthorization> where TAuthorization : class {
+    public interface IOpenIddictAuthorizationStore<TAuthorization> where TAuthorization : class
+    {
         /// <summary>
         /// Creates a new authorization.
         /// </summary>

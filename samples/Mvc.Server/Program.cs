@@ -2,9 +2,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Mvc.Server {
-    public static class Program {
-        public static void Main(string[] args) {
+namespace Mvc.Server
+{
+    public static class Program
+    {
+        public static void Main(string[] args)
+        {
             var configuration = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
                 .AddCommandLine(args)

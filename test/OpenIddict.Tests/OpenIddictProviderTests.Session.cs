@@ -11,17 +11,21 @@ using OpenIddict.Core;
 using OpenIddict.Models;
 using Xunit;
 
-namespace OpenIddict.Tests {
-    public partial class OpenIddictProviderTests {
+namespace OpenIddict.Tests
+{
+    public partial class OpenIddictProviderTests
+    {
         [Fact]
-        public async Task ExtractLogoutRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled() {
+        public async Task ExtractLogoutRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest
+            {
                 RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7"
             });
 
@@ -31,9 +35,11 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ExtractLogoutRequest_InvalidRequestIdParameterIsRejected() {
+        public async Task ExtractLogoutRequest_InvalidRequestIdParameterIsRejected()
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddDistributedMemoryCache();
 
                 builder.EnableRequestCaching();
@@ -42,7 +48,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest
+            {
                 RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7"
             });
 
@@ -52,21 +59,25 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateLogoutRequest_RequestIsRejectedWhenRedirectUriIsInvalid() {
+        public async Task ValidateLogoutRequest_RequestIsRejectedWhenRedirectUriIsInvalid()
+        {
             // Arrange
-            var manager = CreateApplicationManager(instance => {
+            var manager = CreateApplicationManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(null);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest
+            {
                 PostLogoutRedirectUri = "http://www.fabrikam.com/path"
             });
 
@@ -78,12 +89,15 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleLogoutRequest_RequestIsPersistedInDistributedCache() {
+        public async Task HandleLogoutRequest_RequestIsPersistedInDistributedCache()
+        {
             // Arrange
             var cache = new Mock<IDistributedCache>();
 
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
@@ -98,7 +112,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest
+            {
                 PostLogoutRedirectUri = "http://www.fabrikam.com/path"
             });
 
@@ -115,10 +130,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleLogoutRequest_RequestsAreNotHandledLocally() {
+        public async Task HandleLogoutRequest_RequestsAreNotHandledLocally()
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
@@ -129,7 +147,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest
+            {
                 PostLogoutRedirectUri = "http://www.fabrikam.com/path",
                 State = "af0ifjsldkj"
             });
@@ -139,10 +158,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ApplyLogoutResponse_ErroredRequestIsNotHandledLocallyWhenStatusCodeMiddlewareIsEnabled() {
+        public async Task ApplyLogoutResponse_ErroredRequestIsNotHandledLocallyWhenStatusCodeMiddlewareIsEnabled()
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(null);
                 }));
@@ -153,7 +175,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync("/logout-status-code-middleware", new OpenIdConnectRequest {
+            var response = await client.PostAsync("/logout-status-code-middleware", new OpenIdConnectRequest
+            {
                 PostLogoutRedirectUri = "http://www.fabrikam.com/path"
             });
 

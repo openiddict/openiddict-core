@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Mvc.Server.ViewModels.Manage {
-    public class VerifyPhoneNumberViewModel {
+namespace Mvc.Server.ViewModels.Manage
+{
+    public class VerifyPhoneNumberViewModel
+    {
         [Required]
         public string Code { get; set; }
 

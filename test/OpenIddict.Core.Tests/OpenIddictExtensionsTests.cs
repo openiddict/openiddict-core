@@ -3,14 +3,17 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Models;
 using Xunit;
 
-namespace OpenIddict.Core.Tests {
-    public class OpenIddictExtensionsTests {
+namespace OpenIddict.Core.Tests
+{
+    public class OpenIddictExtensionsTests
+    {
         [Theory]
         [InlineData(typeof(OpenIddictApplicationManager<OpenIddictApplication>))]
         [InlineData(typeof(OpenIddictAuthorizationManager<OpenIddictAuthorization>))]
         [InlineData(typeof(OpenIddictScopeManager<OpenIddictScope>))]
         [InlineData(typeof(OpenIddictTokenManager<OpenIddictToken>))]
-        public void AddOpenIddict_KeyTypeDefaultsToString(Type type) {
+        public void AddOpenIddict_KeyTypeDefaultsToString(Type type)
+        {
             // Arrange
             var services = new ServiceCollection();
 
@@ -26,7 +29,8 @@ namespace OpenIddict.Core.Tests {
         [InlineData(typeof(OpenIddictAuthorizationManager<OpenIddictAuthorization<Guid>>))]
         [InlineData(typeof(OpenIddictScopeManager<OpenIddictScope<Guid>>))]
         [InlineData(typeof(OpenIddictTokenManager<OpenIddictToken<Guid>>))]
-        public void AddOpenIddict_KeyTypeCanBeOverriden(Type type) {
+        public void AddOpenIddict_KeyTypeCanBeOverriden(Type type)
+        {
             // Arrange
             var services = new ServiceCollection();
 
@@ -42,7 +46,8 @@ namespace OpenIddict.Core.Tests {
         [InlineData(typeof(OpenIddictAuthorizationManager<object>))]
         [InlineData(typeof(OpenIddictScopeManager<object>))]
         [InlineData(typeof(OpenIddictTokenManager<object>))]
-        public void AddOpenIddict_DefaultEntitiesCanBeReplaced(Type type) {
+        public void AddOpenIddict_DefaultEntitiesCanBeReplaced(Type type)
+        {
             // Arrange
             var services = new ServiceCollection();
 

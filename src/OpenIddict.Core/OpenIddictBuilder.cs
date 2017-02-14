@@ -14,17 +14,21 @@ using OpenIddict.Models;
 using System.Reflection;
 #endif
 
-namespace Microsoft.Extensions.DependencyInjection {
+namespace Microsoft.Extensions.DependencyInjection
+{
     /// <summary>
     /// Exposes the necessary methods required to configure OpenIddict.
     /// </summary>
-    public class OpenIddictBuilder {
+    public class OpenIddictBuilder
+    {
         /// <summary>
         /// Initializes a new instance of <see cref="OpenIddictBuilder"/>.
         /// </summary>
         /// <param name="services">The services collection.</param>
-        public OpenIddictBuilder([NotNull] IServiceCollection services) {
-            if (services == null) {
+        public OpenIddictBuilder([NotNull] IServiceCollection services)
+        {
+            if (services == null)
+            {
                 throw new ArgumentNullException(nameof(services));
             }
 
@@ -74,13 +78,16 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddApplicationManager([NotNull] Type type) {
-            if (type == null) {
+        public virtual OpenIddictBuilder AddApplicationManager([NotNull] Type type)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var contract = typeof(OpenIddictApplicationManager<>).MakeGenericType(ApplicationType);
-            if (!contract.IsAssignableFrom(type)) {
+            if (!contract.IsAssignableFrom(type))
+            {
                 throw new InvalidOperationException("Custom managers must be derived from OpenIddictApplicationManager.");
             }
 
@@ -102,13 +109,16 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddApplicationStore([NotNull] Type type) {
-            if (type == null) {
+        public virtual OpenIddictBuilder AddApplicationStore([NotNull] Type type)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var contract = typeof(IOpenIddictApplicationStore<>).MakeGenericType(ApplicationType);
-            if (!contract.IsAssignableFrom(type)) {
+            if (!contract.IsAssignableFrom(type))
+            {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictApplicationStore.");
             }
 
@@ -130,13 +140,16 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddAuthorizationManager([NotNull] Type type) {
-            if (type == null) {
+        public virtual OpenIddictBuilder AddAuthorizationManager([NotNull] Type type)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var contract = typeof(OpenIddictAuthorizationManager<>).MakeGenericType(AuthorizationType);
-            if (!contract.IsAssignableFrom(type)) {
+            if (!contract.IsAssignableFrom(type))
+            {
                 throw new InvalidOperationException("Custom managers must be derived from OpenIddictAuthorizationManager.");
             }
 
@@ -158,13 +171,16 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddAuthorizationStore([NotNull] Type type) {
-            if (type == null) {
+        public virtual OpenIddictBuilder AddAuthorizationStore([NotNull] Type type)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var contract = typeof(IOpenIddictAuthorizationStore<>).MakeGenericType(AuthorizationType);
-            if (!contract.IsAssignableFrom(type)) {
+            if (!contract.IsAssignableFrom(type))
+            {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictAuthorizationStore.");
             }
 
@@ -186,13 +202,16 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddScopeManager([NotNull] Type type) {
-            if (type == null) {
+        public virtual OpenIddictBuilder AddScopeManager([NotNull] Type type)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var contract = typeof(OpenIddictScopeManager<>).MakeGenericType(ScopeType);
-            if (!contract.IsAssignableFrom(type)) {
+            if (!contract.IsAssignableFrom(type))
+            {
                 throw new InvalidOperationException("Custom managers must be derived from OpenIddictScopeManager.");
             }
 
@@ -214,13 +233,16 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddScopeStore([NotNull] Type type) {
-            if (type == null) {
+        public virtual OpenIddictBuilder AddScopeStore([NotNull] Type type)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var contract = typeof(IOpenIddictScopeStore<>).MakeGenericType(ScopeType);
-            if (!contract.IsAssignableFrom(type)) {
+            if (!contract.IsAssignableFrom(type))
+            {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictScopeStore.");
             }
 
@@ -242,13 +264,16 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddTokenManager([NotNull] Type type) {
-            if (type == null) {
+        public virtual OpenIddictBuilder AddTokenManager([NotNull] Type type)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var contract = typeof(OpenIddictTokenManager<>).MakeGenericType(TokenType);
-            if (!contract.IsAssignableFrom(type)) {
+            if (!contract.IsAssignableFrom(type))
+            {
                 throw new InvalidOperationException("Custom managers must be derived from OpenIddictTokenManager.");
             }
 
@@ -270,13 +295,16 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public virtual OpenIddictBuilder AddTokenStore([NotNull] Type type) {
-            if (type == null) {
+        public virtual OpenIddictBuilder AddTokenStore([NotNull] Type type)
+        {
+            if (type == null)
+            {
                 throw new ArgumentNullException(nameof(type));
             }
 
             var contract = typeof(IOpenIddictTokenStore<>).MakeGenericType(TokenType);
-            if (!contract.IsAssignableFrom(type)) {
+            if (!contract.IsAssignableFrom(type))
+            {
                 throw new InvalidOperationException("Custom stores must implement IOpenIddictTokenStore.");
             }
 

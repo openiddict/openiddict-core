@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 
-namespace Mvc.Server.ViewModels.Manage {
-    public class IndexViewModel {
+namespace Mvc.Server.ViewModels.Manage
+{
+    public class IndexViewModel
+    {
         public bool HasPassword { get; set; }
 
         public IList<UserLoginInfo> Logins { get; set; }

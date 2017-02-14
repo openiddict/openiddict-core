@@ -10,10 +10,13 @@ using Newtonsoft.Json.Linq;
 using OpenIddict.Core;
 using Xunit;
 
-namespace OpenIddict.Tests {
-    public partial class OpenIddictProviderTests {
+namespace OpenIddict.Tests
+{
+    public partial class OpenIddictProviderTests
+    {
         [Fact]
-        public async Task HandleConfigurationRequest_PlainCodeChallengeMethodIsNotReturned() {
+        public async Task HandleConfigurationRequest_PlainCodeChallengeMethodIsNotReturned()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
@@ -34,10 +37,13 @@ namespace OpenIddict.Tests {
         [InlineData(OpenIdConnectConstants.GrantTypes.Implicit)]
         [InlineData(OpenIdConnectConstants.GrantTypes.Password)]
         [InlineData(OpenIdConnectConstants.GrantTypes.RefreshToken)]
-        public async Task HandleConfigurationRequest_EnabledFlowsAreReturned(string flow) {
+        public async Task HandleConfigurationRequest_EnabledFlowsAreReturned(string flow)
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
-                builder.Configure(options => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options =>
+                {
                     options.GrantTypes.Clear();
                     options.GrantTypes.Add(flow);
                 });
@@ -59,7 +65,8 @@ namespace OpenIddict.Tests {
         [InlineData(OpenIdConnectConstants.Scopes.Email)]
         [InlineData(OpenIdConnectConstants.Scopes.Phone)]
         [InlineData(OpenIddictConstants.Scopes.Roles)]
-        public async Task HandleConfigurationRequest_StandardScopesAreExposed(string scope) {
+        public async Task HandleConfigurationRequest_StandardScopesAreExposed(string scope)
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
@@ -73,7 +80,8 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleConfigurationRequest_OfflineAccessScopeIsReturnedWhenRefreshTokenFlowIsEnabled() {
+        public async Task HandleConfigurationRequest_OfflineAccessScopeIsReturnedWhenRefreshTokenFlowIsEnabled()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
@@ -88,10 +96,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleConfigurationRequest_OfflineAccessScopeIsReturnedWhenRefreshTokenFlowIsDisabled() {
+        public async Task HandleConfigurationRequest_OfflineAccessScopeIsReturnedWhenRefreshTokenFlowIsDisabled()
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
-                builder.Configure(options => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options =>
+                {
                     // Note: at least one flow must be enabled.
                     options.GrantTypes.Clear();
                     options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.AuthorizationCode);
@@ -109,7 +120,8 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleConfigurationRequest_ExternalProvidersAreCorrectlyReturned() {
+        public async Task HandleConfigurationRequest_ExternalProvidersAreCorrectlyReturned()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 

@@ -21,22 +21,27 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict;
 
-namespace Microsoft.AspNetCore.Builder {
-    public static class OpenIddictExtensions {
+namespace Microsoft.AspNetCore.Builder
+{
+    public static class OpenIddictExtensions
+    {
         /// <summary>
         /// Registers OpenIddict in the ASP.NET Core pipeline.
         /// </summary>
         /// <param name="app">The application builder used to register middleware instances.</param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseOpenIddict([NotNull] this IApplicationBuilder app) {
-            if (app == null) {
+        public static IApplicationBuilder UseOpenIddict([NotNull] this IApplicationBuilder app)
+        {
+            if (app == null)
+            {
                 throw new ArgumentNullException(nameof(app));
             }
 
             // Resolve the OpenIddict builder from the DI container.
             // If it cannot be found, throw an invalid operation exception.
             var builder = app.ApplicationServices.GetService<OpenIddictBuilder>();
-            if (builder == null) {
+            if (builder == null)
+            {
                 throw new InvalidOperationException("The OpenIddict services cannot be resolved from the dependency injection container. " +
                                                     "Make sure 'services.AddOpenIddict()' is correctly called from 'ConfigureServices()'.");
             }
@@ -46,7 +51,8 @@ namespace Microsoft.AspNetCore.Builder {
 
             // When no authorization provider has been registered in the options,
             // create a new OpenIddictProvider instance using the specified entities.
-            if (options.Provider == null) {
+            if (options.Provider == null)
+            {
                 options.Provider = (OpenIdConnectServerProvider) Activator.CreateInstance(
                     typeof(OpenIddictProvider<,,,>).MakeGenericType(
                         /* TApplication: */ builder.ApplicationType,
@@ -57,24 +63,28 @@ namespace Microsoft.AspNetCore.Builder {
 
             // When no distributed cache has been registered in the options,
             // try to resolve it from the dependency injection container.
-            if (options.Cache == null) {
+            if (options.Cache == null)
+            {
                 options.Cache = app.ApplicationServices.GetService<IDistributedCache>();
 
-                if (options.EnableRequestCaching && options.Cache == null) {
+                if (options.EnableRequestCaching && options.Cache == null)
+                {
                     throw new InvalidOperationException("A distributed cache implementation must be registered in the OpenIddict options " +
                                                         "or in the dependency injection container when enabling request caching support.");
                 }
             }
 
             // Ensure at least one flow has been enabled.
-            if (options.GrantTypes.Count == 0) {
+            if (options.GrantTypes.Count == 0)
+            {
                 throw new InvalidOperationException("At least one OAuth2/OpenID Connect flow must be enabled.");
             }
 
             // Ensure the authorization endpoint has been enabled when
             // the authorization code or implicit grants are supported.
             if (!options.AuthorizationEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
-                                                                options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))) {
+                                                                options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit)))
+            {
                 throw new InvalidOperationException("The authorization endpoint must be enabled to use " +
                                                     "the authorization code and implicit flows.");
             }
@@ -84,19 +94,22 @@ namespace Microsoft.AspNetCore.Builder {
             if (!options.TokenEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
                                                         options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials) ||
                                                         options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password) ||
-                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))) {
+                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)))
+            {
                 throw new InvalidOperationException("The token endpoint must be enabled to use the authorization code, " +
                                                     "client credentials, password and refresh token flows.");
             }
 
-            if (options.RevocationEndpointPath.HasValue && options.DisableTokenRevocation) {
+            if (options.RevocationEndpointPath.HasValue && options.DisableTokenRevocation)
+            {
                 throw new InvalidOperationException("The revocation endpoint cannot be enabled when token revocation is disabled.");
             }
 
             // Ensure at least one asymmetric signing certificate/key was registered if the implicit flow was enabled.
             if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey) &&
-                 options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit)) {
-                throw new InvalidOperationException("At least one asymmetric signing key must be registered when enabling the implicit flow. "+
+                 options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))
+            {
+                throw new InvalidOperationException("At least one asymmetric signing key must be registered when enabling the implicit flow. " +
                                                     "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
                                                     "or call 'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
             }
@@ -113,12 +126,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder Configure(
             [NotNull] this OpenIddictBuilder builder,
-            [NotNull] Action<OpenIddictOptions> configuration) {
-            if (builder == null) {
+            [NotNull] Action<OpenIddictOptions> configuration)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configuration == null) {
+            if (configuration == null)
+            {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
@@ -135,8 +151,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddEphemeralSigningKey([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder AddEphemeralSigningKey([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -153,12 +171,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="algorithm">The algorithm associated with the signing key.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddEphemeralSigningKey(
-            [NotNull] this OpenIddictBuilder builder, [NotNull] string algorithm) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, [NotNull] string algorithm)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (string.IsNullOrEmpty(algorithm)) {
+            if (string.IsNullOrEmpty(algorithm))
+            {
                 throw new ArgumentException("The algorithm cannot be null or empty.", nameof(algorithm));
             }
 
@@ -173,16 +194,20 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddSigningCertificate(
             [NotNull] this OpenIddictBuilder builder,
-            [NotNull] X509Certificate2 certificate) {
-            if (builder == null) {
+            [NotNull] X509Certificate2 certificate)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (certificate == null) {
+            if (certificate == null)
+            {
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            if (!certificate.HasPrivateKey) {
+            if (!certificate.HasPrivateKey)
+            {
                 throw new InvalidOperationException("The certificate doesn't contain the required private key.");
             }
 
@@ -200,20 +225,25 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddSigningCertificate(
             [NotNull] this OpenIddictBuilder builder, [NotNull] Assembly assembly,
-            [NotNull] string resource, [NotNull] string password) {
-            if (builder == null) {
+            [NotNull] string resource, [NotNull] string password)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (assembly == null) {
+            if (assembly == null)
+            {
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            if (string.IsNullOrEmpty(resource)) {
+            if (string.IsNullOrEmpty(resource))
+            {
                 throw new ArgumentNullException(nameof(resource));
             }
 
-            if (string.IsNullOrEmpty(password)) {
+            if (string.IsNullOrEmpty(password))
+            {
                 throw new ArgumentNullException(nameof(password));
             }
 
@@ -230,16 +260,20 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddSigningCertificate(
             [NotNull] this OpenIddictBuilder builder,
-            [NotNull] Stream stream, [NotNull] string password) {
-            if (builder == null) {
+            [NotNull] Stream stream, [NotNull] string password)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (stream == null) {
+            if (stream == null)
+            {
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            if (string.IsNullOrEmpty(password)) {
+            if (string.IsNullOrEmpty(password))
+            {
                 throw new ArgumentNullException(nameof(password));
             }
 
@@ -260,16 +294,20 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddSigningCertificate(
             [NotNull] this OpenIddictBuilder builder, [NotNull] Stream stream,
-            [NotNull] string password, X509KeyStorageFlags flags) {
-            if (builder == null) {
+            [NotNull] string password, X509KeyStorageFlags flags)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (stream == null) {
+            if (stream == null)
+            {
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            if (string.IsNullOrEmpty(password)) {
+            if (string.IsNullOrEmpty(password))
+            {
                 throw new ArgumentNullException(nameof(password));
             }
 
@@ -284,12 +322,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddSigningCertificate(
-            [NotNull] this OpenIddictBuilder builder, [NotNull] string thumbprint) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, [NotNull] string thumbprint)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (string.IsNullOrEmpty(thumbprint)) {
+            if (string.IsNullOrEmpty(thumbprint))
+            {
                 throw new ArgumentNullException(nameof(thumbprint));
             }
 
@@ -307,12 +348,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddSigningCertificate(
             [NotNull] this OpenIddictBuilder builder,
-            [NotNull] string thumbprint, StoreName name, StoreLocation location) {
-            if (builder == null) {
+            [NotNull] string thumbprint, StoreName name, StoreLocation location)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (string.IsNullOrEmpty(thumbprint)) {
+            if (string.IsNullOrEmpty(thumbprint))
+            {
                 throw new ArgumentNullException(nameof(thumbprint));
             }
 
@@ -327,12 +371,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="key">The security key.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddSigningKey(
-            [NotNull] this OpenIddictBuilder builder, [NotNull] SecurityKey key) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, [NotNull] SecurityKey key)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (key == null) {
+            if (key == null)
+            {
                 throw new ArgumentNullException(nameof(key));
             }
 
@@ -347,8 +394,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AllowAuthorizationCodeFlow([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder AllowAuthorizationCodeFlow([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -361,8 +410,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AllowClientCredentialsFlow([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder AllowClientCredentialsFlow([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -376,12 +427,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="type">The grant type associated with the flow.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AllowCustomFlow(
-            [NotNull] this OpenIddictBuilder builder, [NotNull] string type) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, [NotNull] string type)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (string.IsNullOrEmpty(type)) {
+            if (string.IsNullOrEmpty(type))
+            {
                 throw new ArgumentException("The grant type cannot be null or empty.", nameof(type));
             }
 
@@ -396,8 +450,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AllowImplicitFlow([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder AllowImplicitFlow([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -410,8 +466,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AllowPasswordFlow([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder AllowPasswordFlow([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -424,8 +482,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AllowRefreshTokenFlow([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder AllowRefreshTokenFlow([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -437,8 +497,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder DisableConfigurationEndpoint([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder DisableConfigurationEndpoint([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -450,8 +512,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder DisableCryptographyEndpoint([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder DisableCryptographyEndpoint([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -463,8 +527,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder DisableHttpsRequirement([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder DisableHttpsRequirement([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -477,8 +543,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder DisableSlidingExpiration([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder DisableSlidingExpiration([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -492,8 +560,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder DisableTokenRevocation([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder DisableTokenRevocation([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -507,12 +577,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the authorization endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder EnableAuthorizationEndpoint(
-            [NotNull] this OpenIddictBuilder builder, PathString path) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, PathString path)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (!path.HasValue) {
+            if (!path.HasValue)
+            {
                 throw new ArgumentException("The path cannot be empty.", nameof(path));
             }
 
@@ -526,12 +599,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the logout endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder EnableIntrospectionEndpoint(
-            [NotNull] this OpenIddictBuilder builder, PathString path) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, PathString path)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (!path.HasValue) {
+            if (!path.HasValue)
+            {
                 throw new ArgumentException("The path cannot be empty.", nameof(path));
             }
 
@@ -545,12 +621,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the logout endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder EnableLogoutEndpoint(
-            [NotNull] this OpenIddictBuilder builder, PathString path) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, PathString path)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (!path.HasValue) {
+            if (!path.HasValue)
+            {
                 throw new ArgumentException("The path cannot be empty.", nameof(path));
             }
 
@@ -566,8 +645,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder EnableRequestCaching([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder EnableRequestCaching([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -581,12 +662,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the revocation endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder EnableRevocationEndpoint(
-            [NotNull] this OpenIddictBuilder builder, PathString path) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, PathString path)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (!path.HasValue) {
+            if (!path.HasValue)
+            {
                 throw new ArgumentException("The path cannot be empty.", nameof(path));
             }
 
@@ -600,12 +684,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the token endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder EnableTokenEndpoint(
-            [NotNull] this OpenIddictBuilder builder, PathString path) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, PathString path)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (!path.HasValue) {
+            if (!path.HasValue)
+            {
                 throw new ArgumentException("The path cannot be empty.", nameof(path));
             }
 
@@ -619,12 +706,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="path">The relative path of the userinfo endpoint.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder EnableUserinfoEndpoint(
-            [NotNull] this OpenIddictBuilder builder, PathString path) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, PathString path)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (!path.HasValue) {
+            if (!path.HasValue)
+            {
                 throw new ArgumentException("The path cannot be empty.", nameof(path));
             }
 
@@ -638,8 +728,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// the token and revocation endpoints, but specifying a client_id is required.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
-        public static OpenIddictBuilder RequireClientIdentification([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder RequireClientIdentification([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -656,8 +748,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="lifetime">The access token lifetime.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder SetAccessTokenLifetime(
-            [NotNull] this OpenIddictBuilder builder, TimeSpan lifetime) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, TimeSpan lifetime)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -673,8 +767,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="lifetime">The authorization code lifetime.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder SetAuthorizationCodeLifetime(
-            [NotNull] this OpenIddictBuilder builder, TimeSpan lifetime) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, TimeSpan lifetime)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -689,8 +785,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="lifetime">The identity token lifetime.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder SetIdentityTokenLifetime(
-            [NotNull] this OpenIddictBuilder builder, TimeSpan lifetime) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, TimeSpan lifetime)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -707,8 +805,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="lifetime">The refresh token lifetime.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder SetRefreshTokenLifetime(
-            [NotNull] this OpenIddictBuilder builder, TimeSpan lifetime) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, TimeSpan lifetime)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
@@ -723,12 +823,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="address">The issuer address.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder SetIssuer(
-            [NotNull] this OpenIddictBuilder builder, [NotNull] Uri address) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, [NotNull] Uri address)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (address == null) {
+            if (address == null)
+            {
                 throw new ArgumentNullException(nameof(address));
             }
 
@@ -743,12 +846,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <param name="provider">The data protection provider used to create token protectors.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder UseDataProtectionProvider(
-            [NotNull] this OpenIddictBuilder builder, [NotNull] IDataProtectionProvider provider) {
-            if (builder == null) {
+            [NotNull] this OpenIddictBuilder builder, [NotNull] IDataProtectionProvider provider)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (provider == null) {
+            if (provider == null)
+            {
                 throw new ArgumentNullException(nameof(provider));
             }
 
@@ -760,8 +866,10 @@ namespace Microsoft.AspNetCore.Builder {
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder UseJsonWebTokens([NotNull] this OpenIddictBuilder builder) {
-            if (builder == null) {
+        public static OpenIddictBuilder UseJsonWebTokens([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
                 throw new ArgumentNullException(nameof(builder));
             }
 

@@ -16,35 +16,42 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 
-namespace OpenIddict {
+namespace OpenIddict
+{
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
-        public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context) {
+        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    {
+        public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context)
+        {
             var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
             var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
             Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client identifier shouldn't be null or empty.");
 
-            if (!options.Value.DisableTokenRevocation) {
+            if (!options.Value.DisableTokenRevocation)
+            {
                 // Resolve the subject from the authentication ticket. If it cannot be found, throw an exception.
                 var subject = context.Ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject) ??
                               context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier) ??
                               context.Ticket.Principal.GetClaim(ClaimTypes.Upn);
 
-                if (string.IsNullOrEmpty(subject)) {
+                if (string.IsNullOrEmpty(subject))
+                {
                     throw new InvalidOperationException("The subject associated with the authentication ticket cannot be retrieved.");
                 }
 
                 // If a null value was returned by CreateAsync, return immediately.
                 var token = await tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, subject, context.HttpContext.RequestAborted);
-                if (token == null) {
+                if (token == null)
+                {
                     return;
                 }
 
                 // Throw an exception if the token identifier can't be resolved.
                 var identifier = await tokens.GetIdAsync(token, context.HttpContext.RequestAborted);
-                if (string.IsNullOrEmpty(identifier)) {
+                if (string.IsNullOrEmpty(identifier))
+                {
                     throw new InvalidOperationException("The unique key associated with an authorization code cannot be null or empty.");
                 }
 
@@ -54,7 +61,8 @@ namespace OpenIddict {
                 context.Ticket.SetTicketId(identifier);
 
                 var application = await applications.FindByClientIdAsync(context.Request.ClientId, context.HttpContext.RequestAborted);
-                if (application == null) {
+                if (application == null)
+                {
                     throw new InvalidOperationException("The client application cannot be retrieved from the database.");
                 }
 
@@ -62,36 +70,42 @@ namespace OpenIddict {
 
                 // If an authorization identifier was specified, bind it to the token.
                 var authorization = context.Ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
-                if (!string.IsNullOrEmpty(authorization)) {
+                if (!string.IsNullOrEmpty(authorization))
+                {
                     await tokens.SetAuthorizationAsync(token, authorization, context.HttpContext.RequestAborted);
                 }
             }
         }
 
-        public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context) {
+        public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context)
+        {
             var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
             var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
-            if (!options.Value.DisableTokenRevocation) {
+            if (!options.Value.DisableTokenRevocation)
+            {
                 // Resolve the subject from the authentication ticket. If it cannot be found, throw an exception.
                 var subject = context.Ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject) ??
                               context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier) ??
                               context.Ticket.Principal.GetClaim(ClaimTypes.Upn);
 
-                if (string.IsNullOrEmpty(subject)) {
+                if (string.IsNullOrEmpty(subject))
+                {
                     throw new InvalidOperationException("The subject associated with the authentication ticket cannot be retrieved.");
                 }
 
                 // If a null value was returned by CreateAsync, return immediately.
                 var token = await tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken, subject, context.HttpContext.RequestAborted);
-                if (token == null) {
+                if (token == null)
+                {
                     return;
                 }
 
                 // Throw an exception if the token identifier can't be resolved.
                 var identifier = await tokens.GetIdAsync(token, context.HttpContext.RequestAborted);
-                if (string.IsNullOrEmpty(identifier)) {
+                if (string.IsNullOrEmpty(identifier))
+                {
                     throw new InvalidOperationException("The unique key associated with a refresh token cannot be null or empty.");
                 }
 
@@ -101,9 +115,11 @@ namespace OpenIddict {
                 context.Ticket.SetTicketId(identifier);
 
                 // If the client application is known, associate it with the token.
-                if (!string.IsNullOrEmpty(context.Request.ClientId)) {
+                if (!string.IsNullOrEmpty(context.Request.ClientId))
+                {
                     var application = await applications.FindByClientIdAsync(context.Request.ClientId, context.HttpContext.RequestAborted);
-                    if (application == null) {
+                    if (application == null)
+                    {
                         throw new InvalidOperationException("The client application cannot be retrieved from the database.");
                     }
 
@@ -112,7 +128,8 @@ namespace OpenIddict {
 
                 // If an authorization identifier was specified, bind it to the token.
                 var authorization = context.Ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
-                if (!string.IsNullOrEmpty(authorization)) {
+                if (!string.IsNullOrEmpty(authorization))
+                {
                     await tokens.SetAuthorizationAsync(token, authorization, context.HttpContext.RequestAborted);
                 }
             }

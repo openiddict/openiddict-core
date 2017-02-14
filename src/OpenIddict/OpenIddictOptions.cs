@@ -9,12 +9,15 @@ using System.Collections.Generic;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace OpenIddict {
+namespace OpenIddict
+{
     /// <summary>
     /// Provides various settings needed to configure OpenIddict.
     /// </summary>
-    public class OpenIddictOptions : OpenIdConnectServerOptions {
-        public OpenIddictOptions() {
+    public class OpenIddictOptions : OpenIdConnectServerOptions
+    {
+        public OpenIddictOptions()
+        {
             Provider = null;
         }
 

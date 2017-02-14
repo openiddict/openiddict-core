@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Mvc.Server.ViewModels.Account {
-    public class VerifyCodeViewModel {
+namespace Mvc.Server.ViewModels.Account
+{
+    public class VerifyCodeViewModel
+    {
         [Required]
         public string Provider { get; set; }
 

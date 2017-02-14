@@ -14,17 +14,21 @@ using OpenIddict.Core;
 using OpenIddict.Models;
 using Xunit;
 
-namespace OpenIddict.Tests {
-    public partial class OpenIddictProviderTests {
+namespace OpenIddict.Tests
+{
+    public partial class OpenIddictProviderTests
+    {
         [Fact]
-        public async Task ExtractAuthorizationRequest_UnsupportedRequestParameterIsRejected() {
+        public async Task ExtractAuthorizationRequest_UnsupportedRequestParameterIsRejected()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 Request = "eyJhbGciOiJub25lIn0.eyJpc3MiOiJodHRwOi8vd3d3LmZhYnJpa2FtLmNvbSIsImF1ZCI6Imh0" +
@@ -40,14 +44,16 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ExtractAuthorizationRequest_UnsupportedRequestUriParameterIsRejected() {
+        public async Task ExtractAuthorizationRequest_UnsupportedRequestUriParameterIsRejected()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 RequestUri = "http://www.fabrikam.com/request/GkurKxf5T0Y-mnPFCHqWOMiZi4VS138cQO_V7PZHAdM",
@@ -61,14 +67,16 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ExtractAuthorizationRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled() {
+        public async Task ExtractAuthorizationRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7"
             });
 
@@ -78,9 +86,11 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ExtractAuthorizationRequest_InvalidRequestIdParameterIsRejected() {
+        public async Task ExtractAuthorizationRequest_InvalidRequestIdParameterIsRejected()
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddDistributedMemoryCache();
 
                 builder.EnableRequestCaching();
@@ -89,7 +99,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 RequestId = "EFAF3596-F868-497F-96BB-AA2AD1F8B7E7"
             });
 
@@ -99,14 +110,16 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_UnknownResponseTypeParameterIsRejected() {
+        public async Task ValidateAuthorizationRequest_UnknownResponseTypeParameterIsRejected()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = "unknown_response_type"
@@ -128,16 +141,19 @@ namespace OpenIddict.Tests {
         [InlineData(OpenIdConnectConstants.GrantTypes.Implicit, "id_token")]
         [InlineData(OpenIdConnectConstants.GrantTypes.Implicit, "id_token token")]
         [InlineData(OpenIdConnectConstants.GrantTypes.Implicit, "token")]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCorrespondingFlowIsDisabled(string flow, string type) {
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCorrespondingFlowIsDisabled(string flow, string type)
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Configure(options => options.GrantTypes.Remove(flow));
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
@@ -151,16 +167,19 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_RequestWithOfflineAccessScopeIsRejectedWhenRefreshTokenFlowIsDisabled() {
+        public async Task ValidateAuthorizationRequest_RequestWithOfflineAccessScopeIsRejectedWhenRefreshTokenFlowIsDisabled()
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Configure(options => options.GrantTypes.Remove(OpenIdConnectConstants.GrantTypes.RefreshToken));
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code,
@@ -173,14 +192,16 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_UnknownResponseModeParameterIsRejected() {
+        public async Task ValidateAuthorizationRequest_UnknownResponseModeParameterIsRejected()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseMode = "unknown_response_mode",
@@ -193,14 +214,16 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenRedirectUriIsMissing() {
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenRedirectUriIsMissing()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = null,
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code
@@ -212,14 +235,16 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsMissing() {
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsMissing()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
                 CodeChallengeMethod = null,
@@ -233,14 +258,16 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsPlain() {
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsPlain()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
                 CodeChallengeMethod = OpenIdConnectConstants.CodeChallengeMethods.Plain,
@@ -256,14 +283,16 @@ namespace OpenIddict.Tests {
         [Theory]
         [InlineData("code id_token token")]
         [InlineData("code token")]
-        public async Task ValidateAuthorizationRequest_CodeChallengeRequestWithForbiddenResponseTypeIsRejected(string type) {
+        public async Task ValidateAuthorizationRequest_CodeChallengeRequestWithForbiddenResponseTypeIsRejected(string type)
+        {
             // Arrange
             var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
                 CodeChallengeMethod = OpenIdConnectConstants.CodeChallengeMethods.Sha256,
@@ -279,21 +308,25 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenClientCannotBeFound() {
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenClientCannotBeFound()
+        {
             // Arrange
-            var manager = CreateApplicationManager(instance => {
+            var manager = CreateApplicationManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(null);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code
@@ -307,11 +340,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenClientHasNoRedirectUri() {
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenClientHasNoRedirectUri()
+        {
             // Arrange
             var application = new OpenIddictApplication();
 
-            var manager = CreateApplicationManager(instance => {
+            var manager = CreateApplicationManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
@@ -319,14 +354,16 @@ namespace OpenIddict.Tests {
                     .ReturnsAsync(false);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code
@@ -341,11 +378,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenRedirectUriIsInvalid() {
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenRedirectUriIsInvalid()
+        {
             // Arrange
             var application = new OpenIddictApplication();
 
-            var manager = CreateApplicationManager(instance => {
+            var manager = CreateApplicationManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
@@ -356,14 +395,16 @@ namespace OpenIddict.Tests {
                     .ReturnsAsync(false);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Code
@@ -383,11 +424,13 @@ namespace OpenIddict.Tests {
         [InlineData("code token")]
         [InlineData("id_token token")]
         [InlineData("token")]
-        public async Task ValidateAuthorizationRequest_ImplicitOrHybridRequestIsRejectedWhenClientIsConfidential(string type) {
+        public async Task ValidateAuthorizationRequest_ImplicitOrHybridRequestIsRejectedWhenClientIsConfidential(string type)
+        {
             // Arrange
             var application = new OpenIddictApplication();
 
-            var manager = CreateApplicationManager(instance => {
+            var manager = CreateApplicationManager(instance =>
+            {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
@@ -401,14 +444,16 @@ namespace OpenIddict.Tests {
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
             });
 
-            var server = CreateAuthorizationServer(builder => {
+            var server = CreateAuthorizationServer(builder =>
+            {
                 builder.Services.AddSingleton(manager);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
@@ -428,12 +473,15 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task HandleAuthorizationRequest_RequestIsPersistedInDistributedCache() {
+        public async Task HandleAuthorizationRequest_RequestIsPersistedInDistributedCache()
+        {
             // Arrange
             var cache = new Mock<IDistributedCache>();
 
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
@@ -457,7 +505,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Token
@@ -483,10 +532,13 @@ namespace OpenIddict.Tests {
         [InlineData("id_token")]
         [InlineData("id_token token")]
         [InlineData("token")]
-        public async Task HandleAuthorizationRequest_RequestsAreNotHandledLocally(string type) {
+        public async Task HandleAuthorizationRequest_RequestsAreNotHandledLocally(string type)
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
@@ -502,7 +554,8 @@ namespace OpenIddict.Tests {
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
                 }));
 
-                builder.Services.AddSingleton(CreateTokenManager(instance => {
+                builder.Services.AddSingleton(CreateTokenManager(instance =>
+                {
                     var token = new OpenIddictToken();
 
                     instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique", It.IsAny<CancellationToken>()))
@@ -516,7 +569,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
@@ -531,16 +585,19 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ApplyAuthorizationResponse_RequestIsRemovedFromDistributedCache() {
+        public async Task ApplyAuthorizationResponse_RequestIsRemovedFromDistributedCache()
+        {
             // Arrange
-            var request = new OpenIdConnectRequest {
+            var request = new OpenIdConnectRequest
+            {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Token
             };
 
             var stream = new MemoryStream();
-            using (var writer = new BsonWriter(stream)) {
+            using (var writer = new BsonWriter(stream))
+            {
                 writer.CloseOutput = false;
 
                 var serializer = JsonSerializer.CreateDefault();
@@ -553,8 +610,10 @@ namespace OpenIddict.Tests {
                                               "b2ee7815-5579-4ff7-86b0-ba671b939d96"))
                 .ReturnsAsync(stream.ToArray());
 
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
@@ -578,7 +637,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
                 RequestId = "b2ee7815-5579-4ff7-86b0-ba671b939d96"
             });
 
@@ -591,10 +651,13 @@ namespace OpenIddict.Tests {
         }
 
         [Fact]
-        public async Task ApplyAuthorizationResponse_ErroredRequestIsNotHandledLocallyWhenStatusCodeMiddlewareIsEnabled() {
+        public async Task ApplyAuthorizationResponse_ErroredRequestIsNotHandledLocallyWhenStatusCodeMiddlewareIsEnabled()
+        {
             // Arrange
-            var server = CreateAuthorizationServer(builder => {
-                builder.Services.AddSingleton(CreateApplicationManager(instance => {
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
                     var application = new OpenIddictApplication();
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
@@ -616,7 +679,8 @@ namespace OpenIddict.Tests {
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync("/authorize-status-code-middleware", new OpenIdConnectRequest {
+            var response = await client.PostAsync("/authorize-status-code-middleware", new OpenIdConnectRequest
+            {
                 ClientId = null,
                 RedirectUri = null,
                 ResponseType = null

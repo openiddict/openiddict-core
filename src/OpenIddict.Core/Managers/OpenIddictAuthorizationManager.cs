@@ -10,15 +10,18 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
-namespace OpenIddict.Core {
+namespace OpenIddict.Core
+{
     /// <summary>
     /// Provides methods allowing to manage the authorizations stored in the store.
     /// </summary>
     /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    public class OpenIddictAuthorizationManager<TAuthorization> where TAuthorization : class {
+    public class OpenIddictAuthorizationManager<TAuthorization> where TAuthorization : class
+    {
         public OpenIddictAuthorizationManager(
             [NotNull] IOpenIddictAuthorizationStore<TAuthorization> store,
-            [NotNull] ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger) {
+            [NotNull] ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger)
+        {
             Logger = logger;
             Store = store;
         }
@@ -41,8 +44,10 @@ namespace OpenIddict.Core {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken) {
-            if (authorization == null) {
+        public virtual Task CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
@@ -59,7 +64,8 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the subject/client.
         /// </returns>
-        public virtual Task<TAuthorization> FindAsync(string subject, string client, CancellationToken cancellationToken) {
+        public virtual Task<TAuthorization> FindAsync(string subject, string client, CancellationToken cancellationToken)
+        {
             return Store.FindAsync(subject, client, cancellationToken);
         }
 
@@ -72,7 +78,8 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        public virtual Task<TAuthorization> FindByIdAsync(string identifier, CancellationToken cancellationToken) {
+        public virtual Task<TAuthorization> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        {
             return Store.FindByIdAsync(identifier, cancellationToken);
         }
 
@@ -85,8 +92,10 @@ namespace OpenIddict.Core {
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the authorization.
         /// </returns>
-        public virtual Task<string> GetIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken) {
-            if (authorization == null) {
+        public virtual Task<string> GetIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
@@ -101,12 +110,15 @@ namespace OpenIddict.Core {
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        protected virtual async Task ValidateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken) {
-            if (authorization == null) {
+        protected virtual async Task ValidateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(authorization, cancellationToken))) {
+            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(authorization, cancellationToken)))
+            {
                 throw new ArgumentException("The subject cannot be null or empty.");
             }
         }

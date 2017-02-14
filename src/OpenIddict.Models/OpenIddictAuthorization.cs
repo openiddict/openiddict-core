@@ -7,12 +7,15 @@
 using System;
 using System.Collections.Generic;
 
-namespace OpenIddict.Models {
+namespace OpenIddict.Models
+{
     /// <summary>
     /// Represents an OpenIddict authorization.
     /// </summary>
-    public class OpenIddictAuthorization : OpenIddictAuthorization<string, OpenIddictApplication, OpenIddictToken> {
-        public OpenIddictAuthorization() {
+    public class OpenIddictAuthorization : OpenIddictAuthorization<string, OpenIddictApplication, OpenIddictToken>
+    {
+        public OpenIddictAuthorization()
+        {
             // Generate a new string identifier.
             Id = Guid.NewGuid().ToString();
         }
@@ -22,12 +25,14 @@ namespace OpenIddict.Models {
     /// Represents an OpenIddict authorization.
     /// </summary>
     public class OpenIddictAuthorization<TKey> : OpenIddictAuthorization<TKey, OpenIddictApplication<TKey>, OpenIddictToken<TKey>>
-        where TKey : IEquatable<TKey> { }
+        where TKey : IEquatable<TKey>
+    { }
 
     /// <summary>
     /// Represents an OpenIddict authorization.
     /// </summary>
-    public class OpenIddictAuthorization<TKey, TApplication, TToken> where TKey : IEquatable<TKey> {
+    public class OpenIddictAuthorization<TKey, TApplication, TToken> where TKey : IEquatable<TKey>
+    {
         /// <summary>
         /// Gets or sets the application associated with the current authorization.
         /// </summary>

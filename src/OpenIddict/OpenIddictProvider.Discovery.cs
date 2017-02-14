@@ -9,16 +9,18 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Core;
 
-namespace OpenIddict {
+namespace OpenIddict
+{
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
-        public override Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context) {
+        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    {
+        public override Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context)
+        {
             var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
 
             // Note: though it's natively supported by the OpenID Connect server middleware,
@@ -40,7 +42,8 @@ namespace OpenIddict {
             context.Scopes.Add(OpenIddictConstants.Scopes.Roles);
 
             // Only add the "offline_access" scope if the refresh token grant is enabled.
-            if (context.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)) {
+            if (context.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
+            {
                 context.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
             }
 

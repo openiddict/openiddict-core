@@ -7,10 +7,12 @@
 using System.ComponentModel;
 using AspNet.Security.OpenIdConnect.Server;
 
-namespace OpenIddict {
+namespace OpenIddict
+{
     [EditorBrowsable(EditorBrowsableState.Never)]
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
+        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    {
         // Note: this class is split into specialized partial classes.
     }
 }

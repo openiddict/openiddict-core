@@ -3,16 +3,20 @@ using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Xunit;
 
-namespace OpenIddict.Tests {
-    public partial class OpenIddictProviderTests {
+namespace OpenIddict.Tests
+{
+    public partial class OpenIddictProviderTests
+    {
         [Fact]
-        public async Task ExtractUserinfoRequest_RequestIsHandledByUserCode() {
+        public async Task ExtractUserinfoRequest_RequestIsHandledByUserCode()
+        {
             // Arrange
             var server = CreateAuthorizationServer();
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.PostAsync(UserinfoEndpoint, new OpenIdConnectRequest {
+            var response = await client.PostAsync(UserinfoEndpoint, new OpenIdConnectRequest
+            {
                 AccessToken = "SlAV32hkKG"
             });
 

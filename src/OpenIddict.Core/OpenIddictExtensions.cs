@@ -10,15 +10,18 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
-namespace Microsoft.Extensions.DependencyInjection {
-    public static class OpenIddictExtensions {
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static class OpenIddictExtensions
+    {
         /// <summary>
         /// Registers the default OpenIddict services in the DI container,
         /// using the default entities and the default entity key type.
         /// </summary>
         /// <param name="services">The services collection.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddOpenIddict([NotNull] this IServiceCollection services) {
+        public static OpenIddictBuilder AddOpenIddict([NotNull] this IServiceCollection services)
+        {
             return services.AddOpenIddict<OpenIddictApplication,
                                           OpenIddictAuthorization,
                                           OpenIddictScope,
@@ -33,7 +36,8 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// <param name="services">The services collection.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddOpenIddict<TKey>([NotNull] this IServiceCollection services)
-            where TKey : IEquatable<TKey> {
+            where TKey : IEquatable<TKey>
+        {
             return services.AddOpenIddict<OpenIddictApplication<TKey>,
                                           OpenIddictAuthorization<TKey>,
                                           OpenIddictScope<TKey>,
@@ -53,14 +57,17 @@ namespace Microsoft.Extensions.DependencyInjection {
             where TApplication : class
             where TAuthorization : class
             where TScope : class
-            where TToken : class {
-            if (services == null) {
+            where TToken : class
+        {
+            if (services == null)
+            {
                 throw new ArgumentNullException(nameof(services));
             }
 
             services.AddOptions();
 
-            var builder = new OpenIddictBuilder(services) {
+            var builder = new OpenIddictBuilder(services)
+            {
                 ApplicationType = typeof(TApplication),
                 AuthorizationType = typeof(TAuthorization),
                 ScopeType = typeof(TScope),
@@ -86,7 +93,8 @@ namespace Microsoft.Extensions.DependencyInjection {
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddOpenIddict(
             [NotNull] this IServiceCollection services,
-            [NotNull] Action<OpenIddictBuilder> configuration) {
+            [NotNull] Action<OpenIddictBuilder> configuration)
+        {
             return services.AddOpenIddict<OpenIddictApplication,
                                           OpenIddictAuthorization,
                                           OpenIddictScope,
@@ -104,7 +112,8 @@ namespace Microsoft.Extensions.DependencyInjection {
         public static IServiceCollection AddOpenIddict<TKey>(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<OpenIddictBuilder> configuration)
-            where TKey : IEquatable<TKey> {
+            where TKey : IEquatable<TKey>
+        {
             return services.AddOpenIddict<OpenIddictApplication<TKey>,
                                           OpenIddictAuthorization<TKey>,
                                           OpenIddictScope<TKey>,
@@ -127,12 +136,15 @@ namespace Microsoft.Extensions.DependencyInjection {
             where TApplication : class
             where TAuthorization : class
             where TScope : class
-            where TToken : class {
-            if (services == null) {
+            where TToken : class
+        {
+            if (services == null)
+            {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            if (configuration == null) {
+            if (configuration == null)
+            {
                 throw new ArgumentNullException(nameof(configuration));
             }
 

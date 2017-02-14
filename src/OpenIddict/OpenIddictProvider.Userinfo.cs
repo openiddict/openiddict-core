@@ -8,10 +8,13 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 
-namespace OpenIddict {
+namespace OpenIddict
+{
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class {
-        public override Task ExtractUserinfoRequest([NotNull] ExtractUserinfoRequestContext context) {
+        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    {
+        public override Task ExtractUserinfoRequest([NotNull] ExtractUserinfoRequestContext context)
+        {
             // Note: when enabling the userinfo endpoint, OpenIddict users are intended
             // to handle the userinfo requests in their own code (e.g in a MVC controller).
             // To avoid validating the access token twice, the default logic enforced by

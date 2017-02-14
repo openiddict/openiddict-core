@@ -6,10 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Mvc.Client {
-    public class Startup {
-        public void ConfigureServices(IServiceCollection services) {
-            services.AddAuthentication(options => {
+namespace Mvc.Client
+{
+    public class Startup
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddAuthentication(options =>
+            {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });
 
@@ -18,20 +22,23 @@ namespace Mvc.Client {
             services.AddSingleton<HttpClient>();
         }
 
-        public void Configure(IApplicationBuilder app) {
+        public void Configure(IApplicationBuilder app)
+        {
             app.UseDeveloperExceptionPage();
 
             app.UseStaticFiles();
 
             // Insert a new cookies middleware in the pipeline to store the user
             // identity after he has been redirected from the identity provider.
-            app.UseCookieAuthentication(new CookieAuthenticationOptions {
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
                 AutomaticAuthenticate = true,
                 AutomaticChallenge = true,
                 LoginPath = new PathString("/signin")
             });
 
-            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions {
+            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
+            {
                 // Note: these settings must match the application details
                 // inserted in the database at the server level.
                 ClientId = "mvc",
