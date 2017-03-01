@@ -136,7 +136,7 @@ namespace OpenIddict.Tests
                     if (request.IsAuthorizationRequest() || request.IsTokenRequest())
                     {
                         var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
-                        identity.AddClaim(ClaimTypes.NameIdentifier, "Bob le Magnifique");
+                        identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Magnifique");
 
                         var ticket = new AuthenticationTicket(
                             new ClaimsPrincipal(identity),

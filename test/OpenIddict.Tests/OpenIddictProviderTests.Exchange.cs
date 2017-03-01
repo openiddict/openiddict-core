@@ -555,7 +555,7 @@ namespace OpenIddict.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, "Bob le Bricoleur");
+            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -617,7 +617,7 @@ namespace OpenIddict.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, "Bob le Bricoleur");
+            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -682,7 +682,7 @@ namespace OpenIddict.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
-            identity.AddClaim(ClaimTypes.NameIdentifier, "Bob le Bricoleur");
+            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),

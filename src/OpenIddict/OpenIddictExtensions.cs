@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
@@ -873,7 +874,14 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.Configure(options => options.AccessTokenHandler = new JwtSecurityTokenHandler());
+            return builder.Configure(options =>
+            {
+                options.AccessTokenHandler = new JwtSecurityTokenHandler
+                {
+                    InboundClaimTypeMap = new Dictionary<string, string>(),
+                    OutboundClaimTypeMap = new Dictionary<string, string>()
+                };
+            });
         }
     }
 }
