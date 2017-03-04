@@ -300,6 +300,8 @@ namespace Mvc.Server
                 }.Intersect(request.GetScopes()));
             }
 
+            ticket.SetResources("resource_server");
+
             return ticket;
         }
     }

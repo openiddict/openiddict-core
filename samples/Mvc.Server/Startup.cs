@@ -53,41 +53,47 @@ namespace Mvc.Server
             });
 
             // Register the OpenIddict services.
-            services.AddOpenIddict()
+            services.AddOpenIddict(options =>
+            {
                 // Register the Entity Framework stores.
-                .AddEntityFrameworkCoreStores<ApplicationDbContext>()
+                options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
 
                 // Register the ASP.NET Core MVC binder used by OpenIddict.
                 // Note: if you don't call this method, you won't be able to
                 // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
-                .AddMvcBinders()
+                options.AddMvcBinders();
 
                 // Enable the authorization, logout, token and userinfo endpoints.
-                .EnableAuthorizationEndpoint("/connect/authorize")
-                .EnableLogoutEndpoint("/connect/logout")
-                .EnableTokenEndpoint("/connect/token")
-                .EnableUserinfoEndpoint("/api/userinfo")
+                options.EnableAuthorizationEndpoint("/connect/authorize")
+                       .EnableLogoutEndpoint("/connect/logout")
+                       .EnableTokenEndpoint("/connect/token")
+                       .EnableUserinfoEndpoint("/api/userinfo");
 
                 // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
                 // can enable the other flows if you need to support implicit or client credentials.
-                .AllowAuthorizationCodeFlow()
-                .AllowPasswordFlow()
-                .AllowRefreshTokenFlow()
+                options.AllowAuthorizationCodeFlow()
+                       .AllowPasswordFlow()
+                       .AllowRefreshTokenFlow();
 
                 // Make the "client_id" parameter mandatory when sending a token request.
-                .RequireClientIdentification()
-
-                // During development, you can disable the HTTPS requirement.
-                .DisableHttpsRequirement()
-
-                .SetAccessTokenLifetime(TimeSpan.FromSeconds(15))
+                options.RequireClientIdentification();
 
                 // When request caching is enabled, authorization and logout requests
                 // are stored in the distributed cache by OpenIddict and the user agent
                 // is redirected to the same page with a single parameter (request_id).
                 // This allows flowing large OpenID Connect requests even when using
                 // an external authentication provider like Google, Facebook or Twitter.
-                .EnableRequestCaching();
+                options.EnableRequestCaching();
+
+                // During development, you can disable the HTTPS requirement.
+                options.DisableHttpsRequirement();
+
+                // Note: to use JWT access tokens instead of the default
+                // encrypted format, the following lines are required:
+                //
+                // options.UseJsonWebTokens();
+                // options.AddEphemeralSigningKey();
+            });
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
@@ -104,6 +110,24 @@ namespace Mvc.Server
                 // Add a middleware used to validate access
                 // tokens and protect the API endpoints.
                 branch.UseOAuthValidation();
+
+                // If you prefer using JWT, don't forget to disable the automatic
+                // JWT -> WS-Federation claims mapping used by the JWT middleware:
+                //
+                // JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+                // JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
+                //
+                // branch.UseJwtBearerAuthentication(new JwtBearerOptions
+                // {
+                //     Authority = "http://localhost:54540/",
+                //     Audience = "resource_server",
+                //     RequireHttpsMetadata = false,
+                //     TokenValidationParameters = new TokenValidationParameters
+                //     {
+                //         NameClaimType = OpenIdConnectConstants.Claims.Subject,
+                //         RoleClaimType = OpenIdConnectConstants.Claims.Role
+                //     }
+                // });
 
                 // Alternatively, you can also use the introspection middleware.
                 // Using it is recommended if your resource server is in a
