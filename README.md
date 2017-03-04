@@ -85,11 +85,11 @@ public void ConfigureServices(IServiceCollection services)
     });
 
     // Register the Identity services.
-	services.AddIdentity<ApplicationUser, IdentityRole>()
-        .AddEntityFrameworkCoreStores<ApplicationDbContext>()
+    services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
 
-	// Register the OpenIddict services.
+    // Register the OpenIddict services.
     // Note: use the generic overload if you need
     // to replace the default OpenIddict entities.
 	services.AddOpenIddict(options =>
