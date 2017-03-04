@@ -86,7 +86,7 @@ public void ConfigureServices(IServiceCollection services)
 
     // Register the Identity services.
 	services.AddIdentity<ApplicationUser, IdentityRole>()
-        .AddEntityFrameworkCoreStores<ApplicationDbContext>()
+        .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
 
 	// Register the OpenIddict services.
