@@ -6,7 +6,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -32,10 +31,7 @@ namespace OpenIddict
             if (!options.Value.DisableTokenRevocation)
             {
                 // Resolve the subject from the authentication ticket. If it cannot be found, throw an exception.
-                var subject = context.Ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject) ??
-                              context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier) ??
-                              context.Ticket.Principal.GetClaim(ClaimTypes.Upn);
-
+                var subject = context.Ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject);
                 if (string.IsNullOrEmpty(subject))
                 {
                     throw new InvalidOperationException("The subject associated with the authentication ticket cannot be retrieved.");
@@ -86,10 +82,7 @@ namespace OpenIddict
             if (!options.Value.DisableTokenRevocation)
             {
                 // Resolve the subject from the authentication ticket. If it cannot be found, throw an exception.
-                var subject = context.Ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject) ??
-                              context.Ticket.Principal.GetClaim(ClaimTypes.NameIdentifier) ??
-                              context.Ticket.Principal.GetClaim(ClaimTypes.Upn);
-
+                var subject = context.Ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject);
                 if (string.IsNullOrEmpty(subject))
                 {
                     throw new InvalidOperationException("The subject associated with the authentication ticket cannot be retrieved.");
