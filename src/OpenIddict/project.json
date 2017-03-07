@@ -34,7 +34,7 @@
 
   "dependencies": {
     "AspNet.Security.OpenIdConnect.Server": "1.0.0-rc1-*",
-    "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
+    "JetBrains.Annotations": { "type": "build", "version": "10.3.0" },
     "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0",
     "Microsoft.Extensions.Caching.Abstractions": "1.0.0",
     "OpenIddict.Core": { "target": "project" }
@@ -42,12 +42,6 @@
 
   "frameworks": {
     "net451": { },
-
-    "netstandard1.4": {
-      "imports": [
-        "dotnet5.5",
-        "portable-net451+win8"
-      ]
-    }
+    "netstandard1.4": { }
   }
 }

@@ -33,7 +33,7 @@
   },
 
   "dependencies": {
-    "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
+    "JetBrains.Annotations": { "type": "build", "version": "10.3.0" },
     "Microsoft.EntityFrameworkCore.Relational": "1.0.0",
     "OpenIddict.Core": { "target": "project" }
   },
@@ -44,12 +44,7 @@
     "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel.TypeConverter": "4.1.0"
-      },
-
-      "imports": [
-        "dotnet5.4",
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }

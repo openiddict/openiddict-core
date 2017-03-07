@@ -35,7 +35,7 @@
   "dependencies": {
     "AspNet.Security.OpenIdConnect.Primitives": "1.0.0-rc1-*",
     "CryptoHelper": "2.0.0",
-    "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
+    "JetBrains.Annotations": { "type": "build", "version": "10.3.0" },
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0",
     "Microsoft.Extensions.Options": "1.0.0",
@@ -49,12 +49,7 @@
       "dependencies": {
         "System.Reflection.TypeExtensions": "4.1.0",
         "System.Security.Claims": "4.0.1"
-      },
-
-      "imports": [
-        "dotnet5.4",
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }
