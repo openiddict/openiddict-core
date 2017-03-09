@@ -33,7 +33,7 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OpenIdConnect.Server": "1.0.0-rc1-*",
+    "AspNet.Security.OpenIdConnect.Server": "1.0.0-rc1-final",
     "JetBrains.Annotations": { "type": "build", "version": "10.3.0" },
     "Microsoft.AspNetCore.Mvc.Core": "1.0.0",
     "OpenIddict.Core": { "target": "project" }

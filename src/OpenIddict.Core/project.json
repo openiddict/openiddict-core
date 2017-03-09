@@ -33,7 +33,7 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OpenIdConnect.Primitives": "1.0.0-rc1-*",
+    "AspNet.Security.OpenIdConnect.Primitives": "1.0.0-rc1-final",
     "CryptoHelper": "2.0.0",
     "JetBrains.Annotations": { "type": "build", "version": "10.3.0" },
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0",
