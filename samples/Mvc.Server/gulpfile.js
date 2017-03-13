@@ -4,11 +4,10 @@ var gulp = require("gulp"),
     rimraf = require("rimraf"),
     concat = require("gulp-concat"),
     cssmin = require("gulp-cssmin"),
-    uglify = require("gulp-uglify"),
-    project = require("./project.json");
+    uglify = require("gulp-uglify");
 
 var paths = {
-    webroot: "./" + project.webroot + "/"
+    webroot: "./wwwroot/"
 };
 
 paths.js = paths.webroot + "js/**/*.js";
