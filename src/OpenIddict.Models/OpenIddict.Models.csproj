@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Provides default entities for OpenIddict, that can be used by the EntityFramework stores.</Description>
+    <VersionPrefix>1.0.0-beta2</VersionPrefix>
+    <Authors>Kévin Chalet</Authors>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>OpenIddict.Models</AssemblyName>
+    <PackageId>OpenIddict.Models</PackageId>
+    <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/13908567?s=64</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/openiddict/openiddict-core</PackageProjectUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>git://github.com/openiddict/openiddict-core</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Collections" Version="4.0.11" />
+    <PackageReference Include="System.Runtime" Version="4.1.0" />
+  </ItemGroup>
+
+</Project>
