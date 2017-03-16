@@ -368,16 +368,12 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task SetHashedSecretAsync([NotNull] TApplication application, [NotNull] string hash, CancellationToken cancellationToken)
+        public virtual Task SetHashedSecretAsync([NotNull] TApplication application,
+            [CanBeNull] string hash, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
-            }
-
-            if (string.IsNullOrEmpty(hash))
-            {
-                throw new ArgumentException("The client secret hash cannot be null or empty.", nameof(hash));
             }
 
             application.ClientSecret = hash;

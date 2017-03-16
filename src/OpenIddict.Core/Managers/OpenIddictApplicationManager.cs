@@ -47,34 +47,16 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
-        public virtual async Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            if (!string.IsNullOrEmpty(await Store.GetHashedSecretAsync(application, cancellationToken)))
-            {
-                throw new ArgumentException("The client secret hash cannot be directly set on the application entity. " +
-                                            "To create a confidential application, use the CreateAsync() overload accepting a secret parameter.");
-            }
-
-            // If no client type was specified, assume it's a public application.
-            if (string.IsNullOrEmpty(await Store.GetClientTypeAsync(application, cancellationToken)))
-            {
-                await Store.SetClientTypeAsync(application, OpenIddictConstants.ClientTypes.Public, cancellationToken);
-            }
-
-            await ValidateAsync(application, cancellationToken);
-            return await Store.CreateAsync(application, cancellationToken);
+            return CreateAsync(application, /* secret: */ null, cancellationToken);
         }
 
         /// <summary>
-        /// Creates a new confidential application, using the specified client secret.
+        /// Creates a new application.
         /// </summary>
         /// <param name="application">The application to create.</param>
-        /// <param name="secret">The client secret associated with the application.</param>
+        /// <param name="secret">The client secret associated with the application, if applicable.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
@@ -82,7 +64,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async Task<TApplication> CreateAsync(
             [NotNull] TApplication application,
-            [NotNull] string secret, CancellationToken cancellationToken)
+            [CanBeNull] string secret, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -94,16 +76,32 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The client secret hash cannot be directly set on the application entity.");
             }
 
+            // If no client type was specified, assume it's a public application if no secret was provided.
             var type = await Store.GetClientTypeAsync(application, cancellationToken);
-            if (!string.IsNullOrEmpty(type) &&
-                !string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(type))
             {
-                throw new InvalidOperationException("The client type must be set to 'confidential' when creating an application with a client secret." +
-                                                    "To create a public application, use the CreateAsync() overload that doesn't take a secret parameter.");
+                await Store.SetClientTypeAsync(application, string.IsNullOrEmpty(secret) ?
+                    OpenIddictConstants.ClientTypes.Public :
+                    OpenIddictConstants.ClientTypes.Confidential, cancellationToken);
             }
 
-            await Store.SetClientTypeAsync(application, OpenIddictConstants.ClientTypes.Confidential, cancellationToken);
-            await Store.SetHashedSecretAsync(application, Crypto.HashPassword(secret), cancellationToken);
+            if (string.IsNullOrEmpty(secret))
+            {
+                // If the client is a confidential application, throw an
+                // exception as the client secret is required in this case.
+                if (string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException("A client secret must be provided when creating a confidential application.");
+                }
+
+                await Store.SetHashedSecretAsync(application, null, cancellationToken);
+            }
+
+            else
+            {
+                await Store.SetHashedSecretAsync(application, Crypto.HashPassword(secret), cancellationToken);
+            }
+
             await ValidateAsync(application, cancellationToken);
 
             return await Store.CreateAsync(application, cancellationToken);
@@ -347,7 +345,7 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task SetClientSecretAsync([NotNull] TApplication application, [NotNull] string secret, CancellationToken cancellationToken)
+        public virtual async Task SetClientSecretAsync([NotNull] TApplication application, [CanBeNull] string secret, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -356,10 +354,14 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(secret))
             {
-                throw new ArgumentException("The client secret cannot be null or empty.", nameof(secret));
+                await Store.SetHashedSecretAsync(application, null, cancellationToken);
             }
 
-            await Store.SetHashedSecretAsync(application, Crypto.HashPassword(secret), cancellationToken);
+            else
+            {
+                await Store.SetHashedSecretAsync(application, Crypto.HashPassword(secret), cancellationToken);
+            }
+
             await UpdateAsync(application, cancellationToken);
         }
 
@@ -380,6 +382,36 @@ namespace OpenIddict.Core
 
             await ValidateAsync(application, cancellationToken);
             await Store.UpdateAsync(application, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates an existing application.
+        /// </summary>
+        /// <param name="application">The application to update.</param>
+        /// <param name="secret">The client secret associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task UpdateAsync([NotNull] TApplication application,
+            [CanBeNull] string secret, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(secret))
+            {
+                await Store.SetHashedSecretAsync(application, null, cancellationToken);
+            }
+
+            else
+            {
+                await Store.SetHashedSecretAsync(application, Crypto.HashPassword(secret), cancellationToken);
+            }
+
+            await UpdateAsync(application, cancellationToken);
         }
 
         /// <summary>

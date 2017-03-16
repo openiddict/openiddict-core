@@ -178,7 +178,7 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task SetHashedSecretAsync([NotNull] TApplication application, [NotNull] string hash, CancellationToken cancellationToken);
+        Task SetHashedSecretAsync([NotNull] TApplication application, [CanBeNull] string hash, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing application.
