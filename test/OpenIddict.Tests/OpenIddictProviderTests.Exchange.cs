@@ -75,6 +75,28 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task ValidateTokenRequest_AuthorizationCodeRequestIsRejectedWhenRedirectUriIsMissing()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                RedirectUri = null
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("The mandatory 'redirect_uri' parameter was missing.", response.ErrorDescription);
+        }
+
+        [Fact]
         public async Task ValidateTokenRequest_ClientCredentialsRequestWithOfflineAccessScopeIsRejected()
         {
             // Arrange
@@ -378,7 +400,8 @@ namespace OpenIddict.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode
+                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
@@ -483,7 +506,8 @@ namespace OpenIddict.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode
+                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
@@ -604,7 +628,8 @@ namespace OpenIddict.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode
+                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
@@ -749,6 +774,7 @@ namespace OpenIddict.Tests
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
                 Code = "8xLOxBtZp8",
                 GrantType = flow,
+                RedirectUri = "http://www.fabrikam.com/path",
                 RefreshToken = "8xLOxBtZp8",
                 Username = "johndoe",
                 Password = "A3ddj3w"

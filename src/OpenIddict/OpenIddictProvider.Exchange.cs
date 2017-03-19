@@ -50,6 +50,20 @@ namespace OpenIddict
                 return;
             }
 
+            // Optimization: the OpenID Connect server middleware automatically rejects grant_type=authorization_code
+            // requests missing the redirect_uri parameter if one was specified in the initial authorization request.
+            // Since OpenIddict doesn't allow redirect_uri-less authorization requests, an earlier check can be made here,
+            // which saves the OpenID Connect server middleware from having to deserialize the authorization code ticket.
+            // See http://openid.net/specs/openid-connect-core-1_0.html#TokenRequestValidation for more information.
+            if (context.Request.IsAuthorizationCodeGrantType() && string.IsNullOrEmpty(context.Request.RedirectUri))
+            {
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The mandatory 'redirect_uri' parameter was missing.");
+
+                return;
+            }
+
             // Note: the OpenID Connect server middleware allows returning a refresh token with grant_type=client_credentials,
             // though it's usually not recommended by the OAuth2 specification. To encourage developers to make a new
             // grant_type=client_credentials request instead of using refresh tokens, OpenIddict uses a stricter policy
@@ -65,27 +79,18 @@ namespace OpenIddict
                 return;
             }
 
-            // Note: the OpenID Connect server middleware rejects grant_type=client_credentials requests
-            // when validation is skipped but an early check is made here to avoid making unnecessary
+            // Optimization: the OpenID Connect server middleware automatically rejects grant_type=client_credentials
+            // requests when validation is skipped but an earlier check is made here to avoid making unnecessary
             // database roundtrips to retrieve the client application corresponding to the client_id.
             if (context.Request.IsClientCredentialsGrantType() && (string.IsNullOrEmpty(context.Request.ClientId) ||
                                                                    string.IsNullOrEmpty(context.Request.ClientSecret)))
             {
-                logger.LogError("The token request was rejected because the client credentials were missing.");
-
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Client applications must be authenticated to use the client credentials grant.");
 
                 return;
             }
-
-            // Note: though required by the OpenID Connect specification for the refresh token grant,
-            // client authentication is not mandatory for non-confidential client applications in OAuth2.
-            // To avoid breaking OAuth2 scenarios, OpenIddict uses a relaxed policy that allows
-            // public applications to use the refresh token grant without having to authenticate.
-            // See http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken
-            // and https://tools.ietf.org/html/rfc6749#section-6 for more information.
 
             // At this stage, skip client authentication if the client identifier is missing
             // or reject the token request if client identification is set as required.
@@ -97,9 +102,6 @@ namespace OpenIddict
                 // Reject the request if client identification is mandatory.
                 if (options.Value.RequireClientIdentification)
                 {
-                    logger.LogError("The token request was rejected becaused the " +
-                                    "mandatory client_id parameter was missing or empty.");
-
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The mandatory 'client_id' parameter was missing.");
@@ -107,8 +109,8 @@ namespace OpenIddict
                     return;
                 }
 
-                logger.LogInformation("The token request validation process was skipped " +
-                                      "because the client_id parameter was missing or empty.");
+                logger.LogDebug("The token request validation process was partially skipped " +
+                                "because the 'client_id' parameter was missing or empty.");
 
                 context.Skip();
 
