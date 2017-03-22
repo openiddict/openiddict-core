@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>Core components of OpenIddict.</Description>
+    <Authors>Kévin Chalet</Authors>
+    <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Models\OpenIddict.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNet.Security.OpenIdConnect.Primitives" Version="$(AspNetContribOpenIdServerVersion)" />
+    <PackageReference Include="CryptoHelper" Version="$(CryptoHelperVersion)" />
+    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
+    <PackageReference Include="System.Security.Claims" Version="4.0.1" />
+  </ItemGroup>
+
+</Project>

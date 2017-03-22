@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>OpenIddict binders for ASP.NET Core MVC.</Description>
+    <Authors>Kévin Chalet</Authors>
+    <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNet.Security.OpenIdConnect.Server" Version="$(AspNetContribOpenIdServerVersion)" />
+    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+</Project>

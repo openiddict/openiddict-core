@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net451;netstandard1.4</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>Easy-to-use OpenID Connect server for ASP.NET Core.</Description>
+    <Authors>Kévin Chalet</Authors>
+    <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNet.Security.OpenIdConnect.Server" Version="$(AspNetContribOpenIdServerVersion)" />
+    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+</Project>

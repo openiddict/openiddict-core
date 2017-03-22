@@ -1,35 +1,35 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict", "src\OpenIddict\OpenIddict.xproj", "{80A8D6CE-C29A-4602-9844-D51FEF9C33C8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D544447C-D701-46BB-9A5B-C76C612A596B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F47D1283-0EE9-4728-8026-58405C29B786}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Mvc.Client", "samples\Mvc.Client\Mvc.Client.xproj", "{96B22EB9-771A-4DCA-B828-E6EA2774CF1B}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Mvc.Server", "samples\Mvc.Server\Mvc.Server.xproj", "{7CBEAFD2-E3D0-4424-9B78-E87AB52327A6}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.EntityFrameworkCore", "src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.xproj", "{D2450929-ED0E-420D-B475-327924F9701C}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Core", "src\OpenIddict.Core\OpenIddict.Core.xproj", "{E60CF8CA-6313-4359-BE43-AFCBB927EA30}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Mvc", "src\OpenIddict.Mvc\OpenIddict.Mvc.xproj", "{6EB5B6A9-4ED8-401D-A673-FD513F256AAE}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5FC71D6A-A994-4F62-977F-88A7D25379D7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Core.Tests", "test\OpenIddict.Core.Tests\OpenIddict.Core.Tests.xproj", "{A892B3DE-1A02-48D6-993B-DD3DFCAC84C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict", "src\OpenIddict\OpenIddict.csproj", "{80A8D6CE-C29A-4602-9844-D51FEF9C33C8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.EntityFrameworkCore.Tests", "test\OpenIddict.EntityFrameworkCore.Tests\OpenIddict.EntityFrameworkCore.Tests.xproj", "{7831F17A-DF0B-42EC-841B-065A9B5BD786}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Client", "samples\Mvc.Client\Mvc.Client.csproj", "{96B22EB9-771A-4DCA-B828-E6EA2774CF1B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Mvc.Tests", "test\OpenIddict.Mvc.Tests\OpenIddict.Mvc.Tests.xproj", "{8B4B0CCC-711B-4F9D-9DE6-DD32BDD3BCCA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Server", "samples\Mvc.Server\Mvc.Server.csproj", "{7CBEAFD2-E3D0-4424-9B78-E87AB52327A6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Tests", "test\OpenIddict.Tests\OpenIddict.Tests.xproj", "{3E2FBDB3-DC82-4E97-8EBC-CC8B279110FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.EntityFrameworkCore", "src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.csproj", "{D2450929-ED0E-420D-B475-327924F9701C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIddict.Models", "src\OpenIddict.Models\OpenIddict.Models.xproj", "{0102A6CC-41A6-4B34-B49E-65AFE95882BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Core", "src\OpenIddict.Core\OpenIddict.Core.csproj", "{E60CF8CA-6313-4359-BE43-AFCBB927EA30}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Mvc", "src\OpenIddict.Mvc\OpenIddict.Mvc.csproj", "{6EB5B6A9-4ED8-401D-A673-FD513F256AAE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Core.Tests", "test\OpenIddict.Core.Tests\OpenIddict.Core.Tests.csproj", "{A892B3DE-1A02-48D6-993B-DD3DFCAC84C7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.EntityFrameworkCore.Tests", "test\OpenIddict.EntityFrameworkCore.Tests\OpenIddict.EntityFrameworkCore.Tests.csproj", "{7831F17A-DF0B-42EC-841B-065A9B5BD786}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Mvc.Tests", "test\OpenIddict.Mvc.Tests\OpenIddict.Mvc.Tests.csproj", "{8B4B0CCC-711B-4F9D-9DE6-DD32BDD3BCCA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Tests", "test\OpenIddict.Tests\OpenIddict.Tests.csproj", "{3E2FBDB3-DC82-4E97-8EBC-CC8B279110FF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Models", "src\OpenIddict.Models\OpenIddict.Models.csproj", "{0102A6CC-41A6-4B34-B49E-65AFE95882BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

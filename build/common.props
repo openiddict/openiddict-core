@@ -1,0 +1,22 @@
+<Project>
+
+  <Import Project="dependencies.props" />
+  <Import Project="version.props" />
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>OpenIddict</Product>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/13908567?s=64</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/openiddict/openiddict-core</PackageProjectUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>git://github.com/openiddict/openiddict-core</RepositoryUrl>
+    <VersionSuffix Condition=" '$(VersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+  </PropertyGroup>
+
+</Project>

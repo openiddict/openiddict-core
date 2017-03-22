@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+  
+  <PropertyGroup>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>Entity Framework Core stores for OpenIddict.</Description>
+    <Authors>Kévin Chalet</Authors>
+    <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.1.0" />
+  </ItemGroup>
+
+</Project>

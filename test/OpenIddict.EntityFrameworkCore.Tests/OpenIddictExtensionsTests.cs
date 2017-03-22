@@ -12,8 +12,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void AddEntityFrameworkCoreStores_ThrowsAnExceptionForInvalidApplicationEntity()
         {
             // Arrange
-            var builder = new OpenIddictBuilder(new ServiceCollection());
-            builder.ApplicationType = typeof(object);
+            var builder = new OpenIddictBuilder(new ServiceCollection())
+            {
+                ApplicationType = typeof(object)
+            };
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(delegate
@@ -29,8 +31,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void AddEntityFrameworkCoreStores_ThrowsAnExceptionForInvalidAuthorizationEntity()
         {
             // Arrange
-            var builder = new OpenIddictBuilder(new ServiceCollection());
-            builder.AuthorizationType = typeof(object);
+            var builder = new OpenIddictBuilder(new ServiceCollection())
+            {
+                AuthorizationType = typeof(object)
+            };
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(delegate
@@ -46,8 +50,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void AddEntityFrameworkCoreStores_ThrowsAnExceptionForInvalidScopeEntity()
         {
             // Arrange
-            var builder = new OpenIddictBuilder(new ServiceCollection());
-            builder.ScopeType = typeof(object);
+            var builder = new OpenIddictBuilder(new ServiceCollection())
+            {
+                ScopeType = typeof(object)
+            };
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(delegate
@@ -63,8 +69,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void AddEntityFrameworkCoreStores_ThrowsAnExceptionForInvalidTokenEntity()
         {
             // Arrange
-            var builder = new OpenIddictBuilder(new ServiceCollection());
-            builder.TokenType = typeof(object);
+            var builder = new OpenIddictBuilder(new ServiceCollection())
+            {
+                TokenType = typeof(object)
+            };
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(delegate
