@@ -383,8 +383,8 @@ namespace OpenIddict
                 await options.Value.Cache.RemoveAsync(key);
             }
 
-            if (!options.Value.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Response.Error) &&
-                                                               string.IsNullOrEmpty(context.Response.RedirectUri))
+            if (!options.Value.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Error) &&
+                                                               string.IsNullOrEmpty(context.RedirectUri))
             {
                 // Determine if the status code pages middleware has been enabled for this request.
                 // If it was not registered or enabled, let the OpenID Connect server middleware render

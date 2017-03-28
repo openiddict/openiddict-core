@@ -87,30 +87,22 @@ namespace OpenIddict
             var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
 
-            // Skip validation if the optional post_logout_redirect_uri
-            // parameter was missing from the logout request.
-            if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
+            // If an optional post_logout_redirect_uri was provided, validate it.
+            if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))
             {
-                logger.LogInformation("The logout request validation process was skipped because " +
-                                      "the post_logout_redirect_uri parameter was missing.");
+                var application = await applications.FindByLogoutRedirectUri(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted);
+                if (application == null)
+                {
+                    logger.LogError("The logout request was rejected because the client application corresponding " +
+                                    "to the specified post_logout_redirect_uri was not found in the database: " +
+                                    "'{PostLogoutRedirectUri}'.", context.PostLogoutRedirectUri);
 
-                context.Skip();
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidClient,
+                        description: "Invalid post_logout_redirect_uri.");
 
-                return;
-            }
-
-            var application = await applications.FindByLogoutRedirectUri(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted);
-            if (application == null)
-            {
-                logger.LogError("The logout request was rejected because the client application corresponding " +
-                                "to the specified post_logout_redirect_uri was not found in the database: " +
-                                "'{PostLogoutRedirectUri}'.", context.PostLogoutRedirectUri);
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Invalid post_logout_redirect_uri.");
-
-                return;
+                    return;
+                }
             }
 
             context.Validate();
@@ -182,8 +174,8 @@ namespace OpenIddict
                 await options.Value.Cache.RemoveAsync(key);
             }
 
-            if (!options.Value.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Response.Error) &&
-                                                               string.IsNullOrEmpty(context.Response.PostLogoutRedirectUri))
+            if (!options.Value.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Error) &&
+                                                               string.IsNullOrEmpty(context.PostLogoutRedirectUri))
             {
                 // Determine if the status code pages middleware has been enabled for this request.
                 // If it was not registered or enabled, let the OpenID Connect server middleware render
