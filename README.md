@@ -55,15 +55,13 @@ To use OpenIddict, you need to:
 </configuration>
 ```
 
-  - **Update your `project.json`** to reference `AspNet.Security.OAuth.Validation` and `OpenIddict`:
+  - **Update your `.csproj` file** to reference `AspNet.Security.OAuth.Validation` and the `OpenIddict` packages:
 
-```json
-"dependencies": {
-  "AspNet.Security.OAuth.Validation": "1.0.0-*",
-  "OpenIddict": "1.0.0-*",
-  "OpenIddict.EntityFrameworkCore": "1.0.0-*",
-  "OpenIddict.Mvc": "1.0.0-*"
-}
+```xml
+<PackageReference Include="AspNet.Security.OAuth.Validation" Version="1.0.0-*" />
+<PackageReference Include="OpenIddict" Version="1.0.0-*" />
+<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="1.0.0-*" />
+<PackageReference Include="OpenIddict.Mvc" Version="1.0.0-*" />
 ```
 
   - **Configure the OpenIddict services** in `Startup.ConfigureServices`:
@@ -92,7 +90,7 @@ public void ConfigureServices(IServiceCollection services)
     // Register the OpenIddict services.
     // Note: use the generic overload if you need
     // to replace the default OpenIddict entities.
-	services.AddOpenIddict(options =>
+    services.AddOpenIddict(options =>
     {
         // Register the Entity Framework stores.
         options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
@@ -180,7 +178,7 @@ public void ConfigureServices(IServiceCollection services)
     // Register the OpenIddict services.
     // Note: use the generic overload if you need
     // to replace the default OpenIddict entities.
-	services.AddOpenIddict(options =>
+    services.AddOpenIddict(options =>
     {
         // Register the Entity Framework stores.
         options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
