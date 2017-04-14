@@ -4,8 +4,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net451;netcoreapp1.0</TargetFrameworks>
-    <PreserveCompilationContext>true</PreserveCompilationContext>
-    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

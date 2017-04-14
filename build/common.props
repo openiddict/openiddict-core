@@ -9,13 +9,4 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <Product>OpenIddict</Product>
-    <PackageIconUrl>https://avatars3.githubusercontent.com/u/13908567?s=64</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/openiddict/openiddict-core</PackageProjectUrl>
-    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/openiddict/openiddict-core</RepositoryUrl>
-  </PropertyGroup>
-
 </Project>
