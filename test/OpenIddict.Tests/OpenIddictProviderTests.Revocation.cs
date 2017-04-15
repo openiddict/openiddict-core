@@ -72,7 +72,7 @@ namespace OpenIddict.Tests
             var manager = CreateApplicationManager(instance =>
             {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(null);
+                    .ReturnsAsync(value: null);
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -319,7 +319,7 @@ namespace OpenIddict.Tests
             var manager = CreateTokenManager(instance =>
             {
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(null);
+                    .ReturnsAsync(value: null);
             });
 
             var server = CreateAuthorizationServer(builder =>

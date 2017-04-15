@@ -65,7 +65,7 @@ namespace OpenIddict.Tests
             var manager = CreateApplicationManager(instance =>
             {
                 instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(null);
+                    .ReturnsAsync(value: null);
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -166,7 +166,7 @@ namespace OpenIddict.Tests
                 builder.Services.AddSingleton(CreateApplicationManager(instance =>
                 {
                     instance.Setup(mock => mock.FindByLogoutRedirectUri("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(null);
+                        .ReturnsAsync(value: null);
                 }));
 
                 builder.EnableAuthorizationEndpoint("/logout-status-code-middleware");

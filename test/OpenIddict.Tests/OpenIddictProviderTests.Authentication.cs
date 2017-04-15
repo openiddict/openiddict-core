@@ -314,7 +314,7 @@ namespace OpenIddict.Tests
             var manager = CreateApplicationManager(instance =>
             {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(null);
+                    .ReturnsAsync(value: null);
             });
 
             var server = CreateAuthorizationServer(builder =>
