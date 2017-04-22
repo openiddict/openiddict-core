@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -44,46 +43,66 @@ namespace OpenIddict.Tests
 
             builder.ConfigureServices(services =>
             {
-                services.AddAuthentication();
                 services.AddOptions();
+                services.AddDistributedMemoryCache();
 
-                var instance = services.AddOpenIddict()
+                // Note: the following client_id/client_secret are fake and are only
+                // used to test the metadata returned by the discovery endpoint.
+                services.AddAuthentication()
+                    .AddFacebook(options =>
+                    {
+                        options.ClientId = "16018790-E88E-4553-8036-BB342579FF19";
+                        options.ClientSecret = "3D6499AF-5607-489B-815A-F3ACF1617296";
+                        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    })
+
+                    .AddGoogle(options =>
+                    {
+                        options.ClientId = "BAF437A5-87FA-4D06-8EFD-F9BA96CCEDC4";
+                        options.ClientSecret = "27DF07D3-6B03-4EE0-95CD-3AC16782216B";
+                        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    });
+
+                // Replace the default OpenIddict managers.
+                services.AddSingleton(CreateApplicationManager());
+                services.AddSingleton(CreateAuthorizationManager());
+                services.AddSingleton(CreateTokenManager());
+
+                services.AddOpenIddict(options =>
+                {
                     // Disable the transport security requirement during testing.
-                    .DisableHttpsRequirement()
+                    options.DisableHttpsRequirement();
 
                     // Enable the tested endpoints.
-                    .EnableAuthorizationEndpoint(AuthorizationEndpoint)
-                    .EnableIntrospectionEndpoint(IntrospectionEndpoint)
-                    .EnableLogoutEndpoint(LogoutEndpoint)
-                    .EnableRevocationEndpoint(RevocationEndpoint)
-                    .EnableTokenEndpoint(TokenEndpoint)
-                    .EnableUserinfoEndpoint(UserinfoEndpoint)
+                    options.EnableAuthorizationEndpoint(AuthorizationEndpoint)
+                           .EnableIntrospectionEndpoint(IntrospectionEndpoint)
+                           .EnableLogoutEndpoint(LogoutEndpoint)
+                           .EnableRevocationEndpoint(RevocationEndpoint)
+                           .EnableTokenEndpoint(TokenEndpoint)
+                           .EnableUserinfoEndpoint(UserinfoEndpoint);
 
                     // Enable the tested flows.
-                    .AllowAuthorizationCodeFlow()
-                    .AllowClientCredentialsFlow()
-                    .AllowImplicitFlow()
-                    .AllowPasswordFlow()
-                    .AllowRefreshTokenFlow()
+                    options.AllowAuthorizationCodeFlow()
+                           .AllowClientCredentialsFlow()
+                           .AllowImplicitFlow()
+                           .AllowPasswordFlow()
+                           .AllowRefreshTokenFlow();
 
                     // Register the X.509 certificate used to sign the identity tokens.
-                    .AddSigningCertificate(
+                    options.AddSigningCertificate(
                         assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
                         resource: "OpenIddict.Tests.Certificate.pfx",
-                        password: "OpenIddict")
+                        password: "OpenIddict");
 
                     // Note: overriding the default data protection provider is not necessary for the tests to pass,
                     // but is useful to ensure unnecessary keys are not persisted in testing environments, which also
                     // helps make the unit tests run faster, as no registry or disk access is required in this case.
-                    .UseDataProtectionProvider(new EphemeralDataProtectionProvider());
+                    options.UseDataProtectionProvider(new EphemeralDataProtectionProvider(new LoggerFactory()));
 
-                // Replace the default application/token managers.
-                services.AddSingleton(CreateApplicationManager());
-                services.AddSingleton(CreateTokenManager());
-
-                // Run the configuration delegate
-                // registered by the unit tests.
-                configuration?.Invoke(instance);
+                    // Run the configuration delegate
+                    // registered by the unit tests.
+                    configuration?.Invoke(options);
+                });
             });
 
             builder.Configure(app =>
@@ -110,25 +129,7 @@ namespace OpenIddict.Tests
                     return next(context);
                 });
 
-                app.UseCookieAuthentication();
-
-                // Note: the following client_id/client_secret are fake and are only
-                // used to test the metadata returned by the discovery endpoint.
-                app.UseFacebookAuthentication(new FacebookOptions
-                {
-                    ClientId = "16018790-E88E-4553-8036-BB342579FF19",
-                    ClientSecret = "3D6499AF-5607-489B-815A-F3ACF1617296",
-                    SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme
-                });
-
-                app.UseGoogleAuthentication(new GoogleOptions
-                {
-                    ClientId = "BAF437A5-87FA-4D06-8EFD-F9BA96CCEDC4",
-                    ClientSecret = "27DF07D3-6B03-4EE0-95CD-3AC16782216B",
-                    SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme
-                });
-
-                app.UseOpenIddict();
+                app.UseAuthentication();
 
                 app.Run(context =>
                 {
@@ -147,12 +148,12 @@ namespace OpenIddict.Tests
 
                         ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70");
 
-                        return context.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
+                        return context.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
                     }
 
                     else if (request.IsLogoutRequest())
                     {
-                        return context.Authentication.SignOutAsync(OpenIdConnectServerDefaults.AuthenticationScheme);
+                        return context.SignOutAsync(OpenIdConnectServerDefaults.AuthenticationScheme);
                     }
 
                     else if (request.IsUserinfoRequest())

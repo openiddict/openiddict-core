@@ -19,7 +19,9 @@ namespace OpenIddict.EntityFrameworkCore
         where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
         where TKey : IEquatable<TKey>
     {
-        public void ApplyServices([NotNull] IServiceCollection services)
+        public string LogFragment => null;
+
+        public bool ApplyServices([NotNull] IServiceCollection services)
         {
             if (services == null)
             {
@@ -27,6 +29,14 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             services.AddSingleton<IModelCustomizer, OpenIddictCustomizer<TApplication, TAuthorization, TScope, TToken, TKey>>();
+
+            // Return false to indicate that no database
+            // provider was registered by this extension.
+            return false;
         }
+
+        public long GetServiceProviderHashCode() => 0;
+
+        public void Validate([NotNull] IDbContextOptions options) { }
     }
 }

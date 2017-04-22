@@ -11,10 +11,7 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using OpenIddict.Core;
 
 namespace OpenIddict
 {
@@ -39,9 +36,6 @@ namespace OpenIddict
 
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context)
         {
-            var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
-
             // Note: the OpenID Connect server middleware supports unauthenticated introspection requests
             // but OpenIddict uses a stricter policy preventing unauthenticated/public applications
             // from using the introspection endpoint, as required by the specifications.
@@ -56,10 +50,10 @@ namespace OpenIddict
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
+            var application = await Applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
             if (application == null)
             {
-                logger.LogError("The introspection request was rejected because the client " +
+                Logger.LogError("The introspection request was rejected because the client " +
                                 "application was not found: '{ClientId}'.", context.ClientId);
 
                 context.Reject(
@@ -70,9 +64,9 @@ namespace OpenIddict
             }
 
             // Reject non-confidential applications.
-            if (!await applications.IsConfidentialAsync(application, context.HttpContext.RequestAborted))
+            if (!await Applications.IsConfidentialAsync(application, context.HttpContext.RequestAborted))
             {
-                logger.LogError("The introspection request was rejected because the public application " +
+                Logger.LogError("The introspection request was rejected because the public application " +
                                 "'{ClientId}' was not allowed to use this endpoint.", context.ClientId);
 
                 context.Reject(
@@ -83,9 +77,9 @@ namespace OpenIddict
             }
 
             // Validate the client credentials.
-            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted))
+            if (!await Applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted))
             {
-                logger.LogError("The introspection request was rejected because the confidential application " +
+                Logger.LogError("The introspection request was rejected because the confidential application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 
                 context.Reject(
@@ -100,9 +94,7 @@ namespace OpenIddict
 
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context)
         {
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
-            var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
+            var options = (OpenIddictOptions) context.Options;
 
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
             Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client_id parameter shouldn't be null.");
@@ -115,7 +107,7 @@ namespace OpenIddict
             // doesn't have any audience: in this case, the caller is allowed to introspect the token even if it's not listed as a valid audience.
             if (context.Ticket.IsAccessToken() && context.Ticket.HasAudience() && !context.Ticket.HasAudience(context.Request.ClientId))
             {
-                logger.LogWarning("The client application '{ClientId}' is not allowed to introspect the access " +
+                Logger.LogWarning("The client application '{ClientId}' is not allowed to introspect the access " +
                                   "token '{Identifier}' because it's not listed as a valid audience.",
                                   context.Request.ClientId, identifier);
 
@@ -125,14 +117,14 @@ namespace OpenIddict
             }
 
             // When the received ticket is revocable, ensure it is still valid.
-            if (!options.Value.DisableTokenRevocation && (context.Ticket.IsAuthorizationCode() || context.Ticket.IsRefreshToken()))
+            if (!options.DisableTokenRevocation && (context.Ticket.IsAuthorizationCode() || context.Ticket.IsRefreshToken()))
             {
                 // Retrieve the token from the database using the unique identifier stored in the authentication ticket:
                 // if the corresponding entry cannot be found, return Active = false to indicate that is is no longer valid.
-                var token = await tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
+                var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
                 if (token == null)
                 {
-                    logger.LogInformation("The token {Identifier} was declared as inactive because " +
+                    Logger.LogInformation("The token {Identifier} was declared as inactive because " +
                                           "it was revoked.", identifier);
 
                     context.Active = false;

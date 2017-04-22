@@ -66,22 +66,19 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddOptions();
 
-            var builder = new OpenIddictBuilder(services)
+            // Register the OpenIddict core services in the DI container.
+            services.TryAddScoped<OpenIddictApplicationManager<TApplication>>();
+            services.TryAddScoped<OpenIddictAuthorizationManager<TAuthorization>>();
+            services.TryAddScoped<OpenIddictScopeManager<TScope>>();
+            services.TryAddScoped<OpenIddictTokenManager<TToken>>();
+
+            return new OpenIddictBuilder(services)
             {
                 ApplicationType = typeof(TApplication),
                 AuthorizationType = typeof(TAuthorization),
                 ScopeType = typeof(TScope),
                 TokenType = typeof(TToken)
             };
-
-            // Register the OpenIddict core services in the DI container.
-            builder.Services.TryAddSingleton(builder);
-            builder.Services.TryAddScoped<OpenIddictApplicationManager<TApplication>>();
-            builder.Services.TryAddScoped<OpenIddictAuthorizationManager<TAuthorization>>();
-            builder.Services.TryAddScoped<OpenIddictScopeManager<TScope>>();
-            builder.Services.TryAddScoped<OpenIddictTokenManager<TToken>>();
-
-            return builder;
         }
 
         /// <summary>

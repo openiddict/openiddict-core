@@ -126,7 +126,8 @@ namespace OpenIddict.Tests
             cache.Verify(mock => mock.SetAsync(
                 OpenIddictConstants.Environment.LogoutRequest + identifier,
                 It.IsAny<byte[]>(),
-                It.IsAny<DistributedCacheEntryOptions>()), Times.Once());
+                It.IsAny<DistributedCacheEntryOptions>(),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]

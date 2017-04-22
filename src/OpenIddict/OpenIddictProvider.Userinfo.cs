@@ -23,7 +23,7 @@ namespace OpenIddict
 
             // Invoke the rest of the pipeline to allow
             // the user code to handle the userinfo request.
-            context.SkipToNextMiddleware();
+            context.SkipHandler();
 
             return Task.FromResult(0);
         }

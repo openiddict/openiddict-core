@@ -10,10 +10,7 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using OpenIddict.Core;
 
 namespace OpenIddict
 {
@@ -22,14 +19,12 @@ namespace OpenIddict
     {
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context)
         {
-            var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
+            var options = (OpenIddictOptions) context.Options;
 
             // Reject token requests that don't specify a supported grant type.
-            if (!options.Value.GrantTypes.Contains(context.Request.GrantType))
+            if (!options.GrantTypes.Contains(context.Request.GrantType))
             {
-                logger.LogError("The token request was rejected because the '{Grant}' " +
+                Logger.LogError("The token request was rejected because the '{Grant}' " +
                                 "grant is not supported.", context.Request.GrantType);
 
                 context.Reject(
@@ -41,7 +36,7 @@ namespace OpenIddict
 
             // Reject token requests that specify scope=offline_access if the refresh token flow is not enabled.
             if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
-               !options.Value.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
+               !options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -100,7 +95,7 @@ namespace OpenIddict
             if (string.IsNullOrEmpty(context.ClientId))
             {
                 // Reject the request if client identification is mandatory.
-                if (options.Value.RequireClientIdentification)
+                if (options.RequireClientIdentification)
                 {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -109,7 +104,7 @@ namespace OpenIddict
                     return;
                 }
 
-                logger.LogDebug("The token request validation process was partially skipped " +
+                Logger.LogDebug("The token request validation process was partially skipped " +
                                 "because the 'client_id' parameter was missing or empty.");
 
                 context.Skip();
@@ -118,10 +113,10 @@ namespace OpenIddict
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
+            var application = await Applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
             if (application == null)
             {
-                logger.LogError("The token request was rejected because the client " +
+                Logger.LogError("The token request was rejected because the client " +
                                 "application was not found: '{ClientId}'.", context.ClientId);
 
                 context.Reject(
@@ -131,12 +126,12 @@ namespace OpenIddict
                 return;
             }
 
-            if (await applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
+            if (await Applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
             {
                 // Note: public applications are not allowed to use the client credentials grant.
                 if (context.Request.IsClientCredentialsGrantType())
                 {
-                    logger.LogError("The token request was rejected because the public client application '{ClientId}' " +
+                    Logger.LogError("The token request was rejected because the public client application '{ClientId}' " +
                                     "was not allowed to use the client credentials grant.", context.Request.ClientId);
 
                     context.Reject(
@@ -149,7 +144,7 @@ namespace OpenIddict
                 // Reject tokens requests containing a client_secret when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientSecret))
                 {
-                    logger.LogError("The token request was rejected because the public application '{ClientId}' " +
+                    Logger.LogError("The token request was rejected because the public application '{ClientId}' " +
                                     "was not allowed to send a client secret.", context.ClientId);
 
                     context.Reject(
@@ -159,7 +154,7 @@ namespace OpenIddict
                     return;
                 }
 
-                logger.LogInformation("The token request validation process was not fully validated because " +
+                Logger.LogInformation("The token request validation process was not fully validated because " +
                                       "the client '{ClientId}' was a public application.", context.ClientId);
 
                 // If client authentication cannot be enforced, call context.Skip() to inform
@@ -173,7 +168,7 @@ namespace OpenIddict
             // to protect them from impersonation attacks.
             if (string.IsNullOrEmpty(context.ClientSecret))
             {
-                logger.LogError("The token request was rejected because the confidential application " +
+                Logger.LogError("The token request was rejected because the confidential application " +
                                 "'{ClientId}' didn't specify a client secret.", context.ClientId);
 
                 context.Reject(
@@ -183,9 +178,9 @@ namespace OpenIddict
                 return;
             }
 
-            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted))
+            if (!await Applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted))
             {
-                logger.LogError("The token request was rejected because the confidential application " +
+                Logger.LogError("The token request was rejected because the confidential application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 
                 context.Reject(
@@ -200,12 +195,10 @@ namespace OpenIddict
 
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context)
         {
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
-            var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
+            var options = (OpenIddictOptions) context.Options;
 
-            if (!options.Value.DisableTokenRevocation && (context.Request.IsAuthorizationCodeGrantType() ||
-                                                          context.Request.IsRefreshTokenGrantType()))
+            if (!options.DisableTokenRevocation && (context.Request.IsAuthorizationCodeGrantType() ||
+                                                    context.Request.IsRefreshTokenGrantType()))
             {
                 Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
@@ -216,10 +209,10 @@ namespace OpenIddict
                 if (context.Request.IsAuthorizationCodeGrantType())
                 {
                     // Retrieve the token from the database and ensure it is still valid.
-                    var token = await tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
+                    var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
                     if (token == null)
                     {
-                        logger.LogError("The token request was rejected because the authorization code was revoked.");
+                        Logger.LogError("The token request was rejected because the authorization code was revoked.");
 
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -229,16 +222,16 @@ namespace OpenIddict
                     }
 
                     // Revoke the authorization code to prevent token reuse.
-                    await tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
+                    await Tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
                 }
 
                 else if (context.Request.IsRefreshTokenGrantType())
                 {
                     // Retrieve the token from the database and ensure it is still valid.
-                    var token = await tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
+                    var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
                     if (token == null)
                     {
-                        logger.LogError("The token request was rejected because the refresh token was revoked.");
+                        Logger.LogError("The token request was rejected because the refresh token was revoked.");
 
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -252,14 +245,14 @@ namespace OpenIddict
                     // See https://tools.ietf.org/html/rfc6749#section-6.
                     if (context.Options.UseSlidingExpiration)
                     {
-                        await tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
+                        await Tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
                     }
                 }
             }
 
             // Invoke the rest of the pipeline to allow
             // the user code to handle the token request.
-            context.SkipToNextMiddleware();
+            context.SkipHandler();
         }
     }
 }

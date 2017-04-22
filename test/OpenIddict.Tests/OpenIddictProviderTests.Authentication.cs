@@ -521,7 +521,8 @@ namespace OpenIddict.Tests
             cache.Verify(mock => mock.SetAsync(
                 OpenIddictConstants.Environment.AuthorizationRequest + identifier,
                 It.IsAny<byte[]>(),
-                It.IsAny<DistributedCacheEntryOptions>()), Times.Once());
+                It.IsAny<DistributedCacheEntryOptions>(),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Theory]
@@ -596,7 +597,7 @@ namespace OpenIddict.Tests
             };
 
             var stream = new MemoryStream();
-            using (var writer = new BsonWriter(stream))
+            using (var writer = new BsonDataWriter(stream))
             {
                 writer.CloseOutput = false;
 
@@ -606,8 +607,9 @@ namespace OpenIddict.Tests
 
             var cache = new Mock<IDistributedCache>();
 
-            cache.Setup(mock => mock.GetAsync(OpenIddictConstants.Environment.AuthorizationRequest +
-                                              "b2ee7815-5579-4ff7-86b0-ba671b939d96"))
+            cache.Setup(mock => mock.GetAsync(
+                OpenIddictConstants.Environment.AuthorizationRequest + "b2ee7815-5579-4ff7-86b0-ba671b939d96",
+                It.IsAny<CancellationToken>()))
                 .ReturnsAsync(stream.ToArray());
 
             var server = CreateAuthorizationServer(builder =>
@@ -646,8 +648,8 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.AccessToken);
 
             cache.Verify(mock => mock.RemoveAsync(
-                OpenIddictConstants.Environment.AuthorizationRequest +
-                "b2ee7815-5579-4ff7-86b0-ba671b939d96"), Times.Once());
+                OpenIddictConstants.Environment.AuthorizationRequest + "b2ee7815-5579-4ff7-86b0-ba671b939d96",
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]

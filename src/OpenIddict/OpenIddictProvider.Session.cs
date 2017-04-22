@@ -13,9 +13,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
@@ -28,17 +26,16 @@ namespace OpenIddict
     {
         public override async Task ExtractLogoutRequest([NotNull] ExtractLogoutRequestContext context)
         {
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
+            var options = (OpenIddictOptions) context.Options;
 
             // If a request_id parameter can be found in the logout request,
             // restore the complete logout request from the distributed cache.
             if (!string.IsNullOrEmpty(context.Request.RequestId))
             {
                 // Return an error if request caching support was not enabled.
-                if (!options.Value.EnableRequestCaching)
+                if (!options.EnableRequestCaching)
                 {
-                    logger.LogError("The logout request was rejected because " +
+                    Logger.LogError("The logout request was rejected because " +
                                     "request caching support was not enabled.");
 
                     context.Reject(
@@ -52,10 +49,10 @@ namespace OpenIddict
                 // to avoid collisions with the other types of cached requests.
                 var key = OpenIddictConstants.Environment.LogoutRequest + context.Request.RequestId;
 
-                var payload = await options.Value.Cache.GetAsync(key);
+                var payload = await options.Cache.GetAsync(key);
                 if (payload == null)
                 {
-                    logger.LogError("The logout request was rejected because an unknown " +
+                    Logger.LogError("The logout request was rejected because an unknown " +
                                     "or invalid request_id parameter was specified.");
 
                     context.Reject(
@@ -66,7 +63,7 @@ namespace OpenIddict
                 }
 
                 // Restore the logout request parameters from the serialized payload.
-                using (var reader = new BsonReader(new MemoryStream(payload)))
+                using (var reader = new BsonDataReader(new MemoryStream(payload)))
                 {
                     foreach (var parameter in JObject.Load(reader))
                     {
@@ -84,16 +81,13 @@ namespace OpenIddict
 
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context)
         {
-            var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
-
             // If an optional post_logout_redirect_uri was provided, validate it.
             if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))
             {
-                var application = await applications.FindByLogoutRedirectUri(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted);
+                var application = await Applications.FindByLogoutRedirectUri(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted);
                 if (application == null)
                 {
-                    logger.LogError("The logout request was rejected because the client application corresponding " +
+                    Logger.LogError("The logout request was rejected because the client application corresponding " +
                                     "to the specified post_logout_redirect_uri was not found in the database: " +
                                     "'{PostLogoutRedirectUri}'.", context.PostLogoutRedirectUri);
 
@@ -110,12 +104,12 @@ namespace OpenIddict
 
         public override async Task HandleLogoutRequest([NotNull] HandleLogoutRequestContext context)
         {
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
+            var options = (OpenIddictOptions) context.Options;
 
             // If no request_id parameter can be found in the current request, assume the OpenID Connect
             // request was not serialized yet and store the entire payload in the distributed cache
             // to make it easier to flow across requests and internal/external logout workflows.
-            if (options.Value.EnableRequestCaching && string.IsNullOrEmpty(context.Request.RequestId))
+            if (options.EnableRequestCaching && string.IsNullOrEmpty(context.Request.RequestId))
             {
                 // Generate a request identifier. Note: using a crypto-secure
                 // random number generator is not necessary in this case.
@@ -123,7 +117,7 @@ namespace OpenIddict
 
                 // Store the serialized logout request parameters in the distributed cache.
                 var stream = new MemoryStream();
-                using (var writer = new BsonWriter(stream))
+                using (var writer = new BsonDataWriter(stream))
                 {
                     writer.CloseOutput = false;
 
@@ -135,7 +129,7 @@ namespace OpenIddict
                 // to avoid collisions with the other types of cached requests.
                 var key = OpenIddictConstants.Environment.LogoutRequest + context.Request.RequestId;
 
-                await options.Value.Cache.SetAsync(key, stream.ToArray(), new DistributedCacheEntryOptions
+                await options.Cache.SetAsync(key, stream.ToArray(), new DistributedCacheEntryOptions
                 {
                     AbsoluteExpiration = context.Options.SystemClock.UtcNow + TimeSpan.FromMinutes(30),
                     SlidingExpiration = TimeSpan.FromMinutes(10)
@@ -159,10 +153,10 @@ namespace OpenIddict
 
         public override async Task ApplyLogoutResponse([NotNull] ApplyLogoutResponseContext context)
         {
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
+            var options = (OpenIddictOptions) context.Options;
 
             // Remove the logout request from the distributed cache.
-            if (options.Value.EnableRequestCaching && !string.IsNullOrEmpty(context.Request.RequestId))
+            if (options.EnableRequestCaching && !string.IsNullOrEmpty(context.Request.RequestId))
             {
                 // Note: the cache key is always prefixed with a specific marker
                 // to avoid collisions with the other types of cached requests.
@@ -171,11 +165,11 @@ namespace OpenIddict
                 // Note: the ApplyLogoutResponse event is called for both successful
                 // and errored logout responses but discrimination is not necessary here,
                 // as the logout request must be removed from the distributed cache in both cases.
-                await options.Value.Cache.RemoveAsync(key);
+                await options.Cache.RemoveAsync(key);
             }
 
-            if (!options.Value.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Error) &&
-                                                               string.IsNullOrEmpty(context.PostLogoutRedirectUri))
+            if (!options.ApplicationCanDisplayErrors && !string.IsNullOrEmpty(context.Error) &&
+                                                         string.IsNullOrEmpty(context.PostLogoutRedirectUri))
             {
                 // Determine if the status code pages middleware has been enabled for this request.
                 // If it was not registered or enabled, let the OpenID Connect server middleware render

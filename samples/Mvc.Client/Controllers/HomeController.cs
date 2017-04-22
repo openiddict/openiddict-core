@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -28,7 +29,7 @@ namespace Mvc.Client.Controllers
         [Authorize, HttpPost("~/")]
         public async Task<ActionResult> Index(CancellationToken cancellationToken)
         {
-            var token = await HttpContext.Authentication.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+            var token = await HttpContext.GetTokenAsync(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectParameterNames.AccessToken);
             if (string.IsNullOrEmpty(token))
             {
                 throw new InvalidOperationException("The access token cannot be found in the authentication ticket. " +

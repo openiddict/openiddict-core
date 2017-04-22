@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Core;
 
@@ -19,9 +19,9 @@ namespace OpenIddict
     public partial class OpenIddictProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
         where TApplication : class where TAuthorization : class where TScope : class where TToken : class
     {
-        public override Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context)
+        public override async Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context)
         {
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
+            var options = (OpenIddictOptions) context.Options;
 
             // Note: though it's natively supported by the OpenID Connect server middleware,
             // OpenIddict disallows the use of the unsecure code_challenge_method=plain method,
@@ -32,7 +32,7 @@ namespace OpenIddict
             // Note: the OpenID Connect server middleware automatically populates grant_types_supported
             // by determining whether the authorization and token endpoints are enabled or not but
             // OpenIddict uses a different approach and relies on a configurable "grants list".
-            context.GrantTypes.IntersectWith(options.Value.GrantTypes);
+            context.GrantTypes.IntersectWith(options.GrantTypes);
 
             // Note: the "openid" scope is automatically
             // added by the OpenID Connect server middleware.
@@ -47,12 +47,12 @@ namespace OpenIddict
                 context.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
             }
 
-            context.Metadata[OpenIddictConstants.Metadata.ExternalProvidersSupported] = new JArray(
-                from provider in context.HttpContext.Authentication.GetAuthenticationSchemes()
-                where !string.IsNullOrEmpty(provider.DisplayName)
-                select provider.AuthenticationScheme);
+            var schemes = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
 
-            return Task.FromResult(0);
+            context.Metadata[OpenIddictConstants.Metadata.ExternalProvidersSupported] = new JArray(
+                from provider in await schemes.GetAllSchemesAsync()
+                where !string.IsNullOrEmpty(provider.DisplayName)
+                select provider.Name);
         }
     }
 }

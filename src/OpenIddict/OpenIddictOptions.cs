@@ -16,9 +16,15 @@ namespace OpenIddict
     /// </summary>
     public class OpenIddictOptions : OpenIdConnectServerOptions
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="OpenIddictOptions"/> class.
+        /// </summary>
         public OpenIddictOptions()
         {
+            // Note: OpenIdConnectServerProvider is automatically mapped
+            // to the generic OpenIddictProvider class by the DI container.
             Provider = null;
+            ProviderType = typeof(OpenIdConnectServerProvider);
         }
 
         /// <summary>

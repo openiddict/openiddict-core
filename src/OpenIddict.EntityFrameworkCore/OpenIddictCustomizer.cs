@@ -24,6 +24,11 @@ namespace OpenIddict.EntityFrameworkCore
         where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
         where TKey : IEquatable<TKey>
     {
+        public OpenIddictCustomizer([NotNull] ModelCustomizerDependencies dependencies)
+            : base(dependencies)
+        {
+        }
+
         public override void Customize([NotNull] ModelBuilder builder, [NotNull] DbContext context)
         {
             if (builder == null)

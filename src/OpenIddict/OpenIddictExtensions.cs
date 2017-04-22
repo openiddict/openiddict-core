@@ -8,16 +8,16 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict;
@@ -26,98 +26,6 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class OpenIddictExtensions
     {
-        /// <summary>
-        /// Registers OpenIddict in the ASP.NET Core pipeline.
-        /// </summary>
-        /// <param name="app">The application builder used to register middleware instances.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseOpenIddict([NotNull] this IApplicationBuilder app)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            // Resolve the OpenIddict builder from the DI container.
-            // If it cannot be found, throw an invalid operation exception.
-            var builder = app.ApplicationServices.GetService<OpenIddictBuilder>();
-            if (builder == null)
-            {
-                throw new InvalidOperationException("The OpenIddict services cannot be resolved from the dependency injection container. " +
-                                                    "Make sure 'services.AddOpenIddict()' is correctly called from 'ConfigureServices()'.");
-            }
-
-            // Resolve the OpenIddict options from the DI container.
-            var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictOptions>>().Value;
-
-            // When no authorization provider has been registered in the options,
-            // create a new OpenIddictProvider instance using the specified entities.
-            if (options.Provider == null)
-            {
-                options.Provider = (OpenIdConnectServerProvider) Activator.CreateInstance(
-                    typeof(OpenIddictProvider<,,,>).MakeGenericType(
-                        /* TApplication: */ builder.ApplicationType,
-                        /* TAuthorization: */ builder.AuthorizationType,
-                        /* TScope: */ builder.ScopeType,
-                        /* TToken: */ builder.TokenType));
-            }
-
-            // When no distributed cache has been registered in the options,
-            // try to resolve it from the dependency injection container.
-            if (options.Cache == null)
-            {
-                options.Cache = app.ApplicationServices.GetService<IDistributedCache>();
-
-                if (options.EnableRequestCaching && options.Cache == null)
-                {
-                    throw new InvalidOperationException("A distributed cache implementation must be registered in the OpenIddict options " +
-                                                        "or in the dependency injection container when enabling request caching support.");
-                }
-            }
-
-            // Ensure at least one flow has been enabled.
-            if (options.GrantTypes.Count == 0)
-            {
-                throw new InvalidOperationException("At least one OAuth2/OpenID Connect flow must be enabled.");
-            }
-
-            // Ensure the authorization endpoint has been enabled when
-            // the authorization code or implicit grants are supported.
-            if (!options.AuthorizationEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
-                                                                options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit)))
-            {
-                throw new InvalidOperationException("The authorization endpoint must be enabled to use " +
-                                                    "the authorization code and implicit flows.");
-            }
-
-            // Ensure the token endpoint has been enabled when the authorization code,
-            // client credentials, password or refresh token grants are supported.
-            if (!options.TokenEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
-                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials) ||
-                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password) ||
-                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)))
-            {
-                throw new InvalidOperationException("The token endpoint must be enabled to use the authorization code, " +
-                                                    "client credentials, password and refresh token flows.");
-            }
-
-            if (options.RevocationEndpointPath.HasValue && options.DisableTokenRevocation)
-            {
-                throw new InvalidOperationException("The revocation endpoint cannot be enabled when token revocation is disabled.");
-            }
-
-            // Ensure at least one asymmetric signing certificate/key was registered if the implicit flow was enabled.
-            if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey) &&
-                 options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))
-            {
-                throw new InvalidOperationException("At least one asymmetric signing key must be registered when enabling the implicit flow. " +
-                                                    "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
-                                                    "or call 'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
-            }
-
-            return app.UseOpenIdConnectServer(options);
-        }
-
         /// <summary>
         /// Amends the default OpenIddict configuration.
         /// </summary>
@@ -139,7 +47,44 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            builder.Services.Configure(configuration);
+            // Register the OpenIddict handler/provider.
+            builder.Services.TryAddScoped<OpenIddictHandler>();
+            builder.Services.TryAddScoped(
+                typeof(OpenIdConnectServerProvider),
+                typeof(OpenIddictProvider<,,,>).MakeGenericType(
+                    /* TApplication: */ builder.ApplicationType,
+                    /* TAuthorization: */ builder.AuthorizationType,
+                    /* TScope: */ builder.ScopeType,
+                    /* TToken: */ builder.TokenType));
+
+            // Register the options initializers used by the OpenID Connect server handler and OpenIddict.
+            // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictOptions>,
+                                            OpenIdConnectServerInitializer>());
+
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictOptions>,
+                                            OpenIddictInitializer>());
+
+            // Register the OpenID Connect server handler in the authentication options,
+            // so it can be discovered by the default authentication handler provider.
+            builder.Services.Configure<AuthenticationOptions>(options =>
+            {
+                // Note: similarly to Identity, OpenIddict should be registered only once.
+                // To prevent multiple schemes from being registered, a check is made here.
+                if (options.SchemeMap.ContainsKey(OpenIdConnectServerDefaults.AuthenticationScheme))
+                {
+                    return;
+                }
+
+                options.AddScheme(OpenIdConnectServerDefaults.AuthenticationScheme, scheme =>
+                {
+                    scheme.HandlerType = typeof(OpenIddictHandler);
+                });
+            });
+
+            builder.Services.Configure(OpenIdConnectServerDefaults.AuthenticationScheme, configuration);
 
             return builder;
         }

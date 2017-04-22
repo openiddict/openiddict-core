@@ -12,4 +12,10 @@
     <DebugType Condition=" '$(OS)' != 'Windows_NT' ">portable</DebugType>
   </PropertyGroup>
 
+  <Target Name="WorkaroundAppConfigPathTooLong" BeforeTargets="GenerateBindingRedirects">
+    <PropertyGroup>
+      <_GenerateBindingRedirectsIntermediateAppConfig>$(IntermediateOutputPath)$(TargetFileName).config</_GenerateBindingRedirectsIntermediateAppConfig>
+    </PropertyGroup>
+  </Target>
+
 </Project>
