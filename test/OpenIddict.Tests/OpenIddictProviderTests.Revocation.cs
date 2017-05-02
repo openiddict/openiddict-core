@@ -309,7 +309,6 @@ namespace OpenIddict.Tests
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
             ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -326,7 +325,7 @@ namespace OpenIddict.Tests
             {
                 builder.Services.AddSingleton(manager);
 
-                builder.Configure(options => options.AccessTokenFormat = format.Object);
+                builder.Configure(options => options.RefreshTokenFormat = format.Object);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -354,7 +353,6 @@ namespace OpenIddict.Tests
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
             ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -373,7 +371,7 @@ namespace OpenIddict.Tests
             {
                 builder.Services.AddSingleton(manager);
 
-                builder.Configure(options => options.AccessTokenFormat = format.Object);
+                builder.Configure(options => options.RefreshTokenFormat = format.Object);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());

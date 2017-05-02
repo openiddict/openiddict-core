@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <AspNetCoreVersion>1.0.0</AspNetCoreVersion>
-    <AspNetContribOpenIdExtensionsVersion>1.0.0-rtm-*</AspNetContribOpenIdExtensionsVersion>
-    <AspNetContribOpenIdServerVersion>1.0.0-rtm-*</AspNetContribOpenIdServerVersion>
+    <AspNetContribOpenIdExtensionsVersion>1.0.0</AspNetContribOpenIdExtensionsVersion>
+    <AspNetContribOpenIdServerVersion>1.0.0</AspNetContribOpenIdServerVersion>
     <CryptoHelperVersion>2.0.0</CryptoHelperVersion>
     <JetBrainsVersion>10.3.0</JetBrainsVersion>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
