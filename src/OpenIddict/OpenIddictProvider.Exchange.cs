@@ -210,9 +210,8 @@ namespace OpenIddict
                 Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
                 // Extract the token identifier from the authentication ticket.
-                var identifier = context.Ticket.GetTicketId();
-                Debug.Assert(!string.IsNullOrEmpty(identifier),
-                    "The authentication ticket should contain a ticket identifier.");
+                var identifier = context.Ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId);
+                Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a ticket identifier.");
 
                 if (context.Request.IsAuthorizationCodeGrantType())
                 {

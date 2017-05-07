@@ -147,7 +147,7 @@ namespace OpenIddict
             }
 
             // Extract the token identifier from the authentication ticket.
-            var identifier = context.Ticket.GetTicketId();
+            var identifier = context.Ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The token should contain a ticket identifier.");
 
             // Retrieve the token from the database. If the token cannot be found,

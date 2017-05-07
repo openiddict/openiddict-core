@@ -107,6 +107,9 @@ namespace OpenIddict
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
             Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client_id parameter shouldn't be null.");
 
+            var identifier = context.Ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId);
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
+
             // Note: the OpenID Connect server middleware allows authorized presenters (e.g relying parties) to introspect access tokens
             // but OpenIddict uses a stricter policy that only allows resource servers to use the introspection endpoint, unless the ticket
             // doesn't have any audience: in this case, the caller is allowed to introspect the token even if it's not listed as a valid audience.
@@ -114,7 +117,7 @@ namespace OpenIddict
             {
                 logger.LogWarning("The client application '{ClientId}' is not allowed to introspect the access " +
                                   "token '{Identifier}' because it's not listed as a valid audience.",
-                                  context.Request.ClientId, context.Ticket.GetTicketId());
+                                  context.Request.ClientId, identifier);
 
                 context.Active = false;
 
@@ -126,11 +129,11 @@ namespace OpenIddict
             {
                 // Retrieve the token from the database using the unique identifier stored in the authentication ticket:
                 // if the corresponding entry cannot be found, return Active = false to indicate that is is no longer valid.
-                var token = await tokens.FindByIdAsync(context.Ticket.GetTicketId(), context.HttpContext.RequestAborted);
+                var token = await tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
                 if (token == null)
                 {
                     logger.LogInformation("The token {Identifier} was declared as inactive because " +
-                                          "it was revoked.", context.Ticket.GetTicketId());
+                                          "it was revoked.", identifier);
 
                     context.Active = false;
 

@@ -366,8 +366,8 @@ namespace OpenIddict.Tests
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
             ticket.SetPresenters("Fabrikam");
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.AuthorizationCode);
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AuthorizationCode);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -417,8 +417,8 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("60FFF7EA-F98E-437B-937E-5073CC313103");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
+            ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -467,8 +467,8 @@ namespace OpenIddict.Tests
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
             ticket.SetPresenters("Fabrikam");
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.AuthorizationCode);
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AuthorizationCode);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -526,8 +526,8 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("60FFF7EA-F98E-437B-937E-5073CC313103");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
+            ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -587,8 +587,8 @@ namespace OpenIddict.Tests
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
             ticket.SetPresenters("Fabrikam");
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.AuthorizationCode);
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AuthorizationCode);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -649,8 +649,8 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("60FFF7EA-F98E-437B-937E-5073CC313103");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
+            ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -714,17 +714,17 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("60FFF7EA-F98E-437B-937E-5073CC313103");
+            ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
 
             switch (flow)
             {
                 case OpenIdConnectConstants.GrantTypes.AuthorizationCode:
-                    ticket.SetUsage(OpenIdConnectConstants.Usages.AuthorizationCode);
+                    ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AuthorizationCode);
                     ticket.SetPresenters("Fabrikam");
                     break;
 
                 case OpenIdConnectConstants.GrantTypes.RefreshToken:
-                    ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
+                    ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
                     break;
             }
 

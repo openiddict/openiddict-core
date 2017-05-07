@@ -227,8 +227,8 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.AccessToken);
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -264,7 +264,7 @@ namespace OpenIddict.Tests
                 mock.ValidTo == DateTime.UtcNow.AddDays(1));
 
             var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Usage, OpenIdConnectConstants.Usages.IdentityToken);
+            identity.AddClaim(OpenIdConnectConstants.Claims.TokenUsage, OpenIdConnectConstants.TokenUsages.IdToken);
 
             var handler = new Mock<JwtSecurityTokenHandler>();
 
@@ -308,7 +308,7 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -352,7 +352,7 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 

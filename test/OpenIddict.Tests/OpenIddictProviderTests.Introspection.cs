@@ -187,8 +187,8 @@ namespace OpenIddict.Tests
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Contoso");
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.AccessToken);
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -241,8 +241,8 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.AuthorizationCode);
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AuthorizationCode);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -297,8 +297,8 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.AuthorizationCode);
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AuthorizationCode);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -353,8 +353,8 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.AuthorizationCode);
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AuthorizationCode);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -417,8 +417,8 @@ namespace OpenIddict.Tests
                 new AuthenticationProperties(),
                 OpenIdConnectServerDefaults.AuthenticationScheme);
 
-            ticket.SetTicketId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetUsage(OpenIdConnectConstants.Usages.RefreshToken);
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
