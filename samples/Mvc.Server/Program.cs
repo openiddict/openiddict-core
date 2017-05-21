@@ -17,6 +17,7 @@ namespace Mvc.Server
                 .ConfigureLogging(options => options.AddConsole())
                 .ConfigureLogging(options => options.AddDebug())
                 .UseConfiguration(configuration)
+                .UseUrls("http://localhost:54540")
                 .UseIISIntegration()
                 .UseKestrel()
                 .UseStartup<Startup>()
