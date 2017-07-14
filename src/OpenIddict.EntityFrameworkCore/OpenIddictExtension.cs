@@ -20,6 +20,12 @@ namespace OpenIddict.EntityFrameworkCore
         where TKey : IEquatable<TKey>
     {
         public string LogFragment => null;
+        private readonly OpenIddictEntityFrameworkOptions _openIddictEntityFrameworkOptions;
+
+        public OpenIddictExtension(OpenIddictEntityFrameworkOptions openIddictEntityFrameworkOptions)
+        {
+            _openIddictEntityFrameworkOptions = openIddictEntityFrameworkOptions;
+        }
 
         public bool ApplyServices([NotNull] IServiceCollection services)
         {
@@ -28,6 +34,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(services));
             }
 
+            services.AddSingleton<OpenIddictEntityFrameworkOptions>(_openIddictEntityFrameworkOptions);
             services.AddSingleton<IModelCustomizer, OpenIddictCustomizer<TApplication, TAuthorization, TScope, TToken, TKey>>();
 
             // Return false to indicate that no database
