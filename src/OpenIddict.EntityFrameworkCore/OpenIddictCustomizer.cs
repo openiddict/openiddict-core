@@ -24,9 +24,14 @@ namespace OpenIddict.EntityFrameworkCore
         where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictCustomizer([NotNull] ModelCustomizerDependencies dependencies)
+        private readonly OpenIddictEntityFrameworkOptions _openIddictEntityFrameworkOptions;
+
+        public OpenIddictCustomizer(
+            [NotNull] ModelCustomizerDependencies dependencies, 
+            OpenIddictEntityFrameworkOptions openIddictEntityFrameworkOptions)
             : base(dependencies)
         {
+            _openIddictEntityFrameworkOptions = openIddictEntityFrameworkOptions;
         }
 
         public override void Customize([NotNull] ModelBuilder builder, [NotNull] DbContext context)
@@ -42,7 +47,12 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             // Register the OpenIddict entity sets.
-            builder.UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>();
+            builder.UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(options => {
+                options.ApplicationsTableName = _openIddictEntityFrameworkOptions.ApplicationsTableName;
+                options.AuthorizationsTableName = _openIddictEntityFrameworkOptions.AuthorizationsTableName;
+                options.ScopesTableName = _openIddictEntityFrameworkOptions.ScopesTableName;
+                options.TokensTableName = _openIddictEntityFrameworkOptions.TokensTableName;
+            });
 
             base.Customize(builder, context);
         }

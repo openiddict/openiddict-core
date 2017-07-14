@@ -120,13 +120,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// using the default OpenIddict models and the default key type (string).
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
+        /// <param name="optionsAction">Custom options for Entity Framework builder.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbContextOptionsBuilder UseOpenIddict([NotNull] this DbContextOptionsBuilder builder)
+        public static DbContextOptionsBuilder UseOpenIddict(
+            [NotNull] this DbContextOptionsBuilder builder,
+            Action<OpenIddictEntityFrameworkOptions> optionsAction = null)
         {
             return builder.UseOpenIddict<OpenIddictApplication,
                                          OpenIddictAuthorization,
                                          OpenIddictScope,
-                                         OpenIddictToken, string>();
+                                         OpenIddictToken, string>(optionsAction);
         }
 
         /// <summary>
@@ -134,13 +137,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// using the default OpenIddict models and the specified key type.
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
+        /// <param name="optionsAction">Custom options for Entity Framework builder.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbContextOptionsBuilder UseOpenIddict<TKey>([NotNull] this DbContextOptionsBuilder builder) where TKey : IEquatable<TKey>
+        public static DbContextOptionsBuilder UseOpenIddict<TKey>(
+            [NotNull] this DbContextOptionsBuilder builder,
+            Action<OpenIddictEntityFrameworkOptions> optionsAction = null)
+            where TKey : IEquatable<TKey>
         {
             return builder.UseOpenIddict<OpenIddictApplication<TKey>,
                                          OpenIddictAuthorization<TKey>,
                                          OpenIddictScope<TKey>,
-                                         OpenIddictToken<TKey>, TKey>();
+                                         OpenIddictToken<TKey>, TKey>(optionsAction);
         }
 
         /// <summary>
@@ -148,8 +155,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// using the specified entities and the specified key type.
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
+        /// <param name="optionsAction">Custom options for Entity Framework builder.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static DbContextOptionsBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this DbContextOptionsBuilder builder)
+        public static DbContextOptionsBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(
+            [NotNull] this DbContextOptionsBuilder builder,
+            Action<OpenIddictEntityFrameworkOptions> optionsAction = null)
             where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
             where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
             where TScope : OpenIddictScope<TKey>, new()
@@ -161,7 +171,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            var extension = new OpenIddictExtension<TApplication, TAuthorization, TScope, TToken, TKey>();
+            var options = new OpenIddictEntityFrameworkOptions();
+            optionsAction?.Invoke(options);
+
+            var extension = new OpenIddictExtension<TApplication, TAuthorization, TScope, TToken, TKey>(options);
             ((IDbContextOptionsBuilderInfrastructure) builder).AddOrUpdateExtension(extension);
 
             return builder;
@@ -172,13 +185,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// using the default OpenIddict models and the default key type (string).
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
+        /// <param name="optionsAction">Custom options for Entity Framework builder.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static ModelBuilder UseOpenIddict([NotNull] this ModelBuilder builder)
+        public static ModelBuilder UseOpenIddict([NotNull] this ModelBuilder builder, 
+            Action<OpenIddictEntityFrameworkOptions> optionsAction = null)
         {
             return builder.UseOpenIddict<OpenIddictApplication,
                                          OpenIddictAuthorization,
                                          OpenIddictScope,
-                                         OpenIddictToken, string>();
+                                         OpenIddictToken, string>(optionsAction);
         }
 
         /// <summary>
@@ -186,13 +201,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// using the default OpenIddict models and the specified key type.
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
+        /// <param name="optionsAction">Custom options for Entity Framework builder.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static ModelBuilder UseOpenIddict<TKey>([NotNull] this ModelBuilder builder) where TKey : IEquatable<TKey>
+        public static ModelBuilder UseOpenIddict<TKey>(
+            [NotNull] this ModelBuilder builder,
+            Action<OpenIddictEntityFrameworkOptions> optionsAction = null) where TKey : IEquatable<TKey>
         {
             return builder.UseOpenIddict<OpenIddictApplication<TKey>,
                                          OpenIddictAuthorization<TKey>,
                                          OpenIddictScope<TKey>,
-                                         OpenIddictToken<TKey>, TKey>();
+                                         OpenIddictToken<TKey>, TKey>(optionsAction);
         }
 
         /// <summary>
@@ -200,8 +218,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// using the specified entities and the specified key type.
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
+        /// <param name="optionsAction">Custom options for Entity Framework builder.</param>
         /// <returns>The Entity Framework context builder.</returns>
-        public static ModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this ModelBuilder builder)
+        public static ModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>(
+            [NotNull] this ModelBuilder builder,
+            Action<OpenIddictEntityFrameworkOptions> optionsAction = null)
             where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
             where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
             where TScope : OpenIddictScope<TKey>, new()
@@ -212,6 +233,9 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(builder));
             }
+
+            var options = new OpenIddictEntityFrameworkOptions();
+            optionsAction?.Invoke(options);
 
             // Warning: optional foreign keys MUST NOT be added as CLR properties because
             // Entity Framework would throw an exception due to the TKey generic parameter
@@ -235,7 +259,7 @@ namespace Microsoft.Extensions.DependencyInjection
                       .HasForeignKey("ApplicationId")
                       .IsRequired(required: false);
 
-                entity.ToTable("OpenIddictApplications");
+                entity.ToTable(options.ApplicationsTableName);
             });
 
             // Configure the TAuthorization entity.
@@ -248,7 +272,7 @@ namespace Microsoft.Extensions.DependencyInjection
                       .HasForeignKey("AuthorizationId")
                       .IsRequired(required: false);
 
-                entity.ToTable("OpenIddictAuthorizations");
+                entity.ToTable(options.AuthorizationsTableName);
             });
 
             // Configure the TScope entity.
@@ -256,7 +280,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 entity.HasKey(scope => scope.Id);
 
-                entity.ToTable("OpenIddictScopes");
+                entity.ToTable(options.ScopesTableName);
             });
 
             // Configure the TToken entity.
@@ -264,7 +288,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 entity.HasKey(token => token.Id);
 
-                entity.ToTable("OpenIddictTokens");
+                entity.ToTable(options.TokensTableName);
             });
 
             return builder;
