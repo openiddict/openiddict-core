@@ -10,10 +10,6 @@ using JetBrains.Annotations;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
-#if NETSTANDARD1_3
-using System.Reflection;
-#endif
-
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>

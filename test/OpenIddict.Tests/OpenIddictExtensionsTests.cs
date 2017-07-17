@@ -53,13 +53,13 @@ namespace OpenIddict.Tests
         }
 
         [Theory]
-        [InlineData(SecurityAlgorithms.RsaSha256Signature)]
-        [InlineData(SecurityAlgorithms.RsaSha384Signature)]
-        [InlineData(SecurityAlgorithms.RsaSha512Signature)]
+        [InlineData(SecurityAlgorithms.RsaSha256)]
+        [InlineData(SecurityAlgorithms.RsaSha384)]
+        [InlineData(SecurityAlgorithms.RsaSha512)]
 #if SUPPORTS_ECDSA
-        [InlineData(SecurityAlgorithms.EcdsaSha256Signature)]
-        [InlineData(SecurityAlgorithms.EcdsaSha384Signature)]
-        [InlineData(SecurityAlgorithms.EcdsaSha512Signature)]
+        [InlineData(SecurityAlgorithms.EcdsaSha256)]
+        [InlineData(SecurityAlgorithms.EcdsaSha384)]
+        [InlineData(SecurityAlgorithms.EcdsaSha512)]
 #endif
         public void AddEphemeralSigningKey_SigningCredentialsUseSpecifiedAlgorithm(string algorithm)
         {
@@ -77,13 +77,34 @@ namespace OpenIddict.Tests
             Assert.Equal(algorithm, credentials.Algorithm);
         }
 
+        [Fact]
+        public void AddEncryptingKey_EncryptingKeyIsCorrectlyAdded()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = new OpenIddictBuilder(services);
+
+            var factory = Mock.Of<CryptoProviderFactory>(mock =>
+                mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW, It.IsAny<SecurityKey>()));
+
+            var key = Mock.Of<SecurityKey>(mock => mock.CryptoProviderFactory == factory);
+
+            // Act
+            builder.AddEncryptingKey(key);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Same(key, options.EncryptingCredentials[0].Key);
+        }
+
         [Theory]
-        [InlineData(SecurityAlgorithms.HmacSha256Signature)]
-        [InlineData(SecurityAlgorithms.RsaSha256Signature)]
+        [InlineData(SecurityAlgorithms.HmacSha256)]
+        [InlineData(SecurityAlgorithms.RsaSha256)]
 #if SUPPORTS_ECDSA
-        [InlineData(SecurityAlgorithms.EcdsaSha256Signature)]
-        [InlineData(SecurityAlgorithms.EcdsaSha384Signature)]
-        [InlineData(SecurityAlgorithms.EcdsaSha512Signature)]
+        [InlineData(SecurityAlgorithms.EcdsaSha256)]
+        [InlineData(SecurityAlgorithms.EcdsaSha384)]
+        [InlineData(SecurityAlgorithms.EcdsaSha512)]
 #endif
         public void AddSigningKey_SigningKeyIsCorrectlyAdded(string algorithm)
         {

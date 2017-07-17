@@ -133,6 +133,28 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
+        /// Registers a <see cref="SecurityKey"/> used to encrypt the JWT access tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <param name="key">The security key.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder AddEncryptingKey(
+            [NotNull] this OpenIddictBuilder builder, [NotNull] SecurityKey key)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            return builder.Configure(options => options.EncryptingCredentials.AddKey(key));
+        }
+
+        /// <summary>
         /// Registers a <see cref="X509Certificate2"/> that is used to sign the JWT tokens issued by OpenIddict.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
