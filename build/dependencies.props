@@ -7,7 +7,7 @@
     <CryptoHelperVersion>2.0.0</CryptoHelperVersion>
     <JetBrainsVersion>10.3.0</JetBrainsVersion>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
-    <MoqVersion>4.7.8</MoqVersion>
+    <MoqVersion>4.7.63</MoqVersion>
     <RuntimeFrameworkVersion>1.0.0</RuntimeFrameworkVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>
     <XunitVersion>2.2.0</XunitVersion>
