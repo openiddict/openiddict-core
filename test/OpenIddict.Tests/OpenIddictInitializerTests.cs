@@ -112,6 +112,33 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenNoSigningKeyIsRegisteredIfAnAccessTokenHandlerIsSet()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.EnableAuthorizationEndpoint("/connect/authorize")
+                       .EnableTokenEndpoint("/connect/token")
+                       .AllowAuthorizationCodeFlow()
+                       .UseJsonWebTokens();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            Assert.Equal(
+                "At least one signing key must be registered when using JWT as the access token format. " +
+                "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
+                "or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call " +
+                "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.", exception.Message);
+        }
+
+        [Fact]
         public async Task PostConfigure_ThrowsAnExceptionWhenNoSigningKeyIsRegisteredIfTheImplicitFlowIsEnabled()
         {
             // Arrange
@@ -129,9 +156,11 @@ namespace OpenIddict.Tests
                 return client.GetAsync("/");
             });
 
-            Assert.Equal("At least one asymmetric signing key must be registered when enabling the implicit flow. " +
-                         "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
-                         "or call 'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.", exception.Message);
+            Assert.Equal(
+                "At least one asymmetric signing key must be registered when enabling the implicit flow. " +
+                "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
+                "or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call " +
+                "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.", exception.Message);
         }
 
         private static TestServer CreateAuthorizationServer(Action<OpenIddictBuilder> configuration = null)
