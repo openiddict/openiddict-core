@@ -88,13 +88,24 @@ namespace OpenIddict
                 throw new InvalidOperationException("The revocation endpoint cannot be enabled when token revocation is disabled.");
             }
 
+            if (options.AccessTokenHandler != null && options.SigningCredentials.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    "At least one signing key must be registered when using JWT as the access token format. " +
+                    "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
+                    "or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call " +
+                    "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
+            }
+
             // Ensure at least one asymmetric signing certificate/key was registered if the implicit flow was enabled.
             if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey) &&
                  options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))
             {
-                throw new InvalidOperationException("At least one asymmetric signing key must be registered when enabling the implicit flow. " +
-                                                    "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
-                                                    "or call 'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
+                throw new InvalidOperationException(
+                    "At least one asymmetric signing key must be registered when enabling the implicit flow. " +
+                    "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
+                    "or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call " +
+                    "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
             }
         }
     }

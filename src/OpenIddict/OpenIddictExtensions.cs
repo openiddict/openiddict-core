@@ -61,11 +61,11 @@ namespace Microsoft.AspNetCore.Builder
             // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
             builder.Services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictOptions>,
-                                            OpenIdConnectServerInitializer>());
+                                            OpenIddictInitializer>());
 
             builder.Services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictOptions>,
-                                            OpenIddictInitializer>());
+                                            OpenIdConnectServerInitializer>());
 
             // Register the OpenID Connect server handler in the authentication options,
             // so it can be discovered by the default authentication handler provider.
@@ -87,6 +87,46 @@ namespace Microsoft.AspNetCore.Builder
             builder.Services.Configure(OpenIdConnectServerDefaults.AuthenticationScheme, configuration);
 
             return builder;
+        }
+
+        /// <summary>
+        /// Registers (and generates if necessary) a user-specific development
+        /// certificate used to sign the JWT tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder AddDevelopmentSigningCertificate(
+            [NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.Configure(options => options.SigningCredentials.AddDevelopmentCertificate());
+        }
+
+        /// <summary>
+        /// Registers (and generates if necessary) a user-specific development
+        /// certificate used to sign the JWT tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <param name="subject">The subject name associated with the certificate.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder AddDevelopmentSigningCertificate(
+            [NotNull] this OpenIddictBuilder builder, [NotNull] X500DistinguishedName subject)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (subject == null)
+            {
+                throw new ArgumentNullException(nameof(subject));
+            }
+
+            return builder.Configure(options => options.SigningCredentials.AddDevelopmentCertificate(subject));
         }
 
         /// <summary>

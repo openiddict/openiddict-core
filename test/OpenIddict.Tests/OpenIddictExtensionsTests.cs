@@ -37,6 +37,75 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public void AddDevelopmentSigningCertificate_ThrowsAnExceptionForNullBuilder()
+        {
+            // Arrange
+            var builder = (OpenIddictBuilder) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(delegate
+            {
+                builder.AddDevelopmentSigningCertificate();
+            });
+
+            Assert.Equal("builder", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddDevelopmentSigningCertificate_ThrowsAnExceptionForNullSubject()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(delegate
+            {
+                builder.AddDevelopmentSigningCertificate(subject: null);
+            });
+
+            Assert.Equal("subject", exception.ParamName);
+        }
+
+#if SUPPORTS_CERTIFICATE_GENERATION
+        [Fact]
+        public void AddDevelopmentSigningCertificate_CanGenerateCertificate()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.AddDevelopmentSigningCertificate();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Equal(1, options.SigningCredentials.Count);
+            Assert.Equal(SecurityAlgorithms.RsaSha256, options.SigningCredentials[0].Algorithm);
+            Assert.NotNull(options.SigningCredentials[0].Kid);
+        }
+#else
+        [Fact]
+        public void AddDevelopmentSigningCertificate_ThrowsAnExceptionOnUnsupportedPlatforms()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = new OpenIddictBuilder(services);
+
+            builder.AddDevelopmentSigningCertificate();
+
+            // Act and assert
+            var exception = Assert.Throws<PlatformNotSupportedException>(delegate 
+            {
+                return GetOptions(services);
+            });
+
+            Assert.Equal("X.509 certificate generation is not supported on this platform.", exception.Message);
+        }
+#endif
+
+        [Fact]
         public void AddEphemeralSigningKey_SigningKeyIsCorrectlyAdded()
         {
             // Arrange
