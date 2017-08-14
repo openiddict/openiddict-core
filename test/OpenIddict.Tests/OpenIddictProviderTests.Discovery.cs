@@ -56,7 +56,7 @@ namespace OpenIddict.Tests
             var types = ((JArray) response[OpenIdConnectConstants.Metadata.GrantTypesSupported]).Values<string>();
 
             // Assert
-            Assert.Equal(1, types.Count());
+            Assert.Single(types);
             Assert.Contains(flow, types);
         }
 

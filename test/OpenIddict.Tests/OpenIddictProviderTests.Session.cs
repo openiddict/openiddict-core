@@ -120,7 +120,7 @@ namespace OpenIddict.Tests
             var identifier = (string) response[OpenIdConnectConstants.Parameters.RequestId];
 
             // Assert
-            Assert.Equal(1, response.GetParameters().Count());
+            Assert.Single(response.GetParameters());
             Assert.NotNull(identifier);
 
             cache.Verify(mock => mock.SetAsync(
