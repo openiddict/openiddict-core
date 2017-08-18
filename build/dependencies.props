@@ -5,7 +5,7 @@
     <AspNetContribOpenIdServerVersion>2.0.0-*</AspNetContribOpenIdServerVersion>
     <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
     <CoreFxVersion>4.4.0</CoreFxVersion>
-    <CryptoHelperVersion>2.0.0</CryptoHelperVersion>
+    <CryptoHelperVersion>3.0.0</CryptoHelperVersion>
     <JetBrainsVersion>10.3.0</JetBrainsVersion>
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
     <MoqVersion>4.7.63</MoqVersion>
