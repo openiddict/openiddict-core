@@ -58,5 +58,15 @@ namespace OpenIddict.Models
         /// Gets or sets the type of the current token.
         /// </summary>
         public virtual string Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the datetime that the token was issued.  
+        /// </summary>
+        public virtual DateTimeOffset? IssuedUtc { get; set; }
+
+        /// <summary>
+        /// Gets or sets the datetime that the token expires.
+        /// </summary>
+        public virtual DateTimeOffset? ExpiresUtc { get; set; }
     }
 }
