@@ -4,10 +4,9 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/46ofo2eusje0hcw2?svg=true)](https://ci.appveyor.com/project/openiddict/openiddict-core)
 [![Build status](https://travis-ci.org/openiddict/openiddict-core.svg)](https://travis-ci.org/openiddict/openiddict-core)
 
-
 ### What's OpenIddict?
 
-OpenIddict aims at providing a **simple and easy-to-use solution** to implement an **OpenID Connect server in any ASP.NET Core application**.
+OpenIddict aims at providing a **simple and easy-to-use solution** to implement an **OpenID Connect server in any ASP.NET Core 1.x or 2.x application**.
 
 OpenIddict is based on
 **[AspNet.Security.OpenIdConnect.Server (codenamed ASOS)](https://github.com/aspnet-contrib/AspNet.Security.OpenIdConnect.Server)** to control the OpenID Connect authentication flow and can be used with any membership stack, **including [ASP.NET Core Identity](https://github.com/aspnet/Identity)**.
@@ -15,6 +14,9 @@ OpenIddict is based on
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)** and the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)**. You can also create your own custom grant types.
 
 Note: OpenIddict uses **[Entity Framework Core](https://github.com/aspnet/EntityFramework)** by default, but you can also provide your own store.
+
+> Note: **the OpenIddict 2.x packages are only compatible with ASP.NET Core 2.x**.
+> If your application targets ASP.NET Core 1.x, use the OpenIddict 1.x packages.
 
 ### Why an OpenID Connect server?
 
@@ -27,11 +29,13 @@ with the power to control who can access your API and the information that is ex
 
 **[Specialized samples can be found in the samples repository](https://github.com/openiddict/openiddict-samples):**
 
-  - [Authorization code flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/CodeFlow)
-  - [Implicit flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/ImplicitFlow)
-  - [Password flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/PasswordFlow)
-  - [Client credentials flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/ClientCredentialsFlow)
-  - [Refresh flow sample](https://github.com/openiddict/openiddict-samples/tree/master/samples/RefreshFlow)
+  - [Authorization code flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/CodeFlow)
+  - [Implicit flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/ImplicitFlow)
+  - [Password flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/PasswordFlow)
+  - [Client credentials flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/ClientCredentialsFlow)
+  - [Refresh flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/RefreshFlow)
+
+> **Samples for ASP.NET Core 1.x can be found [in the master branch of the samples repository](https://github.com/openiddict/openiddict-samples/tree/master)**.
 
 --------------
 
@@ -39,7 +43,7 @@ with the power to control who can access your API and the information that is ex
 
 To use OpenIddict, you need to:
 
-  - **Install the latest [.NET Core tooling](https://www.microsoft.com/net/download) and update your packages to reference the ASP.NET Core RTM packages**.
+  - **Install the latest [.NET Core 2.x tooling](https://www.microsoft.com/net/download) and update your packages to reference the ASP.NET Core 2.x packages**.
 
   - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
@@ -58,10 +62,10 @@ To use OpenIddict, you need to:
   - **Update your `.csproj` file** to reference `AspNet.Security.OAuth.Validation` and the `OpenIddict` packages:
 
 ```xml
-<PackageReference Include="AspNet.Security.OAuth.Validation" Version="1.0.0-*" />
-<PackageReference Include="OpenIddict" Version="1.0.0-*" />
-<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="1.0.0-*" />
-<PackageReference Include="OpenIddict.Mvc" Version="1.0.0-*" />
+<PackageReference Include="AspNet.Security.OAuth.Validation" Version="2.0.0-*" />
+<PackageReference Include="OpenIddict" Version="2.0.0-*" />
+<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="2.0.0-*" />
+<PackageReference Include="OpenIddict.Mvc" Version="2.0.0-*" />
 ```
 
   - **Configure the OpenIddict services** in `Startup.ConfigureServices`:
@@ -86,6 +90,10 @@ public void ConfigureServices(IServiceCollection services)
     services.AddIdentity<ApplicationUser, IdentityRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
+
+    // Register the OAuth2 validation handler.
+    services.AddAuthentication()
+        .AddOAuthValidation();
 
     // Register the OpenIddict services.
     // Note: use the generic overload if you need
@@ -116,21 +124,16 @@ public void ConfigureServices(IServiceCollection services)
 [Configuration and options](https://github.com/openiddict/core/wiki/Configuration-and-options)
 in the project wiki.
 
-  - **Add OpenIddict and the OAuth2 token validation middleware in your ASP.NET Core pipeline** by calling `app.UseOAuthValidation()` and `app.UseOpenIddict()` after `app.UseIdentity()` and before `app.UseMvc()`:
+  - **Make sure the authentication middleware is registered before all the other middleware, including `app.UseMvc()`:
 
 ```csharp
-public void Configure(IApplicationBuilder app) {
-    app.UseIdentity();
-
-    app.UseOAuthValidation();
-
-    app.UseOpenIddict();
+public void Configure(IApplicationBuilder app)
+{
+    app.UseAuthentication();
 
     app.UseMvc();
 }
 ```
-
-> **Note:** `UseOpenIddict()` must be registered ***after*** `app.UseIdentity()` and the external social providers.
 
   - **Update your Entity Framework context registration to register the OpenIddict entities**:
 
