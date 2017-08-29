@@ -14,6 +14,7 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Core;
@@ -31,8 +32,9 @@ namespace OpenIddict
                 return;
             }
 
-            var ticket = await ReceiveTokenAsync(context.AccessToken, options, context.Request,
-                                                 context.DataFormat, context.HttpContext.RequestAborted);
+            var ticket = await ReceiveTokenAsync(
+                context.AccessToken, options, context.HttpContext,
+                context.Request, context.DataFormat);
 
             // If a valid ticket was returned by ReceiveTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -54,8 +56,9 @@ namespace OpenIddict
                 return;
             }
 
-            var ticket = await ReceiveTokenAsync(context.AuthorizationCode, options, context.Request,
-                                                 context.DataFormat, context.HttpContext.RequestAborted);
+            var ticket = await ReceiveTokenAsync(
+                context.AuthorizationCode, options, context.HttpContext,
+                context.Request, context.DataFormat);
 
             // If a valid ticket was returned by ReceiveTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -77,8 +80,9 @@ namespace OpenIddict
                 return;
             }
 
-            var ticket = await ReceiveTokenAsync(context.RefreshToken, options, context.Request,
-                                                 context.DataFormat, context.HttpContext.RequestAborted);
+            var ticket = await ReceiveTokenAsync(
+                context.RefreshToken, options, context.HttpContext,
+                context.Request, context.DataFormat);
 
             // If a valid ticket was returned by ReceiveTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -94,9 +98,10 @@ namespace OpenIddict
 
         public override async Task SerializeAccessToken([NotNull] SerializeAccessTokenContext context)
         {
-            var token = await CreateTokenAsync(OpenIdConnectConstants.TokenUsages.AccessToken,
-                (OpenIddictOptions) context.Options, context.Request, context.DataFormat,
-                                    context.Ticket, context.HttpContext.RequestAborted);
+            var token = await CreateTokenAsync(
+                OpenIdConnectConstants.TokenUsages.AccessToken,
+                context.Ticket, (OpenIddictOptions) context.Options,
+                context.HttpContext, context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -112,9 +117,10 @@ namespace OpenIddict
 
         public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context)
         {
-            var token = await CreateTokenAsync(OpenIdConnectConstants.TokenUsages.AuthorizationCode,
-                (OpenIddictOptions) context.Options, context.Request, context.DataFormat,
-                                    context.Ticket, context.HttpContext.RequestAborted);
+            var token = await CreateTokenAsync(
+                OpenIdConnectConstants.TokenUsages.AuthorizationCode,
+                context.Ticket, (OpenIddictOptions) context.Options,
+                context.HttpContext, context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -130,9 +136,10 @@ namespace OpenIddict
 
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context)
         {
-            var token = await CreateTokenAsync(OpenIdConnectConstants.TokenUsages.RefreshToken,
-                (OpenIddictOptions) context.Options, context.Request, context.DataFormat,
-                                    context.Ticket, context.HttpContext.RequestAborted);
+            var token = await CreateTokenAsync(
+                OpenIdConnectConstants.TokenUsages.RefreshToken,
+                context.Ticket, (OpenIddictOptions) context.Options,
+                context.HttpContext, context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -147,10 +154,10 @@ namespace OpenIddict
         }
 
         private async Task<string> CreateTokenAsync(
-            [NotNull] string type, [NotNull] OpenIddictOptions options,
+            [NotNull] string type, [NotNull] AuthenticationTicket ticket,
+            [NotNull] OpenIddictOptions options, [NotNull] HttpContext context,
             [NotNull] OpenIdConnectRequest request,
-            [NotNull] ISecureDataFormat<AuthenticationTicket> format,
-            [NotNull] AuthenticationTicket ticket, CancellationToken cancellationToken)
+            [NotNull] ISecureDataFormat<AuthenticationTicket> format)
         {
             Debug.Assert(!(options.DisableTokenRevocation && options.UseReferenceTokens),
                 "Token revocation cannot be disabled when using reference tokens.");
@@ -202,14 +209,18 @@ namespace OpenIddict
                     hash = Convert.ToBase64String(algorithm.ComputeHash(bytes));
                 }
 
-                token = await Tokens.CreateAsync(type, subject, hash, ciphertext, cancellationToken);
+                token = await Tokens.CreateAsync(type, subject, hash, ciphertext,
+                    ticket.Properties.IssuedUtc,
+                    ticket.Properties.ExpiresUtc, context.RequestAborted);
             }
 
             // Otherwise, only create a token metadata entry for authorization codes and refresh tokens.
             else if (string.Equals(type, OpenIdConnectConstants.TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase) ||
                      string.Equals(type, OpenIdConnectConstants.TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase))
             {
-                token = await Tokens.CreateAsync(type, subject, cancellationToken);
+                token = await Tokens.CreateAsync(type, subject,
+                    ticket.Properties.IssuedUtc,
+                    ticket.Properties.ExpiresUtc, context.RequestAborted);
             }
 
             else
@@ -224,7 +235,7 @@ namespace OpenIddict
             }
 
             // Throw an exception if the token identifier can't be resolved.
-            var identifier = await Tokens.GetIdAsync(token, cancellationToken);
+            var identifier = await Tokens.GetIdAsync(token, context.RequestAborted);
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new InvalidOperationException("The unique key associated with a refresh token cannot be null or empty.");
@@ -238,22 +249,22 @@ namespace OpenIddict
             // If the client application is known, associate it with the token.
             if (!string.IsNullOrEmpty(request.ClientId))
             {
-                var application = await Applications.FindByClientIdAsync(request.ClientId, cancellationToken);
+                var application = await Applications.FindByClientIdAsync(request.ClientId, context.RequestAborted);
                 if (application == null)
                 {
                     throw new InvalidOperationException("The client application cannot be retrieved from the database.");
                 }
 
-                var key = await Applications.GetIdAsync(application, cancellationToken);
+                var key = await Applications.GetIdAsync(application, context.RequestAborted);
 
-                await Tokens.SetClientAsync(token, key, cancellationToken);
+                await Tokens.SetClientAsync(token, key, context.RequestAborted);
             }
 
             // If an authorization identifier was specified, bind it to the token.
             if (ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId))
             {
                 await Tokens.SetAuthorizationAsync(token,
-                    ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId), cancellationToken);
+                    ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId), context.RequestAborted);
             }
 
             // Otherwise, create an ad-hoc authorization if the token is an authorization code.
@@ -261,21 +272,21 @@ namespace OpenIddict
             {
                 Debug.Assert(!string.IsNullOrEmpty(request.ClientId), "The client identifier shouldn't be null.");
 
-                var application = await Applications.FindByClientIdAsync(request.ClientId, cancellationToken);
+                var application = await Applications.FindByClientIdAsync(request.ClientId, context.RequestAborted);
                 if (application == null)
                 {
                     throw new InvalidOperationException("The client application cannot be retrieved from the database.");
                 }
 
                 var authorization = await Authorizations.CreateAsync(subject,
-                    await Applications.GetIdAsync(application, cancellationToken), request.GetScopes(), cancellationToken);
+                    await Applications.GetIdAsync(application, context.RequestAborted), request.GetScopes(), context.RequestAborted);
 
                 if (authorization != null)
                 {
-                    var key = await Authorizations.GetIdAsync(authorization, cancellationToken);
+                    var key = await Authorizations.GetIdAsync(authorization, context.RequestAborted);
                     ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, key);
 
-                    await Tokens.SetAuthorizationAsync(token, key, cancellationToken);
+                    await Tokens.SetAuthorizationAsync(token, key, context.RequestAborted);
                 }
             }
 
@@ -291,8 +302,8 @@ namespace OpenIddict
 
         private async Task<AuthenticationTicket> ReceiveTokenAsync(
             [NotNull] string value, [NotNull] OpenIddictOptions options,
-            [NotNull] OpenIdConnectRequest request,
-            [NotNull] ISecureDataFormat<AuthenticationTicket> format, CancellationToken cancellationToken)
+            [NotNull] HttpContext context, [NotNull] OpenIdConnectRequest request,
+            [NotNull] ISecureDataFormat<AuthenticationTicket> format)
         {
             if (!options.UseReferenceTokens)
             {
@@ -319,7 +330,7 @@ namespace OpenIddict
 
             // Retrieve the token entry from the database. If it
             // cannot be found, assume the token is not valid.
-            var token = await Tokens.FindByHashAsync(hash, cancellationToken);
+            var token = await Tokens.FindByHashAsync(hash, context.RequestAborted);
             if (token == null)
             {
                 Logger.LogInformation("The reference token corresponding to the '{Hash}' hashed " +
@@ -328,7 +339,7 @@ namespace OpenIddict
                 return null;
             }
 
-            var identifier = await Tokens.GetIdAsync(token, cancellationToken);
+            var identifier = await Tokens.GetIdAsync(token, context.RequestAborted);
             if (string.IsNullOrEmpty(identifier))
             {
                 Logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
@@ -339,7 +350,7 @@ namespace OpenIddict
 
             // Extract the encrypted payload from the token. If it's null or empty,
             // assume the token is not a reference token and consider it as invalid.
-            var ciphertext = await Tokens.GetCiphertextAsync(token, cancellationToken);
+            var ciphertext = await Tokens.GetCiphertextAsync(token, context.RequestAborted);
             if (string.IsNullOrEmpty(ciphertext))
             {
                 Logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be retrieved. " +
@@ -353,7 +364,7 @@ namespace OpenIddict
             {
                 Logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be decrypted. " +
                                   "This may indicate that the token entry is corrupted or tampered.",
-                                  await Tokens.GetIdAsync(token, cancellationToken));
+                                  await Tokens.GetIdAsync(token, context.RequestAborted));
 
                 return null;
             }
@@ -367,7 +378,7 @@ namespace OpenIddict
             if (!ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId))
             {
                 ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId,
-                    await Tokens.GetAuthorizationIdAsync(token, cancellationToken));
+                    await Tokens.GetAuthorizationIdAsync(token, context.RequestAborted));
             }
 
             Logger.LogTrace("The reference token '{Identifier}' was successfully retrieved " +

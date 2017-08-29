@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -559,7 +560,10 @@ namespace OpenIddict.Tests
                 {
                     var token = new OpenIddictToken();
 
-                    instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique", It.IsAny<CancellationToken>()))
+                    instance.Setup(mock => mock.CreateAsync(
+                        OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique",
+                        It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
+                        It.IsAny<CancellationToken>()))
                         .ReturnsAsync(token);
 
                     instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))

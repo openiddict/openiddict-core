@@ -61,11 +61,16 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="type">The token type.</param>
         /// <param name="subject">The subject associated with the token.</param>
+        /// <param name="start">The date on which the token will start to be considered valid.</param>
+        /// <param name="end">The date on which the token will no longer be considered valid.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, CancellationToken cancellationToken)
+        public virtual Task<TToken> CreateAsync(
+            [NotNull] string type, [NotNull] string subject,
+            [CanBeNull] DateTimeOffset? start,
+            [CanBeNull] DateTimeOffset? end, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(type))
             {
@@ -77,7 +82,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The subject cannot be null or empty.");
             }
 
-            return Store.CreateAsync(type, subject, cancellationToken);
+            return Store.CreateAsync(type, subject, start, end, cancellationToken);
         }
 
         /// <summary>
@@ -87,13 +92,15 @@ namespace OpenIddict.Core
         /// <param name="subject">The subject associated with the token.</param>
         /// <param name="hash">The hash of the crypto-secure random identifier associated with the token.</param>
         /// <param name="ciphertext">The ciphertext associated with the token.</param>
+        /// <param name="start">The date on which the token will start to be considered valid.</param>
+        /// <param name="end">The date on which the token will no longer be considered valid.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
         public virtual Task<TToken> CreateAsync(
-            [NotNull] string type, [NotNull] string subject, [NotNull] string hash,
-            [NotNull] string ciphertext, CancellationToken cancellationToken)
+            [NotNull] string type, [NotNull] string subject, [NotNull] string hash, [NotNull] string ciphertext,
+            [CanBeNull] DateTimeOffset? start, [CanBeNull] DateTimeOffset? end, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(type))
             {
@@ -110,7 +117,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The ciphertext cannot be null or empty.", nameof(ciphertext));
             }
 
-            return Store.CreateAsync(type, subject, hash, ciphertext, cancellationToken);
+            return Store.CreateAsync(type, subject, hash, ciphertext, start, end, cancellationToken);
         }
 
         /// <summary>
