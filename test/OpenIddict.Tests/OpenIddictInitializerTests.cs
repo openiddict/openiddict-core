@@ -17,6 +17,27 @@ namespace OpenIddict.Tests
     public class OpenIddictInitializerTests
     {
         [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenRandomNumberGeneratorIsNull()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options => options.RandomNumberGenerator = null);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            // Assert
+            Assert.Equal("A random number generator must be registered.", exception.Message);
+        }
+
+        [Fact]
         public async Task PostConfigure_ThrowsAnExceptionWhenNoFlowIsEnabled()
         {
             // Arrange
@@ -109,6 +130,52 @@ namespace OpenIddict.Tests
             });
 
             Assert.Equal("The revocation endpoint cannot be enabled when token revocation is disabled.", exception.Message);
+        }
+
+        [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenUsingReferenceTokensWithTokenRevocationDisabled()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.EnableAuthorizationEndpoint("/connect/authorize")
+                       .AllowImplicitFlow()
+                       .DisableTokenRevocation()
+                       .UseReferenceTokens();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            Assert.Equal("Reference tokens cannot be used when disabling token revocation.", exception.Message);
+        }
+
+        [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenUsingReferenceTokensIfAnAccessTokenHandlerIsSet()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.EnableAuthorizationEndpoint("/connect/authorize")
+                       .AllowImplicitFlow()
+                       .UseReferenceTokens()
+                       .UseJsonWebTokens();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            Assert.Equal("Reference tokens cannot be used when configuring JWT as the access token format.", exception.Message);
         }
 
         [Fact]

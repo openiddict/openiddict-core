@@ -146,7 +146,10 @@ namespace OpenIddict.Tests
 
                         ticket.SetScopes(request.GetScopes());
 
-                        ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70");
+                        if (request.HasParameter("attach-authorization"))
+                        {
+                            ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70");
+                        }
 
                         return context.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
                     }

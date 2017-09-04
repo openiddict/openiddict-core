@@ -44,10 +44,29 @@ namespace OpenIddict.Models
         public virtual TAuthorization Authorization { get; set; }
 
         /// <summary>
+        /// Gets or sets the encrypted payload
+        /// of the current token, if applicable.
+        /// This property is only used for reference tokens.
+        /// </summary>
+        public virtual string Ciphertext { get; set; }
+
+        /// <summary>
+        /// Gets or sets the hashed identifier associated
+        /// with the current token, if applicable.
+        /// This property is only used for reference tokens.
+        /// </summary>
+        public virtual string Hash { get; set; }
+
+        /// <summary>
         /// Gets or sets the unique identifier
         /// associated with the current token.
         /// </summary>
         public virtual TKey Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status of the current token.
+        /// </summary>
+        public virtual string Status { get; set; } = "valid";
 
         /// <summary>
         /// Gets or sets the subject associated with the current token.

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,10 +20,8 @@ namespace OpenIddict.Tests
 {
     public partial class OpenIddictProviderTests
     {
-        [Theory]
-        [InlineData(OpenIdConnectConstants.TokenTypeHints.AccessToken)]
-        [InlineData(OpenIdConnectConstants.TokenTypeHints.IdToken)]
-        public async Task ValidateRevocationRequest_UnknownTokenTokenHintIsRejected(string hint)
+        [Fact]
+        public async Task ValidateRevocationRequest_IdTokenTokenTokenHintIsRejected()
         {
             // Arrange
             var server = CreateAuthorizationServer();
@@ -35,13 +32,36 @@ namespace OpenIddict.Tests
             var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
             {
                 Token = "SlAV32hkKG",
-                TokenTypeHint = hint
+                TokenTypeHint = OpenIdConnectConstants.TokenTypeHints.IdToken
             });
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedTokenType, response.Error);
-            Assert.Equal("Only authorization codes and refresh tokens can be revoked. When specifying a token_type_hint " +
-                         "parameter, its value must be equal to 'authorization_code' or 'refresh_token'.", response.ErrorDescription);
+            Assert.Equal(
+                "Identity tokens cannot be revoked. When specifying a token_type_hint parameter, " +
+                "its value must be equal to 'access_token', 'authorization_code' or 'refresh_token'.", response.ErrorDescription);
+        }
+
+        [Fact]
+        public async Task ValidateRevocationRequest_AccessTokenTokenTokenHintIsRejectedWhenReferenceTokensAreDisabled()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
+                Token = "SlAV32hkKG",
+                TokenTypeHint = OpenIdConnectConstants.TokenTypeHints.AccessToken
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedTokenType, response.Error);
+            Assert.Equal(
+                "Access tokens cannot be revoked. When specifying a token_type_hint parameter, " +
+                "its value must be equal to 'authorization_code' or 'refresh_token'.", response.ErrorDescription);
         }
 
         [Fact]
@@ -218,7 +238,7 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
-        public async Task HandleRevocationRequest_RequestIsRejectedWhenTokenIsAnAccessToken()
+        public async Task HandleRevocationRequest_RequestIsRejectedWhenTokenIsAnAccessTokenIfReferenceTokensAreDisabled()
         {
             // Arrange
             var ticket = new AuthenticationTicket(
@@ -249,13 +269,13 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedTokenType, response.Error);
-            Assert.Equal("Only authorization codes and refresh tokens can be revoked.", response.ErrorDescription);
+            Assert.Equal("The specified access token cannot be revoked.", response.ErrorDescription);
 
             format.Verify(mock => mock.Unprotect("SlAV32hkKG"), Times.Once());
         }
 
         [Fact]
-        public async Task HandleRevocationRequest_RequestIsNotRejectedWhenTokenIsAnIdentityToken()
+        public async Task HandleRevocationRequest_RequestIsRejectedWhenTokenIsAnIdentityToken()
         {
             // Arrange
             var token = Mock.Of<SecurityToken>(mock =>
@@ -289,7 +309,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedTokenType, response.Error);
-            Assert.Equal("Only authorization codes and refresh tokens can be revoked.", response.ErrorDescription);
+            Assert.Equal("Identity tokens cannot be revoked.", response.ErrorDescription);
 
             handler.As<ISecurityTokenValidator>()
                 .Verify(mock => mock.CanReadToken("SlAV32hkKG"), Times.Once());
@@ -299,7 +319,7 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
-        public async Task HandleRevocationRequest_TokenIsNotRevokedWhenItIsAlreadyInvalid()
+        public async Task HandleRevocationRequest_TokenIsNotRevokedWhenItIsUnknown()
         {
             // Arrange
             var ticket = new AuthenticationTicket(
@@ -318,6 +338,55 @@ namespace OpenIddict.Tests
             {
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(value: null);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+
+                builder.Configure(options => options.RefreshTokenFormat = format.Object);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
+                Token = "SlAV32hkKG"
+            });
+
+            // Assert
+            Assert.Empty(response.GetParameters());
+
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.RevokeAsync(It.IsAny<OpenIddictToken>(), It.IsAny<CancellationToken>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task HandleRevocationRequest_TokenIsNotRevokedWhenItIsAlreadyRevoked()
+        {
+            // Arrange
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(),
+                new AuthenticationProperties(),
+                OpenIdConnectServerDefaults.AuthenticationScheme);
+
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Unprotect("SlAV32hkKG"))
+                .Returns(ticket);
+
+            var token = new OpenIddictToken();
+
+            var manager = CreateTokenManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.IsRevokedAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
             });
 
             var server = CreateAuthorizationServer(builder =>

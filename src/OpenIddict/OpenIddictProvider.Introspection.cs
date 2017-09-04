@@ -116,13 +116,18 @@ namespace OpenIddict
                 return;
             }
 
+            if (options.DisableTokenRevocation)
+            {
+                return;
+            }
+
             // When the received ticket is revocable, ensure it is still valid.
-            if (!options.DisableTokenRevocation && (context.Ticket.IsAuthorizationCode() || context.Ticket.IsRefreshToken()))
+            if (options.UseReferenceTokens || context.Ticket.IsAuthorizationCode() || context.Ticket.IsRefreshToken())
             {
                 // Retrieve the token from the database using the unique identifier stored in the authentication ticket:
                 // if the corresponding entry cannot be found, return Active = false to indicate that is is no longer valid.
                 var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-                if (token == null)
+                if (token == null || !await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
                 {
                     Logger.LogInformation("The token {Identifier} was declared as inactive because " +
                                           "it was revoked.", identifier);

@@ -11,6 +11,7 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using OpenIddict.Core;
 
 namespace OpenIddict
 {
@@ -197,56 +198,108 @@ namespace OpenIddict
         {
             var options = (OpenIddictOptions) context.Options;
 
-            if (!options.DisableTokenRevocation && (context.Request.IsAuthorizationCodeGrantType() ||
-                                                    context.Request.IsRefreshTokenGrantType()))
+            if (options.DisableTokenRevocation || (!context.Request.IsAuthorizationCodeGrantType() &&
+                                                   !context.Request.IsRefreshTokenGrantType()))
             {
-                Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
+                // Invoke the rest of the pipeline to allow
+                // the user code to handle the token request.
+                context.SkipHandler();
 
-                // Extract the token identifier from the authentication ticket.
-                var identifier = context.Ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId);
-                Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a ticket identifier.");
+                return;
+            }
 
-                if (context.Request.IsAuthorizationCodeGrantType())
+            Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
+
+            // Extract the token identifier from the authentication ticket.
+            var identifier = context.Ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId);
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a ticket identifier.");
+
+            if (context.Request.IsAuthorizationCodeGrantType())
+            {
+                // Retrieve the authorization code from the database and ensure it is still valid.
+                var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
+                if (token == null)
                 {
-                    // Retrieve the token from the database and ensure it is still valid.
-                    var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-                    if (token == null)
-                    {
-                        Logger.LogError("The token request was rejected because the authorization code was revoked.");
+                    Logger.LogError("The token request was rejected because the authorization code was no longer valid.");
 
-                        context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidGrant,
-                            description: "The authorization code is no longer valid.");
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: "The specified authorization code is no longer valid.");
 
-                        return;
-                    }
-
-                    // Revoke the authorization code to prevent token reuse.
-                    await Tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
+                    return;
                 }
 
-                else if (context.Request.IsRefreshTokenGrantType())
+                // If the authorization code is already marked as redeemed, this may indicate that the authorization
+                // code was compromised. In this case, revoke the authorization and all the associated tokens. 
+                // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
+                if (await Tokens.IsRedeemedAsync(token, context.HttpContext.RequestAborted))
                 {
-                    // Retrieve the token from the database and ensure it is still valid.
-                    var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-                    if (token == null)
+                    var key = context.Ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
+                    if (!string.IsNullOrEmpty(key))
                     {
-                        Logger.LogError("The token request was rejected because the refresh token was revoked.");
+                        var authorization = await Authorizations.FindByIdAsync(key, context.HttpContext.RequestAborted);
+                        if (authorization != null)
+                        {
+                            Logger.LogInformation("The authorization '{Identifier}' was automatically revoked.", key);
 
-                        context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidGrant,
-                            description: "The refresh token is no longer valid.");
+                            await Authorizations.RevokeAsync(authorization, context.HttpContext.RequestAborted);
+                        }
 
-                        return;
+                        var tokens = await Tokens.FindByAuthorizationIdAsync(key, context.HttpContext.RequestAborted);
+                        for (var index = 0; index < tokens.Length; index++)
+                        {
+                            Logger.LogInformation("The compromised token '{Identifier}' was automatically revoked.",
+                                await Tokens.GetIdAsync(tokens[index], context.HttpContext.RequestAborted));
+
+                            await Tokens.RevokeAsync(tokens[index], context.HttpContext.RequestAborted);
+                        }
                     }
 
-                    // When sliding expiration is enabled, immediately
-                    // revoke the refresh token to prevent future reuse.
-                    // See https://tools.ietf.org/html/rfc6749#section-6.
-                    if (context.Options.UseSlidingExpiration)
-                    {
-                        await Tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
-                    }
+                    Logger.LogError("The token request was rejected because the authorization code was already redeemed.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: "The specified authorization code has already been redemeed.");
+
+                    return;
+                }
+
+                else if (!await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
+                {
+                    Logger.LogError("The token request was rejected because the authorization code was no longer valid.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: "The specified authorization code is no longer valid.");
+
+                    return;
+                }
+
+                // Mark the authorization code as redeemed to prevent token reuse.
+                await Tokens.RedeemAsync(token, context.HttpContext.RequestAborted);
+            }
+
+            else
+            {
+                // Retrieve the token from the database and ensure it is still valid.
+                var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
+                if (token == null || !await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
+                {
+                    Logger.LogError("The token request was rejected because the refresh token was no longer valid.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: "The specified refresh token is no longer valid.");
+
+                    return;
+                }
+
+                // When sliding expiration is enabled, immediately
+                // redeem the refresh token to prevent future reuse.
+                // See https://tools.ietf.org/html/rfc6749#section-6.
+                if (options.UseSlidingExpiration)
+                {
+                    await Tokens.RedeemAsync(token, context.HttpContext.RequestAborted);
                 }
             }
 

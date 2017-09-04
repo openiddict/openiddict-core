@@ -890,5 +890,26 @@ namespace Microsoft.AspNetCore.Builder
                 };
             });
         }
+
+        /// <summary>
+        /// Configures OpenIddict to use reference tokens, so that authorization codes,
+        /// access tokens and refresh tokens are stored as ciphertext in the database
+        /// (only an identifier is returned to the client application). Enabling this option
+        /// is useful to keep track of all the issued tokens, when storing a very large
+        /// number of claims in the authorization codes, access tokens and refresh tokens
+        /// or when immediate revocation of reference access tokens is desired.
+        /// Note: this option cannot be used when configuring JWT as the access token format.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder UseReferenceTokens([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.Configure(options => options.UseReferenceTokens = true);
+        }
     }
 }

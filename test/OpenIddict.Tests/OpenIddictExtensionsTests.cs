@@ -614,6 +614,22 @@ namespace OpenIddict.Tests
             Assert.IsType<JwtSecurityTokenHandler>(options.AccessTokenHandler);
         }
 
+        [Fact]
+        public void UseReferenceTokens_ReferenceTokensAreEnabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.UseReferenceTokens();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.UseReferenceTokens);
+        }
+
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();

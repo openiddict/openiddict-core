@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -105,6 +106,48 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Creates a new authorization.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="scopes">The scopes associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+        /// </returns>
+        public virtual async Task<TAuthorization> CreateAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] IEnumerable<string> scopes, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client cannot be null or empty.", nameof(subject));
+            }
+
+            var key = ConvertIdentifierFromString(client);
+
+            var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+            if (application == null)
+            {
+                throw new InvalidOperationException("The application associated with the authorization cannot be found.");
+            }
+
+            var authorization = new TAuthorization
+            {
+                Application = application,
+                Scope = string.Join(" ", scopes),
+                Subject = subject
+            };
+
+            return await CreateAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves an authorization using its associated subject/client.
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
@@ -161,6 +204,20 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Retrieves the status associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the status associated with the specified authorization.
+        /// </returns>
+        public virtual Task<string> GetStatusAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(authorization.Status);
+        }
+
+        /// <summary>
         /// Retrieves the subject associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -177,6 +234,44 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return Task.FromResult(authorization.Subject);
+        }
+
+        /// <summary>
+        /// Sets the status associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="status">The status associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetStatusAsync([NotNull] TAuthorization authorization, [NotNull] string status, CancellationToken cancellationToken)
+        {
+            authorization.Status = status;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Updates an existing authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization to update.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+
+            Context.Attach(authorization);
+            Context.Update(authorization);
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (DbUpdateConcurrencyException) { }
         }
 
         /// <summary>

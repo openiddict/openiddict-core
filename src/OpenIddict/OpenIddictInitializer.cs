@@ -8,7 +8,10 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using AspNet.Security.OpenIdConnect.Primitives;
+using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -23,13 +26,17 @@ namespace OpenIddict
     public class OpenIddictInitializer : IPostConfigureOptions<OpenIddictOptions>
     {
         private readonly IDistributedCache _cache;
+        private readonly IDataProtectionProvider _dataProtectionProvider;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictInitializer"/> class.
         /// </summary>
-        public OpenIddictInitializer([NotNull] IDistributedCache cache)
+        public OpenIddictInitializer(
+            [NotNull] IDistributedCache cache,
+            [NotNull] IDataProtectionProvider dataProtectionProvider)
         {
             _cache = cache;
+            _dataProtectionProvider = dataProtectionProvider;
         }
 
         /// <summary>
@@ -50,11 +57,62 @@ namespace OpenIddict
                 throw new ArgumentException("The options instance name cannot be null or empty.", nameof(name));
             }
 
+            if (options.RandomNumberGenerator == null)
+            {
+                throw new InvalidOperationException("A random number generator must be registered.");
+            }
+
             // When no distributed cache has been registered in the options,
             // try to resolve it from the dependency injection container.
             if (options.Cache == null)
             {
                 options.Cache = _cache;
+            }
+
+            // If OpenIddict was configured to use reference tokens, replace the default access tokens/
+            // authorization codes/refresh tokens formats using a specific data protector to ensure
+            // that encrypted tokens stored in the database cannot be treated as valid tokens if the
+            // reference tokens option is later turned off by the developer.
+            if (options.UseReferenceTokens)
+            {
+                // Note: a default data protection provider is always registered by
+                // the OpenID Connect server handler when none is explicitly set but
+                // this initializer is registered to be invoked before ASOS' initializer.
+                // To ensure the provider property is never null, it's manually set here.
+                if (options.DataProtectionProvider == null)
+                {
+                    options.DataProtectionProvider = _dataProtectionProvider;
+                }
+
+                if (options.AccessTokenFormat == null)
+                {
+                    var protector = options.DataProtectionProvider.CreateProtector(
+                        nameof(OpenIdConnectServerHandler),
+                        nameof(options.AccessTokenFormat),
+                        nameof(options.UseReferenceTokens), name);
+
+                    options.AccessTokenFormat = new TicketDataFormat(protector);
+                }
+
+                if (options.AuthorizationCodeFormat == null)
+                {
+                    var protector = options.DataProtectionProvider.CreateProtector(
+                        nameof(OpenIdConnectServerHandler),
+                        nameof(options.AuthorizationCodeFormat),
+                        nameof(options.UseReferenceTokens), name);
+
+                    options.AuthorizationCodeFormat = new TicketDataFormat(protector);
+                }
+
+                if (options.RefreshTokenFormat == null)
+                {
+                    var protector = options.DataProtectionProvider.CreateProtector(
+                        nameof(OpenIdConnectServerHandler),
+                        nameof(options.RefreshTokenFormat),
+                        nameof(options.UseReferenceTokens), name);
+
+                    options.RefreshTokenFormat = new TicketDataFormat(protector);
+                }
             }
 
             // Ensure at least one flow has been enabled.
@@ -86,6 +144,18 @@ namespace OpenIddict
             if (options.RevocationEndpointPath.HasValue && options.DisableTokenRevocation)
             {
                 throw new InvalidOperationException("The revocation endpoint cannot be enabled when token revocation is disabled.");
+            }
+
+            if (options.UseReferenceTokens && options.DisableTokenRevocation)
+            {
+                throw new InvalidOperationException(
+                    "Reference tokens cannot be used when disabling token revocation.");
+            }
+
+            if (options.UseReferenceTokens && options.AccessTokenHandler != null)
+            {
+                throw new InvalidOperationException(
+                    "Reference tokens cannot be used when configuring JWT as the access token format.");
             }
 
             if (options.AccessTokenHandler != null && options.SigningCredentials.Count == 0)
