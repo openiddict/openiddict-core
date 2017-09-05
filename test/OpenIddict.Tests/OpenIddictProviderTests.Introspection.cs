@@ -225,7 +225,7 @@ namespace OpenIddict.Tests
             });
 
             // Assert
-            Assert.Equal(1, response.GetParameters().Count());
+            Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
         }
 
@@ -399,7 +399,7 @@ namespace OpenIddict.Tests
             });
 
             // Assert
-            Assert.Equal(1, response.GetParameters().Count());
+            Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
@@ -463,7 +463,7 @@ namespace OpenIddict.Tests
             });
 
             // Assert
-            Assert.Equal(1, response.GetParameters().Count());
+            Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
