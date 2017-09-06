@@ -34,7 +34,7 @@ namespace OpenIddict
                 }
 
                 // If a null value was returned by CreateAsync, return immediately.
-                var token = await Tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, subject, context.HttpContext.RequestAborted);
+                var token = await Tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, subject, context.Ticket.Properties.IssuedUtc, context.Ticket.Properties.ExpiresUtc, context.HttpContext.RequestAborted);
                 if (token == null)
                 {
                     return;
@@ -83,7 +83,7 @@ namespace OpenIddict
                 }
 
                 // If a null value was returned by CreateAsync, return immediately.
-                var token = await Tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken, subject, context.HttpContext.RequestAborted);
+                var token = await Tokens.CreateAsync(OpenIdConnectConstants.TokenTypeHints.RefreshToken, subject, context.Ticket.Properties.IssuedUtc, context.Ticket.Properties.ExpiresUtc, context.HttpContext.RequestAborted);
                 if (token == null)
                 {
                     return;

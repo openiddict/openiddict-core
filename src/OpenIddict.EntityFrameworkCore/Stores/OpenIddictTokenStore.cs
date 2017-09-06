@@ -114,18 +114,20 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="type">The token type.</param>
         /// <param name="subject">The subject associated with the token.</param>
+        /// <param name="issuedUtc">The date time that the token was issued.</param>
+        /// <param name="expiresUtc">The date time that the token will expire.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, CancellationToken cancellationToken)
+        public virtual Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, DateTimeOffset? issuedUtc, DateTimeOffset? expiresUtc, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(type))
             {
                 throw new ArgumentException("The token type cannot be null or empty.");
             }
 
-            return CreateAsync(new TToken { Subject = subject, Type = type }, cancellationToken);
+            return CreateAsync(new TToken { Subject = subject, Type = type, IssuedUtc = issuedUtc, ExpiresUtc = expiresUtc }, cancellationToken);
         }
 
         /// <summary>

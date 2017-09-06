@@ -13,6 +13,7 @@ using Newtonsoft.Json.Bson;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using Xunit;
+using System;
 
 namespace OpenIddict.Tests
 {
@@ -559,7 +560,7 @@ namespace OpenIddict.Tests
                 {
                     var token = new OpenIddictToken();
 
-                    instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique", It.IsAny<CancellationToken>()))
+                    instance.Setup(mock => mock.CreateAsync(OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique", It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
                         .ReturnsAsync(token);
 
                     instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))

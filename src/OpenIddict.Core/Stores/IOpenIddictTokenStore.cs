@@ -7,6 +7,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using System;
 
 namespace OpenIddict.Core
 {
@@ -31,11 +32,13 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="type">The token type.</param>
         /// <param name="subject">The subject associated with the token.</param>
+        /// <param name="issuedUtc">The date time that the token was issued.</param>
+        /// <param name="expiresUtc">The date time that the token will expire.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, CancellationToken cancellationToken);
+        Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, DateTimeOffset? issuedUtc, DateTimeOffset? expiresUtc, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an token using its unique identifier.

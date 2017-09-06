@@ -61,11 +61,13 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="type">The token type.</param>
         /// <param name="subject">The subject associated with the token.</param>
+        /// <param name="issuedUtc">The date time that the token was issued.</param>
+        /// <param name="expiresUtc">The date time that the token will expire.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual async Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, CancellationToken cancellationToken)
+        public virtual async Task<TToken> CreateAsync([NotNull] string type, [NotNull] string subject, DateTimeOffset? issuedUtc, DateTimeOffset? expiresUtc, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(type))
             {
@@ -83,7 +85,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The subject cannot be null or empty.");
             }
 
-            return await Store.CreateAsync(type, subject, cancellationToken);
+            return await Store.CreateAsync(type, subject, issuedUtc, expiresUtc, cancellationToken);
         }
 
         /// <summary>
