@@ -164,7 +164,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        public virtual Task<TApplication[]> FindByLogoutRedirectUri(string address, CancellationToken cancellationToken)
+        public virtual Task<TApplication[]> FindByLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
         {
             return Applications.Where(application => application.LogoutRedirectUri == address).ToArrayAsync(cancellationToken);
         }
@@ -178,7 +178,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        public virtual Task<TApplication[]> FindByRedirectUri(string address, CancellationToken cancellationToken)
+        public virtual Task<TApplication[]> FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
         {
             return Applications.Where(application => application.RedirectUri == address).ToArrayAsync(cancellationToken);
         }

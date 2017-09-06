@@ -68,7 +68,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        Task<TApplication[]> FindByLogoutRedirectUri(string address, CancellationToken cancellationToken);
+        Task<TApplication[]> FindByLogoutRedirectUriAsync(string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified redirect_uri.
@@ -79,7 +79,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        Task<TApplication[]> FindByRedirectUri(string address, CancellationToken cancellationToken);
+        Task<TApplication[]> FindByRedirectUriAsync(string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the client identifier associated with an application.
