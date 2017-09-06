@@ -82,21 +82,17 @@ namespace OpenIddict
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context)
         {
             // If an optional post_logout_redirect_uri was provided, validate it.
-            if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))
+            if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) &&
+                !await Applications.ValidateLogoutRedirectUriAsync(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted))
             {
-                var application = await Applications.FindByLogoutRedirectUri(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted);
-                if (application == null)
-                {
-                    Logger.LogError("The logout request was rejected because the client application corresponding " +
-                                    "to the specified post_logout_redirect_uri was not found in the database: " +
-                                    "'{PostLogoutRedirectUri}'.", context.PostLogoutRedirectUri);
+                Logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
+                                "was invalid: '{PostLogoutRedirectUri}'.", context.PostLogoutRedirectUri);
 
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidClient,
-                        description: "Invalid post_logout_redirect_uri.");
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    description: "Invalid post_logout_redirect_uri.");
 
-                    return;
-                }
+                return;
             }
 
             context.Validate();

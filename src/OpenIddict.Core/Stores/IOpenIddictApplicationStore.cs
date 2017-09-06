@@ -60,15 +60,26 @@ namespace OpenIddict.Core
         Task<TApplication> FindByClientIdAsync(string identifier, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves an application using its post_logout_redirect_uri.
+        /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
         /// </summary>
-        /// <param name="url">The post_logout_redirect_uri associated with the application.</param>
+        /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns the client application corresponding to the post_logout_redirect_uri.
+        /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        Task<TApplication> FindByLogoutRedirectUri(string url, CancellationToken cancellationToken);
+        Task<TApplication[]> FindByLogoutRedirectUri(string address, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves all the applications associated with the specified redirect_uri.
+        /// </summary>
+        /// <param name="address">The redirect_uri associated with the applications.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
+        /// returns the client applications corresponding to the specified redirect_uri.
+        /// </returns>
+        Task<TApplication[]> FindByRedirectUri(string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the client identifier associated with an application.
