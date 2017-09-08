@@ -264,6 +264,9 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 entity.HasKey(token => token.Id);
 
+                entity.HasIndex(token => token.Hash)
+                      .IsUnique(unique: true);
+
                 entity.ToTable("OpenIddictTokens");
             });
 

@@ -47,43 +47,46 @@ namespace OpenIddict.Tests
                 services.AddAuthentication();
                 services.AddOptions();
 
-                var instance = services.AddOpenIddict()
+                // Replace the default OpenIddict managers.
+                services.AddSingleton(CreateApplicationManager());
+                services.AddSingleton(CreateAuthorizationManager());
+                services.AddSingleton(CreateTokenManager());
+
+                services.AddOpenIddict(options =>
+                {
                     // Disable the transport security requirement during testing.
-                    .DisableHttpsRequirement()
+                    options.DisableHttpsRequirement();
 
                     // Enable the tested endpoints.
-                    .EnableAuthorizationEndpoint(AuthorizationEndpoint)
-                    .EnableIntrospectionEndpoint(IntrospectionEndpoint)
-                    .EnableLogoutEndpoint(LogoutEndpoint)
-                    .EnableRevocationEndpoint(RevocationEndpoint)
-                    .EnableTokenEndpoint(TokenEndpoint)
-                    .EnableUserinfoEndpoint(UserinfoEndpoint)
+                    options.EnableAuthorizationEndpoint(AuthorizationEndpoint)
+                           .EnableIntrospectionEndpoint(IntrospectionEndpoint)
+                           .EnableLogoutEndpoint(LogoutEndpoint)
+                           .EnableRevocationEndpoint(RevocationEndpoint)
+                           .EnableTokenEndpoint(TokenEndpoint)
+                           .EnableUserinfoEndpoint(UserinfoEndpoint);
 
                     // Enable the tested flows.
-                    .AllowAuthorizationCodeFlow()
-                    .AllowClientCredentialsFlow()
-                    .AllowImplicitFlow()
-                    .AllowPasswordFlow()
-                    .AllowRefreshTokenFlow()
+                    options.AllowAuthorizationCodeFlow()
+                           .AllowClientCredentialsFlow()
+                           .AllowImplicitFlow()
+                           .AllowPasswordFlow()
+                           .AllowRefreshTokenFlow();
 
                     // Register the X.509 certificate used to sign the identity tokens.
-                    .AddSigningCertificate(
+                    options.AddSigningCertificate(
                         assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
                         resource: "OpenIddict.Tests.Certificate.pfx",
-                        password: "OpenIddict")
+                        password: "OpenIddict");
 
                     // Note: overriding the default data protection provider is not necessary for the tests to pass,
                     // but is useful to ensure unnecessary keys are not persisted in testing environments, which also
                     // helps make the unit tests run faster, as no registry or disk access is required in this case.
-                    .UseDataProtectionProvider(new EphemeralDataProtectionProvider());
+                    options.UseDataProtectionProvider(new EphemeralDataProtectionProvider());
 
-                // Replace the default application/token managers.
-                services.AddSingleton(CreateApplicationManager());
-                services.AddSingleton(CreateTokenManager());
-
-                // Run the configuration delegate
-                // registered by the unit tests.
-                configuration?.Invoke(instance);
+                    // Run the configuration delegate
+                    // registered by the unit tests.
+                    configuration?.Invoke(options);
+                });
             });
 
             builder.Configure(app =>
@@ -145,7 +148,10 @@ namespace OpenIddict.Tests
 
                         ticket.SetScopes(request.GetScopes());
 
-                        ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70");
+                        if (request.HasParameter("attach-authorization"))
+                        {
+                            ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70");
+                        }
 
                         return context.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
                     }

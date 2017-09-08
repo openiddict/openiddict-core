@@ -12,7 +12,6 @@ using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 
 namespace OpenIddict
@@ -22,23 +21,36 @@ namespace OpenIddict
     {
         public override async Task ValidateRevocationRequest([NotNull] ValidateRevocationRequestContext context)
         {
+            var options = (OpenIddictOptions) context.Options;
+
             var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
-            var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OpenIddictOptions>>();
 
-            Debug.Assert(!options.Value.DisableTokenRevocation, "Token revocation support shouldn't be disabled at this stage.");
+            Debug.Assert(!options.DisableTokenRevocation, "Token revocation support shouldn't be disabled at this stage.");
 
             // When token_type_hint is specified, reject the request if it doesn't correspond to a revocable token.
-            if (!string.IsNullOrEmpty(context.Request.TokenTypeHint) &&
-                !string.Equals(context.Request.TokenTypeHint, OpenIdConnectConstants.TokenTypeHints.AuthorizationCode) &&
-                !string.Equals(context.Request.TokenTypeHint, OpenIdConnectConstants.TokenTypeHints.RefreshToken))
+            if (!string.IsNullOrEmpty(context.Request.TokenTypeHint))
             {
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
-                    description: "Only authorization codes and refresh tokens can be revoked. When specifying a token_type_hint " +
-                                 "parameter, its value must be equal to 'authorization_code' or 'refresh_token'.");
+                if (string.Equals(context.Request.TokenTypeHint, OpenIdConnectConstants.TokenTypeHints.IdToken))
+                {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
+                        description: "Identity tokens cannot be revoked. When specifying a token_type_hint parameter, " +
+                                     "its value must be equal to 'access_token', 'authorization_code' or 'refresh_token'.");
 
-                return;
+                    return;
+                }
+
+                if (!options.UseReferenceTokens &&
+                    string.Equals(context.Request.TokenTypeHint, OpenIdConnectConstants.TokenTypeHints.AccessToken))
+                {
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
+                        description: "Access tokens cannot be revoked. When specifying a token_type_hint parameter, " +
+                                     "its value must be equal to 'authorization_code' or 'refresh_token'.");
+
+                    return;
+                }
             }
 
             // Skip client authentication if the client identifier is missing or reject
@@ -49,7 +61,7 @@ namespace OpenIddict
             if (string.IsNullOrEmpty(context.ClientId))
             {
                 // Reject the request if client identification is mandatory.
-                if (options.Value.RequireClientIdentification)
+                if (options.RequireClientIdentification)
                 {
                     logger.LogError("The revocation request was rejected becaused the " +
                                     "mandatory client_id parameter was missing or empty.");
@@ -128,6 +140,8 @@ namespace OpenIddict
 
         public override async Task HandleRevocationRequest([NotNull] HandleRevocationRequestContext context)
         {
+            var options = (OpenIddictOptions) context.Options;
+
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
             var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
@@ -135,13 +149,25 @@ namespace OpenIddict
 
             // If the received token is not an authorization code or a refresh token,
             // return an error to indicate that the token cannot be revoked.
-            if (!context.Ticket.IsAuthorizationCode() && !context.Ticket.IsRefreshToken())
+            if (context.Ticket.IsIdentityToken())
             {
-                logger.LogError("The revocation request was rejected because the token was not revocable.");
+                logger.LogError("The revocation request was rejected because identity tokens are not revocable.");
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
-                    description: "Only authorization codes and refresh tokens can be revoked.");
+                    description: "Identity tokens cannot be revoked.");
+
+                return;
+            }
+
+            // If the received token is an access token, return an error if reference tokens are not enabled.
+            if (!options.UseReferenceTokens && context.Ticket.IsAccessToken())
+            {
+                logger.LogError("The revocation request was rejected because the access token was not revocable.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
+                    description: "The specified access token cannot be revoked.");
 
                 return;
             }
@@ -153,7 +179,7 @@ namespace OpenIddict
             // Retrieve the token from the database. If the token cannot be found,
             // assume it is invalid and consider the revocation as successful.
             var token = await tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-            if (token == null)
+            if (token == null || await tokens.IsRevokedAsync(token, context.HttpContext.RequestAborted))
             {
                 logger.LogInformation("The token '{Identifier}' was already revoked.", identifier);
 

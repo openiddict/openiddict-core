@@ -39,5 +39,12 @@ namespace OpenIddict.Core
         {
             public const string Roles = "roles";
         }
+
+        public static class Statuses
+        {
+            public const string Redeemed = "redeemed";
+            public const string Revoked = "revoked";
+            public const string Valid = "valid";
+        }
     }
 }

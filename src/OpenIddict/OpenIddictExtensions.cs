@@ -14,6 +14,7 @@ using System.Security.Cryptography.X509Certificates;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
@@ -75,6 +76,55 @@ namespace Microsoft.AspNetCore.Builder
                 }
             }
 
+            // If OpenIddict was configured to use reference tokens, replace the default access tokens/
+            // authorization codes/refresh tokens formats using a specific data protector to ensure
+            // that encrypted tokens stored in the database cannot be treated as valid tokens if the
+            // reference tokens option is later turned off by the developer.
+            if (options.UseReferenceTokens)
+            {
+                // Note: a default data protection provider is always registered by
+                // the OpenID Connect server handler when none is explicitly set but
+                // this initializer is registered to be invoked before ASOS' initializer.
+                // To ensure the provider property is never null, it's manually set here.
+                if (options.DataProtectionProvider == null)
+                {
+                    options.DataProtectionProvider = app.ApplicationServices.GetDataProtectionProvider();
+                }
+
+                if (options.AccessTokenFormat == null)
+                {
+                    var protector = options.DataProtectionProvider.CreateProtector(
+                        nameof(OpenIdConnectServerHandler),
+                        nameof(options.AccessTokenFormat),
+                        nameof(options.UseReferenceTokens),
+                        options.AuthenticationScheme);
+
+                    options.AccessTokenFormat = new TicketDataFormat(protector);
+                }
+
+                if (options.AuthorizationCodeFormat == null)
+                {
+                    var protector = options.DataProtectionProvider.CreateProtector(
+                        nameof(OpenIdConnectServerHandler),
+                        nameof(options.AuthorizationCodeFormat),
+                        nameof(options.UseReferenceTokens),
+                        options.AuthenticationScheme);
+
+                    options.AuthorizationCodeFormat = new TicketDataFormat(protector);
+                }
+
+                if (options.RefreshTokenFormat == null)
+                {
+                    var protector = options.DataProtectionProvider.CreateProtector(
+                        nameof(OpenIdConnectServerHandler),
+                        nameof(options.RefreshTokenFormat),
+                        nameof(options.UseReferenceTokens),
+                        options.AuthenticationScheme);
+
+                    options.RefreshTokenFormat = new TicketDataFormat(protector);
+                }
+            }
+
             // Ensure at least one flow has been enabled.
             if (options.GrantTypes.Count == 0)
             {
@@ -104,6 +154,18 @@ namespace Microsoft.AspNetCore.Builder
             if (options.RevocationEndpointPath.HasValue && options.DisableTokenRevocation)
             {
                 throw new InvalidOperationException("The revocation endpoint cannot be enabled when token revocation is disabled.");
+            }
+
+            if (options.UseReferenceTokens && options.DisableTokenRevocation)
+            {
+                throw new InvalidOperationException(
+                    "Reference tokens cannot be used when disabling token revocation.");
+            }
+
+            if (options.UseReferenceTokens && options.AccessTokenHandler != null)
+            {
+                throw new InvalidOperationException(
+                    "Reference tokens cannot be used when configuring JWT as the access token format.");
             }
 
             // Ensure at least one asymmetric signing certificate/key was registered if the implicit flow was enabled.
@@ -882,6 +944,27 @@ namespace Microsoft.AspNetCore.Builder
                     OutboundClaimTypeMap = new Dictionary<string, string>()
                 };
             });
+        }
+
+        /// <summary>
+        /// Configures OpenIddict to use reference tokens, so that authorization codes,
+        /// access tokens and refresh tokens are stored as ciphertext in the database
+        /// (only an identifier is returned to the client application). Enabling this option
+        /// is useful to keep track of all the issued tokens, when storing a very large
+        /// number of claims in the authorization codes, access tokens and refresh tokens
+        /// or when immediate revocation of reference access tokens is desired.
+        /// Note: this option cannot be used when configuring JWT as the access token format.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder UseReferenceTokens([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.Configure(options => options.UseReferenceTokens = true);
         }
     }
 }

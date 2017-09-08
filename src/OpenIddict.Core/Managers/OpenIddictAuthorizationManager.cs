@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -42,9 +43,9 @@ namespace OpenIddict.Core
         /// <param name="authorization">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        public virtual Task CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public virtual Task<TAuthorization> CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -52,6 +53,38 @@ namespace OpenIddict.Core
             }
 
             return Store.CreateAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates a new authorization.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="scopes">The scopes associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+        /// </returns>
+        public virtual Task<TAuthorization> CreateAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] IEnumerable<string> scopes, CancellationToken cancellationToken)
+        {
+            if (scopes == null)
+            {
+                throw new ArgumentNullException(nameof(scopes));
+            }
+
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client cannot be null or empty.", nameof(subject));
+            }
+
+            return Store.CreateAsync(subject, client, scopes, cancellationToken);
         }
 
         /// <summary>
@@ -100,6 +133,45 @@ namespace OpenIddict.Core
             }
 
             return Store.GetIdAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Revokes an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization to revoke.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async Task RevokeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            var status = await Store.GetStatusAsync(authorization, cancellationToken);
+            if (!string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
+            {
+                await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Revoked, cancellationToken);
+                await UpdateAsync(authorization, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization to update.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return Store.UpdateAsync(authorization, cancellationToken);
         }
 
         /// <summary>

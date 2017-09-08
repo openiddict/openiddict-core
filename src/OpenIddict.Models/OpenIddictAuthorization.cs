@@ -51,6 +51,11 @@ namespace OpenIddict.Models
         public virtual string Scope { get; set; }
 
         /// <summary>
+        /// Gets or sets the status of the current authorization.
+        /// </summary>
+        public virtual string Status { get; set; } = "valid";
+
+        /// <summary>
         /// Gets or sets the subject associated with the current authorization.
         /// </summary>
         public virtual string Subject { get; set; }

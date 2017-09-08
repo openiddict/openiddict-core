@@ -129,6 +129,48 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public void UseOpenIddict_ThrowsAnExceptionWhenUsingReferenceTokensWithTokenRevocationDisabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddDataProtection();
+
+            services.AddOpenIddict()
+                .EnableAuthorizationEndpoint("/connect/authorize")
+                .AllowImplicitFlow()
+                .DisableTokenRevocation()
+                .UseReferenceTokens();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
+
+            Assert.Equal("Reference tokens cannot be used when disabling token revocation.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddict_ThrowsAnExceptionWhenUsingReferenceTokensIfAnAccessTokenHandlerIsSet()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddDataProtection();
+
+            services.AddOpenIddict()
+                .EnableAuthorizationEndpoint("/connect/authorize")
+                .AllowImplicitFlow()
+                .UseReferenceTokens()
+                .UseJsonWebTokens();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
+
+            Assert.Equal("Reference tokens cannot be used when configuring JWT as the access token format.", exception.Message);
+        }
+
+        [Fact]
         public void UseOpenIddict_ThrowsAnExceptionWhenNoSigningKeyIsRegisteredIfTheImplicitFlowIsEnabled()
         {
             // Arrange
@@ -764,7 +806,26 @@ namespace OpenIddict.Tests
             var options = provider.GetRequiredService<IOptions<OpenIddictOptions>>();
 
             // Assert
-            Assert.IsType(typeof(JwtSecurityTokenHandler), options.Value.AccessTokenHandler);
+            Assert.IsType<JwtSecurityTokenHandler>(options.Value.AccessTokenHandler);
+        }
+
+        [Fact]
+        public void UseReferenceTokens_ReferenceTokensAreEnabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOptions();
+
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.UseReferenceTokens();
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<OpenIddictOptions>>();
+
+            // Assert
+            Assert.True(options.Value.UseReferenceTokens);
         }
     }
 }
