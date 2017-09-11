@@ -6,6 +6,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Core;
@@ -65,6 +66,11 @@ namespace OpenIddict.EntityFrameworkCore
         /// Gets the database set corresponding to the <typeparamref name="TScope"/> entity.
         /// </summary>
         protected DbSet<TScope> Scopes => Context.Set<TScope>();
+
+        /// <summary>
+        /// Gets the scopes as a queryable source, if supported by the store.
+        /// </summary>
+        IQueryable<TScope> IOpenIddictScopeStore<TScope>.Scopes => Scopes;
 
         /// <summary>
         /// Converts the provided identifier to a strongly typed key object.

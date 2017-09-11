@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CryptoHelper;
@@ -37,6 +38,12 @@ namespace OpenIddict.Core
         /// Gets the store associated with the current manager.
         /// </summary>
         protected IOpenIddictApplicationStore<TApplication> Store { get; }
+
+        /// <summary>
+        /// Gets the applications as a queryable source,
+        /// if supported by the underlying store.
+        /// </summary>
+        public virtual IQueryable<TApplication> Applications => Store.Applications;
 
         /// <summary>
         /// Creates a new application.

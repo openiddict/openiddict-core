@@ -84,6 +84,11 @@ namespace OpenIddict.EntityFrameworkCore
         protected DbSet<TAuthorization> Authorizations => Context.Set<TAuthorization>();
 
         /// <summary>
+        /// Gets the authorizations as a queryable source, if supported by the store.
+        /// </summary>
+        IQueryable<TAuthorization> IOpenIddictAuthorizationStore<TAuthorization>.Authorizations => Authorizations;
+
+        /// <summary>
         /// Creates a new authorization.
         /// </summary>
         /// <param name="authorization">The authorization to create.</param>

@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -36,6 +37,12 @@ namespace OpenIddict.Core
         /// Gets the store associated with the current manager.
         /// </summary>
         protected IOpenIddictAuthorizationStore<TAuthorization> Store { get; }
+
+        /// <summary>
+        /// Gets the authorizations as a queryable source,
+        /// if supported by the underlying store.
+        /// </summary>
+        public virtual IQueryable<TAuthorization> Authorizations => Store.Authorizations;
 
         /// <summary>
         /// Creates a new authorization.

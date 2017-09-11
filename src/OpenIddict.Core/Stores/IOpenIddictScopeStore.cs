@@ -4,11 +4,19 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Linq;
+
 namespace OpenIddict.Core
 {
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in a database.
     /// </summary>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-    public interface IOpenIddictScopeStore<TScope> where TScope : class { }
+    public interface IOpenIddictScopeStore<TScope> where TScope : class
+    {
+        /// <summary>
+        /// Gets the scopes as a queryable source, if supported by the store.
+        /// </summary>
+        IQueryable<TScope> Scopes { get; }
+    }
 }

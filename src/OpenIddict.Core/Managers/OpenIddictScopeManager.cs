@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
@@ -32,5 +33,11 @@ namespace OpenIddict.Core
         /// Gets the store associated with the current manager.
         /// </summary>
         protected IOpenIddictScopeStore<TScope> Store { get; }
+
+        /// <summary>
+        /// Gets the scopes as a queryable source,
+        /// if supported by the underlying store.
+        /// </summary>
+        public virtual IQueryable<TScope> Scopes => Store.Scopes;
     }
 }

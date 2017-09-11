@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -17,6 +18,11 @@ namespace OpenIddict.Core
     /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
     public interface IOpenIddictAuthorizationStore<TAuthorization> where TAuthorization : class
     {
+        /// <summary>
+        /// Gets the authorizations as a queryable source, if supported by the store.
+        /// </summary>
+        IQueryable<TAuthorization> Authorizations { get; }
+
         /// <summary>
         /// Creates a new authorization.
         /// </summary>

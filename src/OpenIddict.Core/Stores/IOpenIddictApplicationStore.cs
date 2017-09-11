@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -17,6 +18,11 @@ namespace OpenIddict.Core
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
     public interface IOpenIddictApplicationStore<TApplication> where TApplication : class
     {
+        /// <summary>
+        /// Gets the applications as a queryable source, if supported by the store.
+        /// </summary>
+        IQueryable<TApplication> Applications { get; }
+
         /// <summary>
         /// Creates a new application.
         /// </summary>
