@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -17,6 +18,11 @@ namespace OpenIddict.Core
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
     public interface IOpenIddictTokenStore<TToken> where TToken : class
     {
+        /// <summary>
+        /// Gets the tokens as a queryable source, if supported by the store.
+        /// </summary>
+        IQueryable<TToken> Tokens { get; }
+
         /// <summary>
         /// Creates a new token.
         /// </summary>

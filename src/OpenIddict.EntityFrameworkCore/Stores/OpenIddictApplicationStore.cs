@@ -79,6 +79,11 @@ namespace OpenIddict.EntityFrameworkCore
         protected DbSet<TApplication> Applications => Context.Set<TApplication>();
 
         /// <summary>
+        /// Gets the applications as a queryable source, if supported by the store.
+        /// </summary>
+        IQueryable<TApplication> IOpenIddictApplicationStore<TApplication>.Applications => Applications;
+
+        /// <summary>
         /// Creates a new application.
         /// </summary>
         /// <param name="application">The application to create.</param>

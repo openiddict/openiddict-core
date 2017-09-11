@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -36,6 +37,12 @@ namespace OpenIddict.Core
         /// Gets the store associated with the current manager.
         /// </summary>
         protected IOpenIddictTokenStore<TToken> Store { get; }
+
+        /// <summary>
+        /// Gets the tokens as a queryable source,
+        /// if supported by the underlying store.
+        /// </summary>
+        public virtual IQueryable<TToken> Tokens => Store.Tokens;
 
         /// <summary>
         /// Creates a new token.

@@ -88,6 +88,11 @@ namespace OpenIddict.EntityFrameworkCore
         protected DbSet<TToken> Tokens => Context.Set<TToken>();
 
         /// <summary>
+        /// Gets the tokens as a queryable source, if supported by the store.
+        /// </summary>
+        IQueryable<TToken> IOpenIddictTokenStore<TToken>.Tokens => Tokens;
+
+        /// <summary>
         /// Creates a new token.
         /// </summary>
         /// <param name="token">The token to create.</param>
