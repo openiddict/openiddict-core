@@ -208,6 +208,27 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Retrieves the client secret associated with an application.
+        /// Note: depending on the manager used to create the application,
+        /// the client secret may be hashed for security reasons.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client secret associated with the application.
+        /// </returns>
+        public virtual Task<string> GetClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.ClientSecret);
+        }
+
+        /// <summary>
         /// Retrieves the client type associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -243,25 +264,6 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return Task.FromResult(application.DisplayName);
-        }
-
-        /// <summary>
-        /// Retrieves the hashed secret associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the hashed secret associated with the application.
-        /// </returns>
-        public virtual Task<string> GetHashedSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            return Task.FromResult(application.ClientSecret);
         }
 
         /// <summary>
@@ -353,6 +355,30 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Sets the client secret associated with an application.
+        /// Note: depending on the manager used to create the application,
+        /// the client secret may be hashed for security reasons.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="secret">The client secret associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetClientSecretAsync([NotNull] TApplication application,
+            [CanBeNull] string secret, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            application.ClientSecret = secret;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
         /// Sets the client type associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -374,28 +400,6 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             application.Type = type;
-
-            return Task.FromResult(0);
-        }
-
-        /// <summary>
-        /// Sets the hashed secret associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="hash">The hashed client secret associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetHashedSecretAsync([NotNull] TApplication application,
-            [CanBeNull] string hash, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            application.ClientSecret = hash;
 
             return Task.FromResult(0);
         }
