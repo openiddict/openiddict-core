@@ -99,6 +99,19 @@ namespace OpenIddict.Core
         Task<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the client secret associated with an application.
+        /// Note: depending on the manager used to create the application,
+        /// the client secret may be hashed for security reasons.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client secret associated with the application.
+        /// </returns>
+        Task<string> GetClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the client type associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -119,17 +132,6 @@ namespace OpenIddict.Core
         /// whose result returns the display name associated with the application.
         /// </returns>
         Task<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Retrieves the hashed secret associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the hashed secret associated with the application.
-        /// </returns>
-        Task<string> GetHashedSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the unique identifier associated with an application.
@@ -176,6 +178,19 @@ namespace OpenIddict.Core
         Task<IEnumerable<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Sets the client secret associated with an application.
+        /// Note: depending on the manager used to create the application,
+        /// the client secret may be hashed for security reasons.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="secret">The client secret associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetClientSecretAsync([NotNull] TApplication application, [CanBeNull] string secret, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Sets the client type associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -185,17 +200,6 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetClientTypeAsync([NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Sets the hashed secret associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="hash">The hashed client secret associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetHashedSecretAsync([NotNull] TApplication application, [CanBeNull] string hash, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing application.

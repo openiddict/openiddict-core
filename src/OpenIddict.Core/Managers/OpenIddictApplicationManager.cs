@@ -61,6 +61,8 @@ namespace OpenIddict.Core
 
         /// <summary>
         /// Creates a new application.
+        /// Note: the default implementation automatically hashes the client
+        /// secret before storing it in the database, for security reasons.
         /// </summary>
         /// <param name="application">The application to create.</param>
         /// <param name="secret">The client secret associated with the application, if applicable.</param>
@@ -78,7 +80,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (!string.IsNullOrEmpty(await Store.GetHashedSecretAsync(application, cancellationToken)))
+            if (!string.IsNullOrEmpty(await Store.GetClientSecretAsync(application, cancellationToken)))
             {
                 throw new ArgumentException("The client secret hash cannot be directly set on the application entity.");
             }
@@ -101,12 +103,13 @@ namespace OpenIddict.Core
                     throw new InvalidOperationException("A client secret must be provided when creating a confidential application.");
                 }
 
-                await Store.SetHashedSecretAsync(application, null, cancellationToken);
+                await Store.SetClientSecretAsync(application, null, cancellationToken);
             }
 
             else
             {
-                await Store.SetHashedSecretAsync(application, Crypto.HashPassword(secret), cancellationToken);
+                secret = await ObfuscateClientSecretAsync(secret, cancellationToken);
+                await Store.SetClientSecretAsync(application, secret, cancellationToken);
             }
 
             await ValidateAsync(application, cancellationToken);
@@ -309,7 +312,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return !string.IsNullOrEmpty(await Store.GetHashedSecretAsync(application, cancellationToken));
+            return !string.IsNullOrEmpty(await Store.GetClientSecretAsync(application, cancellationToken));
         }
 
         /// <summary>
@@ -358,35 +361,6 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Updates the client secret associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="secret">The client secret associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task SetClientSecretAsync([NotNull] TApplication application, [CanBeNull] string secret, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            if (string.IsNullOrEmpty(secret))
-            {
-                await Store.SetHashedSecretAsync(application, null, cancellationToken);
-            }
-
-            else
-            {
-                await Store.SetHashedSecretAsync(application, Crypto.HashPassword(secret), cancellationToken);
-            }
-
-            await UpdateAsync(application, cancellationToken);
-        }
-
-        /// <summary>
         /// Updates an existing application.
         /// </summary>
         /// <param name="application">The application to update.</param>
@@ -406,7 +380,9 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Updates an existing application.
+        /// Updates an existing application and replaces the existing secret.
+        /// Note: the default implementation automatically hashes the client
+        /// secret before storing it in the database, for security reasons.
         /// </summary>
         /// <param name="application">The application to update.</param>
         /// <param name="secret">The client secret associated with the application.</param>
@@ -424,101 +400,16 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(secret))
             {
-                await Store.SetHashedSecretAsync(application, null, cancellationToken);
+                await Store.SetClientSecretAsync(application, null, cancellationToken);
             }
 
             else
             {
-                await Store.SetHashedSecretAsync(application, Crypto.HashPassword(secret), cancellationToken);
+                secret = await ObfuscateClientSecretAsync(secret, cancellationToken);
+                await Store.SetClientSecretAsync(application, secret, cancellationToken);
             }
 
             await UpdateAsync(application, cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the application to ensure it's in a consistent state.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task ValidateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            if (string.IsNullOrEmpty(await Store.GetClientIdAsync(application, cancellationToken)))
-            {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(application));
-            }
-
-            var type = await Store.GetClientTypeAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(type))
-            {
-                throw new ArgumentException("The client type cannot be null or empty.", nameof(application));
-            }
-
-            // Ensure the application type is supported by the manager.
-            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Only 'confidential' or 'public' applications are " +
-                                            "supported by the default application manager.", nameof(application));
-            }
-
-            var hash = await Store.GetHashedSecretAsync(application, cancellationToken);
-
-            // Ensure a client secret was specified if the client is a confidential application.
-            if (string.IsNullOrEmpty(hash) &&
-                string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("The client secret cannot be null or empty for a confidential application.", nameof(application));
-            }
-
-            // Ensure no client secret was specified if the client is a public application.
-            else if (!string.IsNullOrEmpty(hash) &&
-                      string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("A client secret cannot be associated with a public application.", nameof(application));
-            }
-
-            // When a redirect_uri is specified, ensure it is valid and spec-compliant.
-            // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
-            var address = await Store.GetRedirectUriAsync(application, cancellationToken);
-            if (!string.IsNullOrEmpty(address))
-            {
-                // Ensure the redirect_uri is a valid and absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri))
-                {
-                    throw new ArgumentException("The redirect_uri must be an absolute URL.");
-                }
-
-                // Ensure the redirect_uri doesn't contain a fragment.
-                if (!string.IsNullOrEmpty(uri.Fragment))
-                {
-                    throw new ArgumentException("The redirect_uri cannot contain a fragment.");
-                }
-            }
-
-            // When a post_logout_redirect_uri is specified, ensure it is valid.
-            address = await Store.GetLogoutRedirectUriAsync(application, cancellationToken);
-            if (!string.IsNullOrEmpty(address))
-            {
-                // Ensure the post_logout_redirect_uri is a valid and absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri))
-                {
-                    throw new ArgumentException("The post_logout_redirect_uri must be an absolute URL.");
-                }
-
-                // Ensure the post_logout_redirect_uri doesn't contain a fragment.
-                if (!string.IsNullOrEmpty(uri.Fragment))
-                {
-                    throw new ArgumentException("The post_logout_redirect_uri cannot contain a fragment.");
-                }
-            }
         }
 
         /// <summary>
@@ -604,8 +495,8 @@ namespace OpenIddict.Core
                 return false;
             }
 
-            var hash = await Store.GetHashedSecretAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(hash))
+            var value = await Store.GetClientSecretAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(value))
             {
                 Logger.LogError("Client authentication failed for {Client} because " +
                                 "no client secret was associated with the application.");
@@ -613,7 +504,7 @@ namespace OpenIddict.Core
                 return false;
             }
 
-            if (!Crypto.VerifyHashedPassword(hash, secret))
+            if (!await ValidateClientSecretAsync(secret, value, cancellationToken))
             {
                 Logger.LogWarning("Client authentication failed for {Client}.",
                     await GetDisplayNameAsync(application, cancellationToken));
@@ -622,6 +513,149 @@ namespace OpenIddict.Core
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Validates the application to ensure it's in a consistent state.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        protected virtual async Task ValidateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(await Store.GetClientIdAsync(application, cancellationToken)))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(application));
+            }
+
+            var type = await Store.GetClientTypeAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The client type cannot be null or empty.", nameof(application));
+            }
+
+            // Ensure the application type is supported by the manager.
+            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Only 'confidential' or 'public' applications are " +
+                                            "supported by the default application manager.", nameof(application));
+            }
+
+            var secret = await Store.GetClientSecretAsync(application, cancellationToken);
+
+            // Ensure a client secret was specified if the client is a confidential application.
+            if (string.IsNullOrEmpty(secret) &&
+                string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("The client secret cannot be null or empty for a confidential application.", nameof(application));
+            }
+
+            // Ensure no client secret was specified if the client is a public application.
+            else if (!string.IsNullOrEmpty(secret) &&
+                      string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("A client secret cannot be associated with a public application.", nameof(application));
+            }
+
+            // When a redirect_uri is specified, ensure it is valid and spec-compliant.
+            // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
+            var address = await Store.GetRedirectUriAsync(application, cancellationToken);
+            if (!string.IsNullOrEmpty(address))
+            {
+                // Ensure the redirect_uri is a valid and absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri))
+                {
+                    throw new ArgumentException("The redirect_uri must be an absolute URL.");
+                }
+
+                // Ensure the redirect_uri doesn't contain a fragment.
+                if (!string.IsNullOrEmpty(uri.Fragment))
+                {
+                    throw new ArgumentException("The redirect_uri cannot contain a fragment.");
+                }
+            }
+
+            // When a post_logout_redirect_uri is specified, ensure it is valid.
+            address = await Store.GetLogoutRedirectUriAsync(application, cancellationToken);
+            if (!string.IsNullOrEmpty(address))
+            {
+                // Ensure the post_logout_redirect_uri is a valid and absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri))
+                {
+                    throw new ArgumentException("The post_logout_redirect_uri must be an absolute URL.");
+                }
+
+                // Ensure the post_logout_redirect_uri doesn't contain a fragment.
+                if (!string.IsNullOrEmpty(uri.Fragment))
+                {
+                    throw new ArgumentException("The post_logout_redirect_uri cannot contain a fragment.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Obfuscates the specified client secret so it can be safely stored in a database.
+        /// By default, this method returns a complex hashed representation computed using PBKDF2.
+        /// </summary>
+        /// <param name="secret">The client secret.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        protected virtual Task<string> ObfuscateClientSecretAsync([NotNull] string secret, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
+            }
+
+            return Task.FromResult(Crypto.HashPassword(secret));
+        }
+
+        /// <summary>
+        /// Validates the specified value to ensure it corresponds to the client secret.
+        /// Note: when overriding this method, using a time-constant comparer is strongly recommended.
+        /// </summary>
+        /// <param name="secret">The client secret to compare to the value stored in the database.</param>
+        /// <param name="comparand">The value stored in the database, which is usually a hashed representation of the secret.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns a boolean indicating whether the specified value was valid.
+        /// </returns>
+        protected virtual Task<bool> ValidateClientSecretAsync(
+            [NotNull] string secret, [NotNull] string comparand, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
+            }
+
+            if (string.IsNullOrEmpty(comparand))
+            {
+                throw new ArgumentException("The comparand cannot be null or empty.", nameof(comparand));
+            }
+
+            try
+            {
+                return Task.FromResult(Crypto.VerifyHashedPassword(comparand, secret));
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogWarning(exception, "An error occurred while trying to verify a client secret. " +
+                                             "This may indicate that the hashed entry is corrupted or malformed.");
+
+                return Task.FromResult(false);
+            }
         }
     }
 }

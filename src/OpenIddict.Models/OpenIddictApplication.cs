@@ -45,8 +45,9 @@ namespace OpenIddict.Models
         public virtual string ClientId { get; set; }
 
         /// <summary>
-        /// Gets or sets the hashed client secret
-        /// associated with the current application.
+        /// Gets or sets the client secret associated with the current application.
+        /// Note: depending on the application manager used to create this instance,
+        /// this property may be hashed or encrypted for security reasons.
         /// </summary>
         public virtual string ClientSecret { get; set; }
 
