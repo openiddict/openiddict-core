@@ -177,6 +177,12 @@ namespace OpenIddict
                     "or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call " +
                     "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
             }
+
+            // Automatically add the offline_access scope if the refresh token grant has been enabled.
+            if (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
+            {
+                options.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
+            }
         }
     }
 }

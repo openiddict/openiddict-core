@@ -413,6 +413,51 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Validates the client_secret associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="secret">The secret that should be compared to the client_secret stored in the database.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns a boolean indicating whether the client secret was valid.
+        /// </returns>
+        public virtual async Task<bool> ValidateClientSecretAsync([NotNull] TApplication application, string secret, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (!await IsConfidentialAsync(application, cancellationToken))
+            {
+                Logger.LogWarning("Client authentication cannot be enforced for non-confidential applications.");
+
+                return false;
+            }
+
+            var value = await Store.GetClientSecretAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(value))
+            {
+                Logger.LogError("Client authentication failed for {Client} because " +
+                                "no client secret was associated with the application.");
+
+                return false;
+            }
+
+            if (!await ValidateClientSecretAsync(secret, value, cancellationToken))
+            {
+                Logger.LogWarning("Client authentication failed for {Client}.",
+                    await GetDisplayNameAsync(application, cancellationToken));
+
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Validates the specified post_logout_redirect_uri.
         /// </summary>
         /// <param name="address">The address that should be compared to the post_logout_redirect_uri stored in the database.</param>
@@ -468,51 +513,6 @@ namespace OpenIddict.Core
                               "for '{Client}'.", address, await GetDisplayNameAsync(application, cancellationToken));
 
             return false;
-        }
-
-        /// <summary>
-        /// Validates the client_secret associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="secret">The secret that should be compared to the client_secret stored in the database.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns a boolean indicating whether the client secret was valid.
-        /// </returns>
-        public virtual async Task<bool> ValidateClientSecretAsync([NotNull] TApplication application, string secret, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            if (!await IsConfidentialAsync(application, cancellationToken))
-            {
-                Logger.LogWarning("Client authentication cannot be enforced for non-confidential applications.");
-
-                return false;
-            }
-
-            var value = await Store.GetClientSecretAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(value))
-            {
-                Logger.LogError("Client authentication failed for {Client} because " +
-                                "no client secret was associated with the application.");
-
-                return false;
-            }
-
-            if (!await ValidateClientSecretAsync(secret, value, cancellationToken))
-            {
-                Logger.LogWarning("Client authentication failed for {Client}.",
-                    await GetDisplayNameAsync(application, cancellationToken));
-
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>

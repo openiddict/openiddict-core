@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -66,6 +67,14 @@ namespace OpenIddict
         /// valid client_id when communicating with the token and revocation endpoints.
         /// </summary>
         public bool RequireClientIdentification { get; set; }
+
+        /// <summary>
+        /// Gets the OAuth2/OpenID Connect scopes enabled for this application.
+        /// </summary>
+        public ISet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal)
+        {
+            OpenIdConnectConstants.Scopes.OpenId
+        };
 
         /// <summary>
         /// Gets or sets a boolean indicating whether reference tokens should be used.

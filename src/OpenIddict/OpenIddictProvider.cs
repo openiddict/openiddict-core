@@ -26,11 +26,13 @@ namespace OpenIddict
             [NotNull] ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>> logger,
             [NotNull] OpenIddictApplicationManager<TApplication> applications,
             [NotNull] OpenIddictAuthorizationManager<TAuthorization> authorizations,
+            [NotNull] OpenIddictScopeManager<TScope> scopes,
             [NotNull] OpenIddictTokenManager<TToken> tokens)
         {
             Applications = applications;
             Authorizations = authorizations;
             Logger = logger;
+            Scopes = scopes;
             Tokens = tokens;
         }
 
@@ -48,6 +50,11 @@ namespace OpenIddict
         /// Gets the logger associated with the current class.
         /// </summary>
         public ILogger Logger { get; }
+
+        /// <summary>
+        /// Gets the scopes manager.
+        /// </summary>
+        public OpenIddictScopeManager<TScope> Scopes { get; }
 
         /// <summary>
         /// Gets the tokens manager.

@@ -32,20 +32,16 @@ namespace OpenIddict
             // Note: the OpenID Connect server middleware automatically populates grant_types_supported
             // by determining whether the authorization and token endpoints are enabled or not but
             // OpenIddict uses a different approach and relies on a configurable "grants list".
-            context.GrantTypes.IntersectWith(options.GrantTypes);
+            context.GrantTypes.Clear();
+            context.GrantTypes.UnionWith(options.GrantTypes);
 
-            // Note: the "openid" scope is automatically
-            // added by the OpenID Connect server middleware.
-            context.Scopes.Add(OpenIdConnectConstants.Scopes.Profile);
-            context.Scopes.Add(OpenIdConnectConstants.Scopes.Email);
-            context.Scopes.Add(OpenIdConnectConstants.Scopes.Phone);
-            context.Scopes.Add(OpenIddictConstants.Scopes.Roles);
+            // Only return the scopes configured by the developer.
+            context.Scopes.Clear();
+            context.Scopes.UnionWith(options.Scopes);
 
-            // Only add the "offline_access" scope if the refresh token grant is enabled.
-            if (context.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
-            {
-                context.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
-            }
+            // Note: the optional "claims" parameter is not supported by OpenIddict,
+            // so a "false" flag is returned to encourage clients not to use it.
+            context.Metadata[OpenIdConnectConstants.Metadata.ClaimsSupported] = false;
 
             var schemes = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
 
