@@ -772,6 +772,26 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public void RegisterScopes_ScopeIsAdded()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOptions();
+
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.RegisterScopes("custom_scope_1", "custom_scope_2");
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<OpenIddictOptions>>();
+
+            // Assert
+            Assert.Contains("custom_scope_1", options.Value.Scopes);
+            Assert.Contains("custom_scope_2", options.Value.Scopes);
+        }
+
+        [Fact]
         public void UseDataProtectionProvider_DefaultProviderIsReplaced()
         {
             // Arrange

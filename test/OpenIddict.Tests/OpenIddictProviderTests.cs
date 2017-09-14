@@ -50,6 +50,7 @@ namespace OpenIddict.Tests
                 // Replace the default OpenIddict managers.
                 services.AddSingleton(CreateApplicationManager());
                 services.AddSingleton(CreateAuthorizationManager());
+                services.AddSingleton(CreateScopeManager());
                 services.AddSingleton(CreateTokenManager());
 
                 services.AddOpenIddict(options =>
@@ -195,6 +196,17 @@ namespace OpenIddict.Tests
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationStore<OpenIddictAuthorization>>(),
                 Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>());
+
+            setup?.Invoke(manager);
+
+            return manager.Object;
+        }
+
+        private static OpenIddictScopeManager<OpenIddictScope> CreateScopeManager(Action<Mock<OpenIddictScopeManager<OpenIddictScope>>> setup = null)
+        {
+            var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
+                Mock.Of<IOpenIddictScopeStore<OpenIddictScope>>(),
+                Mock.Of<ILogger<OpenIddictScopeManager<OpenIddictScope>>>());
 
             setup?.Invoke(manager);
 

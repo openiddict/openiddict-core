@@ -177,6 +177,12 @@ namespace Microsoft.AspNetCore.Builder
                                                     "or call 'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
             }
 
+            // Automatically add the offline_access scope if the refresh token grant has been enabled.
+            if (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
+            {
+                options.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
+            }
+
             return app.UseOpenIdConnectServer(options);
         }
 
@@ -899,6 +905,34 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return builder.Configure(options => options.Issuer = address);
+        }
+
+        /// <summary>
+        /// Registers the specified scopes as supported scopes so
+        /// they can be returned as part of the discovery document.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <param name="scopes">The supported scopes.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder RegisterScopes(
+            [NotNull] this OpenIddictBuilder builder, [NotNull] params string[] scopes)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (scopes == null)
+            {
+                throw new ArgumentNullException(nameof(scopes));
+            }
+
+            if (scopes.Any(scope => string.IsNullOrEmpty(scope)))
+            {
+                throw new ArgumentException("Scopes cannot be null or empty.", nameof(scopes));
+            }
+
+            return builder.Configure(options => options.Scopes.UnionWith(scopes));
         }
 
         /// <summary>

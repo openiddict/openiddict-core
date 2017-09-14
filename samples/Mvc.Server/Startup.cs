@@ -75,6 +75,9 @@ namespace Mvc.Server
                        .AllowPasswordFlow()
                        .AllowRefreshTokenFlow();
 
+                // Mark the "profile" scope as a supported scope in the discovery document.
+                options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
+
                 // Make the "client_id" parameter mandatory when sending a token request.
                 options.RequireClientIdentification();
 

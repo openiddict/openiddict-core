@@ -61,11 +61,8 @@ namespace OpenIddict.Tests
         }
 
         [Theory]
-        [InlineData(OpenIdConnectConstants.Scopes.Profile)]
-        [InlineData(OpenIdConnectConstants.Scopes.Email)]
-        [InlineData(OpenIdConnectConstants.Scopes.Phone)]
-        [InlineData(OpenIddictConstants.Scopes.Roles)]
-        public async Task HandleConfigurationRequest_StandardScopesAreExposed(string scope)
+        [InlineData(OpenIdConnectConstants.Scopes.OpenId)]
+        public async Task HandleConfigurationRequest_DefaultScopesAreAutomaticallyReturned(string scope)
         {
             // Arrange
             var server = CreateAuthorizationServer();
@@ -77,6 +74,28 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Contains(scope, ((JArray) response[OpenIdConnectConstants.Metadata.ScopesSupported]).Values<string>());
+        }
+
+        [Fact]
+        public async Task HandleConfigurationRequest_CustomScopeIsReturned()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options =>
+                {
+                    options.Scopes.Clear();
+                    options.Scopes.Add("custom_scope");
+                });
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.GetAsync(ConfigurationEndpoint);
+
+            // Assert
+            Assert.Contains("custom_scope", ((JArray) response[OpenIdConnectConstants.Metadata.ScopesSupported]).Values<string>());
         }
 
         [Fact]
