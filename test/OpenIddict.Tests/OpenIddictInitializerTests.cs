@@ -156,6 +156,52 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenUsingRollingTokensWithTokenRevocationDisabled()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.EnableAuthorizationEndpoint("/connect/authorize")
+                       .AllowImplicitFlow()
+                       .DisableTokenRevocation()
+                       .UseRollingTokens();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            Assert.Equal("Rolling tokens cannot be used when disabling token expiration.", exception.Message);
+        }
+
+        [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenUsingRollingTokensWithSlidingExpirationDisabled()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.EnableAuthorizationEndpoint("/connect/authorize")
+                       .AllowImplicitFlow()
+                       .UseRollingTokens()
+                       .Configure(options => options.UseSlidingExpiration = false);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            Assert.Equal("Rolling tokens cannot be used without enabling sliding expiration.", exception.Message);
+        }
+
+        [Fact]
         public async Task PostConfigure_ThrowsAnExceptionWhenUsingReferenceTokensIfAnAccessTokenHandlerIsSet()
         {
             // Arrange

@@ -650,6 +650,9 @@ namespace OpenIddict.Tests
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
 
+                    instance.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
                 }));

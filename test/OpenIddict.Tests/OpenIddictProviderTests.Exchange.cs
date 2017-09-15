@@ -577,7 +577,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
-            Assert.Equal("The specified authorization code has already been redemeed.", response.ErrorDescription);
+            Assert.Equal("The specified authorization code has already been redeemed.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()), Times.Once());
@@ -660,7 +660,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
-            Assert.Equal("The specified authorization code has already been redemeed.", response.ErrorDescription);
+            Assert.Equal("The specified authorization code has already been redeemed.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.IsRedeemedAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Once());
@@ -797,6 +797,69 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task HandleTokenRequest_RequestIsRejectedWhenRefreshTokenIsAlreadyRedeemed()
+        {
+            // Arrange
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(),
+                new AuthenticationProperties(),
+                OpenIdConnectServerDefaults.AuthenticationScheme);
+
+            ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
+                .Returns(ticket);
+
+            var token = new OpenIddictToken();
+
+            var manager = CreateTokenManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
+                    var application = new OpenIddictApplication();
+
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(application);
+
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                }));
+
+                builder.Services.AddSingleton(manager);
+
+                builder.Configure(options => options.RefreshTokenFormat = format.Object);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                RefreshToken = "8xLOxBtZp8"
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal("The specified refresh token has already been redeemed.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
         public async Task HandleTokenRequest_RequestIsRejectedWhenRefreshTokenIsInvalid()
         {
             // Arrange
@@ -819,6 +882,9 @@ namespace OpenIddict.Tests
             {
                 instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
 
                 instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
@@ -926,7 +992,7 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
-        public async Task HandleTokenRequest_RefreshTokenIsAutomaticallyRedeemedWhenSlidingExpirationIsEnabled()
+        public async Task HandleTokenRequest_RefreshTokenIsAutomaticallyRedeemedWhenRollingTokensAreEnabled()
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
@@ -973,6 +1039,8 @@ namespace OpenIddict.Tests
                 }));
 
                 builder.Services.AddSingleton(manager);
+
+                builder.UseRollingTokens();
 
                 builder.Configure(options => options.RefreshTokenFormat = format.Object);
             });

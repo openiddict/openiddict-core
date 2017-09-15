@@ -117,78 +117,51 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Creates a new token, which is associated with a particular subject.
         /// </summary>
-        /// <param name="type">The token type.</param>
-        /// <param name="subject">The subject associated with the token.</param>
-        /// <param name="start">The date on which the token will start to be considered valid.</param>
-        /// <param name="end">The date on which the token will no longer be considered valid.</param>
+        /// <param name="descriptor">The token descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual Task<TToken> CreateAsync(
-            [NotNull] string type, [NotNull] string subject,
-            [CanBeNull] DateTimeOffset? start,
-            [CanBeNull] DateTimeOffset? end, CancellationToken cancellationToken)
+        public virtual async Task<TToken> CreateAsync([NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(type))
+            if (descriptor == null)
             {
-                throw new ArgumentException("The token type cannot be null or empty.");
-            }
-
-            if (string.IsNullOrEmpty(subject))
-            {
-                throw new ArgumentException("The subject cannot be null or empty.");
+                throw new ArgumentNullException(nameof(descriptor));
             }
 
             var token = new TToken
             {
-                End = end,
-                Start = start,
-                Subject = subject,
-                Type = type
+                Ciphertext = descriptor.Ciphertext,
+                CreationDate = descriptor.CreationDate,
+                ExpirationDate = descriptor.ExpirationDate,
+                Hash = descriptor.Hash,
+                Subject = descriptor.Subject,
+                Type = descriptor.Type
             };
 
-            return CreateAsync(token, cancellationToken);
-        }
+            // Bind the token to the specified client application.
+            var key = ConvertIdentifierFromString(descriptor.ApplicationId);
 
-        /// <summary>
-        /// Creates a new reference token, which is associated with a particular subject.
-        /// </summary>
-        /// <param name="type">The token type.</param>
-        /// <param name="subject">The subject associated with the token.</param>
-        /// <param name="hash">The hash of the crypto-secure random identifier associated with the token.</param>
-        /// <param name="ciphertext">The ciphertext associated with the token.</param>
-        /// <param name="start">The date on which the token will start to be considered valid.</param>
-        /// <param name="end">The date on which the token will no longer be considered valid.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
-        /// </returns>
-        public virtual Task<TToken> CreateAsync(
-            [NotNull] string type, [NotNull] string subject, [NotNull] string hash, [NotNull] string ciphertext,
-            [CanBeNull] DateTimeOffset? start, [CanBeNull] DateTimeOffset? end, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(type))
+            var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+            if (application == null)
             {
-                throw new ArgumentException("The token type cannot be null or empty.");
+                throw new InvalidOperationException("The application associated with the token cannot be found.");
             }
 
-            if (string.IsNullOrEmpty(subject))
+            token.Application = application;
+
+            // Bind the token to the specified authorization.
+            key = ConvertIdentifierFromString(descriptor.AuthorizationId);
+
+            var authorization = await Authorizations.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+            if (authorization == null)
             {
-                throw new ArgumentException("The subject cannot be null or empty.");
+                throw new InvalidOperationException("The authorization associated with the token cannot be found.");
             }
 
-            var token = new TToken
-            {
-                Ciphertext = ciphertext,
-                End = end,
-                Hash = hash,
-                Start = start,
-                Subject = subject,
-                Type = type
-            };
+            token.Authorization = authorization;
 
-            return CreateAsync(token, cancellationToken);
+            return await CreateAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -314,6 +287,44 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return Task.FromResult(token.Ciphertext);
+        }
+
+        /// <summary>
+        /// Retrieves the creation date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the creation date associated with the specified token.
+        /// </returns>
+        public virtual Task<DateTimeOffset?> GetCreationDateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return Task.FromResult(token.CreationDate);
+        }
+
+        /// <summary>
+        /// Retrieves the expiration date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the expiration date associated with the specified token.
+        /// </returns>
+        public virtual Task<DateTimeOffset?> GetExpirationDateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return Task.FromResult(token.ExpirationDate);
         }
 
         /// <summary>
@@ -495,6 +506,23 @@ namespace OpenIddict.EntityFrameworkCore
                     application.Tokens.Remove(token);
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the expiration date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="date">The date on which the token will no longer be considered valid.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetExpirationDateAsync([NotNull] TToken token,
+            [CanBeNull] DateTimeOffset? date, CancellationToken cancellationToken)
+        {
+            token.ExpirationDate = date;
+
+            return Task.CompletedTask;
         }
 
         /// <summary>

@@ -65,33 +65,19 @@ namespace OpenIddict.Core
         /// <summary>
         /// Creates a new authorization.
         /// </summary>
-        /// <param name="subject">The subject associated with the authorization.</param>
-        /// <param name="client">The client associated with the authorization.</param>
-        /// <param name="scopes">The scopes associated with the authorization.</param>
+        /// <param name="descriptor">The authorization descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        public virtual Task<TAuthorization> CreateAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] IEnumerable<string> scopes, CancellationToken cancellationToken)
+        public virtual Task<TAuthorization> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
         {
-            if (scopes == null)
+            if (descriptor == null)
             {
-                throw new ArgumentNullException(nameof(scopes));
+                throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (string.IsNullOrEmpty(subject))
-            {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
-            }
-
-            if (string.IsNullOrEmpty(client))
-            {
-                throw new ArgumentException("The client cannot be null or empty.", nameof(subject));
-            }
-
-            return Store.CreateAsync(subject, client, scopes, cancellationToken);
+            return Store.CreateAsync(descriptor, cancellationToken);
         }
 
         /// <summary>

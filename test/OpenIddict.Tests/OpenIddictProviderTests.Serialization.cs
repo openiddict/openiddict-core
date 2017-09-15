@@ -46,8 +46,9 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.AccessToken);
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
-                OpenIdConnectConstants.TokenTypeHints.AccessToken, "Bob le Magnifique",
-                It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AccessToken),
                 It.IsAny<CancellationToken>()), Times.Never());
         }
 
@@ -57,16 +58,13 @@ namespace OpenIddict.Tests
             // Arrange
             var token = new OpenIddictToken
             {
-                End = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
-                Start = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero),
+                CreationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero),
+                ExpirationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero)
             };
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.AccessToken, "Bob le Magnifique",
-                    It.IsNotNull<string>(), It.IsNotNull<string>(),
-                    token.Start, token.End, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
@@ -81,8 +79,8 @@ namespace OpenIddict.Tests
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.Start.Value);
-                    options.AccessTokenLifetime = token.End.Value - token.Start.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
+                    options.AccessTokenLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
                 });
             });
 
@@ -101,10 +99,14 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.AccessToken);
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
-                OpenIdConnectConstants.TokenTypeHints.AccessToken, "Bob le Magnifique",
-                It.IsNotNull<string>(), It.IsNotNull<string>(),
-                token.Start, token.End, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.Ciphertext != null &&
+                    descriptor.Hash != null &&
+                    descriptor.ExpirationDate == token.ExpirationDate &&
+                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AccessToken),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -115,18 +117,11 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.AccessToken, "Bob le Magnifique",
-                    It.IsNotNull<string>(), It.IsNotNull<string>(),
-                    It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
-                    It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
-
-                instance.Setup(mock => mock.SetClientAsync(token, "3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult(0));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -165,7 +160,12 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.AccessToken);
 
-            Mock.Get(manager).Verify(mock => mock.SetClientAsync(token, "3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.CreateAsync(
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.ApplicationId == "3E228451-1555-46F7-A471-951EFBA23A56" &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AccessToken),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -176,18 +176,11 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.AccessToken, "Bob le Magnifique",
-                    It.IsNotNull<string>(), It.IsNotNull<string>(),
-                    It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
-                    It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
-
-                instance.Setup(mock => mock.SetAuthorizationAsync(token, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70", It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult(0));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -218,7 +211,12 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.AccessToken);
 
-            Mock.Get(manager).Verify(mock => mock.SetAuthorizationAsync(token, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.CreateAsync(
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.AuthorizationId == "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70" &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AccessToken),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -267,8 +265,7 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.Code);
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
-                OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique",
-                It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
+                It.IsAny<OpenIddictTokenDescriptor>(),
                 It.IsAny<CancellationToken>()), Times.Never());
         }
 
@@ -278,15 +275,13 @@ namespace OpenIddict.Tests
             // Arrange
             var token = new OpenIddictToken
             {
-                End = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero),
-                Start = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
+                CreationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
+                ExpirationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero)
             };
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique",
-                    token.Start, token.End, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
@@ -310,14 +305,17 @@ namespace OpenIddict.Tests
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+
+                    instance.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
                 }));
 
                 builder.Services.AddSingleton(manager);
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.Start.Value);
-                    options.AuthorizationCodeLifetime = token.End.Value - token.Start.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
+                    options.AuthorizationCodeLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
                 });
             });
 
@@ -335,9 +333,14 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.Code);
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
-                OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique",
-                token.Start, token.End, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.Ciphertext == null &&
+                    descriptor.Hash == null &&
+                    descriptor.ExpirationDate == token.ExpirationDate &&
+                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AuthorizationCode),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -346,16 +349,13 @@ namespace OpenIddict.Tests
             // Arrange
             var token = new OpenIddictToken
             {
-                End = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero),
-                Start = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
+                CreationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
+                ExpirationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero)
             };
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique",
-                    It.IsNotNull<string>(), It.IsNotNull<string>(),
-                    token.Start, token.End, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
@@ -379,6 +379,9 @@ namespace OpenIddict.Tests
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+
+                    instance.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
                 }));
 
                 builder.Services.AddSingleton(manager);
@@ -387,8 +390,8 @@ namespace OpenIddict.Tests
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.Start.Value);
-                    options.AuthorizationCodeLifetime = token.End.Value - token.Start.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
+                    options.AuthorizationCodeLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
                 });
             });
 
@@ -406,10 +409,14 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.Code);
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
-                OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique",
-                It.IsNotNull<string>(), It.IsNotNull<string>(),
-                token.Start, token.End, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.Ciphertext != null &&
+                    descriptor.Hash != null &&
+                    descriptor.ExpirationDate == token.ExpirationDate &&
+                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AuthorizationCode),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -420,17 +427,11 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique",
-                    It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
-                    It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
-
-                instance.Setup(mock => mock.SetClientAsync(token, "3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult(0));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -471,7 +472,12 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.Code);
 
-            Mock.Get(manager).Verify(mock => mock.SetClientAsync(token, "3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.CreateAsync(
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.ApplicationId == "3E228451-1555-46F7-A471-951EFBA23A56" &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AuthorizationCode),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -482,20 +488,11 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique",
-                    It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
-                    It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
-
-                instance.Setup(mock => mock.SetClientAsync(token, "3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult(0));
-
-                instance.Setup(mock => mock.SetAuthorizationAsync(token, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70", It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult(0));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -543,7 +540,13 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.Code);
 
-            Mock.Get(manager).Verify(mock => mock.SetAuthorizationAsync(token, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.CreateAsync(
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.ApplicationId == "3E228451-1555-46F7-A471-951EFBA23A56" &&
+                    descriptor.AuthorizationId == "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70" &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AuthorizationCode),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -582,11 +585,8 @@ namespace OpenIddict.Tests
 
                 builder.Services.AddSingleton(CreateTokenManager(instance =>
                 {
-                    instance.Setup(mock => mock.CreateAsync(
-                        OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, "Bob le Magnifique",
-                        It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
-                        It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(token);
+                    instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(token);
 
                     instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -608,8 +608,61 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.Code);
 
-            Mock.Get(manager).Verify(mock => mock.CreateAsync("Bob le Magnifique", "3E228451-1555-46F7-A471-951EFBA23A56",
-                It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.CreateAsync(
+                It.Is<OpenIddictAuthorizationDescriptor>(descriptor =>
+                    descriptor.ApplicationId == "3E228451-1555-46F7-A471-951EFBA23A56" &&
+                    descriptor.Subject == "Bob le Magnifique"),
+                It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task SerializeRefreshToken_ExtendsLifetimeWhenRollingTokensAreDisabled()
+        {
+            // Arrange
+            var token = new OpenIddictToken
+            {
+                CreationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
+                ExpirationDate = new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero)
+            };
+
+            var manager = CreateTokenManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByHashAsync("d80c119138b3aaeefce94093032c0204c547dc27cc5fe97f32933becd48b7bf5", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+
+                builder.UseReferenceTokens();
+
+                builder.Configure(options =>
+                {
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow ==
+                        new DateTimeOffset(2017, 01, 05, 00, 00, 00, TimeSpan.Zero));
+                    options.RefreshTokenLifetime = TimeSpan.FromDays(10);
+                });
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                RefreshToken = "3E228451-1555-46F7-A471-951EFBA23A56"
+            });
+
+            // Assert
+            Assert.Null(response.RefreshToken);
+
+            Mock.Get(manager).Verify(mock => mock.ExtendAsync(token,
+                new DateTimeOffset(2017, 01, 15, 00, 00, 00, TimeSpan.Zero),
+                It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Fact]
@@ -642,8 +695,7 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.RefreshToken);
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
-                OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique",
-                It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
+                It.IsAny<OpenIddictTokenDescriptor>(),
                 It.IsAny<CancellationToken>()), Times.Never());
         }
 
@@ -653,15 +705,13 @@ namespace OpenIddict.Tests
             // Arrange
             var token = new OpenIddictToken
             {
-                End = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero),
-                Start = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero)
+                CreationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
+                ExpirationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero)
             };
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique",
-                    token.Start, token.End, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
@@ -674,8 +724,8 @@ namespace OpenIddict.Tests
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.Start.Value);
-                    options.RefreshTokenLifetime = token.End.Value - token.Start.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
+                    options.RefreshTokenLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
                 });
             });
 
@@ -694,9 +744,14 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.RefreshToken);
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
-                OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique",
-                token.Start, token.End, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.Ciphertext == null &&
+                    descriptor.Hash == null &&
+                    descriptor.ExpirationDate == token.ExpirationDate &&
+                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.RefreshToken),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -705,16 +760,13 @@ namespace OpenIddict.Tests
             // Arrange
             var token = new OpenIddictToken
             {
-                End = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero),
-                Start = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
+                CreationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
+                ExpirationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero)
             };
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique",
-                    It.IsNotNull<string>(), It.IsNotNull<string>(),
-                    token.Start, token.End, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
@@ -729,8 +781,8 @@ namespace OpenIddict.Tests
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.Start.Value);
-                    options.RefreshTokenLifetime = token.End.Value - token.Start.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
+                    options.RefreshTokenLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
                 });
             });
 
@@ -749,10 +801,14 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.RefreshToken);
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
-                OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique",
-                It.IsNotNull<string>(), It.IsNotNull<string>(),
-                token.Start, token.End, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.Ciphertext != null &&
+                    descriptor.Hash != null &&
+                    descriptor.ExpirationDate == token.ExpirationDate &&
+                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.RefreshToken),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -763,17 +819,11 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique",
-                    It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
-                    It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
-
-                instance.Setup(mock => mock.SetClientAsync(token, "3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult(0));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -810,7 +860,12 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.RefreshToken);
 
-            Mock.Get(manager).Verify(mock => mock.SetClientAsync(token, "3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.CreateAsync(
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.ApplicationId == "3E228451-1555-46F7-A471-951EFBA23A56" &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.RefreshToken),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -821,17 +876,11 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.CreateAsync(
-                    OpenIdConnectConstants.TokenTypeHints.RefreshToken, "Bob le Magnifique",
-                    It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(),
-                    It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
-
-                instance.Setup(mock => mock.SetAuthorizationAsync(token, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70", It.IsAny<CancellationToken>()))
-                    .Returns(Task.FromResult(0));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -860,7 +909,12 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.RefreshToken);
 
-            Mock.Get(manager).Verify(mock => mock.SetAuthorizationAsync(token, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.CreateAsync(
+                It.Is<OpenIddictTokenDescriptor>(descriptor =>
+                    descriptor.AuthorizationId == "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70" &&
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIdConnectConstants.TokenTypeHints.RefreshToken),
+                It.IsAny<CancellationToken>()), Times.Once());
         }
     }
 }

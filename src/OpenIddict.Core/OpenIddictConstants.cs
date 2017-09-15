@@ -33,6 +33,7 @@ namespace OpenIddict.Core
         public static class Properties
         {
             public const string AuthorizationId = ".authorization_id";
+            public const string TokenId = ".token_id";
         }
 
         public static class Scopes

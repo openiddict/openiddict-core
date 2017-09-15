@@ -87,5 +87,14 @@ namespace OpenIddict
         /// Note: this option cannot be used when configuring JWT as the access token format.
         /// </summary>
         public bool UseReferenceTokens { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether rolling tokens should be used.
+        /// When disabled, no new token is issued and the refresh token lifetime is
+        /// dynamically managed by updating the token entry in the database.
+        /// When this option is enabled, a new refresh token is issued for each
+        /// refresh token request and the previous one is automatically revoked.
+        /// </summary>
+        public bool UseRollingTokens { get; set; }
     }
 }
