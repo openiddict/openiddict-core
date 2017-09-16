@@ -36,35 +36,12 @@ namespace OpenIddict.Core
         /// <summary>
         /// Creates a new token, which is associated with a particular subject.
         /// </summary>
-        /// <param name="type">The token type.</param>
-        /// <param name="subject">The subject associated with the token.</param>
-        /// <param name="start">The date on which the token will start to be considered valid.</param>
-        /// <param name="end">The date on which the token will no longer be considered valid.</param>
+        /// <param name="descriptor">The token descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        Task<TToken> CreateAsync(
-            [NotNull] string type, [NotNull] string subject,
-            [CanBeNull] DateTimeOffset? start,
-            [CanBeNull] DateTimeOffset? end, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Creates a new reference token, which is associated with a particular subject.
-        /// </summary>
-        /// <param name="type">The token type.</param>
-        /// <param name="subject">The subject associated with the token.</param>
-        /// <param name="hash">The hash of the crypto-secure random identifier associated with the token.</param>
-        /// <param name="ciphertext">The ciphertext associated with the token.</param>
-        /// <param name="start">The date on which the token will start to be considered valid.</param>
-        /// <param name="end">The date on which the token will no longer be considered valid.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
-        /// </returns>
-        Task<TToken> CreateAsync(
-            [NotNull] string type, [NotNull] string subject, [NotNull] string hash, [NotNull] string ciphertext,
-            [CanBeNull] DateTimeOffset? start, [CanBeNull] DateTimeOffset? end, CancellationToken cancellationToken);
+        Task<TToken> CreateAsync([NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes a token.
@@ -139,6 +116,28 @@ namespace OpenIddict.Core
         /// whose result returns the ciphertext associated with the specified token.
         /// </returns>
         Task<string> GetCiphertextAsync([NotNull] TToken token, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the creation date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the creation date associated with the specified token.
+        /// </returns>
+        Task<DateTimeOffset?> GetCreationDateAsync([NotNull] TToken token, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the expiration date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the expiration date associated with the specified token.
+        /// </returns>
+        Task<DateTimeOffset?> GetExpirationDateAsync([NotNull] TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the hashed identifier associated with a token.
@@ -216,6 +215,17 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetClientAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the expiration date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="date">The date on which the token will no longer be considered valid.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetExpirationDateAsync([NotNull] TToken token, [CanBeNull] DateTimeOffset? date, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the status associated with a token.

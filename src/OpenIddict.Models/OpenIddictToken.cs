@@ -52,9 +52,15 @@ namespace OpenIddict.Models
 
         /// <summary>
         /// Gets or sets the date on which the token
+        /// will start to be considered valid.
+        /// </summary>
+        public virtual DateTimeOffset? CreationDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date on which the token
         /// will no longer be considered valid.
         /// </summary>
-        public virtual DateTimeOffset? End { get; set; }
+        public virtual DateTimeOffset? ExpirationDate { get; set; }
 
         /// <summary>
         /// Gets or sets the hashed identifier associated
@@ -68,12 +74,6 @@ namespace OpenIddict.Models
         /// associated with the current token.
         /// </summary>
         public virtual TKey Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the date on which the token
-        /// will start to be considered valid.
-        /// </summary>
-        public virtual DateTimeOffset? Start { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the current token.

@@ -222,6 +222,9 @@ namespace OpenIddict
             var identifier = context.Ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a ticket identifier.");
 
+            // Store the original authorization code/refresh token so it can be later retrieved.
+            context.Request.SetProperty(OpenIddictConstants.Properties.TokenId, identifier);
+
             if (context.Request.IsAuthorizationCodeGrantType())
             {
                 // Retrieve the authorization code from the database and ensure it is still valid.
@@ -267,7 +270,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The specified authorization code has already been redemeed.");
+                        description: "The specified authorization code has already been redeemed.");
 
                     return;
                 }
@@ -291,7 +294,29 @@ namespace OpenIddict
             {
                 // Retrieve the token from the database and ensure it is still valid.
                 var token = await tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-                if (token == null || !await tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
+                if (token == null)
+                {
+                    logger.LogError("The token request was rejected because the refresh token was already redeemed.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: "The specified refresh token is no longer valid.");
+
+                    return;
+                }
+
+                else if (await tokens.IsRedeemedAsync(token, context.HttpContext.RequestAborted))
+                {
+                    logger.LogError("The token request was rejected because the refresh token was no longer valid.");
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: "The specified refresh token has already been redeemed.");
+
+                    return;
+                }
+
+                else if (!await tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
                 {
                     logger.LogError("The token request was rejected because the refresh token was no longer valid.");
 
@@ -302,10 +327,10 @@ namespace OpenIddict
                     return;
                 }
 
-                // When sliding expiration is enabled, immediately
+                // When rolling tokens are enabled, immediately
                 // redeem the refresh token to prevent future reuse.
                 // See https://tools.ietf.org/html/rfc6749#section-6.
-                if (options.UseSlidingExpiration)
+                if (options.UseRollingTokens)
                 {
                     await tokens.RedeemAsync(token, context.HttpContext.RequestAborted);
                 }

@@ -36,16 +36,12 @@ namespace OpenIddict.Core
         /// <summary>
         /// Creates a new authorization.
         /// </summary>
-        /// <param name="subject">The subject associated with the authorization.</param>
-        /// <param name="client">The client associated with the authorization.</param>
-        /// <param name="scopes">The scopes associated with the authorization.</param>
+        /// <param name="descriptor">The authorization descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        Task<TAuthorization> CreateAsync(
-            [NotNull] string subject, [NotNull] string client,
-            [NotNull] IEnumerable<string> scopes, CancellationToken cancellationToken);
+        Task<TAuthorization> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an authorization using its unique identifier.

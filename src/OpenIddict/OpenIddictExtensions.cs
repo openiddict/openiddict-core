@@ -168,6 +168,16 @@ namespace Microsoft.AspNetCore.Builder
                     "Reference tokens cannot be used when configuring JWT as the access token format.");
             }
 
+            if (options.UseRollingTokens && options.DisableTokenRevocation)
+            {
+                throw new InvalidOperationException("Rolling tokens cannot be used when disabling token expiration.");
+            }
+
+            if (options.UseRollingTokens && !options.UseSlidingExpiration)
+            {
+                throw new InvalidOperationException("Rolling tokens cannot be used without enabling sliding expiration.");
+            }
+
             // Ensure at least one asymmetric signing certificate/key was registered if the implicit flow was enabled.
             if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey) &&
                  options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))
@@ -999,6 +1009,24 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return builder.Configure(options => options.UseReferenceTokens = true);
+        }
+
+        /// <summary>
+        /// Configures OpenIddict to use rolling refresh tokens. When this option is enabled,
+        /// a new refresh token is issued for each refresh token request and the previous one
+        /// is automatically revoked (when disabled, no new refresh token is issued and the
+        /// lifetime of the original refresh token is increased by updating the database entry).
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder UseRollingTokens([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.Configure(options => options.UseRollingTokens = true);
         }
     }
 }

@@ -171,6 +171,48 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public void UseOpenIddict_ThrowsAnExceptionWhenUsingRollingTokensWithTokenRevocationDisabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddDataProtection();
+
+            services.AddOpenIddict()
+                .EnableAuthorizationEndpoint("/connect/authorize")
+                .AllowImplicitFlow()
+                .DisableTokenRevocation()
+                .UseRollingTokens();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
+
+            Assert.Equal("Rolling tokens cannot be used when disabling token expiration.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddict_ThrowsAnExceptionWhenUsingRollingTokensWithSlidingExpirationDisabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddDataProtection();
+
+            services.AddOpenIddict()
+                .EnableAuthorizationEndpoint("/connect/authorize")
+                .AllowImplicitFlow()
+                .UseRollingTokens()
+                .Configure(options => options.UseSlidingExpiration = false);
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
+
+            Assert.Equal("Rolling tokens cannot be used without enabling sliding expiration.", exception.Message);
+        }
+
+        [Fact]
         public void UseOpenIddict_ThrowsAnExceptionWhenNoSigningKeyIsRegisteredIfTheImplicitFlowIsEnabled()
         {
             // Arrange

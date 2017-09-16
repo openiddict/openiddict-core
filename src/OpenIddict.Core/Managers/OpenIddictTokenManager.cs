@@ -66,65 +66,39 @@ namespace OpenIddict.Core
         /// <summary>
         /// Creates a new token, which is associated with a particular subject.
         /// </summary>
-        /// <param name="type">The token type.</param>
-        /// <param name="subject">The subject associated with the token.</param>
-        /// <param name="start">The date on which the token will start to be considered valid.</param>
-        /// <param name="end">The date on which the token will no longer be considered valid.</param>
+        /// <param name="descriptor">The token descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual Task<TToken> CreateAsync(
-            [NotNull] string type, [NotNull] string subject,
-            [CanBeNull] DateTimeOffset? start,
-            [CanBeNull] DateTimeOffset? end, CancellationToken cancellationToken)
+        public virtual Task<TToken> CreateAsync([NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(type))
+            if (descriptor == null)
             {
-                throw new ArgumentException("The token type cannot be null or empty.", nameof(type));
+                throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (string.IsNullOrEmpty(subject))
-            {
-                throw new ArgumentException("The subject cannot be null or empty.");
-            }
-
-            return Store.CreateAsync(type, subject, start, end, cancellationToken);
+            return Store.CreateAsync(descriptor, cancellationToken);
         }
 
         /// <summary>
-        /// Creates a new reference token, which is associated with a particular subject.
+        /// Extends the specified token by replacing its expiration date.
         /// </summary>
-        /// <param name="type">The token type.</param>
-        /// <param name="subject">The subject associated with the token.</param>
-        /// <param name="hash">The hash of the crypto-secure random identifier associated with the token.</param>
-        /// <param name="ciphertext">The ciphertext associated with the token.</param>
-        /// <param name="start">The date on which the token will start to be considered valid.</param>
-        /// <param name="end">The date on which the token will no longer be considered valid.</param>
+        /// <param name="token">The token.</param>
+        /// <param name="date">The date on which the token will no longer be considered valid.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task<TToken> CreateAsync(
-            [NotNull] string type, [NotNull] string subject, [NotNull] string hash, [NotNull] string ciphertext,
-            [CanBeNull] DateTimeOffset? start, [CanBeNull] DateTimeOffset? end, CancellationToken cancellationToken)
+        public virtual async Task ExtendAsync([NotNull] TToken token, [CanBeNull] DateTimeOffset? date, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(type))
+            if (token == null)
             {
-                throw new ArgumentException("The token type cannot be null or empty.", nameof(type));
+                throw new ArgumentNullException(nameof(token));
             }
 
-            if (string.IsNullOrEmpty(subject))
-            {
-                throw new ArgumentException("The subject cannot be null or empty.");
-            }
-
-            if (string.IsNullOrEmpty(ciphertext))
-            {
-                throw new ArgumentException("The ciphertext cannot be null or empty.", nameof(ciphertext));
-            }
-
-            return Store.CreateAsync(type, subject, hash, ciphertext, start, end, cancellationToken);
+            await Store.SetExpirationDateAsync(token, date, cancellationToken);
+            await UpdateAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -219,6 +193,44 @@ namespace OpenIddict.Core
             }
 
             return Store.GetCiphertextAsync(token, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the creation date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the creation date associated with the specified token.
+        /// </returns>
+        public virtual Task<DateTimeOffset?> GetCreationDateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return Store.GetCreationDateAsync(token, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the expiration date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the expiration date associated with the specified token.
+        /// </returns>
+        public virtual Task<DateTimeOffset?> GetExpirationDateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return Store.GetExpirationDateAsync(token, cancellationToken);
         }
 
         /// <summary>

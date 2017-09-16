@@ -117,6 +117,8 @@ namespace OpenIddict
 
         public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context)
         {
+            Debug.Assert(context.Request.IsAuthorizationRequest(), "The request should be an authorization request.");
+
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AuthorizationCode,
                 context.Ticket, (OpenIddictOptions) context.Options,
@@ -136,9 +138,39 @@ namespace OpenIddict
 
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context)
         {
+            var options = (OpenIddictOptions) context.Options;
+
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
+
+            Debug.Assert(context.Request.IsTokenRequest(), "The request should be a token request.");
+
+            // When rolling tokens are disabled, extend the expiration date associated with the
+            // existing token instead of returning a new refresh token with a new expiration date.
+            if (options.UseSlidingExpiration && !options.UseRollingTokens && context.Request.IsRefreshTokenGrantType())
+            {
+                var identifier = context.Request.GetProperty<string>(OpenIddictConstants.Properties.TokenId);
+
+                var entry = await tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
+                if (entry != null)
+                {
+                    logger.LogInformation("The expiration date of the '{Identifier}' token was automatically updated: {Date}.",
+                                          identifier, context.Ticket.Properties.ExpiresUtc);
+
+                    await tokens.ExtendAsync(entry, context.Ticket.Properties.ExpiresUtc, context.HttpContext.RequestAborted);
+
+                    context.RefreshToken = null;
+                    context.HandleResponse();
+
+                    return;
+                }
+
+                // If the refresh token entry could not be
+                // found in the database, generate a new one.
+            }
+
             var token = await CreateTokenAsync(
-                OpenIdConnectConstants.TokenUsages.RefreshToken,
-                context.Ticket, (OpenIddictOptions) context.Options,
+                OpenIdConnectConstants.TokenUsages.RefreshToken, context.Ticket, options,
                 context.HttpContext, context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
@@ -167,7 +199,10 @@ namespace OpenIddict
             Debug.Assert(!(options.DisableTokenRevocation && options.UseReferenceTokens),
                 "Token revocation cannot be disabled when using reference tokens.");
 
-            Debug.Assert(!string.Equals(type, OpenIdConnectConstants.TokenUsages.IdToken, StringComparison.OrdinalIgnoreCase),
+            Debug.Assert(!(options.DisableTokenRevocation && options.UseRollingTokens),
+                "Token revocation cannot be disabled when using rolling tokens.");
+
+            Debug.Assert(type != OpenIdConnectConstants.TokenUsages.IdToken,
                 "Identity tokens shouldn't be stored in the database.");
 
             if (options.DisableTokenRevocation)
@@ -175,28 +210,34 @@ namespace OpenIddict
                 return null;
             }
 
-            // Resolve the subject from the authentication ticket. If it cannot be found, throw an exception.
-            var subject = ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject);
-            if (string.IsNullOrEmpty(subject))
+            var descriptor = new OpenIddictTokenDescriptor
             {
-                throw new InvalidOperationException("The subject associated with the authentication ticket cannot be retrieved.");
-            }
+                CreationDate = ticket.Properties.IssuedUtc,
+                ExpirationDate = ticket.Properties.ExpiresUtc,
+                Subject = ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject),
+                Type = type
+            };
 
-            TToken token;
             string result = null;
+
+            // When reference tokens are enabled or when the token is an authorization code or a
+            // refresh token, remove the unnecessary properties from the authentication ticket.
+            if (options.UseReferenceTokens ||
+               (type == OpenIdConnectConstants.TokenUsages.AuthorizationCode ||
+                type == OpenIdConnectConstants.TokenUsages.RefreshToken))
+            {
+                ticket.Properties.IssuedUtc = ticket.Properties.ExpiresUtc = null;
+                ticket.RemoveProperty(OpenIdConnectConstants.Properties.TokenId);
+            }
 
             // If reference tokens are enabled, create a new entry for
             // authorization codes, refresh tokens and access tokens.
             if (options.UseReferenceTokens)
             {
-                // When the token is a reference token, remove the token identifier from the
-                // authentication ticket as it is restored when receiving and decrypting it.
-                ticket.RemoveProperty(OpenIdConnectConstants.Properties.TokenId);
-
                 // Note: the data format is automatically replaced at startup time to ensure
                 // that encrypted tokens stored in the database cannot be considered as
                 // valid tokens if the developer decides to disable reference tokens support.
-                var ciphertext = format.Protect(ticket);
+                descriptor.Ciphertext = format.Protect(ticket);
 
                 // Generate a new crypto-secure random identifier that will be
                 // substituted to the ciphertext returned by the data format.
@@ -208,32 +249,61 @@ namespace OpenIddict
                 // it as the hashed identifier of the reference token.
                 // Doing that prevents token identifiers stolen from
                 // the database from being used as valid reference tokens.
-                string hash;
                 using (var algorithm = SHA256.Create())
                 {
-                    hash = Convert.ToBase64String(algorithm.ComputeHash(bytes));
+                    descriptor.Hash = Convert.ToBase64String(algorithm.ComputeHash(bytes));
                 }
-
-                token = await tokens.CreateAsync(type, subject, hash, ciphertext,
-                    ticket.Properties.IssuedUtc,
-                    ticket.Properties.ExpiresUtc, context.RequestAborted);
             }
 
             // Otherwise, only create a token metadata entry for authorization codes and refresh tokens.
-            else if (string.Equals(type, OpenIdConnectConstants.TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase) ||
-                     string.Equals(type, OpenIdConnectConstants.TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase))
-            {
-                token = await tokens.CreateAsync(type, subject,
-                    ticket.Properties.IssuedUtc,
-                    ticket.Properties.ExpiresUtc, context.RequestAborted);
-            }
-
-            else
+            else if (type != OpenIdConnectConstants.TokenUsages.AuthorizationCode &&
+                     type != OpenIdConnectConstants.TokenUsages.RefreshToken)
             {
                 return null;
             }
 
+            // If the client application is known, associate it with the token.
+            if (!string.IsNullOrEmpty(request.ClientId))
+            {
+                var application = await applications.FindByClientIdAsync(request.ClientId, context.RequestAborted);
+                if (application == null)
+                {
+                    throw new InvalidOperationException("The client application cannot be retrieved from the database.");
+                }
+
+                descriptor.ApplicationId = await applications.GetIdAsync(application, context.RequestAborted);
+            }
+
+            // If an authorization identifier was specified, bind it to the token.
+            if (ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId))
+            {
+                descriptor.AuthorizationId = ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
+            }
+
+            // Otherwise, create an ad-hoc authorization if the token is an authorization code.
+            else if (type == OpenIdConnectConstants.TokenUsages.AuthorizationCode)
+            {
+                Debug.Assert(!string.IsNullOrEmpty(descriptor.ApplicationId), "The client identifier shouldn't be null.");
+
+                var authorization = await authorizations.CreateAsync(new OpenIddictAuthorizationDescriptor
+                {
+                    ApplicationId = descriptor.ApplicationId,
+                    Scopes = request.GetScopes(),
+                    Subject = descriptor.Subject
+                }, context.RequestAborted);
+
+                if (authorization != null)
+                {
+                    descriptor.AuthorizationId = await authorizations.GetIdAsync(authorization, context.RequestAborted);
+
+                    logger.LogInformation("An ad-hoc authorization was automatically created and " +
+                                          "associated with the '{ClientId}' application: {Identifier}.",
+                                          request.ClientId, descriptor.AuthorizationId);
+                }
+            }
+
             // If a null value was returned by CreateAsync(), return immediately.
+            var token = await tokens.CreateAsync(descriptor, context.RequestAborted);
             if (token == null)
             {
                 return null;
@@ -246,54 +316,15 @@ namespace OpenIddict
                 throw new InvalidOperationException("The unique key associated with a refresh token cannot be null or empty.");
             }
 
-            // Attach the key returned by the underlying store
-            // to the refresh token to override the default GUID
-            // generated by the OpenID Connect server middleware.
+            // Restore the token identifier using the unique
+            // identifier attached with the database entry.
             ticket.SetTokenId(identifier);
 
-            // If the client application is known, associate it with the token.
-            if (!string.IsNullOrEmpty(request.ClientId))
-            {
-                var application = await applications.FindByClientIdAsync(request.ClientId, context.RequestAborted);
-                if (application == null)
-                {
-                    throw new InvalidOperationException("The client application cannot be retrieved from the database.");
-                }
+            // Dynamically set the creation and expiration dates.
+            ticket.Properties.IssuedUtc = await tokens.GetCreationDateAsync(token, context.RequestAborted);
+            ticket.Properties.ExpiresUtc = await tokens.GetExpirationDateAsync(token, context.RequestAborted);
 
-                var key = await applications.GetIdAsync(application, context.RequestAborted);
-
-                await tokens.SetClientAsync(token, key, context.RequestAborted);
-            }
-
-            // If an authorization identifier was specified, bind it to the token.
-            if (ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId))
-            {
-                await tokens.SetAuthorizationAsync(token,
-                    ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId), context.RequestAborted);
-            }
-
-            // Otherwise, create an ad-hoc authorization if the token is an authorization code.
-            else if (string.Equals(type, OpenIdConnectConstants.TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase))
-            {
-                Debug.Assert(!string.IsNullOrEmpty(request.ClientId), "The client identifier shouldn't be null.");
-
-                var application = await applications.FindByClientIdAsync(request.ClientId, context.RequestAborted);
-                if (application == null)
-                {
-                    throw new InvalidOperationException("The client application cannot be retrieved from the database.");
-                }
-
-                var authorization = await authorizations.CreateAsync(subject,
-                    await applications.GetIdAsync(application, context.RequestAborted), request.GetScopes(), context.RequestAborted);
-
-                if (authorization != null)
-                {
-                    var key = await authorizations.GetIdAsync(authorization, context.RequestAborted);
-                    ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, key);
-
-                    await tokens.SetAuthorizationAsync(token, key, context.RequestAborted);
-                }
-            }
+            ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, descriptor.AuthorizationId);
 
             if (!string.IsNullOrEmpty(result))
             {
@@ -380,6 +411,10 @@ namespace OpenIddict
             // Restore the token identifier using the unique
             // identifier attached with the database entry.
             ticket.SetTokenId(identifier);
+
+            // Dynamically set the creation and expiration dates.
+            ticket.Properties.IssuedUtc = await tokens.GetCreationDateAsync(token, context.RequestAborted);
+            ticket.Properties.ExpiresUtc = await tokens.GetExpirationDateAsync(token, context.RequestAborted);
 
             // If the authorization identifier cannot be found in the ticket properties,
             // try to restore it using the identifier associated with the database entry.
