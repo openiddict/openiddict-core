@@ -125,20 +125,25 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var key = ConvertIdentifierFromString(descriptor.ApplicationId);
-
-            var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
-            if (application == null)
-            {
-                throw new InvalidOperationException("The application associated with the authorization cannot be found.");
-            }
-
             var authorization = new TAuthorization
             {
-                Application = application,
                 Scope = string.Join(" ", descriptor.Scopes),
                 Subject = descriptor.Subject
             };
+
+            // Bind the authorization to the specified application, if applicable.
+            if (!string.IsNullOrEmpty(descriptor.ApplicationId))
+            {
+                var key = ConvertIdentifierFromString(descriptor.ApplicationId);
+
+                var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+                if (application == null)
+                {
+                    throw new InvalidOperationException("The application associated with the authorization cannot be found.");
+                }
+
+                authorization.Application = application;
+            }
 
             return await CreateAsync(authorization, cancellationToken);
         }

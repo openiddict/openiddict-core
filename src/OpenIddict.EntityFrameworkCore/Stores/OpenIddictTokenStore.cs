@@ -139,27 +139,33 @@ namespace OpenIddict.EntityFrameworkCore
                 Type = descriptor.Type
             };
 
-            // Bind the token to the specified client application.
-            var key = ConvertIdentifierFromString(descriptor.ApplicationId);
-
-            var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
-            if (application == null)
+            // Bind the token to the specified client application, if applicable.
+            if (!string.IsNullOrEmpty(descriptor.ApplicationId))
             {
-                throw new InvalidOperationException("The application associated with the token cannot be found.");
+                var key = ConvertIdentifierFromString(descriptor.ApplicationId);
+
+                var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+                if (application == null)
+                {
+                    throw new InvalidOperationException("The application associated with the token cannot be found.");
+                }
+
+                token.Application = application;
             }
 
-            token.Application = application;
-
-            // Bind the token to the specified authorization.
-            key = ConvertIdentifierFromString(descriptor.AuthorizationId);
-
-            var authorization = await Authorizations.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
-            if (authorization == null)
+            // Bind the token to the specified authorization, if applicable.
+            if (!string.IsNullOrEmpty(descriptor.AuthorizationId))
             {
-                throw new InvalidOperationException("The authorization associated with the token cannot be found.");
-            }
+                var key = ConvertIdentifierFromString(descriptor.AuthorizationId);
 
-            token.Authorization = authorization;
+                var authorization = await Authorizations.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+                if (authorization == null)
+                {
+                    throw new InvalidOperationException("The authorization associated with the token cannot be found.");
+                }
+
+                token.Authorization = authorization;
+            }
 
             return await CreateAsync(token, cancellationToken);
         }
