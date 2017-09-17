@@ -848,6 +848,34 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
+        /// Registers the specified claims as supported claims so
+        /// they can be returned as part of the discovery document.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <param name="claims">The supported claims.</param>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
+        public static OpenIddictBuilder RegisterClaims(
+            [NotNull] this OpenIddictBuilder builder, [NotNull] params string[] claims)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (claims == null)
+            {
+                throw new ArgumentNullException(nameof(claims));
+            }
+
+            if (claims.Any(claim => string.IsNullOrEmpty(claim)))
+            {
+                throw new ArgumentException("Claims cannot be null or empty.", nameof(claims));
+            }
+
+            return builder.Configure(options => options.Claims.UnionWith(claims));
+        }
+
+        /// <summary>
         /// Registers the specified scopes as supported scopes so
         /// they can be returned as part of the discovery document.
         /// </summary>

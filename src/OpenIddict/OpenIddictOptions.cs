@@ -36,6 +36,11 @@ namespace OpenIddict
         public IDistributedCache Cache { get; set; }
 
         /// <summary>
+        /// Gets the OAuth2/OpenID Connect claims supported by this application.
+        /// </summary>
+        public ISet<string> Claims { get; } = new HashSet<string>(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether token revocation should be disabled.
         /// When disabled, authorization code and refresh tokens are not stored
         /// and cannot be revoked. Using this option is generally not recommended.

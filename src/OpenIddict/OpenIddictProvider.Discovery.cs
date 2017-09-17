@@ -39,6 +39,11 @@ namespace OpenIddict
             context.Scopes.Clear();
             context.Scopes.UnionWith(options.Scopes);
 
+            // Note: claims_supported is a recommended parameter but is not strictly required.
+            // If no claim was registered, the claims_supported property will be automatically
+            // excluded from the response by the OpenID Connect server middleware.
+            context.Metadata[OpenIdConnectConstants.Metadata.ClaimsSupported] = new JArray(options.Claims);
+
             // Note: the optional "claims" parameter is not supported by OpenIddict,
             // so a "false" flag is returned to encourage clients not to use it.
             context.Metadata[OpenIdConnectConstants.Metadata.ClaimsParameterSupported] = false;
