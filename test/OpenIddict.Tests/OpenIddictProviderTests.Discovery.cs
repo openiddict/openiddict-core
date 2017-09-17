@@ -172,7 +172,7 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
-        public async Task HandleConfigurationRequest_ClaimsParameterSupportedIsReturned()
+        public async Task HandleConfigurationRequest_DefaultParametersAreReturned()
         {
             // Arrange
             var server = CreateAuthorizationServer();
@@ -184,6 +184,8 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.False((bool) response[OpenIdConnectConstants.Metadata.ClaimsParameterSupported]);
+            Assert.False((bool) response[OpenIdConnectConstants.Metadata.RequestParameterSupported]);
+            Assert.False((bool) response[OpenIdConnectConstants.Metadata.RequestUriParameterSupported]);
         }
 
         [Fact]

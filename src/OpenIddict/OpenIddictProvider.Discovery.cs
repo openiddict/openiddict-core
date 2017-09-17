@@ -44,9 +44,11 @@ namespace OpenIddict
             // excluded from the response by the OpenID Connect server middleware.
             context.Metadata[OpenIdConnectConstants.Metadata.ClaimsSupported] = new JArray(options.Claims);
 
-            // Note: the optional "claims" parameter is not supported by OpenIddict,
-            // so a "false" flag is returned to encourage clients not to use it.
+            // Note: the optional claims/request/request_uri parameters are not supported
+            // by OpenIddict, so "false" is returned to encourage clients not to use them.
             context.Metadata[OpenIdConnectConstants.Metadata.ClaimsParameterSupported] = false;
+            context.Metadata[OpenIdConnectConstants.Metadata.RequestParameterSupported] = false;
+            context.Metadata[OpenIdConnectConstants.Metadata.RequestUriParameterSupported] = false;
 
             var schemes = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
 
