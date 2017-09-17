@@ -39,12 +39,6 @@ namespace OpenIddict.Core
         protected IOpenIddictTokenStore<TToken> Store { get; }
 
         /// <summary>
-        /// Gets the tokens as a queryable source,
-        /// if supported by the underlying store.
-        /// </summary>
-        public virtual IQueryable<TToken> Tokens => Store.Tokens;
-
-        /// <summary>
         /// Creates a new token.
         /// </summary>
         /// <param name="token">The token.</param>
@@ -155,6 +149,26 @@ namespace OpenIddict.Core
         public virtual Task<TToken[]> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
         {
             return Store.FindBySubjectAsync(subject, cancellationToken);
+        }
+
+        /// <summary>
+        /// Executes the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the single element returned when executing the specified query.
+        /// </returns>
+        public virtual Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return Store.GetAsync(query, cancellationToken);
         }
 
         /// <summary>
@@ -354,6 +368,26 @@ namespace OpenIddict.Core
             }
 
             return string.Equals(status, OpenIddictConstants.Statuses.Valid, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Executes the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<TResult[]> ListAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return Store.ListAsync(query, cancellationToken);
         }
 
         /// <summary>

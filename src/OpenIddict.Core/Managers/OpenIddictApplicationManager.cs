@@ -40,12 +40,6 @@ namespace OpenIddict.Core
         protected IOpenIddictApplicationStore<TApplication> Store { get; }
 
         /// <summary>
-        /// Gets the applications as a queryable source,
-        /// if supported by the underlying store.
-        /// </summary>
-        public virtual IQueryable<TApplication> Applications => Store.Applications;
-
-        /// <summary>
         /// Creates a new application.
         /// </summary>
         /// <param name="application">The application to create.</param>
@@ -232,6 +226,26 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Executes the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the single element returned when executing the specified query.
+        /// </returns>
+        public virtual Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return Store.GetAsync(query, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the client type associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -307,7 +321,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens associated with the application.
         /// </returns>
-        public virtual Task<IEnumerable<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual Task<string[]> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -398,6 +412,26 @@ namespace OpenIddict.Core
             }
 
             return string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Executes the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<TResult[]> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return Store.ListAsync(query, cancellationToken);
         }
 
         /// <summary>

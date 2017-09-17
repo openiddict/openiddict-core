@@ -5,17 +5,18 @@
  */
 
 using System;
-using System.ComponentModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using OpenIddict.Core;
 using OpenIddict.Models;
 
 namespace OpenIddict.EntityFrameworkCore
 {
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in a database.
+    /// Note: this class can only be used with the default OpenIddict entities.
     /// </summary>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     public class OpenIddictScopeStore<TContext> : OpenIddictScopeStore<OpenIddictScope, TContext, string>
@@ -26,6 +27,7 @@ namespace OpenIddict.EntityFrameworkCore
 
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in a database.
+    /// Note: this class can only be used with the default OpenIddict entities.
     /// </summary>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
@@ -38,11 +40,12 @@ namespace OpenIddict.EntityFrameworkCore
 
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in a database.
+    /// Note: this class can only be used with the default OpenIddict entities.
     /// </summary>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-    public class OpenIddictScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
+    public class OpenIddictScopeStore<TScope, TContext, TKey> : Core.OpenIddictScopeStore<TScope, TKey>
         where TScope : OpenIddictScope<TKey>, new()
         where TContext : DbContext
         where TKey : IEquatable<TKey>
@@ -68,40 +71,43 @@ namespace OpenIddict.EntityFrameworkCore
         protected DbSet<TScope> Scopes => Context.Set<TScope>();
 
         /// <summary>
-        /// Gets the scopes as a queryable source, if supported by the store.
+        /// Executes the specified query.
         /// </summary>
-        IQueryable<TScope> IOpenIddictScopeStore<TScope>.Scopes => Scopes;
-
-        /// <summary>
-        /// Converts the provided identifier to a strongly typed key object.
-        /// </summary>
-        /// <param name="identifier">The identifier to convert.</param>
-        /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
-        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier)
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the single element returned when executing the specified query.
+        /// </returns>
+        public override Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(identifier))
+            if (query == null)
             {
-                return default(TKey);
+                throw new ArgumentNullException(nameof(query));
             }
 
-            return (TKey) TypeDescriptor.GetConverter(typeof(TKey))
-                                        .ConvertFromInvariantString(identifier);
+            return query.Invoke(Scopes).SingleOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
-        /// Converts the provided identifier to its string representation.
+        /// Executes the specified query.
         /// </summary>
-        /// <param name="identifier">The identifier to convert.</param>
-        /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
-        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier)
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public override Task<TResult[]> ListAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
-            if (Equals(identifier, default(TKey)))
+            if (query == null)
             {
-                return null;
+                throw new ArgumentNullException(nameof(query));
             }
 
-            return TypeDescriptor.GetConverter(typeof(TKey))
-                                 .ConvertToInvariantString(identifier);
+            return query.Invoke(Scopes).ToArrayAsync(cancellationToken);
         }
     }
 }

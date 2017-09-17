@@ -6,18 +6,28 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using OpenIddict.Models;
 
 namespace OpenIddict.Core
 {
     /// <summary>
     /// Provides methods allowing to manage the applications stored in a database.
+    /// Note: this base class can only be used with the default OpenIddict entities.
     /// </summary>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-    public interface IOpenIddictApplicationStore<TApplication> where TApplication : class
+    /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
+    /// <typeparam name="TToken">The type of the Token entity.</typeparam>
+    /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
+    public abstract class OpenIddictApplicationStore<TApplication, TAuthorization, TToken, TKey> : IOpenIddictApplicationStore<TApplication>
+        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
+        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
+        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
+        where TKey : IEquatable<TKey>
     {
         /// <summary>
         /// Creates a new application.
@@ -27,7 +37,7 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
         /// </returns>
-        Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public abstract Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates a new application.
@@ -37,7 +47,7 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
         /// </returns>
-        Task<TApplication> CreateAsync([NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken);
+        public abstract Task<TApplication> CreateAsync([NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes an existing application.
@@ -47,7 +57,7 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public abstract Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an application using its unique identifier.
@@ -58,7 +68,12 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken);
+        public virtual Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        {
+            var key = ConvertIdentifierFromString(identifier);
+
+            return GetAsync(applications => applications.Where(application => application.Id.Equals(key)), cancellationToken);
+        }
 
         /// <summary>
         /// Retrieves an application using its client identifier.
@@ -69,7 +84,10 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        Task<TApplication> FindByClientIdAsync(string identifier, CancellationToken cancellationToken);
+        public virtual Task<TApplication> FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
+        {
+            return GetAsync(applications => applications.Where(application => application.ClientId.Equals(identifier)), cancellationToken);
+        }
 
         /// <summary>
         /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
@@ -80,7 +98,10 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        Task<TApplication[]> FindByLogoutRedirectUriAsync(string address, CancellationToken cancellationToken);
+        public virtual Task<TApplication[]> FindByLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
+        {
+            return ListAsync(applications => applications.Where(application => application.LogoutRedirectUri == address), cancellationToken);
+        }
 
         /// <summary>
         /// Retrieves all the applications associated with the specified redirect_uri.
@@ -91,7 +112,10 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        Task<TApplication[]> FindByRedirectUriAsync(string address, CancellationToken cancellationToken);
+        public virtual Task<TApplication[]> FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
+        {
+            return ListAsync(applications => applications.Where(application => application.RedirectUri == address), cancellationToken);
+        }
 
         /// <summary>
         /// Executes the specified query.
@@ -103,7 +127,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the single element returned when executing the specified query.
         /// </returns>
-        Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the client identifier associated with an application.
@@ -114,7 +138,15 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client identifier associated with the application.
         /// </returns>
-        Task<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public virtual Task<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.ClientId);
+        }
 
         /// <summary>
         /// Retrieves the client secret associated with an application.
@@ -127,7 +159,15 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client secret associated with the application.
         /// </returns>
-        Task<string> GetClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public virtual Task<string> GetClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.ClientSecret);
+        }
 
         /// <summary>
         /// Retrieves the client type associated with an application.
@@ -138,7 +178,15 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client type of the application (by default, "public").
         /// </returns>
-        Task<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public virtual Task<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.Type);
+        }
 
         /// <summary>
         /// Retrieves the display name associated with an application.
@@ -149,7 +197,15 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the application.
         /// </returns>
-        Task<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public virtual Task<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.DisplayName);
+        }
 
         /// <summary>
         /// Retrieves the unique identifier associated with an application.
@@ -160,7 +216,15 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
-        Task<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public virtual Task<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(ConvertIdentifierToString(application.Id));
+        }
 
         /// <summary>
         /// Retrieves the logout callback address associated with an application.
@@ -171,7 +235,15 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the post_logout_redirect_uri associated with the application.
         /// </returns>
-        Task<string> GetLogoutRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public virtual Task<string> GetLogoutRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.LogoutRedirectUri);
+        }
 
         /// <summary>
         /// Retrieves the callback address associated with an application.
@@ -182,7 +254,15 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the redirect_uri associated with the application.
         /// </returns>
-        Task<string> GetRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public virtual Task<string> GetRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.RedirectUri);
+        }
 
         /// <summary>
         /// Retrieves the token identifiers associated with an application.
@@ -193,7 +273,26 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens associated with the application.
         /// </returns>
-        Task<string[]> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public virtual async Task<string[]> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var tokens = new List<string>();
+
+            foreach (var identifier in await ListAsync(applications =>
+                from entity in applications
+                where entity.Id.Equals(application.Id)
+                from token in entity.Tokens
+                select token.Id, cancellationToken))
+            {
+                tokens.Add(ConvertIdentifierToString(identifier));
+            }
+
+            return tokens.ToArray();
+        }
 
         /// <summary>
         /// Executes the specified query.
@@ -205,7 +304,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        Task<TResult[]> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<TResult[]> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the client secret associated with an application.
@@ -218,7 +317,18 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task SetClientSecretAsync([NotNull] TApplication application, [CanBeNull] string secret, CancellationToken cancellationToken);
+        public virtual Task SetClientSecretAsync([NotNull] TApplication application,
+            [CanBeNull] string secret, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            application.ClientSecret = secret;
+
+            return Task.FromResult(0);
+        }
 
         /// <summary>
         /// Sets the client type associated with an application.
@@ -229,7 +339,22 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task SetClientTypeAsync([NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken);
+        public virtual Task SetClientTypeAsync([NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The client type cannot be null or empty.", nameof(type));
+            }
+
+            application.Type = type;
+
+            return Task.FromResult(0);
+        }
 
         /// <summary>
         /// Updates an existing application.
@@ -239,6 +364,36 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        public abstract Task UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Converts the provided identifier to a strongly typed key object.
+        /// </summary>
+        /// <param name="identifier">The identifier to convert.</param>
+        /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
+        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                return default(TKey);
+            }
+
+            return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        }
+
+        /// <summary>
+        /// Converts the provided identifier to its string representation.
+        /// </summary>
+        /// <param name="identifier">The identifier to convert.</param>
+        /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
+        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier)
+        {
+            if (Equals(identifier, default(TKey)))
+            {
+                return null;
+            }
+
+            return TypeDescriptor.GetConverter(typeof(TKey)).ConvertToInvariantString(identifier);
+        }
     }
 }
