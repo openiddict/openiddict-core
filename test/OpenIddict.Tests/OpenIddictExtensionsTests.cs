@@ -814,7 +814,27 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
-        public void RegisterScopes_ScopeIsAdded()
+        public void RegisterClaims_ClaimsAreAdded()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOptions();
+
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.RegisterClaims("custom_claim_1", "custom_claim_2");
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptions<OpenIddictOptions>>();
+
+            // Assert
+            Assert.Contains("custom_claim_1", options.Value.Claims);
+            Assert.Contains("custom_claim_2", options.Value.Claims);
+        }
+
+        [Fact]
+        public void RegisterScopes_ScopesAreAdded()
         {
             // Arrange
             var services = new ServiceCollection();

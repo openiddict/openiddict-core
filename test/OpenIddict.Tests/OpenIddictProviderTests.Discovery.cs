@@ -139,6 +139,39 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task HandleConfigurationRequest_NoSupportedClaimsPropertyIsReturnedWhenNoClaimIsConfigured()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.GetAsync(ConfigurationEndpoint);
+
+            // Assert
+            Assert.False(response.HasParameter(OpenIdConnectConstants.Metadata.ClaimsSupported));
+        }
+
+        [Fact]
+        public async Task HandleConfigurationRequest_ConfiguredClaimsAreReturned()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options => options.Claims.Add("custom_claim"));
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.GetAsync(ConfigurationEndpoint);
+
+            // Assert
+            Assert.Contains("custom_claim", ((JArray) response[OpenIdConnectConstants.Metadata.ClaimsSupported]).Values<string>());
+        }
+
+        [Fact]
         public async Task HandleConfigurationRequest_ClaimsParameterSupportedIsReturned()
         {
             // Arrange
