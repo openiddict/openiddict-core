@@ -139,6 +139,21 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task HandleConfigurationRequest_ClaimsParameterSupportedIsReturned()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.GetAsync(ConfigurationEndpoint);
+
+            // Assert
+            Assert.False((bool) response[OpenIdConnectConstants.Metadata.ClaimsParameterSupported]);
+        }
+
+        [Fact]
         public async Task HandleConfigurationRequest_ExternalProvidersAreCorrectlyReturned()
         {
             // Arrange
