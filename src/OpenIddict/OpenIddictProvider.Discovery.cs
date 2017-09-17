@@ -41,7 +41,7 @@ namespace OpenIddict
 
             // Note: the optional "claims" parameter is not supported by OpenIddict,
             // so a "false" flag is returned to encourage clients not to use it.
-            context.Metadata[OpenIdConnectConstants.Metadata.ClaimsSupported] = false;
+            context.Metadata[OpenIdConnectConstants.Metadata.ClaimsParameterSupported] = false;
 
             var schemes = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
 
