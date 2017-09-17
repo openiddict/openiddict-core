@@ -106,6 +106,34 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Creates a new application.
+        /// </summary>
+        /// <param name="descriptor">The application descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
+        /// </returns>
+        public Task<TApplication> CreateAsync([NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            var application = new TApplication
+            {
+                ClientId = descriptor.ClientId,
+                ClientSecret = descriptor.ClientSecret,
+                DisplayName = descriptor.DisplayName,
+                LogoutRedirectUri = descriptor.LogoutRedirectUri,
+                RedirectUri = descriptor.RedirectUri,
+                Type = descriptor.Type
+            };
+
+            return CreateAsync(application, cancellationToken);
+        }
+
+        /// <summary>
         /// Removes an existing application.
         /// </summary>
         /// <param name="application">The application to delete.</param>

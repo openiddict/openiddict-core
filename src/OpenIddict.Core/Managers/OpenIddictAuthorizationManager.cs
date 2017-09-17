@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,14 +51,15 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        public virtual Task<TAuthorization> CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public virtual async Task<TAuthorization> CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return Store.CreateAsync(authorization, cancellationToken);
+            await ValidateAsync(authorization, cancellationToken);
+            return await Store.CreateAsync(authorization, cancellationToken);
         }
 
         /// <summary>
@@ -70,14 +70,15 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        public virtual Task<TAuthorization> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
+        public virtual async Task<TAuthorization> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
         {
             if (descriptor == null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            return Store.CreateAsync(descriptor, cancellationToken);
+            await ValidateAsync(descriptor, cancellationToken);
+            return await Store.CreateAsync(descriptor, cancellationToken);
         }
 
         /// <summary>
@@ -145,6 +146,7 @@ namespace OpenIddict.Core
             if (!string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
             {
                 await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Revoked, cancellationToken);
+                await ValidateAsync(authorization, cancellationToken);
                 await UpdateAsync(authorization, cancellationToken);
             }
         }
@@ -157,14 +159,15 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public virtual async Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return Store.UpdateAsync(authorization, cancellationToken);
+            await ValidateAsync(authorization, cancellationToken);
+            await Store.UpdateAsync(authorization, cancellationToken);
         }
 
         /// <summary>
@@ -182,10 +185,35 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(authorization, cancellationToken)))
+            var descriptor = new OpenIddictAuthorizationDescriptor
+            {
+                Subject = await Store.GetSubjectAsync(authorization, cancellationToken)
+            };
+
+            await ValidateAsync(descriptor, cancellationToken);
+        }
+
+        /// <summary>
+        /// Validates the authorization descriptor to ensure it's in a consistent state.
+        /// </summary>
+        /// <param name="descriptor">The authorization descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        protected virtual Task ValidateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (string.IsNullOrEmpty(descriptor.Subject))
             {
                 throw new ArgumentException("The subject cannot be null or empty.");
             }
+
+            return Task.CompletedTask;
         }
     }
 }

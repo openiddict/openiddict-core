@@ -34,6 +34,16 @@ namespace OpenIddict.Core
         Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Creates a new application.
+        /// </summary>
+        /// <param name="descriptor">The application descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
+        /// </returns>
+        Task<TApplication> CreateAsync([NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Removes an existing application.
         /// </summary>
         /// <param name="application">The application to delete.</param>
