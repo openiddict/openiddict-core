@@ -220,19 +220,19 @@ namespace Microsoft.Extensions.DependencyInjection
             // Configure the TApplication entity.
             builder.Entity<TApplication>(entity =>
             {
-                entity.HasKey(application => application.Id);
+                entity.HasKey(application => application.ApplicationId);
 
                 entity.HasIndex(application => application.ClientId)
                       .IsUnique(unique: true);
 
                 entity.HasMany(application => application.Authorizations)
                       .WithOne(authorization => authorization.Application)
-                      .HasForeignKey("ApplicationId")
+                      .HasForeignKey(fk => fk.ApplicationId)
                       .IsRequired(required: false);
 
                 entity.HasMany(application => application.Tokens)
                       .WithOne(token => token.Application)
-                      .HasForeignKey("ApplicationId")
+                      .HasForeignKey(fk => fk.ApplicationId)
                       .IsRequired(required: false);
 
                 entity.ToTable("OpenIddictApplications");
@@ -241,11 +241,11 @@ namespace Microsoft.Extensions.DependencyInjection
             // Configure the TAuthorization entity.
             builder.Entity<TAuthorization>(entity =>
             {
-                entity.HasKey(authorization => authorization.Id);
+                entity.HasKey(authorization => authorization.AuthorizationId);
 
                 entity.HasMany(application => application.Tokens)
                       .WithOne(token => token.Authorization)
-                      .HasForeignKey("AuthorizationId")
+                      .HasForeignKey(fk => fk.AuthorizationId)
                       .IsRequired(required: false);
 
                 entity.ToTable("OpenIddictAuthorizations");
@@ -254,7 +254,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Configure the TScope entity.
             builder.Entity<TScope>(entity =>
             {
-                entity.HasKey(scope => scope.Id);
+                entity.HasKey(scope => scope.ScopeId);
 
                 entity.ToTable("OpenIddictScopes");
             });
@@ -262,7 +262,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Configure the TToken entity.
             builder.Entity<TToken>(entity =>
             {
-                entity.HasKey(token => token.Id);
+                entity.HasKey(token => token.TokenId);
 
                 entity.HasIndex(token => token.Hash)
                       .IsUnique(unique: true);

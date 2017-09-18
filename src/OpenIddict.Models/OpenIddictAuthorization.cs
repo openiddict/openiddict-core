@@ -17,7 +17,7 @@ namespace OpenIddict.Models
         public OpenIddictAuthorization()
         {
             // Generate a new string identifier.
-            Id = Guid.NewGuid().ToString();
+            AuthorizationId = Guid.NewGuid().ToString();
         }
     }
 
@@ -40,9 +40,15 @@ namespace OpenIddict.Models
 
         /// <summary>
         /// Gets or sets the unique identifier
+        /// associated with the current application.
+        /// </summary>
+        public virtual TKey ApplicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier
         /// associated with the current authorization.
         /// </summary>
-        public virtual TKey Id { get; set; }
+        public virtual TKey AuthorizationId { get; set; }
 
         /// <summary>
         /// Gets or sets the space-delimited scopes

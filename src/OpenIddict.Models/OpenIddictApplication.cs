@@ -17,7 +17,7 @@ namespace OpenIddict.Models
         public OpenIddictApplication()
         {
             // Generate a new string identifier.
-            Id = Guid.NewGuid().ToString();
+            ApplicationId = Guid.NewGuid().ToString();
         }
     }
 
@@ -61,7 +61,7 @@ namespace OpenIddict.Models
         /// Gets or sets the unique identifier
         /// associated with the current application.
         /// </summary>
-        public virtual TKey Id { get; set; }
+        public virtual TKey ApplicationId { get; set; }
 
         /// <summary>
         /// Gets or sets the logout callback URL

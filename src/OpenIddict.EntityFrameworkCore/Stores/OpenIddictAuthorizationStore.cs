@@ -101,6 +101,7 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             Context.Add(authorization);
+            Context.ChangeTracker.Entries<OpenIddictApplication>().ToList().ForEach(p => p.State = EntityState.Unchanged);
 
             await Context.SaveChangesAsync(cancellationToken);
 
@@ -133,13 +134,14 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(descriptor.ApplicationId);
 
-                var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+                var application = await Applications.SingleOrDefaultAsync(entity => entity.ApplicationId.Equals(key));
                 if (application == null)
                 {
                     throw new InvalidOperationException("The application associated with the authorization cannot be found.");
                 }
 
                 authorization.Application = application;
+                authorization.ApplicationId = key;
             }
 
             return await CreateAsync(authorization, cancellationToken);
@@ -197,6 +199,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
 
             Context.Attach(authorization);
+            Context.ChangeTracker.Entries<OpenIddictApplication>().ToList().ForEach(p => p.State = EntityState.Unchanged);
             Context.Update(authorization);
 
             try
