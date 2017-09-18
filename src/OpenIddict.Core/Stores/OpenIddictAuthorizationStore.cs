@@ -64,7 +64,7 @@ namespace OpenIddict.Core
 
             return GetAsync(authorizations =>
                 from authorization in authorizations
-                where authorization.Application.Id.Equals(key)
+                where authorization.Application.ApplicationId.Equals(key)
                 where authorization.Subject == subject
                 select authorization, cancellationToken);
         }
@@ -82,7 +82,7 @@ namespace OpenIddict.Core
         {
             var key = ConvertIdentifierFromString(identifier);
 
-            return GetAsync(authorizations => authorizations.Where(authorization => authorization.Id.Equals(key)), cancellationToken);
+            return GetAsync(authorizations => authorizations.Where(authorization => authorization.AuthorizationId.Equals(key)), cancellationToken);
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return Task.FromResult(ConvertIdentifierToString(authorization.Id));
+            return Task.FromResult(ConvertIdentifierToString(authorization.AuthorizationId));
         }
 
         /// <summary>

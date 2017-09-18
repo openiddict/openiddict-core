@@ -69,7 +69,7 @@ namespace OpenIddict.Core
         {
             var key = ConvertIdentifierFromString(identifier);
 
-            return ListAsync(tokens => tokens.Where(token => token.Authorization.Id.Equals(key)), cancellationToken);
+            return ListAsync(tokens => tokens.Where(token => token.Authorization.AuthorizationId.Equals(key)), cancellationToken);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace OpenIddict.Core
         {
             var key = ConvertIdentifierFromString(identifier);
 
-            return GetAsync(tokens => tokens.Where(token => token.Id.Equals(key)), cancellationToken);
+            return GetAsync(tokens => tokens.Where(token => token.TokenId.Equals(key)), cancellationToken);
         }
 
         /// <summary>
@@ -146,13 +146,13 @@ namespace OpenIddict.Core
 
             if (token.Authorization != null)
             {
-                return ConvertIdentifierToString(token.Authorization.Id);
+                return ConvertIdentifierToString(token.Authorization.AuthorizationId);
             }
 
             var key = await GetAsync(tokens =>
                 from element in tokens
-                where element.Id.Equals(token.Id)
-                select element.Authorization.Id, cancellationToken);
+                where element.TokenId.Equals(token.TokenId)
+                select element.Authorization.AuthorizationId, cancellationToken);
 
             return ConvertIdentifierToString(key);
         }
@@ -249,7 +249,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(token));
             }
 
-            return Task.FromResult(ConvertIdentifierToString(token.Id));
+            return Task.FromResult(ConvertIdentifierToString(token.TokenId));
         }
 
         /// <summary>

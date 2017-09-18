@@ -16,7 +16,7 @@ namespace OpenIddict.Models
         public OpenIddictToken()
         {
             // Generate a new string identifier.
-            Id = Guid.NewGuid().ToString();
+            TokenId = Guid.NewGuid().ToString();
         }
     }
 
@@ -73,7 +73,19 @@ namespace OpenIddict.Models
         /// Gets or sets the unique identifier
         /// associated with the current token.
         /// </summary>
-        public virtual TKey Id { get; set; }
+        public virtual TKey TokenId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier
+        /// associated with the current application.
+        /// </summary>
+        public virtual TKey ApplicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier
+        /// associated with the current authorization.
+        /// </summary>
+        public virtual TKey AuthorizationId { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the current token.

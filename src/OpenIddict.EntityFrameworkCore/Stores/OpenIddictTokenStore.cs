@@ -106,6 +106,8 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             Context.Add(token);
+            Context.ChangeTracker.Entries<OpenIddictApplication>().ToList().ForEach(p => p.State = EntityState.Unchanged);
+            Context.ChangeTracker.Entries<OpenIddictAuthorization>().ToList().ForEach(p => p.State = EntityState.Unchanged);
 
             await Context.SaveChangesAsync(cancellationToken);
 
@@ -142,13 +144,14 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(descriptor.ApplicationId);
 
-                var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+                var application = await Applications.SingleOrDefaultAsync(entity => entity.ApplicationId.Equals(key));
                 if (application == null)
                 {
                     throw new InvalidOperationException("The application associated with the token cannot be found.");
                 }
 
                 token.Application = application;
+                token.ApplicationId = key;
             }
 
             // Bind the token to the specified authorization, if applicable.
@@ -156,13 +159,14 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(descriptor.AuthorizationId);
 
-                var authorization = await Authorizations.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+                var authorization = await Authorizations.SingleOrDefaultAsync(entity => entity.AuthorizationId.Equals(key));
                 if (authorization == null)
                 {
                     throw new InvalidOperationException("The authorization associated with the token cannot be found.");
                 }
 
                 token.Authorization = authorization;
+                token.ApplicationId = key;
             }
 
             return await CreateAsync(token, cancellationToken);
@@ -251,12 +255,13 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(identifier);
 
-                var authorization = await Authorizations.SingleOrDefaultAsync(element => element.Id.Equals(key));
+                var authorization = await Authorizations.SingleOrDefaultAsync(element => element.AuthorizationId.Equals(key));
                 if (authorization == null)
                 {
                     throw new InvalidOperationException("The authorization associated with the token cannot be found.");
                 }
 
+                token.AuthorizationId = key;
                 authorization.Tokens.Add(token);
             }
 
@@ -266,7 +271,7 @@ namespace OpenIddict.EntityFrameworkCore
 
                 // Try to retrieve the authorization associated with the token.
                 // If none can be found, assume that no authorization is attached.
-                var authorization = await Authorizations.SingleOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                var authorization = await Authorizations.SingleOrDefaultAsync(element => element.Tokens.Any(t => t.TokenId.Equals(key)));
                 if (authorization != null)
                 {
                     authorization.Tokens.Remove(token);
@@ -294,12 +299,13 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(identifier);
 
-                var application = await Applications.SingleOrDefaultAsync(element => element.Id.Equals(key));
+                var application = await Applications.SingleOrDefaultAsync(element => element.ApplicationId.Equals(key));
                 if (application == null)
                 {
                     throw new InvalidOperationException("The application associated with the token cannot be found.");
                 }
 
+                token.ApplicationId = key;
                 application.Tokens.Add(token);
             }
 
@@ -309,7 +315,7 @@ namespace OpenIddict.EntityFrameworkCore
 
                 // Try to retrieve the application associated with the token.
                 // If none can be found, assume that no application is attached.
-                var application = await Applications.SingleOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                var application = await Applications.SingleOrDefaultAsync(element => element.Tokens.Any(t => t.TokenId.Equals(key)));
                 if (application != null)
                 {
                     application.Tokens.Remove(token);
@@ -333,6 +339,7 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             Context.Attach(token);
+            Context.ChangeTracker.Entries<OpenIddictApplication>().ToList().ForEach(p => p.State = EntityState.Unchanged);
             Context.Update(token);
 
             try

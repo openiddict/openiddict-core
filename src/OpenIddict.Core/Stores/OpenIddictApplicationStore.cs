@@ -72,7 +72,7 @@ namespace OpenIddict.Core
         {
             var key = ConvertIdentifierFromString(identifier);
 
-            return GetAsync(applications => applications.Where(application => application.Id.Equals(key)), cancellationToken);
+            return GetAsync(applications => applications.Where(application => application.ApplicationId.Equals(key)), cancellationToken);
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(ConvertIdentifierToString(application.Id));
+            return Task.FromResult(ConvertIdentifierToString(application.ApplicationId));
         }
 
         /// <summary>
@@ -284,9 +284,9 @@ namespace OpenIddict.Core
 
             foreach (var identifier in await ListAsync(applications =>
                 from entity in applications
-                where entity.Id.Equals(application.Id)
+                where entity.ApplicationId.Equals(application.ApplicationId)
                 from token in entity.Tokens
-                select token.Id, cancellationToken))
+                select token.TokenId, cancellationToken))
             {
                 tokens.Add(ConvertIdentifierToString(identifier));
             }

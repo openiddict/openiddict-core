@@ -16,7 +16,7 @@ namespace OpenIddict.Models
         public OpenIddictScope()
         {
             // Generate a new string identifier.
-            Id = Guid.NewGuid().ToString();
+            ScopeId = Guid.NewGuid().ToString();
         }
     }
 
@@ -35,6 +35,6 @@ namespace OpenIddict.Models
         /// Gets or sets the unique identifier
         /// associated with the current scope.
         /// </summary>
-        public virtual TKey Id { get; set; }
+        public virtual TKey ScopeId { get; set; }
     }
 }
