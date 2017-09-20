@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -5,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Mvc.Client
 {
@@ -58,7 +61,19 @@ namespace Mvc.Client
                 // the different endpoints URIs or the token validation parameters explicitly.
                 Authority = "http://localhost:54540/",
 
-                Scope = { "email", "roles", "offline_access" }
+                Scope = { "email", "roles", "offline_access" },
+
+                SecurityTokenValidator = new JwtSecurityTokenHandler
+                {
+                    // Disable the built-in JWT claims mapping feature.
+                    InboundClaimTypeMap = new Dictionary<string, string>()
+                },
+
+                TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = "name",
+                    RoleClaimType = "role"
+                }
             });
 
             app.UseMvc();
