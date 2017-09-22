@@ -347,22 +347,9 @@ namespace OpenIddict.Tests
             var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(identity),
-                new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
-
-            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
-            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
-
-            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
-
-            format.Setup(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"))
-                .Returns(ticket);
-
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByHashAsync("coYFMTIt6jDp2O41qaUfV+XGhPsils3Z3YfmUvudrVw=", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(value: null);
             });
 
@@ -384,8 +371,6 @@ namespace OpenIddict.Tests
 
                 builder.Services.AddSingleton(manager);
 
-                builder.Configure(options => options.AccessTokenFormat = format.Object);
-
                 builder.UseReferenceTokens();
             });
 
@@ -396,14 +381,15 @@ namespace OpenIddict.Tests
             {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                Token = "2YotnFZFEjr1zCsicMWpAA"
+                Token = "QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI"
             });
 
             // Assert
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+
+            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("coYFMTIt6jDp2O41qaUfV+XGhPsils3Z3YfmUvudrVw=", It.IsAny<CancellationToken>()), Times.Exactly(3));
         }
 
         [Fact]
@@ -430,6 +416,15 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
+                instance.Setup(mock => mock.FindByHashAsync("coYFMTIt6jDp2O41qaUfV+XGhPsils3Z3YfmUvudrVw=", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
+
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
@@ -467,13 +462,14 @@ namespace OpenIddict.Tests
             {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                Token = "2YotnFZFEjr1zCsicMWpAA"
+                Token = "QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI"
             });
 
             // Assert
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
+            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("coYFMTIt6jDp2O41qaUfV+XGhPsils3Z3YfmUvudrVw=", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
