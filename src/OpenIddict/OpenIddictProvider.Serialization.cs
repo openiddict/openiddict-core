@@ -32,20 +32,21 @@ namespace OpenIddict
                 return;
             }
 
-            var ticket = await ReceiveTokenAsync(
+            context.Ticket = await ReceiveTokenAsync(
                 context.AccessToken, options, context.HttpContext,
                 context.Request, context.DataFormat);
 
-            // If a valid ticket was returned by ReceiveTokenAsync(),
-            // force the OpenID Connect server middleware to use it.
-            if (ticket != null)
+            // Prevent the OpenID Connect server middleware from using
+            // its default logic to deserialize the reference token.
+            if (context.Ticket != null)
             {
-                context.Ticket = ticket;
                 context.HandleResponse();
             }
 
-            // Otherwise, let the OpenID Connect server middleware
-            // deserialize the token using its default internal logic.
+            else
+            {
+                context.SkipToNextMiddleware();
+            }
         }
 
         public override async Task DeserializeAuthorizationCode([NotNull] DeserializeAuthorizationCodeContext context)
@@ -56,20 +57,21 @@ namespace OpenIddict
                 return;
             }
 
-            var ticket = await ReceiveTokenAsync(
+            context.Ticket = await ReceiveTokenAsync(
                 context.AuthorizationCode, options, context.HttpContext,
                 context.Request, context.DataFormat);
 
-            // If a valid ticket was returned by ReceiveTokenAsync(),
-            // force the OpenID Connect server middleware to use it.
-            if (ticket != null)
+            // Prevent the OpenID Connect server middleware from using
+            // its default logic to deserialize the reference token.
+            if (context.Ticket != null)
             {
-                context.Ticket = ticket;
                 context.HandleResponse();
             }
 
-            // Otherwise, let the OpenID Connect server middleware
-            // deserialize the token using its default internal logic.
+            else
+            {
+                context.SkipToNextMiddleware();
+            }
         }
 
         public override async Task DeserializeRefreshToken([NotNull] DeserializeRefreshTokenContext context)
@@ -80,20 +82,21 @@ namespace OpenIddict
                 return;
             }
 
-            var ticket = await ReceiveTokenAsync(
+            context.Ticket = await ReceiveTokenAsync(
                 context.RefreshToken, options, context.HttpContext,
                 context.Request, context.DataFormat);
 
-            // If a valid ticket was returned by ReceiveTokenAsync(),
-            // force the OpenID Connect server middleware to use it.
-            if (ticket != null)
+            // Prevent the OpenID Connect server middleware from using
+            // its default logic to deserialize the reference token.
+            if (context.Ticket != null)
             {
-                context.Ticket = ticket;
                 context.HandleResponse();
             }
 
-            // Otherwise, let the OpenID Connect server middleware
-            // deserialize the token using its default internal logic.
+            else
+            {
+                context.SkipToNextMiddleware();
+            }
         }
 
         public override async Task SerializeAccessToken([NotNull] SerializeAccessTokenContext context)
