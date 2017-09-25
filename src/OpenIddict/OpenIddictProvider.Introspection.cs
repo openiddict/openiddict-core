@@ -68,8 +68,8 @@ namespace OpenIddict
                 return;
             }
 
-            // Reject non-confidential applications.
-            if (!await applications.IsConfidentialAsync(application, context.HttpContext.RequestAborted))
+            // Reject introspection requests sent by public applications.
+            if (await applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
             {
                 logger.LogError("The introspection request was rejected because the public application " +
                                 "'{ClientId}' was not allowed to use this endpoint.", context.ClientId);
@@ -84,7 +84,7 @@ namespace OpenIddict
             // Validate the client credentials.
             if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted))
             {
-                logger.LogError("The introspection request was rejected because the confidential application " +
+                logger.LogError("The introspection request was rejected because the confidential or hybrid application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 
                 context.Reject(

@@ -423,6 +423,7 @@ namespace OpenIddict.Tests
         [Theory]
         [InlineData("code id_token token")]
         [InlineData("code token")]
+        [InlineData("id_token")]
         [InlineData("id_token token")]
         [InlineData("token")]
         public async Task ValidateAuthorizationRequest_ImplicitOrHybridRequestIsRejectedWhenClientIsConfidential(string type)
@@ -464,8 +465,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("Confidential clients are not allowed to retrieve " +
-                         "an access token from the authorization endpoint.", response.ErrorDescription);
+            Assert.Equal("Confidential clients are not allowed to retrieve a token from the authorization endpoint.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.HasRedirectUriAsync(application, It.IsAny<CancellationToken>()), Times.Once());
