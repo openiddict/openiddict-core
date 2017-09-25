@@ -98,6 +98,9 @@ namespace OpenIddict
                 // Reject the request if client identification is mandatory.
                 if (options.RequireClientIdentification)
                 {
+                    Logger.LogError("The token request was rejected becaused the " +
+                                    "mandatory client_id parameter was missing or empty.");
+
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
                         description: "The mandatory 'client_id' parameter was missing.");
@@ -155,8 +158,8 @@ namespace OpenIddict
                     return;
                 }
 
-                Logger.LogInformation("The token request validation process was not fully validated because " +
-                                      "the client '{ClientId}' was a public application.", context.ClientId);
+                Logger.LogDebug("The token request validation process was not fully validated because " +
+                                "the client '{ClientId}' was a public application.", context.ClientId);
 
                 // If client authentication cannot be enforced, call context.Skip() to inform
                 // the OpenID Connect server middleware that the caller cannot be fully trusted.
@@ -165,11 +168,11 @@ namespace OpenIddict
                 return;
             }
 
-            // Confidential applications MUST authenticate
+            // Confidential and hybrid applications MUST authenticate
             // to protect them from impersonation attacks.
             if (string.IsNullOrEmpty(context.ClientSecret))
             {
-                Logger.LogError("The token request was rejected because the confidential application " +
+                Logger.LogError("The token request was rejected because the confidential or hybrid application " +
                                 "'{ClientId}' didn't specify a client secret.", context.ClientId);
 
                 context.Reject(
@@ -181,7 +184,7 @@ namespace OpenIddict
 
             if (!await Applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted))
             {
-                Logger.LogError("The token request was rejected because the confidential application " +
+                Logger.LogError("The token request was rejected because the confidential or hybrid application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 
                 context.Reject(

@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,12 +87,12 @@ namespace OpenIddict.Core
                     OpenIddictConstants.ClientTypes.Confidential, cancellationToken);
             }
 
-            // If the client is a confidential application, throw an
+            // If the client is not a public application, throw an
             // exception as the client secret is required in this case.
-            if (string.IsNullOrEmpty(secret) &&
-                string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(secret) && !await IsPublicAsync(application, cancellationToken))
             {
-                throw new InvalidOperationException("A client secret must be provided when creating a confidential application.");
+                throw new InvalidOperationException("A client secret must be provided when creating " +
+                                                    "a confidential or hybrid application.");
             }
 
             if (!string.IsNullOrEmpty(secret))
@@ -133,12 +132,13 @@ namespace OpenIddict.Core
                     OpenIddictConstants.ClientTypes.Confidential;
             }
 
-            // If the client is a confidential application, throw an
+            // If the client is not a public application, throw an
             // exception as the client secret is required in this case.
             if (string.IsNullOrEmpty(descriptor.ClientSecret) &&
-                string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+               !string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("A client secret must be provided when creating a confidential application.");
+                throw new InvalidOperationException("A client secret must be provided when creating " +
+                                                    "a confidential or hybrid application.");
             }
 
             // Obfuscate the provided client secret.
@@ -265,9 +265,10 @@ namespace OpenIddict.Core
 
             // Ensure the application type returned by the store is supported by the manager.
             if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("Only 'confidential' or 'public' applications are " +
+                throw new InvalidOperationException("Only 'confidential', 'hybrid' or 'public' applications are " +
                                                     "supported by the default application manager.");
             }
 
@@ -351,25 +352,6 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Determines whether the specified application has a client secret.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns a boolean indicating whether a client secret is registered.
-        /// </returns>
-        public virtual async Task<bool> HasClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            return !string.IsNullOrEmpty(await Store.GetClientSecretAsync(application, cancellationToken));
-        }
-
-        /// <summary>
         /// Determines whether an application is a confidential client.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -389,6 +371,28 @@ namespace OpenIddict.Core
             }
 
             return string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Determines whether an application is a hybrid client.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the application is a hybrid client, <c>false</c> otherwise.</returns>
+        public async Task<bool> IsHybridAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var type = await GetClientTypeAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                return false;
+            }
+
+            return string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -505,9 +509,9 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (!await IsConfidentialAsync(application, cancellationToken))
+            if (await IsPublicAsync(application, cancellationToken))
             {
-                Logger.LogWarning("Client authentication cannot be enforced for non-confidential applications.");
+                Logger.LogWarning("Client authentication cannot be enforced for public applications.");
 
                 return false;
             }
@@ -640,9 +644,10 @@ namespace OpenIddict.Core
 
             // Ensure the application type is supported by the manager.
             if (!string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Only 'confidential' or 'public' applications are " +
+                throw new ArgumentException("Only 'confidential', 'hybrid' or 'public' applications are " +
                                             "supported by the default application manager.", nameof(descriptor));
             }
 

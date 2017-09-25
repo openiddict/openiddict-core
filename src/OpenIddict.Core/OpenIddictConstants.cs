@@ -16,6 +16,7 @@ namespace OpenIddict.Core
         public static class ClientTypes
         {
             public const string Confidential = "confidential";
+            public const string Hybrid = "hybrid";
             public const string Public = "public";
         }
 
