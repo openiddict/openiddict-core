@@ -1,0 +1,7 @@
+<Project>
+
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\OpenIddict.EntityFramework.Tests\*.csproj" Condition="'$(OS)' != 'Windows_NT'"/>
+  </ItemGroup>
+
+</Project>
