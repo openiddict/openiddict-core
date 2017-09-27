@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace OpenIddict.Mvc
 {
