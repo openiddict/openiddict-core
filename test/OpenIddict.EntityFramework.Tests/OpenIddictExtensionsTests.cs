@@ -5,8 +5,9 @@
  */
 
 using System;
-using Microsoft.EntityFrameworkCore;
+using System.Data.Entity;
 using Microsoft.Extensions.DependencyInjection;
+using OpenIddict.EntityFramework;
 using OpenIddict.Models;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
     public class OpenIddictExtensionsTests
     {
         [Fact]
-        public void AddEntityFrameworkCoreStores_ThrowsAnExceptionForInvalidApplicationEntity()
+        public void AddEntityFrameworkStores_ThrowsAnExceptionForInvalidApplicationEntity()
         {
             // Arrange
             var builder = new OpenIddictBuilder(new ServiceCollection())
@@ -26,15 +27,15 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(delegate
             {
-                builder.AddEntityFrameworkCoreStores<DbContext>();
+                builder.AddEntityFrameworkStores<DbContext>();
             });
 
-            Assert.Equal("The Entity Framework Core stores can only be used " +
+            Assert.Equal("The Entity Framework stores can only be used " +
                          "with the built-in OpenIddictApplication entity.", exception.Message);
         }
 
         [Fact]
-        public void AddEntityFrameworkCoreStores_ThrowsAnExceptionForInvalidAuthorizationEntity()
+        public void AddEntityFrameworkStores_ThrowsAnExceptionForInvalidAuthorizationEntity()
         {
             // Arrange
             var builder = new OpenIddictBuilder(new ServiceCollection())
@@ -45,15 +46,15 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(delegate
             {
-                builder.AddEntityFrameworkCoreStores<DbContext>();
+                builder.AddEntityFrameworkStores<DbContext>();
             });
 
-            Assert.Equal("The Entity Framework Core stores can only be used " +
+            Assert.Equal("The Entity Framework stores can only be used " +
                          "with the built-in OpenIddictAuthorization entity.", exception.Message);
         }
 
         [Fact]
-        public void AddEntityFrameworkCoreStores_ThrowsAnExceptionForInvalidScopeEntity()
+        public void AddEntityFrameworkStores_ThrowsAnExceptionForInvalidScopeEntity()
         {
             // Arrange
             var builder = new OpenIddictBuilder(new ServiceCollection())
@@ -64,15 +65,15 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(delegate
             {
-                builder.AddEntityFrameworkCoreStores<DbContext>();
+                builder.AddEntityFrameworkStores<DbContext>();
             });
 
-            Assert.Equal("The Entity Framework Core stores can only be used " +
+            Assert.Equal("The Entity Framework stores can only be used " +
                          "with the built-in OpenIddictScope entity.", exception.Message);
         }
 
         [Fact]
-        public void AddEntityFrameworkCoreStores_ThrowsAnExceptionForInvalidTokenEntity()
+        public void AddEntityFrameworkStores_ThrowsAnExceptionForInvalidTokenEntity()
         {
             // Arrange
             var builder = new OpenIddictBuilder(new ServiceCollection())
@@ -83,10 +84,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(delegate
             {
-                builder.AddEntityFrameworkCoreStores<DbContext>();
+                builder.AddEntityFrameworkStores<DbContext>();
             });
 
-            Assert.Equal("The Entity Framework Core stores can only be used " +
+            Assert.Equal("The Entity Framework stores can only be used " +
                          "with the built-in OpenIddictToken entity.", exception.Message);
         }
 
@@ -95,14 +96,14 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         [InlineData(typeof(OpenIddictAuthorizationStore<OpenIddictAuthorization, OpenIddictApplication, OpenIddictToken, DbContext, string>))]
         [InlineData(typeof(OpenIddictScopeStore<OpenIddictScope, DbContext, string>))]
         [InlineData(typeof(OpenIddictTokenStore<OpenIddictToken, OpenIddictApplication, OpenIddictAuthorization, DbContext, string>))]
-        public void AddEntityFrameworkCoreStores_RegistersEntityFrameworkStores(Type type)
+        public void AddEntityFrameworkStores_RegistersEntityFrameworkStores(Type type)
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenIddictBuilder(services);
 
             // Act
-            builder.AddEntityFrameworkCoreStores<DbContext>();
+            builder.AddEntityFrameworkStores<DbContext>();
 
             // Assert
             Assert.Contains(services, service => service.ImplementationType == type);
@@ -113,7 +114,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         [InlineData(typeof(OpenIddictAuthorizationStore<OpenIddictAuthorization<Guid>, OpenIddictApplication<Guid>, OpenIddictToken<Guid>, DbContext, Guid>))]
         [InlineData(typeof(OpenIddictScopeStore<OpenIddictScope<Guid>, DbContext, Guid>))]
         [InlineData(typeof(OpenIddictTokenStore<OpenIddictToken<Guid>, OpenIddictApplication<Guid>, OpenIddictAuthorization<Guid>, DbContext, Guid>))]
-        public void AddEntityFrameworkCoreStores_KeyTypeIsInferredFromEntities(Type type)
+        public void AddEntityFrameworkStores_KeyTypeIsInferredFromEntities(Type type)
         {
             // Arrange
             var services = new ServiceCollection();
@@ -127,7 +128,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             };
 
             // Act
-            builder.AddEntityFrameworkCoreStores<DbContext>();
+            builder.AddEntityFrameworkStores<DbContext>();
 
             // Assert
             Assert.Contains(services, service => service.ImplementationType == type);
@@ -138,7 +139,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         [InlineData(typeof(OpenIddictAuthorizationStore<CustomAuthorization, CustomApplication, CustomToken, DbContext, long>))]
         [InlineData(typeof(OpenIddictScopeStore<CustomScope, DbContext, long>))]
         [InlineData(typeof(OpenIddictTokenStore<CustomToken, CustomApplication, CustomAuthorization, DbContext, long>))]
-        public void AddEntityFrameworkCoreStores_DefaultEntitiesCanBeReplaced(Type type)
+        public void AddEntityFrameworkStores_DefaultEntitiesCanBeReplaced(Type type)
         {
             // Arrange
             var services = new ServiceCollection();
@@ -152,7 +153,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             };
 
             // Act
-            builder.AddEntityFrameworkCoreStores<DbContext>();
+            builder.AddEntityFrameworkStores<DbContext>();
 
             // Assert
             Assert.Contains(services, service => service.ImplementationType == type);

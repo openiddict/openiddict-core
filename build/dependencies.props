@@ -5,6 +5,7 @@
     <AspNetContribOpenIdExtensionsVersion>1.0.0</AspNetContribOpenIdExtensionsVersion>
     <AspNetContribOpenIdServerVersion>1.0.1</AspNetContribOpenIdServerVersion>
     <CryptoHelperVersion>2.0.0</CryptoHelperVersion>
+    <EntityFrameworkVersion>6.1.3</EntityFrameworkVersion>
     <JetBrainsVersion>10.3.0</JetBrainsVersion>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <MoqVersion>4.7.63</MoqVersion>
