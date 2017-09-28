@@ -38,7 +38,14 @@ namespace OpenIddict
         /// <summary>
         /// Gets the OAuth2/OpenID Connect claims supported by this application.
         /// </summary>
-        public ISet<string> Claims { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public ISet<string> Claims { get; } = new HashSet<string>(StringComparer.Ordinal)
+        {
+            OpenIdConnectConstants.Claims.Audience,
+            OpenIdConnectConstants.Claims.ExpiresAt,
+            OpenIdConnectConstants.Claims.IssuedAt,
+            OpenIdConnectConstants.Claims.Issuer,
+            OpenIdConnectConstants.Claims.Subject
+        };
 
         /// <summary>
         /// Gets or sets a boolean indicating whether token revocation should be disabled.

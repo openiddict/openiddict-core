@@ -65,9 +65,31 @@ namespace OpenIddict.Tests
             Assert.Contains(flow, types);
         }
 
+        [Fact]
+        public async Task HandleConfigurationRequest_NoSupportedScopesPropertyIsReturnedWhenNoScopeIsConfigured()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options =>
+                {
+                    options.GrantTypes.Remove(OpenIdConnectConstants.GrantTypes.RefreshToken);
+                    options.Scopes.Clear();
+                });
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.GetAsync(ConfigurationEndpoint);
+
+            // Assert
+            Assert.False(response.HasParameter(OpenIdConnectConstants.Metadata.ScopesSupported));
+        }
+
         [Theory]
         [InlineData(OpenIdConnectConstants.Scopes.OpenId)]
-        public async Task HandleConfigurationRequest_DefaultScopesAreAutomaticallyReturned(string scope)
+        public async Task HandleConfigurationRequest_DefaultScopesAreReturned(string scope)
         {
             // Arrange
             var server = CreateAuthorizationServer();
@@ -147,7 +169,10 @@ namespace OpenIddict.Tests
         public async Task HandleConfigurationRequest_NoSupportedClaimsPropertyIsReturnedWhenNoClaimIsConfigured()
         {
             // Arrange
-            var server = CreateAuthorizationServer();
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options => options.Claims.Clear());
+            });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
@@ -156,6 +181,26 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.False(response.HasParameter(OpenIdConnectConstants.Metadata.ClaimsSupported));
+        }
+
+        [Theory]
+        [InlineData(OpenIdConnectConstants.Claims.Audience)]
+        [InlineData(OpenIdConnectConstants.Claims.ExpiresAt)]
+        [InlineData(OpenIdConnectConstants.Claims.IssuedAt)]
+        [InlineData(OpenIdConnectConstants.Claims.Issuer)]
+        [InlineData(OpenIdConnectConstants.Claims.Subject)]
+        public async Task HandleConfigurationRequest_DefaultClaimsAreReturned(string claim)
+        {
+            // Arrange
+            var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.GetAsync(ConfigurationEndpoint);
+
+            // Assert
+            Assert.Contains(claim, ((JArray) response[OpenIdConnectConstants.Metadata.ClaimsSupported]).Values<string>());
         }
 
         [Fact]
