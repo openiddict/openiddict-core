@@ -157,6 +157,20 @@ namespace OpenIddict.EntityFramework
         }
 
         /// <summary>
+        /// Retrieves an application using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
+        public override Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        {
+            return Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
+        }
+
+        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>

@@ -133,9 +133,7 @@ namespace OpenIddict.EntityFramework
             // Bind the authorization to the specified application, if applicable.
             if (!string.IsNullOrEmpty(descriptor.ApplicationId))
             {
-                var key = ConvertIdentifierFromString(descriptor.ApplicationId);
-
-                var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+                var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(descriptor.ApplicationId));
                 if (application == null)
                 {
                     throw new InvalidOperationException("The application associated with the authorization cannot be found.");
@@ -145,6 +143,20 @@ namespace OpenIddict.EntityFramework
             }
 
             return await CreateAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves an authorization using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorization corresponding to the identifier.
+        /// </returns>
+        public override Task<TAuthorization> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        {
+            return Authorizations.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
         }
 
         /// <summary>
