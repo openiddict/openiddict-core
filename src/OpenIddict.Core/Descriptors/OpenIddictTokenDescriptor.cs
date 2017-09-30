@@ -38,6 +38,11 @@ namespace OpenIddict.Core
         public string Hash { get; set; }
 
         /// <summary>
+        /// Gets or sets the status associated with the token.
+        /// </summary>
+        public string Status { get; set; }
+
+        /// <summary>
         /// Gets or sets the subject associated with the token.
         /// </summary>
         public string Subject { get; set; }

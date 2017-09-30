@@ -184,6 +184,7 @@ namespace OpenIddict
             {
                 CreationDate = ticket.Properties.IssuedUtc,
                 ExpirationDate = ticket.Properties.ExpiresUtc,
+                Status = OpenIddictConstants.Statuses.Valid,
                 Subject = ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject),
                 Type = type
             };
@@ -259,6 +260,7 @@ namespace OpenIddict
                 {
                     ApplicationId = descriptor.ApplicationId,
                     Scopes = request.GetScopes(),
+                    Status = OpenIddictConstants.Statuses.Valid,
                     Subject = descriptor.Subject
                 }, context.RequestAborted);
 

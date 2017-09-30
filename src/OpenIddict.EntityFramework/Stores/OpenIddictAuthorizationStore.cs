@@ -126,6 +126,7 @@ namespace OpenIddict.EntityFramework
             var authorization = new TAuthorization
             {
                 Scope = string.Join(" ", descriptor.Scopes),
+                Status = descriptor.Status,
                 Subject = descriptor.Subject
             };
 

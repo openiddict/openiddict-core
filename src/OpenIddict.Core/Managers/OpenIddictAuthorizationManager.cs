@@ -221,6 +221,7 @@ namespace OpenIddict.Core
 
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
+                Status = await Store.GetStatusAsync(authorization, cancellationToken),
                 Subject = await Store.GetSubjectAsync(authorization, cancellationToken)
             };
 
@@ -240,6 +241,11 @@ namespace OpenIddict.Core
             if (descriptor == null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (string.IsNullOrEmpty(descriptor.Status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.");
             }
 
             if (string.IsNullOrEmpty(descriptor.Subject))

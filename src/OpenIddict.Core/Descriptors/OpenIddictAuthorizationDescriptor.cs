@@ -18,6 +18,11 @@ namespace OpenIddict.Core
         public IEnumerable<string> Scopes { get; set; }
 
         /// <summary>
+        /// Gets or sets the status associated with the authorization.
+        /// </summary>
+        public string Status { get; set; }
+
+        /// <summary>
         /// Gets or sets the subject associated with the authorization.
         /// </summary>
         public string Subject { get; set; }

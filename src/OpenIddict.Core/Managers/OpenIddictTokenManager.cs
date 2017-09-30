@@ -65,14 +65,15 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
         /// </returns>
-        public virtual Task<TToken> CreateAsync([NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
+        public virtual async Task<TToken> CreateAsync([NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
         {
             if (descriptor == null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            return Store.CreateAsync(descriptor, cancellationToken);
+            await ValidateAsync(descriptor, cancellationToken);
+            return await Store.CreateAsync(descriptor, cancellationToken);
         }
 
         /// <summary>
@@ -505,22 +506,53 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var type = await Store.GetTokenTypeAsync(token, cancellationToken);
-            if (string.IsNullOrEmpty(type))
+            var descriptor = new OpenIddictTokenDescriptor
             {
-                throw new ArgumentException("The token type cannot be null or empty.", nameof(token));
+                Status = await Store.GetStatusAsync(token, cancellationToken),
+                Subject = await Store.GetSubjectAsync(token, cancellationToken),
+                Type = await Store.GetTokenTypeAsync(token, cancellationToken)
+            };
+
+            await ValidateAsync(descriptor, cancellationToken);
+        }
+
+        /// <summary>
+        /// Validates the token descriptor to ensure it's in a consistent state.
+        /// </summary>
+        /// <param name="descriptor">The token descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        protected virtual Task ValidateAsync([NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (!string.Equals(type, OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIdConnectConstants.TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(descriptor.Type))
+            {
+                throw new ArgumentException("The token type cannot be null or empty.", nameof(descriptor));
+            }
+
+            if (!string.Equals(descriptor.Type, OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(descriptor.Type, OpenIdConnectConstants.TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("The specified token type is not supported by the default token manager.");
             }
 
-            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(token, cancellationToken)))
+            if (string.IsNullOrEmpty(descriptor.Status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.");
+            }
+
+            if (string.IsNullOrEmpty(descriptor.Subject))
             {
                 throw new ArgumentException("The subject cannot be null or empty.");
             }
+
+            return Task.CompletedTask;
         }
     }
 }

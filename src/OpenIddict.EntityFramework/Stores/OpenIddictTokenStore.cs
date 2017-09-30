@@ -134,6 +134,7 @@ namespace OpenIddict.EntityFramework
                 CreationDate = descriptor.CreationDate,
                 ExpirationDate = descriptor.ExpirationDate,
                 Hash = descriptor.Hash,
+                Status = descriptor.Status,
                 Subject = descriptor.Subject,
                 Type = descriptor.Type
             };
