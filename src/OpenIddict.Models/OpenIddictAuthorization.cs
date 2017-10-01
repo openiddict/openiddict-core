@@ -48,7 +48,7 @@ namespace OpenIddict.Models
         /// Gets or sets the space-delimited scopes
         /// associated with the current authorization.
         /// </summary>
-        public virtual string Scope { get; set; }
+        public virtual string Scopes { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the current authorization.

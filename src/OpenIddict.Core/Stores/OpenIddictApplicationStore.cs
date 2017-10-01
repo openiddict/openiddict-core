@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
 using OpenIddict.Models;
 
@@ -68,8 +69,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        public virtual Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             var key = ConvertIdentifierFromString(identifier);
 
             return GetAsync(applications => applications.Where(application => application.Id.Equals(key)), cancellationToken);
@@ -84,8 +90,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual Task<TApplication> FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
+        public virtual Task<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             return GetAsync(applications => applications.Where(application => application.ClientId.Equals(identifier)), cancellationToken);
         }
 
@@ -98,9 +109,60 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        public virtual Task<TApplication[]> FindByLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
+        public virtual async Task<TApplication[]> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
         {
-            return ListAsync(applications => applications.Where(application => application.LogoutRedirectUri == address), cancellationToken);
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+            }
+
+            // To optimize the efficiency of the query, only the applications whose stringified
+            // LogoutRedirectUris property contains the specified address are returned. Once the
+            // applications are retrieved, the LogoutRedirectUri property is manually split.
+            var candidates = await ListAsync(applications => applications.Where(application =>
+                application.PostLogoutRedirectUris.Contains(address)), cancellationToken);
+
+            if (candidates.Length == 0)
+            {
+                return Array.Empty<TApplication>();
+            }
+
+            // Optimization: to save an allocation when no application matches
+            // the specified address, the results list is lazily initialized
+            // when at least one matching application was found in the database.
+            List<TApplication> results = null;
+
+            foreach (var candidate in candidates)
+            {
+                var uris = candidate.PostLogoutRedirectUris?.Split(
+                    OpenIdConnectConstants.Separators.Space,
+                    StringSplitOptions.RemoveEmptyEntries);
+
+                if (uris == null)
+                {
+                    continue;
+                }
+
+                foreach (var uri in uris)
+                {
+                    // Note: the post_logout_redirect_uri must be compared
+                    // using case-sensitive "Simple String Comparison".
+                    if (!string.Equals(uri, address, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    // Ensure the results list was initialized before using it.
+                    if (results == null)
+                    {
+                        results = new List<TApplication>(capacity: 1);
+                    }
+
+                    results.Add(candidate);
+                }
+            }
+
+            return results?.ToArray() ?? Array.Empty<TApplication>();
         }
 
         /// <summary>
@@ -112,9 +174,60 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        public virtual Task<TApplication[]> FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
+        public virtual async Task<TApplication[]> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
         {
-            return ListAsync(applications => applications.Where(application => application.RedirectUri == address), cancellationToken);
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+            }
+
+            // To optimize the efficiency of the query, only the applications whose stringified
+            // RedirectUris property contains the specified address are returned. Once the
+            // applications are retrieved, the RedirectUri property is manually split.
+            var candidates = await ListAsync(applications => applications.Where(application =>
+                application.RedirectUris.Contains(address)), cancellationToken);
+
+            if (candidates.Length == 0)
+            {
+                return Array.Empty<TApplication>();
+            }
+
+            // Optimization: to save an allocation when no application matches
+            // the specified address, the results list is lazily initialized
+            // when at least one matching application was found in the database.
+            List<TApplication> results = null;
+
+            foreach (var candidate in candidates)
+            {
+                var uris = candidate.RedirectUris?.Split(
+                    OpenIdConnectConstants.Separators.Space,
+                    StringSplitOptions.RemoveEmptyEntries);
+
+                if (uris == null)
+                {
+                    continue;
+                }
+
+                foreach (var uri in uris)
+                {
+                    // Note: the redirect_uri must be compared using case-sensitive "Simple String Comparison".
+                    // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
+                    if (!string.Equals(uri, address, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    // Ensure the results list was initialized before using it.
+                    if (results == null)
+                    {
+                        results = new List<TApplication>(capacity: 1);
+                    }
+
+                    results.Add(candidate);
+                }
+            }
+
+            return results?.ToArray() ?? Array.Empty<TApplication>();
         }
 
         /// <summary>
@@ -227,41 +340,55 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Retrieves the logout callback address associated with an application.
+        /// Retrieves the logout callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the post_logout_redirect_uri associated with the application.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the post_logout_redirect_uri associated with the application.
         /// </returns>
-        public virtual Task<string> GetLogoutRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual Task<string[]> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(application.LogoutRedirectUri);
+            if (string.IsNullOrEmpty(application.PostLogoutRedirectUris))
+            {
+                return Task.FromResult(Array.Empty<string>());
+            }
+
+            return Task.FromResult(application.PostLogoutRedirectUris.Split(
+                OpenIdConnectConstants.Separators.Space,
+                StringSplitOptions.RemoveEmptyEntries));
         }
 
         /// <summary>
-        /// Retrieves the callback address associated with an application.
+        /// Retrieves the callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the redirect_uri associated with the application.
+        /// whose result returns all the redirect_uri associated with the application.
         /// </returns>
-        public virtual Task<string> GetRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual Task<string[]> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(application.RedirectUri);
+            if (string.IsNullOrEmpty(application.RedirectUris))
+            {
+                return Task.FromResult(Array.Empty<string>());
+            }
+
+            return Task.FromResult(application.RedirectUris.Split(
+                OpenIdConnectConstants.Separators.Space,
+                StringSplitOptions.RemoveEmptyEntries));
         }
 
         /// <summary>
@@ -327,7 +454,7 @@ namespace OpenIddict.Core
 
             application.ClientSecret = secret;
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -353,7 +480,81 @@ namespace OpenIddict.Core
 
             application.Type = type;
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the logout callback addresses associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="addresses">The logout callback addresses associated with the application </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
+            [NotNull] string[] addresses, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentException(nameof(application));
+            }
+
+            if (addresses == null)
+            {
+                throw new ArgumentException(nameof(addresses));
+            }
+
+            if (addresses.Any(address => string.IsNullOrEmpty(address)))
+            {
+                throw new ArgumentException("Callback addresses cannot be null or empty.", nameof(addresses));
+            }
+
+            if (addresses.Any(address => address.Contains(OpenIddictConstants.Separators.Space)))
+            {
+                throw new ArgumentException("Callback addresses cannot contain spaces.", nameof(addresses));
+            }
+
+            application.PostLogoutRedirectUris = string.Join(OpenIddictConstants.Separators.Space, addresses);
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the callback addresses associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="addresses">The callback addresses associated with the application </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetRedirectUrisAsync([NotNull] TApplication application,
+            [NotNull] string[] addresses, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentException(nameof(application));
+            }
+
+            if (addresses == null)
+            {
+                throw new ArgumentException(nameof(addresses));
+            }
+
+            if (addresses.Any(address => string.IsNullOrEmpty(address)))
+            {
+                throw new ArgumentException("Callback addresses cannot be null or empty.", nameof(addresses));
+            }
+
+            if (addresses.Any(address => address.Contains(OpenIddictConstants.Separators.Space)))
+            {
+                throw new ArgumentException("Callback addresses cannot contain spaces.", nameof(addresses));
+            }
+
+            application.RedirectUris = string.Join(OpenIddictConstants.Separators.Space, addresses);
+
+            return Task.CompletedTask;
         }
 
         /// <summary>

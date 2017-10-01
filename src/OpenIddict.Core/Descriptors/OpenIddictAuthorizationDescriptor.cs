@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace OpenIddict.Core
 {
@@ -13,9 +14,10 @@ namespace OpenIddict.Core
         public string ApplicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the scopes associated with the authorization.
+        /// Gets the scopes associated with the authorization.
         /// </summary>
-        public IEnumerable<string> Scopes { get; set; }
+        public ISet<string> Scopes { get; } =
+            new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the status associated with the authorization.

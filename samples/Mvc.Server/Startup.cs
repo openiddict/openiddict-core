@@ -145,15 +145,16 @@ namespace Mvc.Server
 
                 if (await manager.FindByClientIdAsync("mvc", cancellationToken) == null)
                 {
-                    var application = new OpenIddictApplication
+                    var descriptor = new OpenIddictApplicationDescriptor
                     {
                         ClientId = "mvc",
+                        ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                         DisplayName = "MVC client application",
-                        LogoutRedirectUri = "http://localhost:53507/signout-callback-oidc",
-                        RedirectUri = "http://localhost:53507/signin-oidc"
+                        PostLogoutRedirectUris = { new Uri("http://localhost:53507/signout-callback-oidc") },
+                        RedirectUris = { new Uri("http://localhost:53507/signin-oidc") }
                     };
 
-                    await manager.CreateAsync(application, "901564A5-E7FE-42CB-B10D-61EF6A8F3654", cancellationToken);
+                    await manager.CreateAsync(descriptor, cancellationToken);
                 }
 
                 // To test this sample with Postman, use the following settings:
@@ -167,14 +168,14 @@ namespace Mvc.Server
                 // * Request access token locally: yes
                 if (await manager.FindByClientIdAsync("postman", cancellationToken) == null)
                 {
-                    var application = new OpenIddictApplication
+                    var descriptor = new OpenIddictApplicationDescriptor
                     {
                         ClientId = "postman",
                         DisplayName = "Postman",
-                        RedirectUri = "https://www.getpostman.com/oauth2/callback"
+                        RedirectUris = { new Uri("https://www.getpostman.com/oauth2/callback") }
                     };
 
-                    await manager.CreateAsync(application, cancellationToken);
+                    await manager.CreateAsync(descriptor, cancellationToken);
                 }
             }
         }

@@ -65,8 +65,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified authorization.
         /// </returns>
-        public virtual Task<TToken[]> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
+        public virtual Task<TToken[]> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             var key = ConvertIdentifierFromString(identifier);
 
             return ListAsync(tokens => tokens.Where(token => token.Authorization.Id.Equals(key)), cancellationToken);
@@ -81,8 +86,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified hash.
         /// </returns>
-        public virtual Task<TToken> FindByHashAsync(string hash, CancellationToken cancellationToken)
+        public virtual Task<TToken> FindByHashAsync([NotNull] string hash, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(hash))
+            {
+                throw new ArgumentException("The hash cannot be null or empty.", nameof(hash));
+            }
+
             return GetAsync(tokens => tokens.Where(token => token.Hash == hash), cancellationToken);
         }
 
@@ -95,8 +105,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        public virtual Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        public virtual Task<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             var key = ConvertIdentifierFromString(identifier);
 
             return GetAsync(tokens => tokens.Where(token => token.Id.Equals(key)), cancellationToken);
@@ -111,8 +126,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified subject.
         /// </returns>
-        public virtual Task<TToken[]> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
+        public virtual Task<TToken[]> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
             return ListAsync(tokens => tokens.Where(token => token.Subject == subject), cancellationToken);
         }
 

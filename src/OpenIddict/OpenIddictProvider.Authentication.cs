@@ -260,33 +260,20 @@ namespace OpenIddict
                                 "application was not found: '{ClientId}'.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Application not found in the database: ensure that your client_id is correct.");
 
                 return;
             }
 
-            // Ensure a redirect_uri was associated with the application.
-            if (!await Applications.HasRedirectUriAsync(application, context.HttpContext.RequestAborted))
-            {
-                Logger.LogError("The authorization request was rejected because no redirect_uri " +
-                                "was registered with the application '{ClientId}'.", context.ClientId);
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
-                    description: "The client application is not allowed to use interactive flows.");
-
-                return;
-            }
-
-            // Ensure the redirect_uri is valid.
+            // Ensure that the specified redirect_uri is valid and is associated with the client application.
             if (!await Applications.ValidateRedirectUriAsync(application, context.RedirectUri, context.HttpContext.RequestAborted))
             {
                 Logger.LogError("The authorization request was rejected because the redirect_uri " +
                                 "was invalid: '{RedirectUri}'.", context.RedirectUri);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "Invalid redirect_uri.");
 
                 return;

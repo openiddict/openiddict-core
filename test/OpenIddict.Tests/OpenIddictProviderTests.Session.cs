@@ -61,13 +61,36 @@ namespace OpenIddict.Tests
             Assert.Equal("Invalid request: timeout expired.", response.ErrorDescription);
         }
 
+        [Theory]
+        [InlineData("/path", "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.")]
+        [InlineData("/tmp/file.xml", "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.")]
+        [InlineData("C:\\tmp\\file.xml", "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.")]
+        [InlineData("http://www.fabrikam.com/path#param=value", "The 'post_logout_redirect_uri' parameter must not include a fragment.")]
+        public async Task ValidateLogoutRequest_RequestIsRejectedWhenRedirectUriIsInvalid(string address, string message)
+        {
+            // Arrange
+            var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest
+            {
+                PostLogoutRedirectUri = address
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(message, response.ErrorDescription);
+        }
+
         [Fact]
-        public async Task ValidateLogoutRequest_RequestIsRejectedWhenRedirectUriIsInvalid()
+        public async Task ValidateLogoutRequest_RequestIsRejectedWhenRedirectUriIsUnknown()
         {
             // Arrange
             var manager = CreateApplicationManager(instance =>
             {
-                instance.Setup(mock => mock.ValidateLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
             });
 
@@ -85,10 +108,10 @@ namespace OpenIddict.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("Invalid post_logout_redirect_uri.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.ValidateLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -101,7 +124,7 @@ namespace OpenIddict.Tests
             {
                 builder.Services.AddSingleton(CreateApplicationManager(instance =>
                 {
-                    instance.Setup(mock => mock.ValidateLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    instance.Setup(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
                 }));
 
@@ -139,7 +162,7 @@ namespace OpenIddict.Tests
             {
                 builder.Services.AddSingleton(CreateApplicationManager(instance =>
                 {
-                    instance.Setup(mock => mock.ValidateLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    instance.Setup(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
                 }));
             });
@@ -165,7 +188,7 @@ namespace OpenIddict.Tests
             {
                 builder.Services.AddSingleton(CreateApplicationManager(instance =>
                 {
-                    instance.Setup(mock => mock.ValidateLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    instance.Setup(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(false);
                 }));
 

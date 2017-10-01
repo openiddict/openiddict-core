@@ -123,10 +123,22 @@ namespace OpenIddict.EntityFramework
                 ClientId = descriptor.ClientId,
                 ClientSecret = descriptor.ClientSecret,
                 DisplayName = descriptor.DisplayName,
-                LogoutRedirectUri = descriptor.LogoutRedirectUri,
-                RedirectUri = descriptor.RedirectUri,
                 Type = descriptor.Type
             };
+
+            if (descriptor.PostLogoutRedirectUris.Count != 0)
+            {
+                application.PostLogoutRedirectUris = string.Join(
+                    OpenIddictConstants.Separators.Space,
+                    descriptor.PostLogoutRedirectUris.Select(uri => uri.OriginalString));
+            }
+
+            if (descriptor.RedirectUris.Count != 0)
+            {
+                application.RedirectUris = string.Join(
+                    OpenIddictConstants.Separators.Space,
+                    descriptor.RedirectUris.Select(uri => uri.OriginalString));
+            }
 
             return CreateAsync(application, cancellationToken);
         }
@@ -165,8 +177,13 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public override Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        public override Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             return Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
         }
 

@@ -256,14 +256,7 @@ namespace OpenIddict
             {
                 Debug.Assert(!string.IsNullOrEmpty(descriptor.ApplicationId), "The client identifier shouldn't be null.");
 
-                var authorization = await Authorizations.CreateAsync(new OpenIddictAuthorizationDescriptor
-                {
-                    ApplicationId = descriptor.ApplicationId,
-                    Scopes = request.GetScopes(),
-                    Status = OpenIddictConstants.Statuses.Valid,
-                    Subject = descriptor.Subject
-                }, context.RequestAborted);
-
+                var authorization = await CreateAuthorizationAsync(descriptor, context, request);
                 if (authorization != null)
                 {
                     descriptor.AuthorizationId = await Authorizations.GetIdAsync(authorization, context.RequestAborted);
@@ -398,6 +391,25 @@ namespace OpenIddict
                             identifier, ticket.Principal.Claims, ticket.Properties.Items);
 
             return ticket;
+        }
+
+        private Task<TAuthorization> CreateAuthorizationAsync(
+            [NotNull] OpenIddictTokenDescriptor token,
+            [NotNull] HttpContext context, [NotNull] OpenIdConnectRequest request)
+        {
+            var descriptor = new OpenIddictAuthorizationDescriptor
+            {
+                ApplicationId = token.ApplicationId,
+                Status = OpenIddictConstants.Statuses.Valid,
+                Subject = token.Subject
+            };
+
+            foreach (var scope in request.GetScopes())
+            {
+                descriptor.Scopes.Add(scope);
+            }
+
+            return Authorizations.CreateAsync(descriptor, context.RequestAborted);
         }
     }
 }

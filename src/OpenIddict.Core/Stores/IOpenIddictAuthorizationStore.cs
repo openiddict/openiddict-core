@@ -39,17 +39,6 @@ namespace OpenIddict.Core
         Task<TAuthorization> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves an authorization using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorization corresponding to the identifier.
-        /// </returns>
-        Task<TAuthorization> FindByIdAsync(string identifier, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Retrieves an authorization using its associated subject/client.
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
@@ -59,7 +48,18 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the subject/client.
         /// </returns>
-        Task<TAuthorization> FindAsync(string subject, string client, CancellationToken cancellationToken);
+        Task<TAuthorization> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves an authorization using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorization corresponding to the identifier.
+        /// </returns>
+        Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query.

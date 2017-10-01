@@ -124,10 +124,14 @@ namespace OpenIddict.EntityFrameworkCore
 
             var authorization = new TAuthorization
             {
-                Scope = string.Join(" ", descriptor.Scopes),
                 Status = descriptor.Status,
                 Subject = descriptor.Subject
             };
+
+            if (descriptor.Scopes.Count != 0)
+            {
+                authorization.Scopes = string.Join(OpenIddictConstants.Separators.Space, descriptor.Scopes);
+            }
 
             // Bind the authorization to the specified application, if applicable.
             if (!string.IsNullOrEmpty(descriptor.ApplicationId))
@@ -153,8 +157,13 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        public override Task<TAuthorization> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        public override Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             return Authorizations.FindAsync(new object[] { ConvertIdentifierFromString(identifier) }, cancellationToken);
         }
 

@@ -253,6 +253,20 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The subject cannot be null or empty.");
             }
 
+            // Ensure that the scopes are not null or empty and do not contain spaces.
+            foreach (var scope in descriptor.Scopes)
+            {
+                if (string.IsNullOrEmpty(scope))
+                {
+                    throw new ArgumentException("Scopes cannot be null or empty.", nameof(descriptor));
+                }
+
+                if (scope.Contains(OpenIddictConstants.Separators.Space))
+                {
+                    throw new ArgumentException("Scopes cannot contain spaces.", nameof(descriptor));
+                }
+            }
+
             return Task.CompletedTask;
         }
     }

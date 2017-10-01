@@ -197,8 +197,13 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        public override Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        public override Task<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             return Tokens.FindAsync(new object[] { ConvertIdentifierFromString(identifier) }, cancellationToken);
         }
 

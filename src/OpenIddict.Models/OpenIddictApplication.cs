@@ -64,16 +64,18 @@ namespace OpenIddict.Models
         public virtual TKey Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the logout callback URL
-        /// associated with the current application.
+        /// Gets or sets the logout callback URLs
+        /// associated with the current application,
+        /// stored as a unique space-separated string.
         /// </summary>
-        public virtual string LogoutRedirectUri { get; set; }
+        public virtual string PostLogoutRedirectUris { get; set; }
 
         /// <summary>
-        /// Gets or sets the callback URL
-        /// associated with the current application.
+        /// Gets or sets the callback URLs
+        /// associated with the current application,
+        /// stored as a unique space-separated string.
         /// </summary>
-        public virtual string RedirectUri { get; set; }
+        public virtual string RedirectUris { get; set; }
 
         /// <summary>
         /// Gets the list of the tokens associated with this application.
