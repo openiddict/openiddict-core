@@ -206,9 +206,14 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        public virtual Task<TApplication[]> FindByLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
+        public virtual Task<TApplication[]> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
         {
-            return Store.FindByLogoutRedirectUriAsync(address, cancellationToken);
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+            }
+
+            return Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken);
         }
 
         /// <summary>
@@ -220,8 +225,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        public virtual Task<TApplication[]> FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
+        public virtual Task<TApplication[]> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+            }
+
             return Store.FindByRedirectUriAsync(address, cancellationToken);
         }
 
@@ -243,6 +253,25 @@ namespace OpenIddict.Core
             }
 
             return Store.GetAsync(query, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the client identifier associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client identifier associated with the application.
+        /// </returns>
+        public virtual Task<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Store.GetClientIdAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -330,25 +359,6 @@ namespace OpenIddict.Core
             }
 
             return Store.GetTokensAsync(application, cancellationToken);
-        }
-
-        /// <summary>
-        /// Determines whether the specified application has a redirect_uri.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns a boolean indicating whether a redirect_uri is registered.
-        /// </returns>
-        public virtual async Task<bool> HasRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            return !string.IsNullOrEmpty(await Store.GetRedirectUriAsync(application, cancellationToken));
         }
 
         /// <summary>
@@ -502,7 +512,8 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns a boolean indicating whether the client secret was valid.
         /// </returns>
-        public virtual async Task<bool> ValidateClientSecretAsync([NotNull] TApplication application, string secret, CancellationToken cancellationToken)
+        public virtual async Task<bool> ValidateClientSecretAsync(
+            [NotNull] TApplication application, string secret, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -528,7 +539,7 @@ namespace OpenIddict.Core
             if (!await ValidateClientSecretAsync(secret, value, cancellationToken))
             {
                 Logger.LogWarning("Client authentication failed for {Client}.",
-                    await GetDisplayNameAsync(application, cancellationToken));
+                    await GetClientIdAsync(application, cancellationToken));
 
                 return false;
             }
@@ -545,16 +556,25 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns a boolean indicating whether the post_logout_redirect_uri was valid.
         /// </returns>
-        public virtual async Task<bool> ValidateLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
+        public virtual async Task<bool> ValidatePostLogoutRedirectUriAsync(
+            [NotNull] string address, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+            }
+
             // Warning: SQL engines like Microsoft SQL Server are known to use case-insensitive lookups by default.
             // To ensure a case-sensitive comparison is used, string.Equals(Ordinal) is manually called here.
-            foreach (var application in await Store.FindByLogoutRedirectUriAsync(address, cancellationToken))
+            foreach (var application in await Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken))
             {
-                // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison".
-                if (string.Equals(address, await Store.GetLogoutRedirectUriAsync(application, cancellationToken), StringComparison.Ordinal))
+                foreach (var uri in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
                 {
-                    return true;
+                    // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison".
+                    if (string.Equals(uri, address, StringComparison.Ordinal))
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -565,31 +585,40 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Validates the redirect_uri associated with an application.
+        /// Validates the redirect_uri to ensure it's associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
-        /// <param name="address">The address that should be compared to the redirect_uri stored in the database.</param>
+        /// <param name="address">The address that should be compared to one of the redirect_uri stored in the database.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns a boolean indicating whether the redirect_uri was valid.
         /// </returns>
-        public virtual async Task<bool> ValidateRedirectUriAsync([NotNull] TApplication application, string address, CancellationToken cancellationToken)
+        public virtual async Task<bool> ValidateRedirectUriAsync(
+            [NotNull] TApplication application, [NotNull] string address, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            // Note: the redirect_uri must be compared using case-sensitive "Simple String Comparison".
-            // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
-            if (string.Equals(address, await Store.GetRedirectUriAsync(application, cancellationToken), StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(address))
             {
-                return true;
+                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+            }
+
+            foreach (var uri in await Store.GetRedirectUrisAsync(application, cancellationToken))
+            {
+                // Note: the redirect_uri must be compared using case-sensitive "Simple String Comparison".
+                // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
+                if (string.Equals(uri, address, StringComparison.Ordinal))
+                {
+                    return true;
+                }
             }
 
             Logger.LogWarning("Client validation failed because '{RedirectUri}' was not a valid redirect_uri " +
-                              "for '{Client}'.", address, await GetDisplayNameAsync(application, cancellationToken));
+                              "for {Client}.", address, await GetClientIdAsync(application, cancellationToken));
 
             return false;
         }
@@ -609,10 +638,42 @@ namespace OpenIddict.Core
                 ClientId = await Store.GetClientIdAsync(application, cancellationToken),
                 ClientSecret = await Store.GetClientSecretAsync(application, cancellationToken),
                 DisplayName = await Store.GetDisplayNameAsync(application, cancellationToken),
-                LogoutRedirectUri = await Store.GetLogoutRedirectUriAsync(application, cancellationToken),
-                RedirectUri = await Store.GetRedirectUriAsync(application, cancellationToken),
                 Type = await Store.GetClientTypeAsync(application, cancellationToken)
             };
+
+            foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+            {
+                // Ensure the address is not null or empty.
+                if (string.IsNullOrEmpty(address))
+                {
+                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                }
+
+                // Ensure the address is a valid absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                {
+                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                }
+
+                descriptor.PostLogoutRedirectUris.Add(uri);
+            }
+
+            foreach (var address in await Store.GetRedirectUrisAsync(application, cancellationToken))
+            {
+                // Ensure the address is not null or empty.
+                if (string.IsNullOrEmpty(address))
+                {
+                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                }
+
+                // Ensure the address is a valid absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                {
+                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                }
+
+                descriptor.RedirectUris.Add(uri);
+            }
 
             await ValidateAsync(descriptor, cancellationToken);
         }
@@ -665,36 +726,26 @@ namespace OpenIddict.Core
                 throw new ArgumentException("A client secret cannot be associated with a public application.", nameof(descriptor));
             }
 
-            // When a redirect_uri is specified, ensure it is valid and spec-compliant.
+            // When callback URLs are specified, ensure they are valid and spec-compliant.
             // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
-            if (!string.IsNullOrEmpty(descriptor.RedirectUri))
+            foreach (var uri in descriptor.PostLogoutRedirectUris.Concat(descriptor.RedirectUris))
             {
-                // Ensure the redirect_uri is a valid and absolute URL.
-                if (!Uri.TryCreate(descriptor.RedirectUri, UriKind.Absolute, out Uri uri))
+                // Ensure the address is not null.
+                if (uri == null)
                 {
-                    throw new ArgumentException("The redirect_uri must be an absolute URL.");
+                    throw new ArgumentException("Callback URLs cannot be null.");
                 }
 
-                // Ensure the redirect_uri doesn't contain a fragment.
+                // Ensure the address is a valid and absolute URL.
+                if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+                {
+                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                }
+
+                // Ensure the address doesn't contain a fragment.
                 if (!string.IsNullOrEmpty(uri.Fragment))
                 {
-                    throw new ArgumentException("The redirect_uri cannot contain a fragment.");
-                }
-            }
-
-            // When a post_logout_redirect_uri is specified, ensure it is valid.
-            if (!string.IsNullOrEmpty(descriptor.LogoutRedirectUri))
-            {
-                // Ensure the post_logout_redirect_uri is a valid and absolute URL.
-                if (!Uri.TryCreate(descriptor.LogoutRedirectUri, UriKind.Absolute, out Uri uri))
-                {
-                    throw new ArgumentException("The post_logout_redirect_uri must be an absolute URL.");
-                }
-
-                // Ensure the post_logout_redirect_uri doesn't contain a fragment.
-                if (!string.IsNullOrEmpty(uri.Fragment))
-                {
-                    throw new ArgumentException("The post_logout_redirect_uri cannot contain a fragment.");
+                    throw new ArgumentException("Callback URLs cannot contain a fragment.");
                 }
             }
 

@@ -37,6 +37,11 @@ namespace OpenIddict.Core
             public const string TokenId = ".token_id";
         }
 
+        public static class Separators
+        {
+            public const string Space = " ";
+        }
+
         public static class Scopes
         {
             public const string Roles = "roles";

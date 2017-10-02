@@ -125,16 +125,19 @@ namespace OpenIddict.EntityFramework
 
             var authorization = new TAuthorization
             {
-                Scope = string.Join(" ", descriptor.Scopes),
+                Status = descriptor.Status,
                 Subject = descriptor.Subject
             };
+
+            if (descriptor.Scopes.Count != 0)
+            {
+                authorization.Scopes = string.Join(OpenIddictConstants.Separators.Space, descriptor.Scopes);
+            }
 
             // Bind the authorization to the specified application, if applicable.
             if (!string.IsNullOrEmpty(descriptor.ApplicationId))
             {
-                var key = ConvertIdentifierFromString(descriptor.ApplicationId);
-
-                var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
+                var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(descriptor.ApplicationId));
                 if (application == null)
                 {
                     throw new InvalidOperationException("The application associated with the authorization cannot be found.");
@@ -144,6 +147,25 @@ namespace OpenIddict.EntityFramework
             }
 
             return await CreateAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves an authorization using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorization corresponding to the identifier.
+        /// </returns>
+        public override Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            return Authorizations.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
         }
 
         /// <summary>

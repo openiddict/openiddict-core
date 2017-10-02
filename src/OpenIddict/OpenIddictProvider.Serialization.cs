@@ -217,6 +217,7 @@ namespace OpenIddict
             {
                 CreationDate = ticket.Properties.IssuedUtc,
                 ExpirationDate = ticket.Properties.ExpiresUtc,
+                Status = OpenIddictConstants.Statuses.Valid,
                 Subject = ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject),
                 Type = type
             };
@@ -288,13 +289,7 @@ namespace OpenIddict
             {
                 Debug.Assert(!string.IsNullOrEmpty(descriptor.ApplicationId), "The client identifier shouldn't be null.");
 
-                var authorization = await authorizations.CreateAsync(new OpenIddictAuthorizationDescriptor
-                {
-                    ApplicationId = descriptor.ApplicationId,
-                    Scopes = request.GetScopes(),
-                    Subject = descriptor.Subject
-                }, context.RequestAborted);
-
+                var authorization = await CreateAuthorizationAsync(descriptor, context, request);
                 if (authorization != null)
                 {
                     descriptor.AuthorizationId = await authorizations.GetIdAsync(authorization, context.RequestAborted);
@@ -432,6 +427,27 @@ namespace OpenIddict
                             identifier, ticket.Principal.Claims, ticket.Properties.Items);
 
             return ticket;
+        }
+
+        private Task<TAuthorization> CreateAuthorizationAsync(
+            [NotNull] OpenIddictTokenDescriptor token,
+            [NotNull] HttpContext context, [NotNull] OpenIdConnectRequest request)
+        {
+            var authorizations = context.RequestServices.GetRequiredService<OpenIddictAuthorizationManager<TAuthorization>>();
+
+            var descriptor = new OpenIddictAuthorizationDescriptor
+            {
+                ApplicationId = token.ApplicationId,
+                Status = OpenIddictConstants.Statuses.Valid,
+                Subject = token.Subject
+            };
+
+            foreach (var scope in request.GetScopes())
+            {
+                descriptor.Scopes.Add(scope);
+            }
+
+            return authorizations.CreateAsync(descriptor, context.RequestAborted);
         }
     }
 }

@@ -58,7 +58,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken);
+        Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an application using its client identifier.
@@ -69,7 +69,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        Task<TApplication> FindByClientIdAsync(string identifier, CancellationToken cancellationToken);
+        Task<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
@@ -80,7 +80,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        Task<TApplication[]> FindByLogoutRedirectUriAsync(string address, CancellationToken cancellationToken);
+        Task<TApplication[]> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified redirect_uri.
@@ -91,7 +91,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        Task<TApplication[]> FindByRedirectUriAsync(string address, CancellationToken cancellationToken);
+        Task<TApplication[]> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query.
@@ -163,26 +163,26 @@ namespace OpenIddict.Core
         Task<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves the logout callback address associated with an application.
+        /// Retrieves the logout callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the post_logout_redirect_uri associated with the application.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the post_logout_redirect_uri associated with the application.
         /// </returns>
-        Task<string> GetLogoutRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        Task<string[]> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves the callback address associated with an application.
+        /// Retrieves the callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the redirect_uri associated with the application.
+        /// whose result returns all the redirect_uri associated with the application.
         /// </returns>
-        Task<string> GetRedirectUriAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        Task<string[]> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the token identifiers associated with an application.
@@ -230,6 +230,30 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetClientTypeAsync([NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the logout callback addresses associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="addresses">The logout callback addresses associated with the application </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
+            [NotNull] string[] addresses, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the callback addresses associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="addresses">The callback addresses associated with the application </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetRedirectUrisAsync([NotNull] TApplication application,
+            [NotNull] string[] addresses, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing application.

@@ -122,10 +122,22 @@ namespace OpenIddict.EntityFrameworkCore
                 ClientId = descriptor.ClientId,
                 ClientSecret = descriptor.ClientSecret,
                 DisplayName = descriptor.DisplayName,
-                LogoutRedirectUri = descriptor.LogoutRedirectUri,
-                RedirectUri = descriptor.RedirectUri,
                 Type = descriptor.Type
             };
+
+            if (descriptor.PostLogoutRedirectUris.Count != 0)
+            {
+                application.PostLogoutRedirectUris = string.Join(
+                    OpenIddictConstants.Separators.Space,
+                    descriptor.PostLogoutRedirectUris.Select(uri => uri.OriginalString));
+            }
+
+            if (descriptor.RedirectUris.Count != 0)
+            {
+                application.RedirectUris = string.Join(
+                    OpenIddictConstants.Separators.Space,
+                    descriptor.RedirectUris.Select(uri => uri.OriginalString));
+            }
 
             return CreateAsync(application, cancellationToken);
         }

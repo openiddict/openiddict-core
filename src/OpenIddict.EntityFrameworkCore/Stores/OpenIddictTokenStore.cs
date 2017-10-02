@@ -133,6 +133,7 @@ namespace OpenIddict.EntityFrameworkCore
                 CreationDate = descriptor.CreationDate,
                 ExpirationDate = descriptor.ExpirationDate,
                 Hash = descriptor.Hash,
+                Status = descriptor.Status,
                 Subject = descriptor.Subject,
                 Type = descriptor.Type
             };
@@ -257,7 +258,7 @@ namespace OpenIddict.EntityFrameworkCore
                     throw new InvalidOperationException("The authorization associated with the token cannot be found.");
                 }
 
-                authorization.Tokens.Add(token);
+                token.Authorization = authorization;
             }
 
             else
@@ -266,7 +267,7 @@ namespace OpenIddict.EntityFrameworkCore
 
                 // Try to retrieve the authorization associated with the token.
                 // If none can be found, assume that no authorization is attached.
-                var authorization = await Authorizations.SingleOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                var authorization = await Authorizations.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
                 if (authorization != null)
                 {
                     authorization.Tokens.Remove(token);
@@ -300,7 +301,7 @@ namespace OpenIddict.EntityFrameworkCore
                     throw new InvalidOperationException("The application associated with the token cannot be found.");
                 }
 
-                application.Tokens.Add(token);
+                token.Application = application;
             }
 
             else
@@ -309,7 +310,7 @@ namespace OpenIddict.EntityFrameworkCore
 
                 // Try to retrieve the application associated with the token.
                 // If none can be found, assume that no application is attached.
-                var application = await Applications.SingleOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                var application = await Applications.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
                 if (application != null)
                 {
                     application.Tokens.Remove(token);

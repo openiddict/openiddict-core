@@ -88,17 +88,43 @@ namespace OpenIddict
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
 
             // If an optional post_logout_redirect_uri was provided, validate it.
-            if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri) &&
-                !await applications.ValidateLogoutRedirectUriAsync(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted))
+            if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))
             {
-                logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
-                                "was invalid: '{PostLogoutRedirectUri}'.", context.PostLogoutRedirectUri);
+                if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                {
+                    logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri was not " +
+                                    "a valid absolute URL: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Invalid post_logout_redirect_uri.");
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.");
 
-                return;
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(uri.Fragment))
+                {
+                    logger.LogError("The logout request was rejected because the 'post_logout_redirect_uri' contained " +
+                                    "a URL fragment: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The 'post_logout_redirect_uri' parameter must not include a fragment.");
+
+                    return;
+                }
+
+                if (!await applications.ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted))
+                {
+                    logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
+                                    "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "Invalid post_logout_redirect_uri.");
+
+                    return;
+                }
             }
 
             context.Validate();

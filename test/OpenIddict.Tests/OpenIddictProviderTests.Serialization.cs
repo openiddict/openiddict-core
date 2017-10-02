@@ -238,9 +238,6 @@ namespace OpenIddict.Tests
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.HasRedirectUriAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
                     instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
@@ -300,9 +297,6 @@ namespace OpenIddict.Tests
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
-
-                    instance.Setup(mock => mock.HasRedirectUriAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -375,9 +369,6 @@ namespace OpenIddict.Tests
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.HasRedirectUriAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
                     instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
@@ -447,9 +438,6 @@ namespace OpenIddict.Tests
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    instance.Setup(mock => mock.HasRedirectUriAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
                     instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
@@ -507,9 +495,6 @@ namespace OpenIddict.Tests
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
-
-                    instance.Setup(mock => mock.HasRedirectUriAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -573,9 +558,6 @@ namespace OpenIddict.Tests
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
-
-                    instance.Setup(mock => mock.HasRedirectUriAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);

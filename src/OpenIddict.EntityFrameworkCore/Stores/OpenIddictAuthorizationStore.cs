@@ -124,9 +124,14 @@ namespace OpenIddict.EntityFrameworkCore
 
             var authorization = new TAuthorization
             {
-                Scope = string.Join(" ", descriptor.Scopes),
+                Status = descriptor.Status,
                 Subject = descriptor.Subject
             };
+
+            if (descriptor.Scopes.Count != 0)
+            {
+                authorization.Scopes = string.Join(OpenIddictConstants.Separators.Space, descriptor.Scopes);
+            }
 
             // Bind the authorization to the specified application, if applicable.
             if (!string.IsNullOrEmpty(descriptor.ApplicationId))

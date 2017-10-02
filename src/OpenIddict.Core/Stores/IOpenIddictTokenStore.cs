@@ -55,7 +55,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified authorization.
         /// </returns>
-        Task<TToken[]> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken);
+        Task<TToken[]> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified hash.
@@ -66,7 +66,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified hash.
         /// </returns>
-        Task<TToken> FindByHashAsync(string hash, CancellationToken cancellationToken);
+        Task<TToken> FindByHashAsync([NotNull] string hash, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an token using its unique identifier.
@@ -77,7 +77,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken);
+        Task<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified subject.
@@ -88,7 +88,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified subject.
         /// </returns>
-        Task<TToken[]> FindBySubjectAsync(string subject, CancellationToken cancellationToken);
+        Task<TToken[]> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query.

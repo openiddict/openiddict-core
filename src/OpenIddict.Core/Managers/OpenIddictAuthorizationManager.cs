@@ -221,6 +221,7 @@ namespace OpenIddict.Core
 
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
+                Status = await Store.GetStatusAsync(authorization, cancellationToken),
                 Subject = await Store.GetSubjectAsync(authorization, cancellationToken)
             };
 
@@ -242,9 +243,28 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
+            if (string.IsNullOrEmpty(descriptor.Status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.");
+            }
+
             if (string.IsNullOrEmpty(descriptor.Subject))
             {
                 throw new ArgumentException("The subject cannot be null or empty.");
+            }
+
+            // Ensure that the scopes are not null or empty and do not contain spaces.
+            foreach (var scope in descriptor.Scopes)
+            {
+                if (string.IsNullOrEmpty(scope))
+                {
+                    throw new ArgumentException("Scopes cannot be null or empty.", nameof(descriptor));
+                }
+
+                if (scope.Contains(OpenIddictConstants.Separators.Space))
+                {
+                    throw new ArgumentException("Scopes cannot contain spaces.", nameof(descriptor));
+                }
             }
 
             return Task.FromResult(0);
