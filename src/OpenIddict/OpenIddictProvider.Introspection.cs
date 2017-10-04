@@ -137,8 +137,7 @@ namespace OpenIddict
                 var token = await tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
                 if (token == null || !await tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
                 {
-                    logger.LogInformation("The token {Identifier} was declared as inactive because " +
-                                          "it was revoked.", identifier);
+                    logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
 
                     context.Active = false;
 
