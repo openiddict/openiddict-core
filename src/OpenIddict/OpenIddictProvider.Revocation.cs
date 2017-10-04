@@ -185,7 +185,8 @@ namespace OpenIddict
             var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
             if (token == null || await Tokens.IsRevokedAsync(token, context.HttpContext.RequestAborted))
             {
-                Logger.LogInformation("The token '{Identifier}' was already revoked.", identifier);
+                Logger.LogInformation("The token '{Identifier}' was not revoked because " +
+                                      "it was already marked as invalid.", identifier);
 
                 context.Revoked = true;
 

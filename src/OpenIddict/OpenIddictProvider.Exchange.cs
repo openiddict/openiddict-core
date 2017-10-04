@@ -226,7 +226,8 @@ namespace OpenIddict
                 var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
                 if (token == null)
                 {
-                    Logger.LogError("The token request was rejected because the authorization code was no longer valid.");
+                    Logger.LogError("The token request was rejected because the authorization " +
+                                    "code '{Identifier}' was not found in the database.", identifier);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -261,7 +262,8 @@ namespace OpenIddict
                         }
                     }
 
-                    Logger.LogError("The token request was rejected because the authorization code was already redeemed.");
+                    Logger.LogError("The token request was rejected because the authorization code " +
+                                    "'{Identifier}' has already been redeemed.", identifier);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -272,7 +274,8 @@ namespace OpenIddict
 
                 else if (!await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
                 {
-                    Logger.LogError("The token request was rejected because the authorization code was no longer valid.");
+                    Logger.LogError("The token request was rejected because the authorization code " +
+                                    "'{Identifier}' was no longer valid.", identifier);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -291,7 +294,8 @@ namespace OpenIddict
                 var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
                 if (token == null)
                 {
-                    Logger.LogError("The token request was rejected because the refresh token was already redeemed.");
+                    Logger.LogError("The token request was rejected because the refresh token " +
+                                    "'{Identifier}' was not found in the database.", identifier);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -302,7 +306,8 @@ namespace OpenIddict
 
                 else if (await Tokens.IsRedeemedAsync(token, context.HttpContext.RequestAborted))
                 {
-                    Logger.LogError("The token request was rejected because the refresh token was no longer valid.");
+                    Logger.LogError("The token request was rejected because the refresh token " +
+                                    "'{Identifier}' has already been redeemed.", identifier);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -313,7 +318,8 @@ namespace OpenIddict
 
                 else if (!await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
                 {
-                    Logger.LogError("The token request was rejected because the refresh token was no longer valid.");
+                    Logger.LogError("The token request was rejected because the refresh token " +
+                                    "'{Identifier}' was no longer valid.", identifier);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidGrant,

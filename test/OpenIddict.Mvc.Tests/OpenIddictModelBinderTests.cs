@@ -70,8 +70,8 @@ namespace OpenIddict.Mvc.Tests
             });
 
             Assert.Equal("The OpenID Connect request cannot be retrieved from the ASP.NET context. " +
-                         "Make sure that 'app.UseOpenIddict()' is called before 'app.UseMvc()' and " +
-                         "that the action route corresponds to the endpoint path registered via " +
+                         "Make sure that 'app.UseAuthentication()' is called before 'app.UseMvc()' " +
+                         "and that the action route corresponds to the endpoint path registered via " +
                          "'services.AddOpenIddict().Enable[...]Endpoint(...)'.", exception.Message);
         }
 
