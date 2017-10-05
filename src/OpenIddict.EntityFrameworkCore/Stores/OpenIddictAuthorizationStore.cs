@@ -86,6 +86,26 @@ namespace OpenIddict.EntityFrameworkCore
         protected DbSet<TAuthorization> Authorizations => Context.Set<TAuthorization>();
 
         /// <summary>
+        /// Determines the number of authorizations that match the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of authorizations that match the specified query.
+        /// </returns>
+        public override Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return query.Invoke(Authorizations).LongCountAsync();
+        }
+
+        /// <summary>
         /// Creates a new authorization.
         /// </summary>
         /// <param name="authorization">The authorization to create.</param>
@@ -146,6 +166,31 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return await CreateAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Removes an existing authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization to delete.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public override async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            Context.Remove(authorization);
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (DbUpdateConcurrencyException) { }
         }
 
         /// <summary>

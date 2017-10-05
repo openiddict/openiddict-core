@@ -6,10 +6,12 @@
 
 using System;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using OpenIddict.Core;
 using OpenIddict.Models;
 
 namespace OpenIddict.EntityFramework
@@ -71,6 +73,91 @@ namespace OpenIddict.EntityFramework
         protected DbSet<TScope> Scopes => Context.Set<TScope>();
 
         /// <summary>
+        /// Determines the number of scopes that match the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of scopes that match the specified query.
+        /// </returns>
+        public override Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return query.Invoke(Scopes).LongCountAsync();
+        }
+
+        /// <summary>
+        /// Creates a new scope.
+        /// </summary>
+        /// <param name="scope">The scope to create.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
+        /// </returns>
+        public override async Task<TScope> CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            Scopes.Add(scope);
+
+            await Context.SaveChangesAsync(cancellationToken);
+
+            return scope;
+        }
+
+        /// <summary>
+        /// Creates a new scope.
+        /// </summary>
+        /// <param name="descriptor">The scope descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
+        /// </returns>
+        public override Task<TScope> CreateAsync([NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
+        {
+            var scope = new TScope
+            {
+                Name = descriptor.Name
+            };
+
+            return CreateAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
+        /// Removes an existing scope.
+        /// </summary>
+        /// <param name="scope">The scope to delete.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public override async Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            Scopes.Remove(scope);
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (DbUpdateConcurrencyException) { }
+        }
+
+        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -108,6 +195,32 @@ namespace OpenIddict.EntityFramework
             }
 
             return query.Invoke(Scopes).ToArrayAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates an existing scope.
+        /// </summary>
+        /// <param name="scope">The scope to update.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public override async Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            Scopes.Attach(scope);
+            Context.Entry(scope).State = EntityState.Modified;
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (DbUpdateConcurrencyException) { }
         }
     }
 }

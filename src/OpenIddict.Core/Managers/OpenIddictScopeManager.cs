@@ -38,6 +38,93 @@ namespace OpenIddict.Core
         protected IOpenIddictScopeStore<TScope> Store { get; }
 
         /// <summary>
+        /// Determines the number of scopes that exist in the database.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of scopes in the database.
+        /// </returns>
+        public virtual Task<long> CountAsync(CancellationToken cancellationToken)
+        {
+            return Store.CountAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Determines the number of scopes that match the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of scopes that match the specified query.
+        /// </returns>
+        public virtual Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return Store.CountAsync(query, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates a new scope.
+        /// </summary>
+        /// <param name="scope">The scope to create.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
+        /// </returns>
+        public virtual Task<TScope> CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.CreateAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates a new scope.
+        /// </summary>
+        /// <param name="descriptor">The scope descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
+        /// </returns>
+        public virtual Task<TScope> CreateAsync([NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            return Store.CreateAsync(descriptor, cancellationToken);
+        }
+
+        /// <summary>
+        /// Removes an existing scope.
+        /// </summary>
+        /// <param name="scope">The scope to delete.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.DeleteAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -60,6 +147,21 @@ namespace OpenIddict.Core
         /// <summary>
         /// Executes the specified query.
         /// </summary>
+        /// <param name="count">The number of results to return.</param>
+        /// <param name="offset">The number of results to skip.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<TScope[]> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        {
+            return Store.ListAsync(count, offset, cancellationToken);
+        }
+
+        /// <summary>
+        /// Executes the specified query.
+        /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -75,6 +177,24 @@ namespace OpenIddict.Core
             }
 
             return Store.ListAsync(query, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates an existing scope.
+        /// </summary>
+        /// <param name="scope">The scope to update.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.UpdateAsync(scope, cancellationToken);
         }
     }
 }

@@ -29,6 +29,31 @@ namespace OpenIddict.Core
         where TKey : IEquatable<TKey>
     {
         /// <summary>
+        /// Determines the number of tokens that exist in the database.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of applications in the database.
+        /// </returns>
+        public virtual Task<long> CountAsync(CancellationToken cancellationToken)
+        {
+            return CountAsync(tokens => tokens, cancellationToken);
+        }
+
+        /// <summary>
+        /// Determines the number of tokens that match the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of tokens that match the specified query.
+        /// </returns>
+        public abstract Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Creates a new token.
         /// </summary>
         /// <param name="token">The token to create.</param>
@@ -39,7 +64,7 @@ namespace OpenIddict.Core
         public abstract Task<TToken> CreateAsync([NotNull] TToken token, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Creates a new token, which is associated with a particular subject.
+        /// Creates a new token.
         /// </summary>
         /// <param name="descriptor">The token descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -327,6 +352,38 @@ namespace OpenIddict.Core
             }
 
             return Task.FromResult(token.Type);
+        }
+
+        /// <summary>
+        /// Executes the specified query.
+        /// </summary>
+        /// <param name="count">The number of results to return.</param>
+        /// <param name="offset">The number of results to skip.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<TToken[]> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        {
+            IQueryable<TToken> Query(IQueryable<TToken> tokens)
+            {
+                var query = tokens.OrderBy(token => token.Id).AsQueryable();
+
+                if (offset.HasValue)
+                {
+                    query = query.Skip(offset.Value);
+                }
+
+                if (count.HasValue)
+                {
+                    query = query.Take(count.Value);
+                }
+
+                return query;
+            }
+
+            return ListAsync(Query, cancellationToken);
         }
 
         /// <summary>

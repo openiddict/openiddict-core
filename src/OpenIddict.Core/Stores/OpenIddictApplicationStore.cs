@@ -31,6 +31,31 @@ namespace OpenIddict.Core
         where TKey : IEquatable<TKey>
     {
         /// <summary>
+        /// Determines the number of applications that exist in the database.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of applications in the database.
+        /// </returns>
+        public virtual Task<long> CountAsync(CancellationToken cancellationToken)
+        {
+            return CountAsync(applications => applications, cancellationToken);
+        }
+
+        /// <summary>
+        /// Determines the number of applications that match the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of applications that match the specified query.
+        /// </returns>
+        public abstract Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Creates a new application.
         /// </summary>
         /// <param name="application">The application to create.</param>
@@ -419,6 +444,38 @@ namespace OpenIddict.Core
             }
 
             return tokens.ToArray();
+        }
+
+        /// <summary>
+        /// Executes the specified query.
+        /// </summary>
+        /// <param name="count">The number of results to return.</param>
+        /// <param name="offset">The number of results to skip.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<TApplication[]> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        {
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
+            {
+                var query = applications.OrderBy(application => application.Id).AsQueryable();
+
+                if (offset.HasValue)
+                {
+                    query = query.Skip(offset.Value);
+                }
+
+                if (count.HasValue)
+                {
+                    query = query.Take(count.Value);
+                }
+
+                return query;
+            }
+
+            return ListAsync(Query, cancellationToken);
         }
 
         /// <summary>

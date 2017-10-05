@@ -29,6 +29,31 @@ namespace OpenIddict.Core
         where TKey : IEquatable<TKey>
     {
         /// <summary>
+        /// Determines the number of authorizations that exist in the database.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of authorizations in the database.
+        /// </returns>
+        public virtual Task<long> CountAsync(CancellationToken cancellationToken)
+        {
+            return CountAsync(authorizations => authorizations, cancellationToken);
+        }
+
+        /// <summary>
+        /// Determines the number of authorizations that match the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of authorizations that match the specified query.
+        /// </returns>
+        public abstract Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Creates a new authorization.
         /// </summary>
         /// <param name="authorization">The authorization to create.</param>
@@ -47,6 +72,16 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
         public abstract Task<TAuthorization> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes an existing authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization to delete.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public abstract Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an authorization using its associated subject/client.
@@ -162,6 +197,38 @@ namespace OpenIddict.Core
             }
 
             return Task.FromResult(authorization.Subject);
+        }
+
+        /// <summary>
+        /// Executes the specified query.
+        /// </summary>
+        /// <param name="count">The number of results to return.</param>
+        /// <param name="offset">The number of results to skip.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<TAuthorization[]> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        {
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
+            {
+                var query = authorizations.OrderBy(authorization => authorization.Id).AsQueryable();
+
+                if (offset.HasValue)
+                {
+                    query = query.Skip(offset.Value);
+                }
+
+                if (count.HasValue)
+                {
+                    query = query.Take(count.Value);
+                }
+
+                return query;
+            }
+
+            return ListAsync(Query, cancellationToken);
         }
 
         /// <summary>

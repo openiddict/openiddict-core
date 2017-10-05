@@ -36,5 +36,11 @@ namespace OpenIddict.Models
         /// associated with the current scope.
         /// </summary>
         public virtual TKey Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique name
+        /// associated with the current scope.
+        /// </summary>
+        public virtual string Name { get; set; }
     }
 }
