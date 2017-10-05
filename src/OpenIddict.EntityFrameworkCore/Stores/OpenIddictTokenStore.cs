@@ -91,6 +91,26 @@ namespace OpenIddict.EntityFrameworkCore
         protected DbSet<TToken> Tokens => Context.Set<TToken>();
 
         /// <summary>
+        /// Determines the number of tokens that match the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of tokens that match the specified query.
+        /// </returns>
+        public override Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return query.Invoke(Tokens).LongCountAsync();
+        }
+
+        /// <summary>
         /// Creates a new token.
         /// </summary>
         /// <param name="token">The token to create.</param>
@@ -113,7 +133,7 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Creates a new token, which is associated with a particular subject.
+        /// Creates a new token.
         /// </summary>
         /// <param name="descriptor">The token descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>

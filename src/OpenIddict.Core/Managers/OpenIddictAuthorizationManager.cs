@@ -38,6 +38,39 @@ namespace OpenIddict.Core
         protected IOpenIddictAuthorizationStore<TAuthorization> Store { get; }
 
         /// <summary>
+        /// Determines the number of authorizations that exist in the database.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of authorizations in the database.
+        /// </returns>
+        public virtual Task<long> CountAsync(CancellationToken cancellationToken)
+        {
+            return Store.CountAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Determines the number of authorizations that match the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of authorizations that match the specified query.
+        /// </returns>
+        public virtual Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return Store.CountAsync(query, cancellationToken);
+        }
+
+        /// <summary>
         /// Creates a new authorization.
         /// </summary>
         /// <param name="authorization">The application to create.</param>
@@ -73,6 +106,24 @@ namespace OpenIddict.Core
 
             await ValidateAsync(descriptor, cancellationToken);
             return await Store.CreateAsync(descriptor, cancellationToken);
+        }
+
+        /// <summary>
+        /// Removes an existing authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization to delete.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return Store.DeleteAsync(authorization, cancellationToken);
         }
 
         /// <summary>
@@ -141,6 +192,21 @@ namespace OpenIddict.Core
             }
 
             return Store.GetIdAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Executes the specified query.
+        /// </summary>
+        /// <param name="count">The number of results to return.</param>
+        /// <param name="offset">The number of results to skip.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<TAuthorization[]> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        {
+            return Store.ListAsync(count, offset, cancellationToken);
         }
 
         /// <summary>

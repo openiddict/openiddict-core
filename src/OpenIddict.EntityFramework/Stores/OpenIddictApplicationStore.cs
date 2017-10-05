@@ -82,6 +82,26 @@ namespace OpenIddict.EntityFramework
         protected DbSet<TApplication> Applications => Context.Set<TApplication>();
 
         /// <summary>
+        /// Determines the number of applications that match the specified query.
+        /// </summary>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of applications that match the specified query.
+        /// </returns>
+        public override Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            return query.Invoke(Applications).LongCountAsync();
+        }
+
+        /// <summary>
         /// Creates a new application.
         /// </summary>
         /// <param name="application">The application to create.</param>
