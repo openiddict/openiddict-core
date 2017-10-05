@@ -30,8 +30,7 @@ namespace OpenIddict
                 {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
-                        description: "Identity tokens cannot be revoked. When specifying a token_type_hint parameter, " +
-                                     "its value must be equal to 'access_token', 'authorization_code' or 'refresh_token'.");
+                        description: "The specified 'token_type_hint' parameter is not supported.");
 
                     return;
                 }
@@ -41,8 +40,7 @@ namespace OpenIddict
                 {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
-                        description: "Access tokens cannot be revoked. When specifying a token_type_hint parameter, " +
-                                     "its value must be equal to 'authorization_code' or 'refresh_token'.");
+                        description: "The specified 'token_type_hint' parameter is not supported.");
 
                     return;
                 }
@@ -63,7 +61,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The mandatory 'client_id' parameter was missing.");
+                        description: "The mandatory 'client_id' parameter is missing.");
 
                     return;
                 }
@@ -85,7 +83,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Application not found in the database: ensure that your client_id is correct.");
+                    description: "The specified 'client_id' parameter is invalid.");
 
                 return;
             }
@@ -93,7 +91,6 @@ namespace OpenIddict
             // Reject revocation requests containing a client_secret if the application is a public client.
             if (await Applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
             {
-                // Reject tokens requests containing a client_secret when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientSecret))
                 {
                     Logger.LogError("The revocation request was rejected because the public application " +
@@ -101,7 +98,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "Public clients are not allowed to send a client_secret.");
+                        description: "The 'client_secret' parameter is not valid for this client application.");
 
                     return;
                 }
@@ -125,7 +122,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Missing credentials: ensure that you specified a client_secret.");
+                    description: "The 'client_secret' parameter required for this client application is missing.");
 
                 return;
             }
@@ -137,7 +134,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Invalid credentials: ensure that you specified a correct client_secret.");
+                    description: "The specified client credentials are invalid.");
 
                 return;
             }
@@ -159,7 +156,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
-                    description: "Identity tokens cannot be revoked.");
+                    description: "The specified token cannot be revoked.");
 
                 return;
             }
@@ -171,7 +168,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedTokenType,
-                    description: "The specified access token cannot be revoked.");
+                    description: "The specified token cannot be revoked.");
 
                 return;
             }

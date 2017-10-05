@@ -37,7 +37,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.RequestNotSupported,
-                    description: "The request parameter is not supported.");
+                    description: "The 'request' parameter is not supported.");
 
                 return;
             }
@@ -50,7 +50,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.RequestUriNotSupported,
-                    description: "The request_uri parameter is not supported.");
+                    description: "The 'request_uri' parameter is not supported.");
 
                 return;
             }
@@ -67,7 +67,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The request_id parameter is not supported.");
+                        description: "The 'request_id' parameter is not supported.");
 
                     return;
                 }
@@ -84,7 +84,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "Invalid request: timeout expired.");
+                        description: "The specified 'request_id' parameter is invalid.");
 
                     return;
                 }
@@ -120,7 +120,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
-                    description: "The specified response_type parameter is not supported.");
+                    description: "The specified 'response_type' parameter is not supported.");
 
                 return;
             }
@@ -134,7 +134,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
-                    description: "The specified response_type parameter is not allowed.");
+                    description: "The specified 'response_type' parameter is not allowed.");
 
                 return;
             }
@@ -146,7 +146,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
-                    description: "The specified response_type parameter is not allowed.");
+                    description: "The specified 'response_type' parameter is not allowed.");
 
                 return;
             }
@@ -160,7 +160,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
-                    description: "The specified response_type parameter is not allowed.");
+                    description: "The specified 'response_type' parameter is not allowed.");
 
                 return;
             }
@@ -188,7 +188,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The specified response_mode parameter is not supported.");
+                    description: "The specified 'response_mode' parameter is not supported.");
 
                 return;
             }
@@ -201,7 +201,7 @@ namespace OpenIddict
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The required redirect_uri parameter was missing.");
+                    description: "The mandatory 'redirect_uri' parameter is missing.");
 
                 return;
             }
@@ -233,7 +233,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The specified code_challenge_method parameter is not allowed.");
+                        description: "The specified 'code_challenge_method' parameter is not allowed.");
 
                     return;
                 }
@@ -246,7 +246,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The specified response_type parameter is not allowed when using PKCE.");
+                        description: "The specified 'response_type' parameter is not allowed when using PKCE.");
 
                     return;
                 }
@@ -261,7 +261,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "Application not found in the database: ensure that your client_id is correct.");
+                    description: "The specified 'client_id' parameter is invalid.");
 
                 return;
             }
@@ -274,7 +274,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "Invalid redirect_uri.");
+                    description: "The specified 'redirect_uri' parameter is not valid for this client application.");
 
                 return;
             }
@@ -289,7 +289,7 @@ namespace OpenIddict
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "Confidential clients are not allowed to retrieve a token from the authorization endpoint.");
+                    description: "The specified 'response_type' parameter is not valid for this client application.");
 
                 return;
             }

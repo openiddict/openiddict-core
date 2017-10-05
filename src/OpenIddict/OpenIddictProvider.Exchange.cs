@@ -30,7 +30,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
-                    description: "The specified grant_type is not supported by this authorization server.");
+                    description: "The specified 'grant_type' parameter is not supported.");
 
                 return;
             }
@@ -55,7 +55,7 @@ namespace OpenIddict
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The mandatory 'redirect_uri' parameter was missing.");
+                    description: "The mandatory 'redirect_uri' parameter is missing.");
 
                 return;
             }
@@ -70,7 +70,7 @@ namespace OpenIddict
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The 'offline_access' scope is not allowed when using grant_type=client_credentials.");
+                    description: "The 'offline_access' scope is not valid for the specified 'grant_type' parameter.");
 
                 return;
             }
@@ -83,7 +83,8 @@ namespace OpenIddict
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "Client applications must be authenticated to use the client credentials grant.");
+                    description: "The 'client_id' and 'client_secret' parameters are " +
+                                 "required when using the client credentials grant.");
 
                 return;
             }
@@ -103,7 +104,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The mandatory 'client_id' parameter was missing.");
+                        description: "The mandatory 'client_id' parameter is missing.");
 
                     return;
                 }
@@ -125,7 +126,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Application not found in the database: ensure that your client_id is correct.");
+                    description: "The specified 'client_id' parameter is invalid.");
 
                 return;
             }
@@ -140,12 +141,12 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.UnauthorizedClient,
-                        description: "Public clients are not allowed to use the client credentials grant.");
+                        description: "The specified 'grant_type' parameter is not valid for this client application.");
 
                     return;
                 }
 
-                // Reject tokens requests containing a client_secret when the client is a public application.
+                // Reject token requests containing a client_secret when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientSecret))
                 {
                     Logger.LogError("The token request was rejected because the public application '{ClientId}' " +
@@ -153,7 +154,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "Public clients are not allowed to send a client_secret.");
+                        description: "The 'client_secret' parameter is not valid for this client application.");
 
                     return;
                 }
@@ -177,7 +178,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Missing credentials: ensure that you specified a client_secret.");
+                    description: "The 'client_secret' parameter required for this client application is missing.");
 
                 return;
             }
@@ -189,7 +190,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Invalid credentials: ensure that you specified a correct client_secret.");
+                    description: "The specified client credentials are invalid.");
 
                 return;
             }
