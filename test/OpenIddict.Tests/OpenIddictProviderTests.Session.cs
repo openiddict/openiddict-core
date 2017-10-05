@@ -35,7 +35,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The request_id parameter is not supported.", response.ErrorDescription);
+            Assert.Equal("The 'request_id' parameter is not supported.", response.ErrorDescription);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("Invalid request: timeout expired.", response.ErrorDescription);
+            Assert.Equal("The specified 'request_id' parameter is invalid.", response.ErrorDescription);
         }
 
         [Theory]
@@ -110,7 +110,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("Invalid post_logout_redirect_uri.", response.ErrorDescription);
+            Assert.Equal("The specified 'post_logout_redirect_uri' parameter is not valid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }

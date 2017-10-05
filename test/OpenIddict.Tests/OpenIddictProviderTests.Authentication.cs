@@ -45,7 +45,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.RequestNotSupported, response.Error);
-            Assert.Equal("The request parameter is not supported.", response.ErrorDescription);
+            Assert.Equal("The 'request' parameter is not supported.", response.ErrorDescription);
         }
 
         [Fact]
@@ -68,7 +68,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.RequestUriNotSupported, response.Error);
-            Assert.Equal("The request_uri parameter is not supported.", response.ErrorDescription);
+            Assert.Equal("The 'request_uri' parameter is not supported.", response.ErrorDescription);
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The request_id parameter is not supported.", response.ErrorDescription);
+            Assert.Equal("The 'request_id' parameter is not supported.", response.ErrorDescription);
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("Invalid request: timeout expired.", response.ErrorDescription);
+            Assert.Equal("The specified 'request_id' parameter is invalid.", response.ErrorDescription);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedResponseType, response.Error);
-            Assert.Equal("The specified response_type parameter is not supported.", response.ErrorDescription);
+            Assert.Equal("The specified 'response_type' parameter is not supported.", response.ErrorDescription);
         }
 
         [Theory]
@@ -168,7 +168,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedResponseType, response.Error);
-            Assert.Equal("The specified response_type parameter is not allowed.", response.ErrorDescription);
+            Assert.Equal("The specified 'response_type' parameter is not allowed.", response.ErrorDescription);
         }
 
         [Fact]
@@ -215,7 +215,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified response_mode parameter is not supported.", response.ErrorDescription);
+            Assert.Equal("The specified 'response_mode' parameter is not supported.", response.ErrorDescription);
         }
 
         [Fact]
@@ -236,7 +236,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The required redirect_uri parameter was missing.", response.ErrorDescription);
+            Assert.Equal("The mandatory 'redirect_uri' parameter is missing.", response.ErrorDescription);
         }
 
         [Fact]
@@ -282,7 +282,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified code_challenge_method parameter is not allowed.", response.ErrorDescription);
+            Assert.Equal("The specified 'code_challenge_method' parameter is not allowed.", response.ErrorDescription);
         }
 
         [Theory]
@@ -309,7 +309,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified response_type parameter is not allowed when using PKCE.", response.ErrorDescription);
+            Assert.Equal("The specified 'response_type' parameter is not allowed when using PKCE.", response.ErrorDescription);
         }
 
         [Fact]
@@ -339,7 +339,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("Application not found in the database: ensure that your client_id is correct.", response.ErrorDescription);
+            Assert.Equal("The specified 'client_id' parameter is invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -376,7 +376,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("Invalid redirect_uri.", response.ErrorDescription);
+            Assert.Equal("The specified 'redirect_uri' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
@@ -424,7 +424,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("Confidential clients are not allowed to retrieve a token from the authorization endpoint.", response.ErrorDescription);
+            Assert.Equal("The specified 'response_type' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());

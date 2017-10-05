@@ -52,7 +52,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedGrantType, response.Error);
-            Assert.Equal("The specified grant_type is not supported by this authorization server.", response.ErrorDescription);
+            Assert.Equal("The specified 'grant_type' parameter is not supported.", response.ErrorDescription);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'redirect_uri' parameter was missing.", response.ErrorDescription);
+            Assert.Equal("The mandatory 'redirect_uri' parameter is missing.", response.ErrorDescription);
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'offline_access' scope is not allowed when using grant_type=client_credentials.", response.ErrorDescription);
+            Assert.Equal("The 'offline_access' scope is not valid for the specified 'grant_type' parameter.", response.ErrorDescription);
         }
 
         [Theory]
@@ -142,7 +142,8 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("Client applications must be authenticated to use the client credentials grant.", response.ErrorDescription);
+            Assert.Equal("The 'client_id' and 'client_secret' parameters are " +
+                         "required when using the client credentials grant.", response.ErrorDescription);
         }
 
         [Fact]
@@ -164,7 +165,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'client_id' parameter was missing.", response.ErrorDescription);
+            Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
         }
 
         [Fact]
@@ -195,7 +196,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
-            Assert.Equal("Application not found in the database: ensure that your client_id is correct.", response.ErrorDescription);
+            Assert.Equal("The specified 'client_id' parameter is invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -232,7 +233,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
-            Assert.Equal("Public clients are not allowed to use the client credentials grant.", response.ErrorDescription);
+            Assert.Equal("The specified 'grant_type' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
@@ -272,7 +273,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("Public clients are not allowed to send a client_secret.", response.ErrorDescription);
+            Assert.Equal("The 'client_secret' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
@@ -312,7 +313,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
-            Assert.Equal("Missing credentials: ensure that you specified a client_secret.", response.ErrorDescription);
+            Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
@@ -352,7 +353,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
-            Assert.Equal("Missing credentials: ensure that you specified a client_secret.", response.ErrorDescription);
+            Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
@@ -395,7 +396,7 @@ namespace OpenIddict.Tests
 
             // Assert
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
-            Assert.Equal("Invalid credentials: ensure that you specified a correct client_secret.", response.ErrorDescription);
+            Assert.Equal("The specified client credentials are invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());

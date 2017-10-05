@@ -28,7 +28,7 @@ namespace OpenIddict
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "Introspection requests must use HTTP POST.");
+                    description: "The specified HTTP method is not valid.");
 
                 return Task.FromResult(0);
             }
@@ -49,7 +49,7 @@ namespace OpenIddict
             {
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "Clients must be authenticated to use the introspection endpoint.");
+                    description: "The mandatory 'client_id' and/or 'client_secret' parameters are missing.");
 
                 return;
             }
@@ -63,7 +63,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Application not found in the database: ensure that your client_id is correct.");
+                    description: "The specified 'client_id' parameter is invalid.");
 
                 return;
             }
@@ -76,7 +76,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Public applications are not allowed to use the introspection endpoint.");
+                    description: "This client application is not allowed to use the introspection endpoint.");
 
                 return;
             }
@@ -89,7 +89,7 @@ namespace OpenIddict
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
-                    description: "Invalid credentials: ensure that you specified a correct client_secret.");
+                    description: "The specified client credentials are invalid.");
 
                 return;
             }

@@ -43,7 +43,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "The request_id parameter is not supported.");
+                        description: "The 'request_id' parameter is not supported.");
 
                     return;
                 }
@@ -60,7 +60,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "Invalid request: timeout expired.");
+                        description: "The specified 'request_id' parameter is invalid.");
 
                     return;
                 }
@@ -121,7 +121,7 @@ namespace OpenIddict
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "Invalid post_logout_redirect_uri.");
+                        description: "The specified 'post_logout_redirect_uri' parameter is not valid.");
 
                     return;
                 }
