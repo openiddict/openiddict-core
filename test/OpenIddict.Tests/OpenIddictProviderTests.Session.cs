@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
@@ -119,6 +120,7 @@ namespace OpenIddict.Tests
         {
             // Arrange
             var cache = new Mock<IDistributedCache>();
+            var generator = new Mock<RandomNumberGenerator>();
 
             var server = CreateAuthorizationServer(builder =>
             {
@@ -131,6 +133,8 @@ namespace OpenIddict.Tests
                 builder.Services.AddSingleton(cache.Object);
 
                 builder.EnableRequestCaching();
+
+                builder.Configure(options => options.RandomNumberGenerator = generator.Object);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -152,6 +156,8 @@ namespace OpenIddict.Tests
                 It.IsAny<byte[]>(),
                 It.IsAny<DistributedCacheEntryOptions>(),
                 It.IsAny<CancellationToken>()), Times.Once());
+
+            generator.Verify(mock => mock.GetBytes(It.Is<byte[]>(bytes => bytes.Length == 256 / 8)), Times.Once());
         }
 
         [Fact]

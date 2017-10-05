@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
@@ -306,9 +307,10 @@ namespace OpenIddict
             // to flow across requests and internal/external authentication/registration workflows.
             if (options.EnableRequestCaching && string.IsNullOrEmpty(context.Request.RequestId))
             {
-                // Generate a request identifier. Note: using a crypto-secure
-                // random number generator is not necessary in this case.
-                context.Request.RequestId = Guid.NewGuid().ToString();
+                // Generate a 256-bit request identifier using a crypto-secure random number generator.
+                var bytes = new byte[256 / 8];
+                options.RandomNumberGenerator.GetBytes(bytes);
+                context.Request.RequestId = Base64UrlEncoder.Encode(bytes);
 
                 // Store the serialized authorization request parameters in the distributed cache.
                 var stream = new MemoryStream();
