@@ -8,6 +8,12 @@ namespace OpenIddict.Core
 {
     public static class OpenIddictConstants
     {
+        public static class AuthorizationTypes
+        {
+            public const string AdHoc = "ad-hoc";
+            public const string Permanent = "permanent";
+        }
+
         public static class Claims
         {
             public const string Roles = "roles";

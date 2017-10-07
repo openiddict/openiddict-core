@@ -251,7 +251,7 @@ namespace OpenIddict
                 descriptor.AuthorizationId = ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
             }
 
-            // Otherwise, create an ad-hoc authorization if the token is an authorization code.
+            // Otherwise, create an ad hoc authorization if the token is an authorization code.
             else if (type == OpenIdConnectConstants.TokenUsages.AuthorizationCode)
             {
                 Debug.Assert(!string.IsNullOrEmpty(descriptor.ApplicationId), "The client identifier shouldn't be null.");
@@ -261,7 +261,7 @@ namespace OpenIddict
                 {
                     descriptor.AuthorizationId = await Authorizations.GetIdAsync(authorization, context.RequestAborted);
 
-                    Logger.LogInformation("An ad-hoc authorization was automatically created and " +
+                    Logger.LogInformation("An ad hoc authorization was automatically created and " +
                                           "associated with the '{ClientId}' application: {Identifier}.",
                                           request.ClientId, descriptor.AuthorizationId);
                 }
@@ -401,7 +401,8 @@ namespace OpenIddict
             {
                 ApplicationId = token.ApplicationId,
                 Status = OpenIddictConstants.Statuses.Valid,
-                Subject = token.Subject
+                Subject = token.Subject,
+                Type = OpenIddictConstants.AuthorizationTypes.AdHoc
             };
 
             foreach (var scope in request.GetScopes())

@@ -85,6 +85,12 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(authorization));
             }
 
+            // If no type was explicitly specified, assume that the authorization is a permanent authorization.
+            if (string.IsNullOrEmpty(await Store.GetTypeAsync(authorization, cancellationToken)))
+            {
+                await Store.SetTypeAsync(authorization, OpenIddictConstants.AuthorizationTypes.Permanent, cancellationToken);
+            }
+
             await ValidateAsync(authorization, cancellationToken);
             return await Store.CreateAsync(authorization, cancellationToken);
         }
@@ -102,6 +108,13 @@ namespace OpenIddict.Core
             if (descriptor == null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            // If no type was explicitly specified, assume that
+            // the authorization is a permanent authorization.
+            if (string.IsNullOrEmpty(descriptor.Type))
+            {
+                descriptor.Type = OpenIddictConstants.AuthorizationTypes.Permanent;
             }
 
             await ValidateAsync(descriptor, cancellationToken);
@@ -307,6 +320,17 @@ namespace OpenIddict.Core
             if (descriptor == null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (string.IsNullOrEmpty(descriptor.Type))
+            {
+                throw new ArgumentException("The authorization type cannot be null or empty.", nameof(descriptor));
+            }
+
+            if (!string.Equals(descriptor.Type, OpenIddictConstants.AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(descriptor.Type, OpenIddictConstants.AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("The specified authorization type is not supported by the default token manager.");
             }
 
             if (string.IsNullOrEmpty(descriptor.Status))

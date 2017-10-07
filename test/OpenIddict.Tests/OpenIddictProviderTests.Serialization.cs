@@ -571,7 +571,7 @@ namespace OpenIddict.Tests
                 builder.Services.AddSingleton(CreateTokenManager(instance =>
                 {
                     instance.Setup(mock => mock.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
-                            .ReturnsAsync(token);
+                        .ReturnsAsync(token);
 
                     instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -596,7 +596,8 @@ namespace OpenIddict.Tests
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictAuthorizationDescriptor>(descriptor =>
                     descriptor.ApplicationId == "3E228451-1555-46F7-A471-951EFBA23A56" &&
-                    descriptor.Subject == "Bob le Magnifique"),
+                    descriptor.Subject == "Bob le Magnifique" &&
+                    descriptor.Type == OpenIddictConstants.AuthorizationTypes.AdHoc),
                 It.IsAny<CancellationToken>()), Times.Once());
         }
 

@@ -28,5 +28,10 @@ namespace OpenIddict.Core
         /// Gets or sets the subject associated with the authorization.
         /// </summary>
         public string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the authorization.
+        /// </summary>
+        public virtual string Type { get; set; }
     }
 }

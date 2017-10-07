@@ -432,6 +432,11 @@ namespace OpenIddict.Core
         public virtual Task SetExpirationDateAsync([NotNull] TToken token,
             [CanBeNull] DateTimeOffset? date, CancellationToken cancellationToken)
         {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
             token.ExpirationDate = date;
 
             return Task.CompletedTask;
@@ -448,6 +453,11 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task SetStatusAsync([NotNull] TToken token, [NotNull] string status, CancellationToken cancellationToken)
         {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
             token.Status = status;
 
             return Task.CompletedTask;
