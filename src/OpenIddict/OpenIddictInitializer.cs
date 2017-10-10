@@ -158,14 +158,10 @@ namespace OpenIddict
                     "Reference tokens cannot be used when configuring JWT as the access token format.");
             }
 
-            if (options.UseRollingTokens && options.DisableTokenRevocation)
+            if (options.UseSlidingExpiration && options.DisableTokenRevocation && !options.UseRollingTokens)
             {
-                throw new InvalidOperationException("Rolling tokens cannot be used when disabling token expiration.");
-            }
-
-            if (options.UseRollingTokens && !options.UseSlidingExpiration)
-            {
-                throw new InvalidOperationException("Rolling tokens cannot be used without enabling sliding expiration.");
+                throw new InvalidOperationException("Sliding expiration must be disabled when turning off " +
+                                                    "token revocation if rolling tokens are not used.");
             }
 
             if (options.AccessTokenHandler != null && options.SigningCredentials.Count == 0)

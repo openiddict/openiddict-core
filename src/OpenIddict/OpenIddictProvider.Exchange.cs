@@ -202,6 +202,12 @@ namespace OpenIddict
         {
             var options = (OpenIddictOptions) context.Options;
 
+            if (context.Ticket != null)
+            {
+                // Store the authentication ticket as a request property so it can be later retrieved, if necessary.
+                context.Request.SetProperty(OpenIddictConstants.Properties.AuthenticationTicket, context.Ticket);
+            }
+
             if (options.DisableTokenRevocation || (!context.Request.IsAuthorizationCodeGrantType() &&
                                                    !context.Request.IsRefreshTokenGrantType()))
             {
@@ -215,127 +221,58 @@ namespace OpenIddict
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
             // Extract the token identifier from the authentication ticket.
-            var identifier = context.Ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId);
-            Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a ticket identifier.");
+            var identifier = context.Ticket.GetTokenId();
+            Debug.Assert(!string.IsNullOrEmpty(identifier),
+                "The authentication ticket should contain a ticket identifier.");
 
-            // Store the original authorization code/refresh token so it can be later retrieved.
-            context.Request.SetProperty(OpenIddictConstants.Properties.TokenId, identifier);
-
-            if (context.Request.IsAuthorizationCodeGrantType())
+            // Retrieve the authorization code/refresh token from the database and ensure it is still valid.
+            var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
+            if (token == null)
             {
-                // Retrieve the authorization code from the database and ensure it is still valid.
-                var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-                if (token == null)
-                {
-                    Logger.LogError("The token request was rejected because the authorization " +
-                                    "code '{Identifier}' was not found in the database.", identifier);
+                Logger.LogError("The token request was rejected because the authorization code " +
+                                "or refresh token '{Identifier}' was not found in the database.", identifier);
 
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The specified authorization code is no longer valid.");
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidGrant,
+                    description: context.Request.IsAuthorizationCodeGrantType() ?
+                        "The specified authorization code is no longer valid." :
+                        "The specified refresh token is no longer valid.");
 
-                    return;
-                }
-
-                // If the authorization code is already marked as redeemed, this may indicate that the authorization
-                // code was compromised. In this case, revoke the authorization and all the associated tokens. 
-                // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
-                if (await Tokens.IsRedeemedAsync(token, context.HttpContext.RequestAborted))
-                {
-                    var key = context.Ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
-                    if (!string.IsNullOrEmpty(key))
-                    {
-                        var authorization = await Authorizations.FindByIdAsync(key, context.HttpContext.RequestAborted);
-                        if (authorization != null)
-                        {
-                            Logger.LogInformation("The authorization '{Identifier}' was automatically revoked.", key);
-
-                            await Authorizations.RevokeAsync(authorization, context.HttpContext.RequestAborted);
-                        }
-
-                        var tokens = await Tokens.FindByAuthorizationIdAsync(key, context.HttpContext.RequestAborted);
-                        for (var index = 0; index < tokens.Length; index++)
-                        {
-                            Logger.LogInformation("The compromised token '{Identifier}' was automatically revoked.",
-                                await Tokens.GetIdAsync(tokens[index], context.HttpContext.RequestAborted));
-
-                            await Tokens.RevokeAsync(tokens[index], context.HttpContext.RequestAborted);
-                        }
-                    }
-
-                    Logger.LogError("The token request was rejected because the authorization code " +
-                                    "'{Identifier}' has already been redeemed.", identifier);
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The specified authorization code has already been redeemed.");
-
-                    return;
-                }
-
-                else if (!await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
-                {
-                    Logger.LogError("The token request was rejected because the authorization code " +
-                                    "'{Identifier}' was no longer valid.", identifier);
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The specified authorization code is no longer valid.");
-
-                    return;
-                }
-
-                // Mark the authorization code as redeemed to prevent token reuse.
-                await Tokens.RedeemAsync(token, context.HttpContext.RequestAborted);
+                return;
             }
 
-            else
+            // If the authorization code/refresh token is already marked as redeemed, this may indicate that
+            // it was compromised. In this case, revoke the authorization and all the associated tokens. 
+            // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
+            if (await Tokens.IsRedeemedAsync(token, context.HttpContext.RequestAborted))
             {
-                // Retrieve the token from the database and ensure it is still valid.
-                var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-                if (token == null)
-                {
-                    Logger.LogError("The token request was rejected because the refresh token " +
-                                    "'{Identifier}' was not found in the database.", identifier);
+                await RevokeAuthorizationAsync(context.Ticket, context.HttpContext);
+                await RevokeTokensAsync(context.Ticket, context.HttpContext);
 
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The specified refresh token is no longer valid.");
+                Logger.LogError("The token request was rejected because the authorization code " +
+                                "or refresh token '{Identifier}' has already been redeemed.", identifier);
 
-                    return;
-                }
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidGrant,
+                    description: context.Request.IsAuthorizationCodeGrantType() ?
+                        "The specified authorization code has already been redeemed." :
+                        "The specified refresh token has already been redeemed.");
 
-                else if (await Tokens.IsRedeemedAsync(token, context.HttpContext.RequestAborted))
-                {
-                    Logger.LogError("The token request was rejected because the refresh token " +
-                                    "'{Identifier}' has already been redeemed.", identifier);
+                return;
+            }
 
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The specified refresh token has already been redeemed.");
+            else if (!await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
+            {
+                Logger.LogError("The token request was rejected because the authorization code " +
+                                "or refresh token '{Identifier}' was no longer valid.", identifier);
 
-                    return;
-                }
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidGrant,
+                    description: context.Request.IsAuthorizationCodeGrantType() ?
+                        "The specified authorization code is no longer valid." :
+                        "The specified refresh token is no longer valid.");
 
-                else if (!await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
-                {
-                    Logger.LogError("The token request was rejected because the refresh token " +
-                                    "'{Identifier}' was no longer valid.", identifier);
-
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
-                        description: "The specified refresh token is no longer valid.");
-
-                    return;
-                }
-
-                // When rolling tokens are enabled, immediately
-                // redeem the refresh token to prevent future reuse.
-                // See https://tools.ietf.org/html/rfc6749#section-6.
-                if (options.UseRollingTokens)
-                {
-                    await Tokens.RedeemAsync(token, context.HttpContext.RequestAborted);
-                }
+                return;
             }
 
             // Invoke the rest of the pipeline to allow

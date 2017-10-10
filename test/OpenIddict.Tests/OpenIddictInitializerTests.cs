@@ -162,15 +162,14 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
-        public async Task PostConfigure_ThrowsAnExceptionWhenUsingRollingTokensWithTokenRevocationDisabled()
+        public async Task PostConfigure_ThrowsAnExceptionWhenUsingSlidingExpirationWithoutRollingTokensAndWithTokenRevocationDisabled()
         {
             // Arrange
             var server = CreateAuthorizationServer(builder =>
             {
                 builder.EnableAuthorizationEndpoint("/connect/authorize")
                        .AllowImplicitFlow()
-                       .DisableTokenRevocation()
-                       .UseRollingTokens();
+                       .DisableTokenRevocation();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -181,30 +180,8 @@ namespace OpenIddict.Tests
                 return client.GetAsync("/");
             });
 
-            Assert.Equal("Rolling tokens cannot be used when disabling token expiration.", exception.Message);
-        }
-
-        [Fact]
-        public async Task PostConfigure_ThrowsAnExceptionWhenUsingRollingTokensWithSlidingExpirationDisabled()
-        {
-            // Arrange
-            var server = CreateAuthorizationServer(builder =>
-            {
-                builder.EnableAuthorizationEndpoint("/connect/authorize")
-                       .AllowImplicitFlow()
-                       .UseRollingTokens()
-                       .Configure(options => options.UseSlidingExpiration = false);
-            });
-
-            var client = new OpenIdConnectClient(server.CreateClient());
-
-            // Act and assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
-            {
-                return client.GetAsync("/");
-            });
-
-            Assert.Equal("Rolling tokens cannot be used without enabling sliding expiration.", exception.Message);
+            Assert.Equal("Sliding expiration must be disabled when turning off " +
+                         "token revocation if rolling tokens are not used.", exception.Message);
         }
 
         [Fact]

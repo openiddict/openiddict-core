@@ -105,7 +105,8 @@ namespace OpenIddict
         /// When disabled, no new token is issued and the refresh token lifetime is
         /// dynamically managed by updating the token entry in the database.
         /// When this option is enabled, a new refresh token is issued for each
-        /// refresh token request and the previous one is automatically revoked.
+        /// refresh token request (and the previous one is automatically revoked
+        /// unless token revocation was explicitly disabled in the options).
         /// </summary>
         public bool UseRollingTokens { get; set; }
     }

@@ -272,6 +272,7 @@ namespace OpenIddict.Tests
                 builder.Configure(options => options.RevocationEndpointPath = PathString.Empty);
 
                 builder.DisableTokenRevocation();
+                builder.DisableSlidingExpiration();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -328,6 +329,7 @@ namespace OpenIddict.Tests
                 builder.Configure(options => options.RevocationEndpointPath = PathString.Empty);
 
                 builder.DisableTokenRevocation();
+                builder.DisableSlidingExpiration();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());

@@ -158,6 +158,14 @@ namespace OpenIddict.Tests
                             ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, "1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70");
                         }
 
+                        if (request.HasParameter("do-not-flow-original-properties"))
+                        {
+                            var properties = new AuthenticationProperties();
+                            properties.SetProperty("custom_property_in_new_ticket", "new_value");
+
+                            return context.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, properties);
+                        }
+
                         return context.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
                     }
 
@@ -184,46 +192,50 @@ namespace OpenIddict.Tests
             return new TestServer(builder);
         }
 
-        private static OpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>> setup = null)
+        private static OpenIddictApplicationManager<OpenIddictApplication> CreateApplicationManager(
+            Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>> configuration = null)
         {
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
                 Mock.Of<IOpenIddictApplicationStore<OpenIddictApplication>>(),
                 Mock.Of<ILogger<OpenIddictApplicationManager<OpenIddictApplication>>>());
 
-            setup?.Invoke(manager);
+            configuration?.Invoke(manager);
 
             return manager.Object;
         }
 
-        private static OpenIddictAuthorizationManager<OpenIddictAuthorization> CreateAuthorizationManager(Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> setup = null)
+        private static OpenIddictAuthorizationManager<OpenIddictAuthorization> CreateAuthorizationManager(
+            Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> configuration = null)
         {
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationStore<OpenIddictAuthorization>>(),
                 Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>());
 
-            setup?.Invoke(manager);
+            configuration?.Invoke(manager);
 
             return manager.Object;
         }
 
-        private static OpenIddictScopeManager<OpenIddictScope> CreateScopeManager(Action<Mock<OpenIddictScopeManager<OpenIddictScope>>> setup = null)
+        private static OpenIddictScopeManager<OpenIddictScope> CreateScopeManager(
+            Action<Mock<OpenIddictScopeManager<OpenIddictScope>>> configuration = null)
         {
             var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
                 Mock.Of<IOpenIddictScopeStore<OpenIddictScope>>(),
                 Mock.Of<ILogger<OpenIddictScopeManager<OpenIddictScope>>>());
 
-            setup?.Invoke(manager);
+            configuration?.Invoke(manager);
 
             return manager.Object;
         }
 
-        private static OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> setup = null)
+        private static OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(
+            Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> configuration = null)
         {
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
                 Mock.Of<IOpenIddictTokenStore<OpenIddictToken>>(),
                 Mock.Of<ILogger<OpenIddictTokenManager<OpenIddictToken>>>());
 
-            setup?.Invoke(manager);
+            configuration?.Invoke(manager);
 
             return manager.Object;
         }
