@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,7 +78,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified authorization.
         /// </returns>
-        Task<TToken[]> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        Task<ImmutableArray<TToken>> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified hash.
@@ -110,7 +111,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified subject.
         /// </returns>
-        Task<TToken[]> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
+        Task<ImmutableArray<TToken>> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query.
@@ -233,7 +234,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        Task<TToken[]> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
+        Task<ImmutableArray<TToken>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query.
@@ -245,7 +246,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        Task<TResult[]> ListAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the authorization associated with a token.

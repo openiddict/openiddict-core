@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -801,6 +802,9 @@ namespace OpenIddict.Tests
 
                     instance.Setup(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
+
+                    instance.Setup(mock => mock.FindByAuthorizationIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(ImmutableArray.Create<OpenIddictToken>());
                 }));
 
                 builder.Services.AddSingleton(manager);
@@ -875,6 +879,9 @@ namespace OpenIddict.Tests
 
                     instance.Setup(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
+
+                    instance.Setup(mock => mock.FindByAuthorizationIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(ImmutableArray.Create<OpenIddictToken>());
                 }));
 
                 builder.Services.AddSingleton(manager);
@@ -918,12 +925,10 @@ namespace OpenIddict.Tests
             format.Setup(mock => mock.Unprotect("SplxlOBeZQQYbYS6WxSbIA"))
                 .Returns(ticket);
 
-            var tokens = new[]
-            {
+            var tokens = ImmutableArray.Create(
                 new OpenIddictToken(),
                 new OpenIddictToken(),
-                new OpenIddictToken()
-            };
+                new OpenIddictToken());
 
             var manager = CreateTokenManager(instance =>
             {
@@ -1003,12 +1008,10 @@ namespace OpenIddict.Tests
             format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
                 .Returns(ticket);
 
-            var tokens = new[]
-            {
+            var tokens = ImmutableArray.Create(
                 new OpenIddictToken(),
                 new OpenIddictToken(),
-                new OpenIddictToken()
-            };
+                new OpenIddictToken());
 
             var manager = CreateTokenManager(instance =>
             {

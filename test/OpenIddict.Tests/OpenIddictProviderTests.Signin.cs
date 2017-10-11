@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -412,12 +413,10 @@ namespace OpenIddict.Tests
             format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
                 .Returns(ticket);
 
-            var tokens = new[]
-            {
+            var tokens = ImmutableArray.Create(
                 new OpenIddictToken(),
                 new OpenIddictToken(),
-                new OpenIddictToken()
-            };
+                new OpenIddictToken());
 
             var manager = CreateTokenManager(instance =>
             {
@@ -480,12 +479,10 @@ namespace OpenIddict.Tests
             format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
                 .Returns(ticket);
 
-            var tokens = new[]
-            {
+            var tokens = ImmutableArray.Create(
                 new OpenIddictToken(),
                 new OpenIddictToken(),
-                new OpenIddictToken()
-            };
+                new OpenIddictToken());
 
             var manager = CreateTokenManager(instance =>
             {

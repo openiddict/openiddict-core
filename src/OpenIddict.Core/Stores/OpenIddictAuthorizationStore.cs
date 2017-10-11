@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -228,7 +229,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public virtual Task<TAuthorization[]> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<TAuthorization>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
             {
@@ -260,7 +261,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public abstract Task<TResult[]> ListAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the status associated with an authorization.
