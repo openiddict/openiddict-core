@@ -8,6 +8,12 @@ namespace OpenIddict.Core
 {
     public static class OpenIddictConstants
     {
+        public static class AuthorizationTypes
+        {
+            public const string AdHoc = "ad-hoc";
+            public const string Permanent = "permanent";
+        }
+
         public static class Claims
         {
             public const string Roles = "roles";
@@ -33,8 +39,8 @@ namespace OpenIddict.Core
 
         public static class Properties
         {
+            public const string AuthenticationTicket = ".authentication_ticket";
             public const string AuthorizationId = ".authorization_id";
-            public const string TokenId = ".token_id";
         }
 
         public static class Separators

@@ -225,6 +225,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 entity.HasIndex(application => application.ClientId)
                       .IsUnique(unique: true);
 
+                entity.Property(application => application.ClientId)
+                      .IsRequired(required: true);
+
+                entity.Property(application => application.Type)
+                      .IsRequired();
+
                 entity.HasMany(application => application.Authorizations)
                       .WithOne(authorization => authorization.Application)
                       .HasForeignKey("ApplicationId")
@@ -243,6 +249,15 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 entity.HasKey(authorization => authorization.Id);
 
+                entity.Property(authorization => authorization.Status)
+                      .IsRequired();
+
+                entity.Property(authorization => authorization.Subject)
+                      .IsRequired();
+
+                entity.Property(authorization => authorization.Type)
+                      .IsRequired();
+
                 entity.HasMany(application => application.Tokens)
                       .WithOne(token => token.Authorization)
                       .HasForeignKey("AuthorizationId")
@@ -256,6 +271,9 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 entity.HasKey(scope => scope.Id);
 
+                entity.Property(scope => scope.Name)
+                      .IsRequired();
+
                 entity.ToTable("OpenIddictScopes");
             });
 
@@ -266,6 +284,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 entity.HasIndex(token => token.Hash)
                       .IsUnique(unique: true);
+
+                entity.Property(token => token.Subject)
+                      .IsRequired();
+
+                entity.Property(token => token.Type)
+                      .IsRequired();
 
                 entity.ToTable("OpenIddictTokens");
             });

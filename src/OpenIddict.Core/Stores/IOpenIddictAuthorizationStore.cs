@@ -139,6 +139,17 @@ namespace OpenIddict.Core
         Task<string> GetSubjectAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the type associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the type associated with the specified authorization.
+        /// </returns>
+        Task<string> GetTypeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <param name="count">The number of results to return.</param>
@@ -172,6 +183,17 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetStatusAsync([NotNull] TAuthorization authorization, [NotNull] string status, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the type associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="type">The type associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetTypeAsync([NotNull] TAuthorization authorization, [NotNull] string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing authorization.

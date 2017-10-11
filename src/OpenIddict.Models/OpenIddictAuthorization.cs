@@ -65,5 +65,10 @@ namespace OpenIddict.Models
         /// associated with the current authorization.
         /// </summary>
         public virtual IList<TToken> Tokens { get; } = new List<TToken>();
+
+        /// <summary>
+        /// Gets or sets the type of the current authorization.
+        /// </summary>
+        public virtual string Type { get; set; }
     }
 }

@@ -184,56 +184,85 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Configure the TApplication entity.
             builder.Entity<TApplication>()
-                .HasKey(application => application.Id);
+                   .HasKey(application => application.Id);
 
             builder.Entity<TApplication>()
-                .Property(application => application.ClientId)
-                .HasMaxLength(450)
-                .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
+                   .Property(application => application.ClientId)
+                   .IsRequired()
+                   .HasMaxLength(450)
+                   .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 
             builder.Entity<TApplication>()
-                .HasMany(application => application.Authorizations)
-                .WithOptional(authorization => authorization.Application)
-                .Map(association => association.MapKey("ApplicationId"));
+                   .Property(application => application.Type)
+                   .IsRequired();
 
             builder.Entity<TApplication>()
-                .HasMany(application => application.Tokens)
-                .WithOptional(token => token.Application)
-                .Map(association => association.MapKey("ApplicationId"));
+                   .HasMany(application => application.Authorizations)
+                   .WithOptional(authorization => authorization.Application)
+                   .Map(association => association.MapKey("ApplicationId"));
 
             builder.Entity<TApplication>()
-                .ToTable("OpenIddictApplications");
+                   .HasMany(application => application.Tokens)
+                   .WithOptional(token => token.Application)
+                   .Map(association => association.MapKey("ApplicationId"));
+
+            builder.Entity<TApplication>()
+                   .ToTable("OpenIddictApplications");
 
             // Configure the TAuthorization entity.
             builder.Entity<TAuthorization>()
-                .HasKey(authorization => authorization.Id);
+                   .HasKey(authorization => authorization.Id);
 
             builder.Entity<TAuthorization>()
-                .HasMany(application => application.Tokens)
-                .WithOptional(token => token.Authorization)
-                .Map(association => association.MapKey("AuthorizationId"));
+                   .Property(authorization => authorization.Status)
+                   .IsRequired();
 
             builder.Entity<TAuthorization>()
-                .ToTable("OpenIddictAuthorizations");
+                   .Property(authorization => authorization.Subject)
+                   .IsRequired();
+
+            builder.Entity<TAuthorization>()
+                   .Property(authorization => authorization.Type)
+                   .IsRequired();
+
+            builder.Entity<TAuthorization>()
+                   .HasMany(application => application.Tokens)
+                   .WithOptional(token => token.Authorization)
+                   .Map(association => association.MapKey("AuthorizationId"));
+
+            builder.Entity<TAuthorization>()
+                   .ToTable("OpenIddictAuthorizations");
 
             // Configure the TScope entity.
             builder.Entity<TScope>()
-                .HasKey(scope => scope.Id);
+                   .HasKey(scope => scope.Id);
 
             builder.Entity<TScope>()
-                .ToTable("OpenIddictScopes");
+                   .Property(scope => scope.Name)
+                   .IsRequired();
+
+            builder.Entity<TScope>()
+                   .ToTable("OpenIddictScopes");
 
             // Configure the TToken entity.
             builder.Entity<TToken>()
-                .HasKey(token => token.Id);
+                   .HasKey(token => token.Id);
 
             builder.Entity<TToken>()
-                .Property(token => token.Hash)
-                .HasMaxLength(450)
-                .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
+                   .Property(token => token.Hash)
+                   .HasMaxLength(450)
+                   .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 
             builder.Entity<TToken>()
-                .ToTable("OpenIddictTokens");
+                   .Property(token => token.Subject)
+                   .IsRequired();
+
+            builder.Entity<TToken>()
+                   .Property(token => token.Type)
+                   .IsRequired();
+
+            builder.Entity<TToken>()
+                   .ToTable("OpenIddictTokens");
 
             return builder;
         }

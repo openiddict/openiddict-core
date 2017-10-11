@@ -177,7 +177,7 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
-        public void UseOpenIddict_ThrowsAnExceptionWhenUsingRollingTokensWithTokenRevocationDisabled()
+        public void UseOpenIddict_ThrowsAnExceptionWhenUsingSlidingExpirationWithoutRollingTokensAndWithTokenRevocationDisabled()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -186,36 +186,15 @@ namespace OpenIddict.Tests
             services.AddOpenIddict()
                 .EnableAuthorizationEndpoint("/connect/authorize")
                 .AllowImplicitFlow()
-                .DisableTokenRevocation()
-                .UseRollingTokens();
+                .DisableTokenRevocation();
 
             var builder = new ApplicationBuilder(services.BuildServiceProvider());
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
 
-            Assert.Equal("Rolling tokens cannot be used when disabling token expiration.", exception.Message);
-        }
-
-        [Fact]
-        public void UseOpenIddict_ThrowsAnExceptionWhenUsingRollingTokensWithSlidingExpirationDisabled()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddDataProtection();
-
-            services.AddOpenIddict()
-                .EnableAuthorizationEndpoint("/connect/authorize")
-                .AllowImplicitFlow()
-                .UseRollingTokens()
-                .Configure(options => options.UseSlidingExpiration = false);
-
-            var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
-
-            Assert.Equal("Rolling tokens cannot be used without enabling sliding expiration.", exception.Message);
+            Assert.Equal("Sliding expiration must be disabled when turning off " +
+                         "token revocation if rolling tokens are not used.", exception.Message);
         }
 
         [Fact]

@@ -145,7 +145,8 @@ namespace OpenIddict.EntityFrameworkCore
             var authorization = new TAuthorization
             {
                 Status = descriptor.Status,
-                Subject = descriptor.Subject
+                Subject = descriptor.Subject,
+                Type = descriptor.Type
             };
 
             if (descriptor.Scopes.Count != 0)
