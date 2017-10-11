@@ -11,7 +11,6 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
 using OpenIddict.Core;
 
 namespace OpenIddict
@@ -77,22 +76,18 @@ namespace OpenIddict
                     return;
                 }
 
-                // Extract the token identifier from the authentication ticket.
-                var identifier = context.Ticket.GetTokenId();
-                Debug.Assert(!string.IsNullOrEmpty(identifier),
-                    "The authentication ticket should contain a ticket identifier.");
-
                 // If rolling tokens are enabled or if the request is a grant_type=authorization_code request,
                 // mark the authorization code or the refresh token as redeemed to prevent future reuses.
                 // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                 if (options.UseRollingTokens || context.Request.IsAuthorizationCodeGrantType())
                 {
-                    var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-                    if (token != null)
+                    if (!await TryRedeemTokenAsync(context.Ticket, context.HttpContext))
                     {
-                        await Tokens.RedeemAsync(token, context.HttpContext.RequestAborted);
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            description: "The specified authorization code is no longer valid.");
 
-                        Logger.LogInformation("The token '{Identifier}' was automatically marked as redeemed.", identifier);
+                        return;
                     }
                 }
 
@@ -100,7 +95,14 @@ namespace OpenIddict
                 // with the authorization if the request is a grant_type=refresh_token request.
                 if (options.UseRollingTokens && context.Request.IsRefreshTokenGrantType())
                 {
-                    await RevokeTokensAsync(context.Ticket, context.HttpContext);
+                    if (!await TryRevokeTokensAsync(context.Ticket, context.HttpContext))
+                    {
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            description: "The specified refresh token is no longer valid.");
+
+                        return;
+                    }
                 }
 
                 // When rolling tokens are disabled, extend the expiration date
@@ -108,24 +110,17 @@ namespace OpenIddict
                 // with a new expiration date if sliding expiration was not disabled.
                 else if (options.UseSlidingExpiration && context.Request.IsRefreshTokenGrantType())
                 {
-                    var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-                    if (token != null)
+                    if (!await TryExtendTokenAsync(context.Ticket, context.HttpContext, options))
                     {
-                        // Compute the new expiration date of the refresh token.
-                        var date = context.Options.SystemClock.UtcNow +
-                            (context.Ticket.GetRefreshTokenLifetime() ??
-                             context.Options.RefreshTokenLifetime);
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            description: "The specified refresh token is no longer valid.");
 
-                        await Tokens.ExtendAsync(token, date, context.HttpContext.RequestAborted);
-                        
-                        Logger.LogInformation("The expiration date of the refresh token '{Identifier}' " +
-                                              "was automatically updated: {Date}.", identifier, date);
-
-                        context.IncludeRefreshToken = false;
+                        return;
                     }
 
-                    // If the refresh token entry could not be
-                    // found in the database, generate a new one.
+                    // Prevent the OpenID Connect server from returning a new refresh token.
+                    context.IncludeRefreshToken = false;
                 }
             }
 

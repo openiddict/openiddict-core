@@ -78,6 +78,12 @@ namespace OpenIddict.Models
         public virtual string RedirectUris { get; set; }
 
         /// <summary>
+        /// Gets or sets the timestamp associated with the current
+        /// application, which is used as a concurrency token.
+        /// </summary>
+        public virtual byte[] Timestamp { get; set; }
+
+        /// <summary>
         /// Gets the list of the tokens associated with this application.
         /// </summary>
         public virtual IList<TToken> Tokens { get; } = new List<TToken>();

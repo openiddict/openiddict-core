@@ -93,7 +93,18 @@ namespace OpenIddict.Core
             }
 
             await ValidateAsync(authorization, cancellationToken);
-            return await Store.CreateAsync(authorization, cancellationToken);
+
+            try
+            {
+                return await Store.CreateAsync(authorization, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to create a new authorization.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -119,7 +130,18 @@ namespace OpenIddict.Core
             }
 
             await ValidateAsync(descriptor, cancellationToken);
-            return await Store.CreateAsync(descriptor, cancellationToken);
+
+            try
+            {
+                return await Store.CreateAsync(descriptor, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to create a new authorization.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -130,14 +152,24 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public virtual async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return Store.DeleteAsync(authorization, cancellationToken);
+            try
+            {
+                await Store.DeleteAsync(authorization, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to delete an existing authorization.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -344,7 +376,18 @@ namespace OpenIddict.Core
             }
 
             await ValidateAsync(authorization, cancellationToken);
-            await Store.UpdateAsync(authorization, cancellationToken);
+
+            try
+            {
+                await Store.UpdateAsync(authorization, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to update an existing authorization.");
+
+                throw;
+            }
         }
 
         /// <summary>

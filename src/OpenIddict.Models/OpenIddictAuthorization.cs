@@ -61,6 +61,12 @@ namespace OpenIddict.Models
         public virtual string Subject { get; set; }
 
         /// <summary>
+        /// Gets or sets the timestamp associated with the current
+        /// authorization, which is used as a concurrency token.
+        /// </summary>
+        public virtual byte[] Timestamp { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of tokens
         /// associated with the current authorization.
         /// </summary>

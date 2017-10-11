@@ -79,14 +79,24 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
         /// </returns>
-        public virtual Task<TScope> CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual async Task<TScope> CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return Store.CreateAsync(scope, cancellationToken);
+            try
+            {
+                return await Store.CreateAsync(scope, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to create a new scope.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -97,14 +107,24 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
         /// </returns>
-        public virtual Task<TScope> CreateAsync([NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
+        public virtual async Task<TScope> CreateAsync([NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
         {
             if (descriptor == null)
             {
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            return Store.CreateAsync(descriptor, cancellationToken);
+            try
+            {
+                return await Store.CreateAsync(descriptor, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to create a new scope.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -115,14 +135,24 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual async Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return Store.DeleteAsync(scope, cancellationToken);
+            try
+            {
+                await Store.DeleteAsync(scope, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to delete an existing scope.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -188,14 +218,24 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual async Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return Store.UpdateAsync(scope, cancellationToken);
+            try
+            {
+                await Store.UpdateAsync(scope, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to update an existing scope.");
+
+                throw;
+            }
         }
     }
 }

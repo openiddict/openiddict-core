@@ -171,7 +171,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public override Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -180,12 +180,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             Context.Remove(application);
 
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException) { }
+            return Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -255,7 +250,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public override Task UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -265,12 +260,7 @@ namespace OpenIddict.EntityFrameworkCore
             Context.Attach(application);
             Context.Update(application);
 
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException) { }
+            return Context.SaveChangesAsync(cancellationToken);
         }
     }
 }

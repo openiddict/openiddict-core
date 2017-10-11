@@ -228,6 +228,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 entity.Property(application => application.ClientId)
                       .IsRequired(required: true);
 
+                entity.Property(application => application.Timestamp)
+                      .ValueGeneratedOnAddOrUpdate()
+                      .IsConcurrencyToken()
+                      .IsRowVersion();
+
                 entity.Property(application => application.Type)
                       .IsRequired();
 
@@ -255,6 +260,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 entity.Property(authorization => authorization.Subject)
                       .IsRequired();
 
+                entity.Property(authorization => authorization.Timestamp)
+                      .ValueGeneratedOnAddOrUpdate()
+                      .IsConcurrencyToken()
+                      .IsRowVersion();
+
                 entity.Property(authorization => authorization.Type)
                       .IsRequired();
 
@@ -270,6 +280,11 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Entity<TScope>(entity =>
             {
                 entity.HasKey(scope => scope.Id);
+
+                entity.Property(scope => scope.Timestamp)
+                      .ValueGeneratedOnAddOrUpdate()
+                      .IsConcurrencyToken()
+                      .IsRowVersion();
 
                 entity.Property(scope => scope.Name)
                       .IsRequired();
@@ -287,6 +302,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 entity.Property(token => token.Subject)
                       .IsRequired();
+
+                entity.Property(token => token.Timestamp)
+                      .ValueGeneratedOnAddOrUpdate()
+                      .IsConcurrencyToken()
+                      .IsRowVersion();
 
                 entity.Property(token => token.Type)
                       .IsRequired();

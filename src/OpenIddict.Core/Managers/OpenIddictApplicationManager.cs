@@ -136,7 +136,18 @@ namespace OpenIddict.Core
             }
 
             await ValidateAsync(application, cancellationToken);
-            return await Store.CreateAsync(application, cancellationToken);
+
+            try
+            {
+                return await Store.CreateAsync(application, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to create a new application.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -182,7 +193,18 @@ namespace OpenIddict.Core
             }
 
             await ValidateAsync(descriptor, cancellationToken);
-            return await Store.CreateAsync(descriptor, cancellationToken);
+
+            try
+            {
+                return await Store.CreateAsync(descriptor, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to create a new application.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -193,14 +215,24 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual async Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Store.DeleteAsync(application, cancellationToken);
+            try
+            {
+                await Store.DeleteAsync(application, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to delete an existing application.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -513,7 +545,18 @@ namespace OpenIddict.Core
             }
 
             await ValidateAsync(application, cancellationToken);
-            await Store.UpdateAsync(application, cancellationToken);
+
+            try
+            {
+                await Store.UpdateAsync(application, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to update an existing application.");
+
+                throw;
+            }
         }
 
         /// <summary>

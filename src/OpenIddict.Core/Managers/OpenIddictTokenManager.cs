@@ -88,7 +88,18 @@ namespace OpenIddict.Core
             }
 
             await ValidateAsync(token, cancellationToken);
-            return await Store.CreateAsync(token, cancellationToken);
+
+            try
+            {
+                return await Store.CreateAsync(token, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to create a new token.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -107,7 +118,46 @@ namespace OpenIddict.Core
             }
 
             await ValidateAsync(descriptor, cancellationToken);
-            return await Store.CreateAsync(descriptor, cancellationToken);
+
+            try
+            {
+                return await Store.CreateAsync(descriptor, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to create a new token.");
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Removes an existing token.
+        /// </summary>
+        /// <param name="token">The token to delete.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            try
+            {
+                await Store.DeleteAsync(token, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to delete an existing token.");
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -530,14 +580,24 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual async Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            return Store.UpdateAsync(token, cancellationToken);
+            try
+            {
+                await Store.UpdateAsync(token, cancellationToken);
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "An exception occurred while trying to update an existing token.");
+
+                throw;
+            }
         }
 
         /// <summary>
