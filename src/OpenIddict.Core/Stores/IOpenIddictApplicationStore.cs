@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -102,7 +103,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        Task<TApplication[]> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
+        Task<ImmutableArray<TApplication>> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified redirect_uri.
@@ -113,7 +114,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        Task<TApplication[]> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
+        Task<ImmutableArray<TApplication>> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query.
@@ -193,7 +194,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
         /// result returns all the post_logout_redirect_uri associated with the application.
         /// </returns>
-        Task<string[]> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        Task<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the callback addresses associated with an application.
@@ -204,7 +205,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the redirect_uri associated with the application.
         /// </returns>
-        Task<string[]> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        Task<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the token identifiers associated with an application.
@@ -215,7 +216,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens associated with the application.
         /// </returns>
-        Task<string[]> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        Task<ImmutableArray<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query.
@@ -227,7 +228,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        Task<TApplication[]> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
+        Task<ImmutableArray<TApplication>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query.
@@ -239,7 +240,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        Task<TResult[]> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the client secret associated with an application.
@@ -275,7 +276,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
-            [NotNull] string[] addresses, CancellationToken cancellationToken);
+            [NotNull] ImmutableArray<string> addresses, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the callback addresses associated with an application.
@@ -287,7 +288,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetRedirectUrisAsync([NotNull] TApplication application,
-            [NotNull] string[] addresses, CancellationToken cancellationToken);
+            [NotNull] ImmutableArray<string> addresses, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing application.

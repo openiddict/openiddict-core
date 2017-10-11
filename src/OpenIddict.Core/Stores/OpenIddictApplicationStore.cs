@@ -5,7 +5,7 @@
  */
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -134,28 +134,30 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        public virtual async Task<TApplication[]> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
+        public virtual async Task<ImmutableArray<TApplication>> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
             {
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            // To optimize the efficiency of the query, only the applications whose stringified
+            // To optimize the efficiency of the query, only applications whose stringified
             // LogoutRedirectUris property contains the specified address are returned. Once the
             // applications are retrieved, the LogoutRedirectUri property is manually split.
-            var candidates = await ListAsync(applications => applications.Where(application =>
-                application.PostLogoutRedirectUris.Contains(address)), cancellationToken);
-
-            if (candidates.Length == 0)
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
             {
-                return Array.Empty<TApplication>();
+                return from application in applications
+                       where application.PostLogoutRedirectUris.Contains(address)
+                       select application;
             }
 
-            // Optimization: to save an allocation when no application matches
-            // the specified address, the results list is lazily initialized
-            // when at least one matching application was found in the database.
-            List<TApplication> results = null;
+            var candidates = await ListAsync(Query, cancellationToken);
+            if (candidates.IsDefaultOrEmpty)
+            {
+                return ImmutableArray.Create<TApplication>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<TApplication>(0);
 
             foreach (var candidate in candidates)
             {
@@ -172,22 +174,16 @@ namespace OpenIddict.Core
                 {
                     // Note: the post_logout_redirect_uri must be compared
                     // using case-sensitive "Simple String Comparison".
-                    if (!string.Equals(uri, address, StringComparison.Ordinal))
+                    if (string.Equals(uri, address, StringComparison.Ordinal))
                     {
-                        continue;
-                    }
+                        builder.Add(candidate);
 
-                    // Ensure the results list was initialized before using it.
-                    if (results == null)
-                    {
-                        results = new List<TApplication>(capacity: 1);
+                        break;
                     }
-
-                    results.Add(candidate);
                 }
             }
 
-            return results?.ToArray() ?? Array.Empty<TApplication>();
+            return builder.ToImmutable();
         }
 
         /// <summary>
@@ -199,28 +195,30 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        public virtual async Task<TApplication[]> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
+        public virtual async Task<ImmutableArray<TApplication>> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
             {
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            // To optimize the efficiency of the query, only the applications whose stringified
+            // To optimize the efficiency of the query, only applications whose stringified
             // RedirectUris property contains the specified address are returned. Once the
             // applications are retrieved, the RedirectUri property is manually split.
-            var candidates = await ListAsync(applications => applications.Where(application =>
-                application.RedirectUris.Contains(address)), cancellationToken);
-
-            if (candidates.Length == 0)
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
             {
-                return Array.Empty<TApplication>();
+                return from application in applications
+                       where application.RedirectUris.Contains(address)
+                       select application;
             }
 
-            // Optimization: to save an allocation when no application matches
-            // the specified address, the results list is lazily initialized
-            // when at least one matching application was found in the database.
-            List<TApplication> results = null;
+            var candidates = await ListAsync(Query, cancellationToken);
+            if (candidates.IsDefaultOrEmpty)
+            {
+                return ImmutableArray.Create<TApplication>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<TApplication>(0);
 
             foreach (var candidate in candidates)
             {
@@ -237,22 +235,16 @@ namespace OpenIddict.Core
                 {
                     // Note: the redirect_uri must be compared using case-sensitive "Simple String Comparison".
                     // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
-                    if (!string.Equals(uri, address, StringComparison.Ordinal))
+                    if (string.Equals(uri, address, StringComparison.Ordinal))
                     {
-                        continue;
-                    }
+                        builder.Add(candidate);
 
-                    // Ensure the results list was initialized before using it.
-                    if (results == null)
-                    {
-                        results = new List<TApplication>(capacity: 1);
+                        break;
                     }
-
-                    results.Add(candidate);
                 }
             }
 
-            return results?.ToArray() ?? Array.Empty<TApplication>();
+            return builder.ToImmutable();
         }
 
         /// <summary>
@@ -373,7 +365,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
         /// result returns all the post_logout_redirect_uri associated with the application.
         /// </returns>
-        public virtual Task<string[]> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -382,12 +374,14 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(application.PostLogoutRedirectUris))
             {
-                return Task.FromResult(Array.Empty<string>());
+                return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            return Task.FromResult(application.PostLogoutRedirectUris.Split(
+            var uris = application.PostLogoutRedirectUris.Split(
                 OpenIdConnectConstants.Separators.Space,
-                StringSplitOptions.RemoveEmptyEntries));
+                StringSplitOptions.RemoveEmptyEntries);
+
+            return Task.FromResult(ImmutableArray.Create(uris));
         }
 
         /// <summary>
@@ -399,7 +393,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the redirect_uri associated with the application.
         /// </returns>
-        public virtual Task<string[]> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -408,12 +402,14 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(application.RedirectUris))
             {
-                return Task.FromResult(Array.Empty<string>());
+                return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            return Task.FromResult(application.RedirectUris.Split(
+            var uris = application.RedirectUris.Split(
                 OpenIdConnectConstants.Separators.Space,
-                StringSplitOptions.RemoveEmptyEntries));
+                StringSplitOptions.RemoveEmptyEntries);
+
+            return Task.FromResult(ImmutableArray.Create(uris));
         }
 
         /// <summary>
@@ -425,25 +421,35 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens associated with the application.
         /// </returns>
-        public virtual async Task<string[]> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual async Task<ImmutableArray<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var tokens = new List<string>();
-
-            foreach (var identifier in await ListAsync(applications =>
-                from entity in applications
-                where entity.Id.Equals(application.Id)
-                from token in entity.Tokens
-                select token.Id, cancellationToken))
+            IQueryable<TKey> Query(IQueryable<TApplication> applications)
             {
-                tokens.Add(ConvertIdentifierToString(identifier));
+                return from entity in applications
+                       where entity.Id.Equals(application.Id)
+                       from token in entity.Tokens
+                       select token.Id;
             }
 
-            return tokens.ToArray();
+            var identifiers = await ListAsync(Query, cancellationToken);
+            if (identifiers.IsDefaultOrEmpty)
+            {
+                return ImmutableArray.Create<string>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<string>(identifiers.Length);
+
+            foreach (var identifier in identifiers)
+            {
+                builder.Add(ConvertIdentifierToString(identifier));
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
@@ -456,7 +462,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public virtual Task<TApplication[]> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<TApplication>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
             IQueryable<TApplication> Query(IQueryable<TApplication> applications)
             {
@@ -488,7 +494,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public abstract Task<TResult[]> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the client secret associated with an application.
@@ -550,7 +556,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual Task SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
-            [NotNull] string[] addresses, CancellationToken cancellationToken)
+            [NotNull] ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -587,7 +593,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual Task SetRedirectUrisAsync([NotNull] TApplication application,
-            [NotNull] string[] addresses, CancellationToken cancellationToken)
+            [NotNull] ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
             if (application == null)
             {
