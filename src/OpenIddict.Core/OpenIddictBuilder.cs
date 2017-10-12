@@ -62,7 +62,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public IServiceCollection Services { get; }
 
         /// <summary>
-        /// Adds a custom application manager.
+        /// Adds a custom application manager derived from
+        /// <see cref="OpenIddictApplicationManager{TApplication}"/>.
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -70,7 +71,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddApplicationManager(typeof(TManager));
 
         /// <summary>
-        /// Adds a custom application manager.
+        /// Adds a custom application manager derived from
+        /// <see cref="OpenIddictApplicationManager{TApplication}"/>.
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -84,7 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var contract = typeof(OpenIddictApplicationManager<>).MakeGenericType(ApplicationType);
             if (!contract.IsAssignableFrom(type))
             {
-                throw new InvalidOperationException("Custom managers must be derived from OpenIddictApplicationManager.");
+                throw new InvalidOperationException("The specified type is invalid.");
             }
 
             Services.AddScoped(contract, type);
@@ -93,7 +95,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a custom application store.
+        /// Adds a custom application store derived from
+        /// <see cref="IOpenIddictApplicationStore{TApplication}"/>.
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -101,7 +104,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddApplicationStore(typeof(TStore));
 
         /// <summary>
-        /// Adds a custom application store.
+        /// Adds a custom application store derived from
+        /// <see cref="IOpenIddictApplicationStore{TApplication}"/>.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -115,7 +119,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var contract = typeof(IOpenIddictApplicationStore<>).MakeGenericType(ApplicationType);
             if (!contract.IsAssignableFrom(type))
             {
-                throw new InvalidOperationException("Custom stores must implement IOpenIddictApplicationStore.");
+                throw new InvalidOperationException("The specified type is invalid.");
             }
 
             Services.AddScoped(contract, type);
@@ -124,7 +128,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a custom authorization manager.
+        /// Adds a custom authorization manager derived from
+        /// <see cref="OpenIddictAuthorizationManager{TAuthorization}"/>.
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -132,7 +137,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddAuthorizationManager(typeof(TManager));
 
         /// <summary>
-        /// Adds a custom authorization manager.
+        /// Adds a custom authorization manager derived from
+        /// <see cref="OpenIddictAuthorizationManager{TAuthorization}"/>.
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -146,7 +152,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var contract = typeof(OpenIddictAuthorizationManager<>).MakeGenericType(AuthorizationType);
             if (!contract.IsAssignableFrom(type))
             {
-                throw new InvalidOperationException("Custom managers must be derived from OpenIddictAuthorizationManager.");
+                throw new InvalidOperationException("The specified type is invalid.");
             }
 
             Services.AddScoped(contract, type);
@@ -155,7 +161,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a custom authorization store.
+        /// Adds a custom authorization store derived from
+        /// <see cref="IOpenIddictAuthorizationStore{TAuthorization}"/>.
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -163,7 +170,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddAuthorizationStore(typeof(TStore));
 
         /// <summary>
-        /// Adds a custom authorization store.
+        /// Adds a custom authorization store derived from
+        /// <see cref="IOpenIddictAuthorizationStore{TAuthorization}"/>.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -177,7 +185,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var contract = typeof(IOpenIddictAuthorizationStore<>).MakeGenericType(AuthorizationType);
             if (!contract.IsAssignableFrom(type))
             {
-                throw new InvalidOperationException("Custom stores must implement IOpenIddictAuthorizationStore.");
+                throw new InvalidOperationException("The specified type is invalid.");
             }
 
             Services.AddScoped(contract, type);
@@ -186,7 +194,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a custom scope manager.
+        /// Adds a custom scope manager derived from
+        /// <see cref="OpenIddictScopeManager{TScope}"/>.
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -194,7 +203,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddScopeManager(typeof(TManager));
 
         /// <summary>
-        /// Adds a custom scope manager.
+        /// Adds a custom scope manager derived from
+        /// <see cref="OpenIddictScopeManager{TScope}"/>.
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -208,7 +218,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var contract = typeof(OpenIddictScopeManager<>).MakeGenericType(ScopeType);
             if (!contract.IsAssignableFrom(type))
             {
-                throw new InvalidOperationException("Custom managers must be derived from OpenIddictScopeManager.");
+                throw new InvalidOperationException("The specified type is invalid.");
             }
 
             Services.AddScoped(contract, type);
@@ -217,7 +227,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a custom scope store.
+        /// Adds a custom scope store derived from
+        /// <see cref="IOpenIddictScopeStore{TScope}"/>.
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -225,7 +236,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddScopeStore(typeof(TStore));
 
         /// <summary>
-        /// Adds a custom scope store.
+        /// Adds a custom scope store derived from
+        /// <see cref="IOpenIddictScopeStore{TScope}"/>.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -239,7 +251,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var contract = typeof(IOpenIddictScopeStore<>).MakeGenericType(ScopeType);
             if (!contract.IsAssignableFrom(type))
             {
-                throw new InvalidOperationException("Custom stores must implement IOpenIddictScopeStore.");
+                throw new InvalidOperationException("The specified type is invalid.");
             }
 
             Services.AddScoped(contract, type);
@@ -248,7 +260,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a custom token manager.
+        /// Adds a custom token manager derived from
+        /// <see cref="OpenIddictTokenManager{TToken}"/>.
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -256,7 +269,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddTokenManager(typeof(TManager));
 
         /// <summary>
-        /// Adds a custom token manager.
+        /// Adds a custom token manager derived from
+        /// <see cref="OpenIddictTokenManager{TToken}"/>.
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -270,7 +284,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var contract = typeof(OpenIddictTokenManager<>).MakeGenericType(TokenType);
             if (!contract.IsAssignableFrom(type))
             {
-                throw new InvalidOperationException("Custom managers must be derived from OpenIddictTokenManager.");
+                throw new InvalidOperationException("The specified type is invalid.");
             }
 
             Services.AddScoped(contract, type);
@@ -279,7 +293,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a custom token store.
+        /// Adds a custom token store derived from
+        /// <see cref="IOpenIddictTokenStore{TToken}"/>.
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -287,7 +302,8 @@ namespace Microsoft.Extensions.DependencyInjection
             => AddTokenStore(typeof(TStore));
 
         /// <summary>
-        /// Adds a custom token store.
+        /// Adds a custom token store derived from
+        /// <see cref="IOpenIddictTokenStore{TToken}"/>.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
         /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
@@ -301,7 +317,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var contract = typeof(IOpenIddictTokenStore<>).MakeGenericType(TokenType);
             if (!contract.IsAssignableFrom(type))
             {
-                throw new InvalidOperationException("Custom stores must implement IOpenIddictTokenStore.");
+                throw new InvalidOperationException("The specified type is invalid.");
             }
 
             Services.AddScoped(contract, type);
