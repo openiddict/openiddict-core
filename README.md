@@ -13,7 +13,7 @@ OpenIddict is based on
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)** and the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)**. You can also create your own custom grant types.
 
-Note: OpenIddict uses **[Entity Framework Core](https://github.com/aspnet/EntityFramework)** by default, but you can also provide your own store.
+Note: OpenIddict natively supports **[Entity Framework Core](https://github.com/aspnet/EntityFramework)** and **[Entity Framework 6](https://github.com/aspnet/EntityFramework6)** out-of-the-box, but you can also provide your own stores.
 
 > Note: **the OpenIddict 2.x packages are only compatible with ASP.NET Core 2.x**.
 > If your application targets ASP.NET Core 1.x, use the OpenIddict 1.x packages.
@@ -124,7 +124,7 @@ public void ConfigureServices(IServiceCollection services)
 [Configuration and options](https://github.com/openiddict/core/wiki/Configuration-and-options)
 in the project wiki.
 
-  - **Make sure the authentication middleware is registered before all the other middleware, including `app.UseMvc()`:
+  - **Make sure the authentication middleware is registered before all the other middleware, including `app.UseMvc()`**:
 
 ```csharp
 public void Configure(IApplicationBuilder app)
@@ -135,7 +135,7 @@ public void Configure(IApplicationBuilder app)
 }
 ```
 
-  - **Update your Entity Framework context registration to register the OpenIddict entities**:
+  - **Update your Entity Framework Core context registration to register the OpenIddict entities**:
 
 ```csharp
 services.AddDbContext<ApplicationDbContext>(options =>
@@ -218,13 +218,14 @@ using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFacto
 
     if (await manager.FindByClientIdAsync("[client identifier]", cancellationToken) == null)
     {
-        var application = new OpenIddictApplication
+        var descriptor = new OpenIddictApplicationDescriptor
         {
             ClientId = "[client identifier]",
-            RedirectUri = "[redirect uri]"
+            ClientSecret = "[client secret]",
+            RedirectUris = { new Uri("[redirect uri]") }
         };
-    
-        await manager.CreateAsync(application, "[client secret]", cancellationToken);
+
+        await manager.CreateAsync(descriptor, cancellationToken);
     }
 }
 ```

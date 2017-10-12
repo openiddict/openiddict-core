@@ -64,10 +64,14 @@ namespace OpenIddict
                     context.IncludeIdentityToken = context.Ticket.HasScope(OpenIdConnectConstants.Scopes.OpenId);
                 }
 
+                context.IncludeRefreshToken = context.Ticket.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess);
+
                 // Always include a refresh token for grant_type=refresh_token requests if
                 // rolling tokens are enabled and if the offline_access scope was specified.
-                context.IncludeRefreshToken = context.Request.IsRefreshTokenGrantType() && options.UseRollingTokens &&
-                                              context.Ticket.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess);
+                if (context.Request.IsRefreshTokenGrantType())
+                {
+                    context.IncludeRefreshToken &= options.UseRollingTokens;
+                }
 
                 // If token revocation was explicitly disabled,
                 // none of the following security routines apply.

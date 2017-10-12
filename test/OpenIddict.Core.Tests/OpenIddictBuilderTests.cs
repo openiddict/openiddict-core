@@ -27,7 +27,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.AddApplicationManager(typeof(object)));
 
-            Assert.Equal("Custom managers must be derived from OpenIddictApplicationManager.", exception.Message);
+            Assert.Equal("The specified type is invalid.", exception.Message);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.AddApplicationStore(typeof(object)));
 
-            Assert.Equal("Custom stores must implement IOpenIddictApplicationStore.", exception.Message);
+            Assert.Equal("The specified type is invalid.", exception.Message);
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.AddAuthorizationManager(typeof(object)));
 
-            Assert.Equal("Custom managers must be derived from OpenIddictAuthorizationManager.", exception.Message);
+            Assert.Equal("The specified type is invalid.", exception.Message);
         }
 
         [Fact]
@@ -145,7 +145,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.AddAuthorizationStore(typeof(object)));
 
-            Assert.Equal("Custom stores must implement IOpenIddictAuthorizationStore.", exception.Message);
+            Assert.Equal("The specified type is invalid.", exception.Message);
         }
 
         [Fact]
@@ -183,7 +183,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.AddScopeManager(typeof(object)));
 
-            Assert.Equal("Custom managers must be derived from OpenIddictScopeManager.", exception.Message);
+            Assert.Equal("The specified type is invalid.", exception.Message);
         }
 
         [Fact]
@@ -223,7 +223,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.AddScopeStore(typeof(object)));
 
-            Assert.Equal("Custom stores must implement IOpenIddictScopeStore.", exception.Message);
+            Assert.Equal("The specified type is invalid.", exception.Message);
         }
 
         [Fact]
@@ -261,7 +261,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.AddTokenManager(typeof(object)));
 
-            Assert.Equal("Custom managers must be derived from OpenIddictTokenManager.", exception.Message);
+            Assert.Equal("The specified type is invalid.", exception.Message);
         }
 
         [Fact]
@@ -301,7 +301,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.AddTokenStore(typeof(object)));
 
-            Assert.Equal("Custom stores must implement IOpenIddictTokenStore.", exception.Message);
+            Assert.Equal("The specified type is invalid.", exception.Message);
         }
 
         [Fact]
