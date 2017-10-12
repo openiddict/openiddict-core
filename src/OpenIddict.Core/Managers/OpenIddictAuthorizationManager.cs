@@ -339,6 +339,22 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Lists the ad-hoc authorizations that are marked as invalid or have no
+        /// valid token attached and that can be safely removed from the database.
+        /// </summary>
+        /// <param name="count">The number of results to return.</param>
+        /// <param name="offset">The number of results to skip.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<ImmutableArray<TAuthorization>> ListInvalidAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        {
+            return Store.ListInvalidAsync(count, offset, cancellationToken);
+        }
+
+        /// <summary>
         /// Revokes an authorization.
         /// </summary>
         /// <param name="authorization">The authorization to revoke.</param>

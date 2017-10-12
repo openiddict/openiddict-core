@@ -400,6 +400,43 @@ namespace OpenIddict.Core
         public abstract Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Lists the tokens that are marked as expired or invalid
+        /// and that can be safely removed from the database.
+        /// </summary>
+        /// <param name="count">The number of results to return.</param>
+        /// <param name="offset">The number of results to skip.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<ImmutableArray<TToken>> ListInvalidAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        {
+            IQueryable<TToken> Query(IQueryable<TToken> tokens)
+            {
+                var query = (from token in tokens
+                             where token.ExpirationDate < DateTimeOffset.UtcNow ||
+                                   token.Status != OpenIddictConstants.Statuses.Valid
+                             orderby token.Id
+                             select token).AsQueryable();
+
+                if (offset.HasValue)
+                {
+                    query = query.Skip(offset.Value);
+                }
+
+                if (count.HasValue)
+                {
+                    query = query.Take(count.Value);
+                }
+
+                return query;
+            }
+
+            return ListAsync(Query, cancellationToken);
+        }
+
+        /// <summary>
         /// Sets the authorization associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
