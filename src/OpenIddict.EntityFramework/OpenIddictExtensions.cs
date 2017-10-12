@@ -193,6 +193,12 @@ namespace Microsoft.Extensions.DependencyInjection
                    .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 
             builder.Entity<TApplication>()
+                   .Property(application => application.Timestamp)
+                   .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed)
+                   .IsConcurrencyToken()
+                   .IsRowVersion();
+
+            builder.Entity<TApplication>()
                    .Property(application => application.Type)
                    .IsRequired();
 
@@ -222,6 +228,12 @@ namespace Microsoft.Extensions.DependencyInjection
                    .IsRequired();
 
             builder.Entity<TAuthorization>()
+                   .Property(authorization => authorization.Timestamp)
+                   .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed)
+                   .IsConcurrencyToken()
+                   .IsRowVersion();
+
+            builder.Entity<TAuthorization>()
                    .Property(authorization => authorization.Type)
                    .IsRequired();
 
@@ -242,6 +254,12 @@ namespace Microsoft.Extensions.DependencyInjection
                    .IsRequired();
 
             builder.Entity<TScope>()
+                   .Property(scope => scope.Timestamp)
+                   .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed)
+                   .IsConcurrencyToken()
+                   .IsRowVersion();
+
+            builder.Entity<TScope>()
                    .ToTable("OpenIddictScopes");
 
             // Configure the TToken entity.
@@ -256,6 +274,12 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Entity<TToken>()
                    .Property(token => token.Subject)
                    .IsRequired();
+
+            builder.Entity<TToken>()
+                   .Property(token => token.Timestamp)
+                   .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed)
+                   .IsConcurrencyToken()
+                   .IsRowVersion();
 
             builder.Entity<TToken>()
                    .Property(token => token.Type)

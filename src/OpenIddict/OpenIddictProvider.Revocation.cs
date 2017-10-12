@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -198,8 +199,21 @@ namespace OpenIddict
                 return;
             }
 
-            // Revoke the token.
-            await tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
+            // Try to revoke the token. If an exception is thrown,
+            // log and swallow it to ensure that a valid response
+            // will be returned to the client application.
+            try
+            {
+                await tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
+            }
+
+            catch (Exception exception)
+            {
+                logger.LogWarning(0, exception, "An exception occurred while trying to revoke the authorization " +
+                                                "associated with the token '{Identifier}'.", identifier);
+
+                return;
+            }
 
             logger.LogInformation("The token '{Identifier}' was successfully revoked.", identifier);
 

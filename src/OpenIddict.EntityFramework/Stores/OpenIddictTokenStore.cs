@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -193,7 +192,7 @@ namespace OpenIddict.EntityFramework
         /// <param name="token">The token to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public override async Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public override Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -202,12 +201,7 @@ namespace OpenIddict.EntityFramework
 
             Tokens.Remove(token);
 
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException) { }
+            return Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -359,7 +353,7 @@ namespace OpenIddict.EntityFramework
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public override Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -369,12 +363,7 @@ namespace OpenIddict.EntityFramework
             Tokens.Attach(token);
             Context.Entry(token).State = EntityState.Modified;
 
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException) { }
+            return Context.SaveChangesAsync(cancellationToken);
         }
     }
 }

@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -179,7 +178,7 @@ namespace OpenIddict.EntityFramework
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public override Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -187,13 +186,8 @@ namespace OpenIddict.EntityFramework
             }
 
             Authorizations.Remove(authorization);
-
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException) { }
+            
+            return Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -263,18 +257,13 @@ namespace OpenIddict.EntityFramework
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public override Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
 
             Authorizations.Attach(authorization);
             Context.Entry(authorization).State = EntityState.Modified;
 
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException) { }
+            return Context.SaveChangesAsync(cancellationToken);
         }
     }
 }

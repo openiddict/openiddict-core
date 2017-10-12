@@ -314,37 +314,54 @@ namespace OpenIddict
             return ticket;
         }
 
-        private async Task RevokeAuthorizationAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
+        private async Task<bool> TryRevokeAuthorizationAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
         {
             var authorizations = context.RequestServices.GetRequiredService<OpenIddictAuthorizationManager<TAuthorization>>();
             var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
 
+            // Note: if the authorization identifier or the authorization itself
+            // cannot be found, return true as the authorization doesn't need
+            // to be revoked if it doesn't exist or is already invalid.
             var identifier = ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
             if (string.IsNullOrEmpty(identifier))
             {
-                return;
+                return true;
             }
 
             var authorization = await authorizations.FindByIdAsync(identifier, context.RequestAborted);
             if (authorization == null)
             {
-                return;
+                return true;
             }
 
-            await authorizations.RevokeAsync(authorization, context.RequestAborted);
+            try
+            {
+                await authorizations.RevokeAsync(authorization, context.RequestAborted);
 
-            logger.LogInformation("The authorization '{Identifier}' was automatically revoked.", identifier);
+                logger.LogInformation("The authorization '{Identifier}' was automatically revoked.", identifier);
+
+                return true;
+            }
+
+            catch (Exception exception)
+            {
+                logger.LogWarning(0, exception, "An exception occurred while trying to revoke the authorization " +
+                                                "associated with the token '{Identifier}'.", identifier);
+
+                return false;
+            }
         }
 
-        private async Task RevokeTokensAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
+        private async Task<bool> TryRevokeTokensAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
         {
             var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
             var tokens = context.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
+            // Note: if the authorization identifier is null, return true as no tokens need to be revoked.
             var identifier = ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
             if (string.IsNullOrEmpty(identifier))
             {
-                return;
+                return true;
             }
 
             foreach (var token in await tokens.FindByAuthorizationIdAsync(identifier, context.RequestAborted))
@@ -355,10 +372,103 @@ namespace OpenIddict
                     continue;
                 }
 
-                await tokens.RevokeAsync(token, context.RequestAborted);
+                try
+                {
+                    await tokens.RevokeAsync(token, context.RequestAborted);
 
-                logger.LogInformation("The token '{Identifier}' was automatically revoked.",
-                    await tokens.GetIdAsync(token, context.RequestAborted));
+                    logger.LogInformation("The token '{Identifier}' was automatically revoked.",
+                        await tokens.GetIdAsync(token, context.RequestAborted));
+                }
+
+                catch (Exception exception)
+                {
+                    logger.LogWarning(0, exception, "An exception occurred while trying to revoke the tokens " +
+                                                    "associated with the token '{Identifier}'.",
+                                                    await tokens.GetIdAsync(token, context.RequestAborted));
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> TryRedeemTokenAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
+        {
+            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var tokens = context.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
+
+            // Note: if the token identifier or the token itself
+            // cannot be found, return true as the token doesn't need
+            // to be revoked if it doesn't exist or is already invalid.
+            var identifier = ticket.GetTokenId();
+            if (string.IsNullOrEmpty(identifier))
+            {
+                return true;
+            }
+
+            var token = await tokens.FindByIdAsync(identifier, context.RequestAborted);
+            if (token == null)
+            {
+                return true;
+            }
+
+            try
+            {
+                await tokens.RedeemAsync(token, context.RequestAborted);
+
+                logger.LogInformation("The token '{Identifier}' was automatically marked as redeemed.", identifier);
+
+                return true;
+            }
+
+            catch (Exception exception)
+            {
+                logger.LogWarning(0, exception, "An exception occurred while trying to " +
+                                                "redeem the token '{Identifier}'.", identifier);
+
+                return false;
+            }
+        }
+
+        private async Task<bool> TryExtendTokenAsync(
+            [NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context, [NotNull] OpenIddictOptions options)
+        {
+            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var tokens = context.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
+
+            var identifier = ticket.GetTokenId();
+            if (string.IsNullOrEmpty(identifier))
+            {
+                return false;
+            }
+
+            var token = await tokens.FindByIdAsync(identifier, context.RequestAborted);
+            if (token == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Compute the new expiration date of the refresh token.
+                var date = options.SystemClock.UtcNow;
+                date += ticket.GetRefreshTokenLifetime() ?? options.RefreshTokenLifetime;
+
+                await tokens.ExtendAsync(token, date, context.RequestAborted);
+
+                logger.LogInformation("The expiration date of the refresh token '{Identifier}' " +
+                                      "was automatically updated: {Date}.", identifier, date);
+
+                return true;
+            }
+
+            catch (Exception exception)
+            {
+                logger.LogWarning(0, exception, "An exception occurred while trying to update the " +
+                                                "expiration date of the token '{Identifier}'.", identifier);
+
+                return false;
             }
         }
     }

@@ -196,7 +196,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="token">The token to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public override async Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public override Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -205,12 +205,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             Context.Remove(token);
 
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException) { }
+            return Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -347,7 +342,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public override Task UpdateAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -357,12 +352,7 @@ namespace OpenIddict.EntityFrameworkCore
             Context.Attach(token);
             Context.Update(token);
 
-            try
-            {
-                await Context.SaveChangesAsync(cancellationToken);
-            }
-
-            catch (DbUpdateConcurrencyException) { }
+            return Context.SaveChangesAsync(cancellationToken);
         }
     }
 }
