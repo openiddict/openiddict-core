@@ -95,6 +95,17 @@ namespace OpenIddict.Core
         Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the optional application identifier associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the application identifier associated with the authorization.
+        /// </returns>
+        Task<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -186,6 +197,17 @@ namespace OpenIddict.Core
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
         Task<ImmutableArray<TAuthorization>> ListInvalidAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the application identifier associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="identifier">The unique identifier associated with the client application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetApplicationIdAsync([NotNull] TAuthorization authorization, [CanBeNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the status associated with an authorization.

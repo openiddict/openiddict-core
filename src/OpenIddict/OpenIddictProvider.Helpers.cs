@@ -197,12 +197,11 @@ namespace OpenIddict
             ticket.SetTokenId(identifier);
 
             // Dynamically set the creation and expiration dates.
-            ticket.Properties.IssuedUtc = await Tokens.GetCreationDateAsync(token, context.RequestAborted);
-            ticket.Properties.ExpiresUtc = await Tokens.GetExpirationDateAsync(token, context.RequestAborted);
+            ticket.Properties.IssuedUtc = descriptor.CreationDate;
+            ticket.Properties.ExpiresUtc = descriptor.ExpirationDate;
 
             // Restore the authorization identifier using the identifier attached with the database entry.
-            ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId,
-                await Tokens.GetAuthorizationIdAsync(token, context.RequestAborted));
+            ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId, descriptor.AuthorizationId);
 
             if (!string.IsNullOrEmpty(result))
             {

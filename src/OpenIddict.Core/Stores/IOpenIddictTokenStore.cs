@@ -114,6 +114,17 @@ namespace OpenIddict.Core
         Task<ImmutableArray<TToken>> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the optional application identifier associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the application identifier associated with the token.
+        /// </returns>
+        Task<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -262,18 +273,7 @@ namespace OpenIddict.Core
         Task<ImmutableArray<TToken>> ListInvalidAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sets the authorization associated with a token.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="identifier">The unique identifier associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetAuthorizationAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Sets the client application associated with a token.
+        /// Sets the application identifier associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="identifier">The unique identifier associated with the client application.</param>
@@ -281,7 +281,18 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task SetClientAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken);
+        Task SetApplicationIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the authorization identifier associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetAuthorizationIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the expiration date associated with a token.

@@ -29,8 +29,8 @@ namespace OpenIddict
                 // the OpenID Connect server middleware allows creating authentication tickets
                 // that are completely disconnected from the original code or refresh token ticket.
                 // This scenario is deliberately not supported in OpenIddict and all the tickets
-                // must be linked. To ensure the properties are preserved from an authorization code
-                // or a refresh token to the new ticket, they are manually restored if necessary.
+                // must be linked. To ensure the properties are flowed from the authorization code
+                // or the refresh token to the new ticket, they are manually restored if necessary.
 
                 // Retrieve the original authentication ticket from the request properties.
                 var ticket = context.Request.GetProperty<AuthenticationTicket>(

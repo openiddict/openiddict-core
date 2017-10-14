@@ -210,6 +210,38 @@ namespace OpenIddict.EntityFramework
         }
 
         /// <summary>
+        /// Retrieves the optional application identifier associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the application identifier associated with the authorization.
+        /// </returns>
+        public override async Task<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            // If the application is not attached to the authorization instance (which is expected
+            // if the token was retrieved using the default FindBy*Async APIs as they don't
+            // eagerly load the application from the database), try to load it manually.
+            if (authorization.Application == null)
+            {
+                return ConvertIdentifierToString(
+                    await Context.Entry(authorization)
+                        .Reference(entry => entry.Application)
+                        .Query()
+                        .Select(application => application.Id)
+                        .FirstOrDefaultAsync());
+            }
+
+            return ConvertIdentifierToString(authorization.Application.Id);
+        }
+
+        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -247,6 +279,47 @@ namespace OpenIddict.EntityFramework
             }
 
             return ImmutableArray.Create(await query.Invoke(Authorizations).ToArrayAsync(cancellationToken));
+        }
+
+        /// <summary>
+        /// Sets the application identifier associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="identifier">The unique identifier associated with the client application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public override async Task SetApplicationIdAsync([NotNull] TAuthorization authorization, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
+                if (application == null)
+                {
+                    throw new InvalidOperationException("The application associated with the authorization cannot be found.");
+                }
+
+                authorization.Application = application;
+            }
+
+            else
+            {
+                var key = await GetIdAsync(authorization, cancellationToken);
+
+                // Try to retrieve the application associated with the authorization.
+                // If none can be found, assume that no application is attached.
+                var application = await Applications.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                if (application != null)
+                {
+                    application.Authorizations.Remove(authorization);
+                }
+            }
         }
 
         /// <summary>
