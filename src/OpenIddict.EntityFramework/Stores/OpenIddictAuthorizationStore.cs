@@ -87,6 +87,11 @@ namespace OpenIddict.EntityFramework
         protected DbSet<TAuthorization> Authorizations => Context.Set<TAuthorization>();
 
         /// <summary>
+        /// Gets the database set corresponding to the <typeparamref name="TToken"/> entity.
+        /// </summary>
+        protected DbSet<TToken> Tokens => Context.Set<TToken>();
+
+        /// <summary>
         /// Determines the number of authorizations that match the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -178,16 +183,29 @@ namespace OpenIddict.EntityFramework
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public override async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
+            Task<TToken[]> ListTokensAsync()
+            {
+                return (from token in Tokens
+                        where token.Application.Id.Equals(authorization.Id)
+                        select token).ToArrayAsync(cancellationToken);
+            }
+
+            // Remove all the tokens associated with the application.
+            foreach (var token in await ListTokensAsync())
+            {
+                Tokens.Remove(token);
+            }
+
             Authorizations.Remove(authorization);
-            
-            return Context.SaveChangesAsync(cancellationToken);
+
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
