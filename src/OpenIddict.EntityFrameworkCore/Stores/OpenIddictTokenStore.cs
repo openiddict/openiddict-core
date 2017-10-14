@@ -249,50 +249,7 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Sets the authorization associated with a token.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="identifier">The unique identifier associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public override async Task SetAuthorizationAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            if (!string.IsNullOrEmpty(identifier))
-            {
-                var key = ConvertIdentifierFromString(identifier);
-
-                var authorization = await Authorizations.SingleOrDefaultAsync(element => element.Id.Equals(key));
-                if (authorization == null)
-                {
-                    throw new InvalidOperationException("The authorization associated with the token cannot be found.");
-                }
-
-                token.Authorization = authorization;
-            }
-
-            else
-            {
-                var key = await GetIdAsync(token, cancellationToken);
-
-                // Try to retrieve the authorization associated with the token.
-                // If none can be found, assume that no authorization is attached.
-                var authorization = await Authorizations.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
-                if (authorization != null)
-                {
-                    authorization.Tokens.Remove(token);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sets the client application associated with a token.
+        /// Sets the application identifier associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="identifier">The unique identifier associated with the client application.</param>
@@ -300,7 +257,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task SetClientAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        public override async Task SetApplicationIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -311,7 +268,7 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(identifier);
 
-                var application = await Applications.SingleOrDefaultAsync(element => element.Id.Equals(key));
+                var application = await Applications.SingleOrDefaultAsync(element => element.Id.Equals(key), cancellationToken);
                 if (application == null)
                 {
                     throw new InvalidOperationException("The application associated with the token cannot be found.");
@@ -330,6 +287,49 @@ namespace OpenIddict.EntityFrameworkCore
                 if (application != null)
                 {
                     application.Tokens.Remove(token);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the authorization identifier associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public override async Task SetAuthorizationIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                var key = ConvertIdentifierFromString(identifier);
+
+                var authorization = await Authorizations.SingleOrDefaultAsync(element => element.Id.Equals(key), cancellationToken);
+                if (authorization == null)
+                {
+                    throw new InvalidOperationException("The authorization associated with the token cannot be found.");
+                }
+
+                token.Authorization = authorization;
+            }
+
+            else
+            {
+                var key = await GetIdAsync(token, cancellationToken);
+
+                // Try to retrieve the authorization associated with the token.
+                // If none can be found, assume that no authorization is attached.
+                var authorization = await Authorizations.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                if (authorization != null)
+                {
+                    authorization.Tokens.Remove(token);
                 }
             }
         }

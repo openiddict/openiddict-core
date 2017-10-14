@@ -202,6 +202,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the optional application identifier associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the application identifier associated with the authorization.
+        /// </returns>
+        public virtual Task<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return Store.GetApplicationIdAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -339,6 +358,22 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Lists the ad-hoc authorizations that are marked as invalid or have no
+        /// valid token attached and that can be safely removed from the database.
+        /// </summary>
+        /// <param name="count">The number of results to return.</param>
+        /// <param name="offset">The number of results to skip.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual Task<ImmutableArray<TAuthorization>> ListInvalidAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        {
+            return Store.ListInvalidAsync(count, offset, cancellationToken);
+        }
+
+        /// <summary>
         /// Revokes an authorization.
         /// </summary>
         /// <param name="authorization">The authorization to revoke.</param>
@@ -358,6 +393,26 @@ namespace OpenIddict.Core
                 await ValidateAsync(authorization, cancellationToken);
                 await UpdateAsync(authorization, cancellationToken);
             }
+        }
+
+        /// <summary>
+        /// Sets the application identifier associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="identifier">The unique identifier associated with the client application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task SetApplicationIdAsync([NotNull] TAuthorization authorization, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            await Store.SetApplicationIdAsync(authorization, identifier, cancellationToken);
+            await UpdateAsync(authorization, cancellationToken);
         }
 
         /// <summary>

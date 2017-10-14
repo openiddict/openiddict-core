@@ -87,6 +87,11 @@ namespace OpenIddict.EntityFrameworkCore
         protected DbSet<TAuthorization> Authorizations => Context.Set<TAuthorization>();
 
         /// <summary>
+        /// Gets the database set corresponding to the <typeparamref name="TToken"/> entity.
+        /// </summary>
+        protected DbSet<TToken> Tokens => Context.Set<TToken>();
+
+        /// <summary>
         /// Determines the number of authorizations that match the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -180,16 +185,29 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public override async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
+            Task<TToken[]> ListTokensAsync()
+            {
+                return (from token in Tokens
+                        where token.Application.Id.Equals(authorization.Id)
+                        select token).ToArrayAsync(cancellationToken);
+            }
+
+            // Remove all the tokens associated with the application.
+            foreach (var token in await ListTokensAsync())
+            {
+                Context.Remove(token);
+            }
+
             Context.Remove(authorization);
 
-            return Context.SaveChangesAsync(cancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -230,6 +248,49 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return ImmutableArray.Create(await query.Invoke(Authorizations).ToArrayAsync(cancellationToken));
+        }
+
+        /// <summary>
+        /// Sets the application identifier associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="identifier">The unique identifier associated with the client application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public override async Task SetApplicationIdAsync([NotNull] TAuthorization authorization, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                var key = ConvertIdentifierFromString(identifier);
+
+                var application = await Applications.SingleOrDefaultAsync(element => element.Id.Equals(key), cancellationToken);
+                if (application == null)
+                {
+                    throw new InvalidOperationException("The application associated with the authorization cannot be found.");
+                }
+
+                authorization.Application = application;
+            }
+
+            else
+            {
+                var key = await GetIdAsync(authorization, cancellationToken);
+
+                // Try to retrieve the application associated with the authorization.
+                // If none can be found, assume that no application is attached.
+                var application = await Applications.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                if (application != null)
+                {
+                    application.Authorizations.Remove(authorization);
+                }
+            }
         }
 
         /// <summary>

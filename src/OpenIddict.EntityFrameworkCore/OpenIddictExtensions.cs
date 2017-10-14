@@ -11,6 +11,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore;
@@ -243,7 +244,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 entity.HasMany(application => application.Tokens)
                       .WithOne(token => token.Application)
                       .HasForeignKey("ApplicationId")
-                      .IsRequired(required: false);
+                      .IsRequired(required: false)
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.ToTable("OpenIddictApplications");
             });
@@ -266,10 +268,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 entity.Property(authorization => authorization.Type)
                       .IsRequired();
 
-                entity.HasMany(application => application.Tokens)
+                entity.HasMany(authorization => authorization.Tokens)
                       .WithOne(token => token.Authorization)
                       .HasForeignKey("AuthorizationId")
-                      .IsRequired(required: false);
+                      .IsRequired(required: false)
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.ToTable("OpenIddictAuthorizations");
             });

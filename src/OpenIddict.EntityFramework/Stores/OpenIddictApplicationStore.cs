@@ -82,6 +82,16 @@ namespace OpenIddict.EntityFramework
         protected DbSet<TApplication> Applications => Context.Set<TApplication>();
 
         /// <summary>
+        /// Gets the database set corresponding to the <typeparamref name="TAuthorization"/> entity.
+        /// </summary>
+        protected DbSet<TAuthorization> Authorizations => Context.Set<TAuthorization>();
+
+        /// <summary>
+        /// Gets the database set corresponding to the <typeparamref name="TToken"/> entity.
+        /// </summary>
+        protected DbSet<TToken> Tokens => Context.Set<TToken>();
+
+        /// <summary>
         /// Determines the number of applications that match the specified query.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -171,16 +181,48 @@ namespace OpenIddict.EntityFramework
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public override async Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
+            Task<TAuthorization[]> ListAuthorizationsAsync()
+            {
+                return (from authorization in Authorizations.Include(authorization => authorization.Tokens)
+                        where authorization.Application.Id.Equals(application.Id)
+                        select authorization).ToArrayAsync(cancellationToken);
+            }
+
+            Task<TToken[]> ListTokensAsync()
+            {
+                return (from token in Tokens
+                        where token.Application.Id.Equals(application.Id)
+                        select token).ToArrayAsync(cancellationToken);
+            }
+
+            // Remove all the authorizations associated with the application and
+            // the tokens attached to these implicit or explicit authorizations.
+            foreach (var authorization in await ListAuthorizationsAsync())
+            {
+                foreach (var token in authorization.Tokens)
+                {
+                    Tokens.Remove(token);
+                }
+
+                Authorizations.Remove(authorization);
+            }
+
+            // Remove all the tokens associated with the application.
+            foreach (var token in await ListTokensAsync())
+            {
+                Tokens.Remove(token);
+            }
+
             Applications.Remove(application);
 
-            return Context.SaveChangesAsync(cancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
