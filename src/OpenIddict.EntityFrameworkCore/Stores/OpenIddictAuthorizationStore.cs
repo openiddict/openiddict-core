@@ -332,7 +332,7 @@ namespace OpenIddict.EntityFrameworkCore
 
                 // Try to retrieve the application associated with the authorization.
                 // If none can be found, assume that no application is attached.
-                var application = await Applications.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                var application = await Applications.FirstOrDefaultAsync(element => element.Authorizations.Any(t => t.Id.Equals(key)));
                 if (application != null)
                 {
                     application.Authorizations.Remove(authorization);
