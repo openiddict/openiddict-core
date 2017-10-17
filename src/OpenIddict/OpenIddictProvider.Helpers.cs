@@ -5,7 +5,10 @@
  */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -16,6 +19,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using OpenIddict.Core;
 
 namespace OpenIddict
@@ -444,6 +448,120 @@ namespace OpenIddict
                                              "expiration date of the token '{Identifier}'.", identifier);
 
                 return false;
+            }
+        }
+
+        private IEnumerable<(string property, string parameter, OpenIdConnectParameter value)> GetParameters(
+            OpenIdConnectRequest request, AuthenticationProperties properties)
+        {
+            Debug.Assert(properties != null, "The authentication properties shouldn't be null.");
+
+            Debug.Assert(request != null, "The request shouldn't be null.");
+            Debug.Assert(request.IsAuthorizationRequest() || request.IsLogoutRequest() || request.IsTokenRequest(),
+                "The request should be an authorization, logout or token request.");
+
+            foreach (var property in properties.Items)
+            {
+                if (string.IsNullOrEmpty(property.Key))
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(property.Value))
+                {
+                    continue;
+                }
+
+                if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.Boolean))
+                {
+                    var name = property.Key.Substring(
+                        /* index: */ 0,
+                        /* length: */ property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.Boolean));
+
+                    bool value;
+
+                    try
+                    {
+                        value = bool.Parse(property.Value);
+                    }
+
+                    catch (Exception exception)
+                    {
+                        Logger.LogWarning(exception, "An error occurred while parsing the public property " +
+                                                     "'{Name}' from the authentication ticket.", name);
+
+                        continue;
+                    }
+
+                    yield return (property.Key, name, value);
+                }
+
+                else if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.Integer))
+                {
+                    var name = property.Key.Substring(
+                        /* index: */ 0,
+                        /* length: */ property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.Integer));
+
+                    long value;
+
+                    try
+                    {
+                        value = long.Parse(property.Value, CultureInfo.InvariantCulture);
+                    }
+
+                    catch (Exception exception)
+                    {
+                        Logger.LogWarning(exception, "An error occurred while parsing the public property " +
+                                                     "'{Name}' from the authentication ticket.", name);
+
+                        continue;
+                    }
+
+                    yield return (property.Key, name, value);
+                }
+
+                else if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.Json))
+                {
+                    var name = property.Key.Substring(
+                        /* index: */ 0,
+                        /* length: */ property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.Json));
+
+                    if (request.IsAuthorizationRequest() || request.IsLogoutRequest())
+                    {
+                        Logger.LogWarning("The JSON property '{Name}' was excluded as it was not " +
+                                          "compatible with the OpenID Connect response type.", name);
+
+                        continue;
+                    }
+
+                    JToken value;
+
+                    try
+                    {
+                        value = JToken.Parse(property.Value);
+                    }
+
+                    catch (Exception exception)
+                    {
+                        Logger.LogWarning(exception, "An error occurred while deserializing the public JSON " +
+                                                     "property '{Name}' from the authentication ticket.", name);
+
+                        continue;
+                    }
+
+                    yield return (property.Key, name, value);
+                }
+
+                else if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.String))
+                {
+                    var name = property.Key.Substring(
+                        /* index: */ 0,
+                        /* length: */ property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.String));
+
+                    yield return (property.Key, name, property.Value);
+                }
+
+                continue;
             }
         }
     }

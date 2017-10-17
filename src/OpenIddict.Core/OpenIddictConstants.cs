@@ -43,6 +43,14 @@ namespace OpenIddict.Core
             public const string AuthorizationId = ".authorization_id";
         }
 
+        public static class PropertyTypes
+        {
+            public const string Boolean = "#public_boolean";
+            public const string Integer = "#public_integer";
+            public const string Json = "#public_json";
+            public const string String = "#public_string";
+        }
+
         public static class Separators
         {
             public const string Space = " ";
