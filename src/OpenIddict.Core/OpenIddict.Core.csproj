@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Core components of OpenIddict.</Description>
+    <Description>OpenIddict's core components, used to manage the applications, authorizations, scopes and tokens stored in the database.</Description>
     <Authors>Kévin Chalet</Authors>
     <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
   </PropertyGroup>
