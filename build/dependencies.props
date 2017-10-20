@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <AspNetContribOpenIdExtensionsVersion>2.0.0-*</AspNetContribOpenIdExtensionsVersion>
+    <AspNetContribOpenIdExtensionsVersion>2.0.0-rc1-final</AspNetContribOpenIdExtensionsVersion>
     <AspNetContribOpenIdServerVersion>2.0.0-rc1-final</AspNetContribOpenIdServerVersion>
     <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
     <CoreFxVersion>4.4.0</CoreFxVersion>
