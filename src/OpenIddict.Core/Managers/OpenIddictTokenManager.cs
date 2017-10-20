@@ -9,7 +9,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
@@ -680,9 +679,9 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The token type cannot be null or empty.", nameof(descriptor));
             }
 
-            if (!string.Equals(descriptor.Type, OpenIdConnectConstants.TokenTypeHints.AccessToken, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(descriptor.Type, OpenIdConnectConstants.TokenTypeHints.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(descriptor.Type, OpenIdConnectConstants.TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(descriptor.Type, OpenIddictConstants.TokenTypes.AccessToken, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(descriptor.Type, OpenIddictConstants.TokenTypes.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(descriptor.Type, OpenIddictConstants.TokenTypes.RefreshToken, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("The specified token type is not supported by the default token manager.");
             }

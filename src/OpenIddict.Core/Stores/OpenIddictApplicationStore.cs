@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
 using OpenIddict.Models;
 
@@ -162,7 +161,7 @@ namespace OpenIddict.Core
             foreach (var candidate in candidates)
             {
                 var uris = candidate.PostLogoutRedirectUris?.Split(
-                    OpenIdConnectConstants.Separators.Space,
+                    new[] { OpenIddictConstants.Separators.Space },
                     StringSplitOptions.RemoveEmptyEntries);
 
                 if (uris == null)
@@ -223,7 +222,7 @@ namespace OpenIddict.Core
             foreach (var candidate in candidates)
             {
                 var uris = candidate.RedirectUris?.Split(
-                    OpenIdConnectConstants.Separators.Space,
+                    new[] { OpenIddictConstants.Separators.Space },
                     StringSplitOptions.RemoveEmptyEntries);
 
                 if (uris == null)
@@ -378,7 +377,7 @@ namespace OpenIddict.Core
             }
 
             var uris = application.PostLogoutRedirectUris.Split(
-                OpenIdConnectConstants.Separators.Space,
+                new[] { OpenIddictConstants.Separators.Space },
                 StringSplitOptions.RemoveEmptyEntries);
 
             return Task.FromResult(ImmutableArray.Create(uris));
@@ -406,7 +405,7 @@ namespace OpenIddict.Core
             }
 
             var uris = application.RedirectUris.Split(
-                OpenIdConnectConstants.Separators.Space,
+                new[] { OpenIddictConstants.Separators.Space },
                 StringSplitOptions.RemoveEmptyEntries);
 
             return Task.FromResult(ImmutableArray.Create(uris));
