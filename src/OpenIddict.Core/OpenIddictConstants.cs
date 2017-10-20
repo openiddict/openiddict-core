@@ -67,5 +67,13 @@ namespace OpenIddict.Core
             public const string Revoked = "revoked";
             public const string Valid = "valid";
         }
+
+        public static class TokenTypes
+        {
+            public const string AccessToken = "access_token";
+            public const string AuthorizationCode = "authorization_code";
+            public const string IdToken = "id_token";
+            public const string RefreshToken = "refresh_token";
+        }
     }
 }

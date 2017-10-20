@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNet.Security.OpenIdConnect.Primitives" Version="$(AspNetContribOpenIdServerVersion)" />
     <PackageReference Include="CryptoHelper" Version="$(CryptoHelperVersion)" />
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" />

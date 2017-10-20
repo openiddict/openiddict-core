@@ -3,11 +3,11 @@
   <Import Project="..\..\build\packages.props" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Provides default entities for OpenIddict, that can be used by the EntityFramework stores.</Description>
+    <Description>OpenIddict's default entities, used by the Entity Framework 6.x and Entity Framework Core stores.</Description>
     <Authors>Kévin Chalet</Authors>
     <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
   </PropertyGroup>
