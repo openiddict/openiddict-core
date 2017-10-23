@@ -18,60 +18,70 @@ namespace OpenIddict
         public override async Task DeserializeAccessToken([NotNull] DeserializeAccessTokenContext context)
         {
             var options = (OpenIddictOptions) context.Options;
-            if (!options.UseReferenceTokens)
+            if (options.DisableTokenRevocation)
             {
                 return;
             }
 
             context.Ticket = await ReceiveTokenAsync(
+                OpenIdConnectConstants.TokenUsages.AccessToken,
                 context.AccessToken, options, context.HttpContext,
                 context.Request, context.DataFormat);
 
             // Prevent the OpenID Connect server middleware from using
-            // its default logic to deserialize the reference token.
-            context.HandleDeserialization();
+            // its default logic to deserialize reference access tokens.
+            if (options.UseReferenceTokens)
+            {
+                context.HandleDeserialization();
+            }
         }
 
         public override async Task DeserializeAuthorizationCode([NotNull] DeserializeAuthorizationCodeContext context)
         {
             var options = (OpenIddictOptions) context.Options;
-            if (!options.UseReferenceTokens)
+            if (options.DisableTokenRevocation)
             {
                 return;
             }
 
             context.Ticket = await ReceiveTokenAsync(
+                OpenIdConnectConstants.TokenUsages.AuthorizationCode,
                 context.AuthorizationCode, options, context.HttpContext,
                 context.Request, context.DataFormat);
 
-            // Prevent the OpenID Connect server middleware from using
-            // its default logic to deserialize the reference token.
+            // Prevent the OpenID Connect server middleware from using its default logic.
             context.HandleDeserialization();
         }
 
         public override async Task DeserializeRefreshToken([NotNull] DeserializeRefreshTokenContext context)
         {
             var options = (OpenIddictOptions) context.Options;
-            if (!options.UseReferenceTokens)
+            if (options.DisableTokenRevocation)
             {
                 return;
             }
 
             context.Ticket = await ReceiveTokenAsync(
+                OpenIdConnectConstants.TokenUsages.RefreshToken,
                 context.RefreshToken, options, context.HttpContext,
                 context.Request, context.DataFormat);
 
-            // Prevent the OpenID Connect server middleware from using
-            // its default logic to deserialize the reference token.
+            // Prevent the OpenID Connect server middleware from using its default logic.
             context.HandleDeserialization();
         }
 
         public override async Task SerializeAccessToken([NotNull] SerializeAccessTokenContext context)
         {
+            var options = (OpenIddictOptions) context.Options;
+            if (options.DisableTokenRevocation)
+            {
+                return;
+            }
+
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AccessToken,
-                context.Ticket, (OpenIddictOptions) context.Options,
-                context.HttpContext, context.Request, context.DataFormat);
+                context.Ticket, options, context.HttpContext,
+                context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -87,12 +97,18 @@ namespace OpenIddict
 
         public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context)
         {
+            var options = (OpenIddictOptions) context.Options;
+            if (options.DisableTokenRevocation)
+            {
+                return;
+            }
+
             Debug.Assert(context.Request.IsAuthorizationRequest(), "The request should be an authorization request.");
 
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AuthorizationCode,
-                context.Ticket, (OpenIddictOptions) context.Options,
-                context.HttpContext, context.Request, context.DataFormat);
+                context.Ticket, options, context.HttpContext,
+                context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -108,12 +124,18 @@ namespace OpenIddict
 
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context)
         {
+            var options = (OpenIddictOptions) context.Options;
+            if (options.DisableTokenRevocation)
+            {
+                return;
+            }
+
             Debug.Assert(context.Request.IsTokenRequest(), "The request should be a token request.");
 
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.RefreshToken,
-                context.Ticket, (OpenIddictOptions) context.Options,
-                context.HttpContext, context.Request, context.DataFormat);
+                context.Ticket, options, context.HttpContext,
+                context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.

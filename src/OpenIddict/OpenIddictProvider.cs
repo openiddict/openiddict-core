@@ -156,7 +156,9 @@ namespace OpenIddict
                     {
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
-                            description: "The specified authorization code is no longer valid.");
+                            description: context.Request.IsAuthorizationCodeGrantType() ?
+                                "The specified authorization code is no longer valid." :
+                                "The specified refresh token is no longer valid.");
 
                         return;
                     }

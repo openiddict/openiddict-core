@@ -455,6 +455,9 @@ namespace OpenIddict.Tests
             {
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -475,7 +478,7 @@ namespace OpenIddict.Tests
             // Assert
             Assert.Empty(response.GetParameters());
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
     }
