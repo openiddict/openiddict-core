@@ -33,12 +33,18 @@ namespace OpenIddict
         {
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
+                Principal = ticket.Principal,
                 Status = OpenIddictConstants.Statuses.Valid,
                 Subject = ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject),
                 Type = OpenIddictConstants.AuthorizationTypes.AdHoc
             };
 
-            foreach (var scope in request.GetScopes())
+            foreach (var property in ticket.Properties.Items)
+            {
+                descriptor.Properties.Add(property);
+            }
+
+            foreach (var scope in ticket.GetScopes())
             {
                 descriptor.Scopes.Add(scope);
             }
@@ -115,10 +121,16 @@ namespace OpenIddict
                 AuthorizationId = ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId),
                 CreationDate = ticket.Properties.IssuedUtc,
                 ExpirationDate = ticket.Properties.ExpiresUtc,
+                Principal = ticket.Principal,
                 Status = OpenIddictConstants.Statuses.Valid,
                 Subject = ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject),
                 Type = type
             };
+
+            foreach (var property in ticket.Properties.Items)
+            {
+                descriptor.Properties.Add(property);
+            }
 
             string result = null;
 

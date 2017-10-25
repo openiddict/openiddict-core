@@ -380,7 +380,7 @@ namespace OpenIddict.Core
 
             authorization.Type = type;
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         /// <summary>

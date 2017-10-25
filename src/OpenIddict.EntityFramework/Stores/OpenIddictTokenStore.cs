@@ -148,41 +148,9 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var token = new TToken
-            {
-                Ciphertext = descriptor.Ciphertext,
-                CreationDate = descriptor.CreationDate,
-                ExpirationDate = descriptor.ExpirationDate,
-                Hash = descriptor.Hash,
-                Status = descriptor.Status,
-                Subject = descriptor.Subject,
-                Type = descriptor.Type
-            };
+            var token = new TToken();
 
-            // Bind the token to the specified client application, if applicable.
-            if (!string.IsNullOrEmpty(descriptor.ApplicationId))
-            {
-                var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(descriptor.ApplicationId));
-                if (application == null)
-                {
-                    throw new InvalidOperationException("The application associated with the token cannot be found.");
-                }
-
-                token.Application = application;
-            }
-
-            // Bind the token to the specified authorization, if applicable.
-            if (!string.IsNullOrEmpty(descriptor.AuthorizationId))
-            {
-                var authorization = await Authorizations.FindAsync(cancellationToken, ConvertIdentifierFromString(descriptor.AuthorizationId));
-                if (authorization == null)
-                {
-                    throw new InvalidOperationException("The authorization associated with the token cannot be found.");
-                }
-
-                token.Authorization = authorization;
-            }
-
+            await BindAsync(token, descriptor, cancellationToken);
             return await CreateAsync(token, cancellationToken);
         }
 
@@ -428,6 +396,60 @@ namespace OpenIddict.EntityFramework
             Context.Entry(token).State = EntityState.Modified;
 
             return Context.SaveChangesAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Sets the token properties based on the specified descriptor.
+        /// </summary>
+        /// <param name="token">The token to update.</param>
+        /// <param name="descriptor">The token descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        protected virtual async Task BindAsync([NotNull] TToken token, [NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            token.Ciphertext = descriptor.Ciphertext;
+            token.CreationDate = descriptor.CreationDate;
+            token.ExpirationDate = descriptor.ExpirationDate;
+            token.Hash = descriptor.Hash;
+            token.Status = descriptor.Status;
+            token.Subject = descriptor.Subject;
+            token.Type = descriptor.Type;
+
+            // Bind the token to the specified client application, if applicable.
+            if (!string.IsNullOrEmpty(descriptor.ApplicationId))
+            {
+                var application = await Applications.FindAsync(new object[] { ConvertIdentifierFromString(descriptor.ApplicationId) }, cancellationToken);
+                if (application == null)
+                {
+                    throw new InvalidOperationException("The application associated with the token cannot be found.");
+                }
+
+                token.Application = application;
+            }
+
+            // Bind the token to the specified authorization, if applicable.
+            if (!string.IsNullOrEmpty(descriptor.AuthorizationId))
+            {
+                var authorization = await Authorizations.FindAsync(new object[] { ConvertIdentifierFromString(descriptor.AuthorizationId) }, cancellationToken);
+                if (authorization == null)
+                {
+                    throw new InvalidOperationException("The authorization associated with the token cannot be found.");
+                }
+
+                token.Authorization = authorization;
+            }
         }
     }
 }
