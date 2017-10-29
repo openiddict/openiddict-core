@@ -70,6 +70,17 @@ namespace OpenIddict.Core
         Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the list of tokens corresponding to the specified application identifier.
+        /// </summary>
+        /// <param name="identifier">The application identifier associated with the tokens.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens corresponding to the specified application.
+        /// </returns>
+        Task<ImmutableArray<TToken>> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the list of tokens corresponding to the specified authorization identifier.
         /// </summary>
         /// <param name="identifier">The authorization identifier associated with the tokens.</param>

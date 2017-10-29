@@ -208,17 +208,6 @@ namespace OpenIddict.Core
         Task<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves the token identifiers associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens associated with the application.
-        /// </returns>
-        Task<ImmutableArray<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <param name="count">The number of results to return.</param>

@@ -412,46 +412,6 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Retrieves the token identifiers associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens associated with the application.
-        /// </returns>
-        public virtual async Task<ImmutableArray<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            IQueryable<TKey> Query(IQueryable<TApplication> applications)
-            {
-                return from entity in applications
-                       where entity.Id.Equals(application.Id)
-                       from token in entity.Tokens
-                       select token.Id;
-            }
-
-            var identifiers = await ListAsync(Query, cancellationToken);
-            if (identifiers.IsDefaultOrEmpty)
-            {
-                return ImmutableArray.Create<string>();
-            }
-
-            var builder = ImmutableArray.CreateBuilder<string>(identifiers.Length);
-
-            foreach (var identifier in identifiers)
-            {
-                builder.Add(ConvertIdentifierToString(identifier));
-            }
-
-            return builder.ToImmutable();
-        }
-
-        /// <summary>
         /// Executes the specified query.
         /// </summary>
         /// <param name="count">The number of results to return.</param>

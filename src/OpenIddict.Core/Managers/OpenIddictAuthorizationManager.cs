@@ -182,8 +182,18 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the subject/client.
         /// </returns>
-        public virtual Task<TAuthorization> FindAsync(string subject, string client, CancellationToken cancellationToken)
+        public virtual Task<TAuthorization> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+            }
+
             return Store.FindAsync(subject, client, cancellationToken);
         }
 
@@ -196,8 +206,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        public virtual Task<TAuthorization> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        public virtual Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             return Store.FindByIdAsync(identifier, cancellationToken);
         }
 
