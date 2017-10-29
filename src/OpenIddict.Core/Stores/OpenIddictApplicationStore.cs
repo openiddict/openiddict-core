@@ -555,16 +555,18 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual Task SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
-            [NotNull] ImmutableArray<string> addresses, CancellationToken cancellationToken)
+            ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
             if (application == null)
             {
-                throw new ArgumentException(nameof(application));
+                throw new ArgumentNullException(nameof(application));
             }
 
-            if (addresses == null)
+            if (addresses.IsDefaultOrEmpty)
             {
-                throw new ArgumentException(nameof(addresses));
+                application.PostLogoutRedirectUris = null;
+
+                return Task.CompletedTask;
             }
 
             if (addresses.Any(address => string.IsNullOrEmpty(address)))
@@ -592,16 +594,18 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual Task SetRedirectUrisAsync([NotNull] TApplication application,
-            [NotNull] ImmutableArray<string> addresses, CancellationToken cancellationToken)
+            ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
             if (application == null)
             {
-                throw new ArgumentException(nameof(application));
+                throw new ArgumentNullException(nameof(application));
             }
 
-            if (addresses == null)
+            if (addresses.IsDefaultOrEmpty)
             {
-                throw new ArgumentException(nameof(addresses));
+                application.RedirectUris = null;
+
+                return Task.CompletedTask;
             }
 
             if (addresses.Any(address => string.IsNullOrEmpty(address)))
