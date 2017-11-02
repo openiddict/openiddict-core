@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -36,11 +35,6 @@ namespace OpenIddict
             var applications = context.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
             var authorizations = context.RequestServices.GetRequiredService<OpenIddictAuthorizationManager<TAuthorization>>();
             var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
-
-            if (options.DisableTokenRevocation)
-            {
-                return;
-            }
 
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
@@ -228,74 +222,119 @@ namespace OpenIddict
         }
 
         private async Task<AuthenticationTicket> ReceiveTokenAsync(
-            [NotNull] string value, [NotNull] OpenIddictOptions options,
-            [NotNull] HttpContext context, [NotNull] OpenIdConnectRequest request,
+            [NotNull] string type, [NotNull] string value,
+            [NotNull] OpenIddictOptions options, [NotNull] HttpContext context,
+            [NotNull] OpenIdConnectRequest request,
             [NotNull] ISecureDataFormat<AuthenticationTicket> format)
         {
             var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
             var tokens = context.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
-            if (!options.UseReferenceTokens)
-            {
-                return null;
-            }
+            Debug.Assert(type == OpenIdConnectConstants.TokenUsages.AccessToken ||
+                         type == OpenIdConnectConstants.TokenUsages.AuthorizationCode ||
+                         type == OpenIdConnectConstants.TokenUsages.RefreshToken,
+                "Only authorization codes, access and refresh tokens should be validated using this method.");
 
-            string hash;
-            try
+            string identifier;
+            AuthenticationTicket ticket;
+            TToken token;
+
+            if (options.UseReferenceTokens)
             {
-                // Compute the digest of the received token and use it
-                // to retrieve the reference token from the database.
-                using (var algorithm = SHA256.Create())
+                string hash;
+                try
                 {
-                    hash = Convert.ToBase64String(algorithm.ComputeHash(Base64UrlEncoder.DecodeBytes(value)));
+                    // Compute the digest of the received token and use it
+                    // to retrieve the reference token from the database.
+                    using (var algorithm = SHA256.Create())
+                    {
+                        hash = Convert.ToBase64String(algorithm.ComputeHash(Base64UrlEncoder.DecodeBytes(value)));
+                    }
+                }
+
+                // Swallow format-related exceptions to ensure badly formed
+                // or tampered tokens don't cause an exception at this stage.
+                catch
+                {
+                    return null;
+                }
+
+                // Retrieve the token entry from the database. If it
+                // cannot be found, assume the token is not valid.
+                token = await tokens.FindByHashAsync(hash, context.RequestAborted);
+                if (token == null)
+                {
+                    logger.LogInformation("The reference token corresponding to the '{Hash}' hashed " +
+                                          "identifier cannot be found in the database.", hash);
+
+                    return null;
+                }
+
+
+                identifier = await tokens.GetIdAsync(token, context.RequestAborted);
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
+                                      "This may indicate that the token entry is corrupted.");
+
+                    return null;
+                }
+
+                // Extract the encrypted payload from the token. If it's null or empty,
+                // assume the token is not a reference token and consider it as invalid.
+                var ciphertext = await tokens.GetCiphertextAsync(token, context.RequestAborted);
+                if (string.IsNullOrEmpty(ciphertext))
+                {
+                    logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be retrieved. " +
+                                      "This may indicate that the token is not a reference token.", identifier);
+
+                    return null;
+                }
+
+                ticket = format.Unprotect(ciphertext);
+                if (ticket == null)
+                {
+                    logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be decrypted. " +
+                                      "This may indicate that the token entry is corrupted or tampered.",
+                                      await tokens.GetIdAsync(token, context.RequestAborted));
+
+                    return null;
                 }
             }
 
-            // Swallow format-related exceptions to ensure badly formed
-            // or tampered tokens don't cause an exception at this stage.
-            catch
+            else if (type == OpenIdConnectConstants.TokenUsages.AuthorizationCode ||
+                     type == OpenIdConnectConstants.TokenUsages.RefreshToken)
             {
-                return null;
+                ticket = format.Unprotect(value);
+                if (ticket == null)
+                {
+                    logger.LogTrace("The received token was invalid or malformed: {Token}.", value);
+
+                    return null;
+                }
+
+                // Retrieve the authorization code/refresh token entry from the database.
+                // If it cannot be found, assume the authorization code/refresh token is not valid.
+                token = await tokens.FindByIdAsync(ticket.GetTokenId(), context.RequestAborted);
+                if (token == null)
+                {
+                    logger.LogInformation("The token '{Identifier}' cannot be found in the database.", ticket.GetTokenId());
+
+                    return null;
+                }
+
+                identifier = await tokens.GetIdAsync(token, context.RequestAborted);
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
+                                      "This may indicate that the token entry is corrupted.");
+
+                    return null;
+                }
             }
 
-            // Retrieve the token entry from the database. If it
-            // cannot be found, assume the token is not valid.
-            var token = await tokens.FindByHashAsync(hash, context.RequestAborted);
-            if (token == null)
+            else
             {
-                logger.LogInformation("The reference token corresponding to the '{Hash}' hashed " +
-                                      "identifier cannot be found in the database.", hash);
-
-                return null;
-            }
-
-            var identifier = await tokens.GetIdAsync(token, context.RequestAborted);
-            if (string.IsNullOrEmpty(identifier))
-            {
-                logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
-                                  "This may indicate that the token entry is corrupted.");
-
-                return null;
-            }
-
-            // Extract the encrypted payload from the token. If it's null or empty,
-            // assume the token is not a reference token and consider it as invalid.
-            var ciphertext = await tokens.GetCiphertextAsync(token, context.RequestAborted);
-            if (string.IsNullOrEmpty(ciphertext))
-            {
-                logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be retrieved. " +
-                                  "This may indicate that the token is not a reference token.", identifier);
-
-                return null;
-            }
-
-            var ticket = format.Unprotect(ciphertext);
-            if (ticket == null)
-            {
-                logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be decrypted. " +
-                                  "This may indicate that the token entry is corrupted or tampered.",
-                                  await tokens.GetIdAsync(token, context.RequestAborted));
-
                 return null;
             }
 
@@ -311,9 +350,9 @@ namespace OpenIddict
             ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId,
                 await tokens.GetAuthorizationIdAsync(token, context.RequestAborted));
 
-            logger.LogTrace("The reference token '{Identifier}' was successfully retrieved " +
-                            "from the database and decrypted:  {Claims} ; {Properties}.",
-                            identifier, ticket.Principal.Claims, ticket.Properties.Items);
+            logger.LogTrace("The token '{Identifier}' was successfully decrypted and " +
+                            "retrieved from the database: {Claims} ; {Properties}.",
+                            ticket.GetTokenId(), ticket.Principal.Claims, ticket.Properties.Items);
 
             return ticket;
         }
@@ -370,12 +409,6 @@ namespace OpenIddict
 
             foreach (var token in await tokens.FindByAuthorizationIdAsync(identifier, context.RequestAborted))
             {
-                // Don't overwrite the status of the token used in the token request.
-                if (string.Equals(ticket.GetTokenId(), await tokens.GetIdAsync(token, context.RequestAborted)))
-                {
-                    continue;
-                }
-
                 try
                 {
                     await tokens.RevokeAsync(token, context.RequestAborted);
