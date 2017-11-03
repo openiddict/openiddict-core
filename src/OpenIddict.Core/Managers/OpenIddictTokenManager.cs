@@ -180,6 +180,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the list of tokens corresponding to the specified application identifier.
+        /// </summary>
+        /// <param name="identifier">The application identifier associated with the tokens.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens corresponding to the specified application.
+        /// </returns>
+        public virtual Task<ImmutableArray<TToken>> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            return Store.FindByApplicationIdAsync(identifier, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the list of tokens corresponding to the specified authorization identifier.
         /// </summary>
         /// <param name="identifier">The authorization identifier associated with the tokens.</param>
@@ -188,8 +207,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified authorization.
         /// </returns>
-        public virtual Task<ImmutableArray<TToken>> FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<TToken>> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             return Store.FindByAuthorizationIdAsync(identifier, cancellationToken);
         }
 
@@ -202,8 +226,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified hash.
         /// </returns>
-        public virtual Task<TToken> FindByHashAsync(string hash, CancellationToken cancellationToken)
+        public virtual Task<TToken> FindByHashAsync([NotNull] string hash, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(hash))
+            {
+                throw new ArgumentException("The hash cannot be null or empty.", nameof(hash));
+            }
+
             return Store.FindByHashAsync(hash, cancellationToken);
         }
 
@@ -216,8 +245,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        public virtual Task<TToken> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        public virtual Task<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             return Store.FindByIdAsync(identifier, cancellationToken);
         }
 
@@ -230,8 +264,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified subject.
         /// </returns>
-        public virtual Task<ImmutableArray<TToken>> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<TToken>> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
             return Store.FindBySubjectAsync(subject, cancellationToken);
         }
 

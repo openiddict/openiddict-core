@@ -244,8 +244,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual Task<TApplication> FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        public virtual Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             return Store.FindByIdAsync(identifier, cancellationToken);
         }
 
@@ -258,8 +263,13 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual Task<TApplication> FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
+        public virtual Task<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
             return Store.FindByClientIdAsync(identifier, cancellationToken);
         }
 
@@ -406,25 +416,6 @@ namespace OpenIddict.Core
             }
 
             return Store.GetIdAsync(application, cancellationToken);
-        }
-
-        /// <summary>
-        /// Retrieves the token identifiers associated with an application.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens associated with the application.
-        /// </returns>
-        public virtual Task<ImmutableArray<string>> GetTokensAsync([NotNull] TApplication application, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            return Store.GetTokensAsync(application, cancellationToken);
         }
 
         /// <summary>

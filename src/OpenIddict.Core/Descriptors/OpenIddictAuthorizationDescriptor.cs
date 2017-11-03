@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace OpenIddict.Core
 {
@@ -12,6 +13,19 @@ namespace OpenIddict.Core
         /// Gets or sets the application identifier associated with the authorization.
         /// </summary>
         public string ApplicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional principal associated with the authorization.
+        /// Note: this property is not stored by the default authorization stores.
+        /// </summary>
+        public ClaimsPrincipal Principal { get; set; }
+
+        /// <summary>
+        /// Gets the optional authentication properties associated with the authorization.
+        /// Note: this property is not stored by the default authorization stores.
+        /// </summary>
+        public IDictionary<string, string> Properties { get; } =
+            new Dictionary<string, string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the scopes associated with the authorization.

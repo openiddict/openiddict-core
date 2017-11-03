@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace OpenIddict.Core
 {
@@ -36,6 +38,19 @@ namespace OpenIddict.Core
         /// Gets or sets the cryptographic hash associated with the token.
         /// </summary>
         public string Hash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional principal associated with the token.
+        /// Note: this property is not stored by the default token stores.
+        /// </summary>
+        public ClaimsPrincipal Principal { get; set; }
+
+        /// <summary>
+        /// Gets the optional authentication properties associated with the token.
+        /// Note: this property is not stored by the default token stores.
+        /// </summary>
+        public IDictionary<string, string> Properties { get; } =
+            new Dictionary<string, string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the status associated with the token.
