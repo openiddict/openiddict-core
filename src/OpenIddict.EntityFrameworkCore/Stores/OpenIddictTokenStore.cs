@@ -173,6 +173,74 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Retrieves the list of tokens corresponding to the specified application identifier.
+        /// </summary>
+        /// <param name="identifier">The application identifier associated with the tokens.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens corresponding to the specified application.
+        /// </returns>
+        public override async Task<ImmutableArray<TToken>> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
+            // filtered using token.Application.Id.Equals(key). To work around this issue,
+            // this method is overriden to use an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+            IQueryable<TToken> Query(IQueryable<TApplication> applications, IQueryable<TToken> tokens)
+            {
+                var key = ConvertIdentifierFromString(identifier);
+
+                return from token in tokens
+                       join application in applications on token.Application.Id equals application.Id
+                       where application.Id.Equals(key)
+                       select token;
+            }
+
+            return ImmutableArray.Create(await Query(Applications, Tokens).ToArrayAsync(cancellationToken));
+        }
+
+        /// <summary>
+        /// Retrieves the list of tokens corresponding to the specified authorization identifier.
+        /// </summary>
+        /// <param name="identifier">The authorization identifier associated with the tokens.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens corresponding to the specified authorization.
+        /// </returns>
+        public override async Task<ImmutableArray<TToken>> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
+            // filtered using token.Authorization.Id.Equals(key). To work around this issue,
+            // this method is overriden to use an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+            IQueryable<TToken> Query(IQueryable<TAuthorization> authorizations, IQueryable<TToken> tokens)
+            {
+                var key = ConvertIdentifierFromString(identifier);
+
+                return from token in tokens
+                       join authorization in authorizations on token.Authorization.Id equals authorization.Id
+                       where authorization.Id.Equals(key)
+                       select token;
+            }
+
+            return ImmutableArray.Create(await Query(Authorizations, Tokens).ToArrayAsync(cancellationToken));
+        }
+
+        /// <summary>
         /// Retrieves an token using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the token.</param>

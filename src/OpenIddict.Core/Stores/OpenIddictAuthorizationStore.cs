@@ -106,13 +106,18 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            var key = ConvertIdentifierFromString(client);
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
+            {
+                var key = ConvertIdentifierFromString(client);
 
-            return GetAsync(authorizations =>
-                from authorization in authorizations
-                where authorization.Application.Id.Equals(key)
-                where authorization.Subject == subject
-                select authorization, cancellationToken);
+                return from authorization in authorizations
+                       where authorization.Application != null
+                       where authorization.Application.Id.Equals(key)
+                       where authorization.Subject == subject
+                       select authorization;
+            }
+
+            return GetAsync(Query, cancellationToken);
         }
 
         /// <summary>
@@ -131,9 +136,16 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
+            {
+                var key = ConvertIdentifierFromString(identifier);
 
-            return GetAsync(authorizations => authorizations.Where(authorization => authorization.Id.Equals(key)), cancellationToken);
+                return from authorization in authorizations
+                       where authorization.Id.Equals(key)
+                       select authorization;
+            }
+
+            return GetAsync(Query, cancellationToken);
         }
 
         /// <summary>

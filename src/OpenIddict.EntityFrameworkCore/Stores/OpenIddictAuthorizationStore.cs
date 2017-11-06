@@ -188,6 +188,47 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Retrieves an authorization using its associated subject/client.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorization corresponding to the subject/client.
+        /// </returns>
+        public override Task<TAuthorization> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client cannot be null or empty.", nameof(client));
+            }
+
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
+            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
+            // this method is overriden to use an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, IQueryable<TApplication> applications)
+            {
+                var key = ConvertIdentifierFromString(client);
+
+                return from authorization in authorizations
+                       where authorization.Subject == subject
+                       join application in applications on authorization.Application.Id equals application.Id
+                       where application.Id.Equals(key)
+                       select authorization;
+            }
+
+            return Query(Authorizations, Applications).SingleOrDefaultAsync(cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves an authorization using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the authorization.</param>
