@@ -85,16 +85,17 @@ namespace OpenIddict.Core
         public abstract Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves an authorization using its associated subject/client.
+        /// Retrieves the authorizations corresponding to the specified
+        /// subject and associated with the application identifier.
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorization corresponding to the subject/client.
+        /// whose result returns the authorizations corresponding to the subject/client.
         /// </returns>
-        public virtual Task<TAuthorization> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<TAuthorization>> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
@@ -106,13 +107,18 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            var key = ConvertIdentifierFromString(client);
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
+            {
+                var key = ConvertIdentifierFromString(client);
 
-            return GetAsync(authorizations =>
-                from authorization in authorizations
-                where authorization.Application.Id.Equals(key)
-                where authorization.Subject == subject
-                select authorization, cancellationToken);
+                return from authorization in authorizations
+                       where authorization.Application != null
+                       where authorization.Application.Id.Equals(key)
+                       where authorization.Subject == subject
+                       select authorization;
+            }
+
+            return ListAsync(Query, cancellationToken);
         }
 
         /// <summary>
@@ -131,9 +137,16 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
+            {
+                var key = ConvertIdentifierFromString(identifier);
 
-            return GetAsync(authorizations => authorizations.Where(authorization => authorization.Id.Equals(key)), cancellationToken);
+                return from authorization in authorizations
+                       where authorization.Id.Equals(key)
+                       select authorization;
+            }
+
+            return GetAsync(Query, cancellationToken);
         }
 
         /// <summary>

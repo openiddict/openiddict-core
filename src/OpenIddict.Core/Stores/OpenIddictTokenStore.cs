@@ -98,9 +98,17 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TToken> Query(IQueryable<TToken> tokens)
+            {
+                var key = ConvertIdentifierFromString(identifier);
 
-            return ListAsync(tokens => tokens.Where(token => token.Application.Id.Equals(key)), cancellationToken);
+                return from token in tokens
+                       where token.Application != null
+                       where token.Application.Id.Equals(key)
+                       select token;
+            }
+
+            return ListAsync(Query, cancellationToken);
         }
 
         /// <summary>
@@ -119,9 +127,17 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TToken> Query(IQueryable<TToken> tokens)
+            {
+                var key = ConvertIdentifierFromString(identifier);
 
-            return ListAsync(tokens => tokens.Where(token => token.Authorization.Id.Equals(key)), cancellationToken);
+                return from token in tokens
+                       where token.Authorization != null
+                       where token.Authorization.Id.Equals(key)
+                       select token;
+            }
+
+            return ListAsync(Query, cancellationToken);
         }
 
         /// <summary>
@@ -140,7 +156,14 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The hash cannot be null or empty.", nameof(hash));
             }
 
-            return GetAsync(tokens => tokens.Where(token => token.Hash == hash), cancellationToken);
+            IQueryable<TToken> Query(IQueryable<TToken> tokens)
+            {
+                return from token in tokens
+                       where token.Hash == hash
+                       select token;
+            }
+
+            return GetAsync(Query, cancellationToken);
         }
 
         /// <summary>
@@ -159,9 +182,16 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TToken> Query(IQueryable<TToken> tokens)
+            {
+                var key = ConvertIdentifierFromString(identifier);
 
-            return GetAsync(tokens => tokens.Where(token => token.Id.Equals(key)), cancellationToken);
+                return from token in tokens
+                       where token.Id.Equals(key)
+                       select token;
+            }
+
+            return GetAsync(Query, cancellationToken);
         }
 
         /// <summary>
@@ -180,7 +210,14 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            return ListAsync(tokens => tokens.Where(token => token.Subject == subject), cancellationToken);
+            IQueryable<TToken> Query(IQueryable<TToken> tokens)
+            {
+                return from token in tokens
+                       where token.Subject == subject
+                       select token;
+            }
+
+            return ListAsync(Query, cancellationToken);
         }
 
         /// <summary>

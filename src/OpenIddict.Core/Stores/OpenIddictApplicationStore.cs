@@ -100,9 +100,16 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
+            {
+                var key = ConvertIdentifierFromString(identifier);
 
-            return GetAsync(applications => applications.Where(application => application.Id.Equals(key)), cancellationToken);
+                return from application in applications
+                       where application.Id.Equals(key)
+                       select application;
+            }
+
+            return GetAsync(Query, cancellationToken);
         }
 
         /// <summary>
@@ -121,7 +128,14 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return GetAsync(applications => applications.Where(application => application.ClientId.Equals(identifier)), cancellationToken);
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
+            {
+                return from application in applications
+                       where application.ClientId == identifier
+                       select application;
+            }
+
+            return GetAsync(Query, cancellationToken);
         }
 
         /// <summary>

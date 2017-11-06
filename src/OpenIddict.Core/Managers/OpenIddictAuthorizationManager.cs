@@ -173,16 +173,17 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Retrieves an authorization using its associated subject/client.
+        /// Retrieves the authorizations corresponding to the specified
+        /// subject and associated with the application identifier.
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorization corresponding to the subject/client.
+        /// whose result returns the authorizations corresponding to the subject/client.
         /// </returns>
-        public virtual Task<TAuthorization> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<TAuthorization>> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {

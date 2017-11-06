@@ -369,7 +369,7 @@ namespace OpenIddict.EntityFramework
             // Bind the authorization to the specified application, if applicable.
             if (!string.IsNullOrEmpty(descriptor.ApplicationId))
             {
-                var application = await Applications.FindAsync(new object[] { ConvertIdentifierFromString(descriptor.ApplicationId) }, cancellationToken);
+                var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(descriptor.ApplicationId));
                 if (application == null)
                 {
                     throw new InvalidOperationException("The application associated with the authorization cannot be found.");
