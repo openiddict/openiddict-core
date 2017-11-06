@@ -65,16 +65,6 @@ namespace OpenIddict.Core
         public abstract Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Creates a new application.
-        /// </summary>
-        /// <param name="descriptor">The application descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
-        /// </returns>
-        public abstract Task<TApplication> CreateAsync([NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Removes an existing application.
         /// </summary>
         /// <param name="application">The application to delete.</param>
@@ -426,6 +416,16 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Instantiates a new application.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
+        /// returns the instantiated application, that can be persisted in the database.
+        /// </returns>
+        public virtual Task<TApplication> InstantiateAsync(CancellationToken cancellationToken) => Task.FromResult(new TApplication());
+
+        /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <param name="count">The number of results to return.</param>
@@ -470,6 +470,28 @@ namespace OpenIddict.Core
         public abstract Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Sets the client identifier associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="identifier">The client identifier associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetClientIdAsync([NotNull] TApplication application,
+            [CanBeNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            application.ClientId = identifier;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// Sets the client secret associated with an application.
         /// Note: depending on the manager used to create the application,
         /// the client secret may be hashed for security reasons.
@@ -502,19 +524,37 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task SetClientTypeAsync([NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken)
+        public virtual Task SetClientTypeAsync([NotNull] TApplication application,
+            [CanBeNull] string type, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (string.IsNullOrEmpty(type))
+            application.Type = type;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the display name associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="name">The display name associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetDisplayNameAsync([NotNull] TApplication application,
+            [CanBeNull] string name, CancellationToken cancellationToken)
+        {
+            if (application == null)
             {
-                throw new ArgumentException("The client type cannot be null or empty.", nameof(type));
+                throw new ArgumentNullException(nameof(application));
             }
 
-            application.Type = type;
+            application.DisplayName = name;
 
             return Task.CompletedTask;
         }

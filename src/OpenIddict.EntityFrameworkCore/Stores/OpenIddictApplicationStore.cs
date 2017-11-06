@@ -135,27 +135,6 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Creates a new application.
-        /// </summary>
-        /// <param name="descriptor">The application descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
-        /// </returns>
-        public override async Task<TApplication> CreateAsync([NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            var application = new TApplication();
-
-            await BindAsync(application, descriptor, cancellationToken);
-            return await CreateAsync(application, cancellationToken);
-        }
-
-        /// <summary>
         /// Removes an existing application.
         /// </summary>
         /// <param name="application">The application to delete.</param>
@@ -290,49 +269,6 @@ namespace OpenIddict.EntityFrameworkCore
             Context.Update(application);
 
             return Context.SaveChangesAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// Sets the application properties based on the specified descriptor.
-        /// </summary>
-        /// <param name="application">The application to update.</param>
-        /// <param name="descriptor">The application descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual Task BindAsync([NotNull] TApplication application, [NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            application.ClientId = descriptor.ClientId;
-            application.ClientSecret = descriptor.ClientSecret;
-            application.DisplayName = descriptor.DisplayName;
-            application.Type = descriptor.Type;
-
-            if (descriptor.PostLogoutRedirectUris.Count != 0)
-            {
-                application.PostLogoutRedirectUris = string.Join(
-                    OpenIddictConstants.Separators.Space,
-                    descriptor.PostLogoutRedirectUris.Select(uri => uri.OriginalString));
-            }
-
-            if (descriptor.RedirectUris.Count != 0)
-            {
-                application.RedirectUris = string.Join(
-                    OpenIddictConstants.Separators.Space,
-                    descriptor.RedirectUris.Select(uri => uri.OriginalString));
-            }
-
-            return Task.CompletedTask;
         }
     }
 }

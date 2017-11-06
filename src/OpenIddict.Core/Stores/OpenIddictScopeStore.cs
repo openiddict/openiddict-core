@@ -61,16 +61,6 @@ namespace OpenIddict.Core
         public abstract Task<TScope> CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Creates a new scope.
-        /// </summary>
-        /// <param name="descriptor">The scope descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
-        /// </returns>
-        public abstract Task<TScope> CreateAsync([NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Removes an existing scope.
         /// </summary>
         /// <param name="scope">The scope to delete.</param>
@@ -91,6 +81,54 @@ namespace OpenIddict.Core
         /// whose result returns the first element returned when executing the query.
         /// </returns>
         public abstract Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the description associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the description associated with the specified scope.
+        /// </returns>
+        public virtual Task<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Task.FromResult(scope.Description);
+        }
+
+        /// <summary>
+        /// Retrieves the name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the name associated with the specified scope.
+        /// </returns>
+        public virtual Task<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Task.FromResult(scope.Name);
+        }
+
+        /// <summary>
+        /// Instantiates a new scope.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the instantiated scope, that can be persisted in the database.
+        /// </returns>
+        public virtual Task<TScope> InstantiateAsync(CancellationToken cancellationToken) => Task.FromResult(new TScope());
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
@@ -135,6 +173,48 @@ namespace OpenIddict.Core
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
         public abstract Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the description associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="description">The description associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetDescriptionAsync([NotNull] TScope scope, [CanBeNull] string description, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            scope.Description = description;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="name">The name associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            scope.Name = name;
+
+            return Task.CompletedTask;
+        }
 
         /// <summary>
         /// Updates an existing scope.

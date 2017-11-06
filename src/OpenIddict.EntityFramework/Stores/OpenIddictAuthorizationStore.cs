@@ -135,27 +135,6 @@ namespace OpenIddict.EntityFramework
         }
 
         /// <summary>
-        /// Creates a new authorization.
-        /// </summary>
-        /// <param name="descriptor">The authorization descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
-        /// </returns>
-        public override async Task<TAuthorization> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            var authorization = new TAuthorization();
-
-            await BindAsync(authorization, descriptor, cancellationToken);
-            return await CreateAsync(authorization, cancellationToken);
-        }
-
-        /// <summary>
         /// Removes an existing authorization.
         /// </summary>
         /// <param name="authorization">The authorization to delete.</param>
@@ -344,49 +323,6 @@ namespace OpenIddict.EntityFramework
             Context.Entry(authorization).State = EntityState.Modified;
 
             return Context.SaveChangesAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// Sets the authorization properties based on the specified descriptor.
-        /// </summary>
-        /// <param name="authorization">The authorization to update.</param>
-        /// <param name="descriptor">The authorization descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task BindAsync([NotNull] TAuthorization authorization, [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (authorization == null)
-            {
-                throw new ArgumentNullException(nameof(authorization));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            authorization.Status = descriptor.Status;
-            authorization.Subject = descriptor.Subject;
-            authorization.Type = descriptor.Type;
-
-            if (descriptor.Scopes.Count != 0)
-            {
-                authorization.Scopes = string.Join(OpenIddictConstants.Separators.Space, descriptor.Scopes);
-            }
-
-            // Bind the authorization to the specified application, if applicable.
-            if (!string.IsNullOrEmpty(descriptor.ApplicationId))
-            {
-                var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(descriptor.ApplicationId));
-                if (application == null)
-                {
-                    throw new InvalidOperationException("The application associated with the authorization cannot be found.");
-                }
-
-                authorization.Application = application;
-            }
         }
     }
 }

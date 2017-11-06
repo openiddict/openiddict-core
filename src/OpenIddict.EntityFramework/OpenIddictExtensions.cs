@@ -208,8 +208,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Entity<TApplication>()
                    .HasMany(application => application.Tokens)
                    .WithOptional(token => token.Application)
-                   .Map(association => association.MapKey("ApplicationId"))
-                   .WillCascadeOnDelete();
+                   .Map(association => association.MapKey("ApplicationId"));
 
             builder.Entity<TApplication>()
                    .ToTable("OpenIddictApplications");
@@ -237,8 +236,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Entity<TAuthorization>()
                    .HasMany(application => application.Tokens)
                    .WithOptional(token => token.Authorization)
-                   .Map(association => association.MapKey("AuthorizationId"))
-                   .WillCascadeOnDelete();
+                   .Map(association => association.MapKey("AuthorizationId"));
 
             builder.Entity<TAuthorization>()
                    .ToTable("OpenIddictAuthorizations");

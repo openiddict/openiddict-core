@@ -129,6 +129,7 @@ namespace OpenIddict.Core
                                                     "a confidential or hybrid application.");
             }
 
+            // If a client secret was provided, obfuscate it.
             if (!string.IsNullOrEmpty(secret))
             {
                 secret = await ObfuscateClientSecretAsync(secret, cancellationToken);
@@ -151,7 +152,7 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Creates a new application.
+        /// Creates a new application based on the specified descriptor.
         /// Note: the default implementation automatically hashes the client
         /// secret before storing it in the database, for security reasons.
         /// </summary>
@@ -168,43 +169,22 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            // If no client type was specified, assume it's a
-            // public application if no secret was provided.
-            if (string.IsNullOrEmpty(descriptor.Type))
+            var application = await Store.InstantiateAsync(cancellationToken);
+            if (application == null)
             {
-                descriptor.Type = string.IsNullOrEmpty(descriptor.ClientSecret) ?
-                    OpenIddictConstants.ClientTypes.Public :
-                    OpenIddictConstants.ClientTypes.Confidential;
+                throw new InvalidOperationException("An error occurred while trying to create a new application");
             }
 
-            // If the client is not a public application, throw an
-            // exception as the client secret is required in this case.
-            if (string.IsNullOrEmpty(descriptor.ClientSecret) &&
-               !string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+            await PopulateAsync(application, descriptor, cancellationToken);
+
+            var secret = await Store.GetClientSecretAsync(application, cancellationToken);
+            if (!string.IsNullOrEmpty(secret))
             {
-                throw new InvalidOperationException("A client secret must be provided when creating " +
-                                                    "a confidential or hybrid application.");
+                await Store.SetClientSecretAsync(application, /* secret: */ null, cancellationToken);
+                return await CreateAsync(application, secret, cancellationToken);
             }
 
-            // Obfuscate the provided client secret.
-            if (!string.IsNullOrEmpty(descriptor.ClientSecret))
-            {
-                descriptor.ClientSecret = await ObfuscateClientSecretAsync(descriptor.ClientSecret, cancellationToken);
-            }
-
-            await ValidateAsync(descriptor, cancellationToken);
-
-            try
-            {
-                return await Store.CreateAsync(descriptor, cancellationToken);
-            }
-
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to create a new application.");
-
-                throw;
-            }
+            return await CreateAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -585,6 +565,83 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Updates an existing application.
+        /// </summary>
+        /// <param name="application">The application to update.</param>
+        /// <param name="operation">The delegate used to update the application based on the given descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task UpdateAsync([NotNull] TApplication application,
+            [NotNull] Func<OpenIddictApplicationDescriptor, Task> operation, CancellationToken cancellationToken)
+        {
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
+
+            // Store the original client secret for later comparison.
+            var secret = await Store.GetClientSecretAsync(application, cancellationToken);
+
+            var descriptor = new OpenIddictApplicationDescriptor
+            {
+                ClientId = await Store.GetClientIdAsync(application, cancellationToken),
+                ClientSecret = secret,
+                DisplayName = await Store.GetDisplayNameAsync(application, cancellationToken),
+                Type = await Store.GetClientTypeAsync(application, cancellationToken)
+            };
+
+            foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+            {
+                // Ensure the address is not null or empty.
+                if (string.IsNullOrEmpty(address))
+                {
+                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                }
+
+                // Ensure the address is a valid absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                {
+                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                }
+
+                descriptor.PostLogoutRedirectUris.Add(uri);
+            }
+
+            foreach (var address in await Store.GetRedirectUrisAsync(application, cancellationToken))
+            {
+                // Ensure the address is not null or empty.
+                if (string.IsNullOrEmpty(address))
+                {
+                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                }
+
+                // Ensure the address is a valid absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                {
+                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                }
+
+                descriptor.RedirectUris.Add(uri);
+            }
+
+            await operation(descriptor);
+            await PopulateAsync(application, descriptor, cancellationToken);
+
+            // If the client secret was updated, re-obfuscate it before persisting the changes.
+            var comparand = await Store.GetClientSecretAsync(application, cancellationToken);
+            if (!string.Equals(secret, comparand, StringComparison.Ordinal))
+            {
+                await UpdateAsync(application, comparand, cancellationToken);
+
+                return;
+            }
+
+            await UpdateAsync(application, cancellationToken);
+        }
+
+        /// <summary>
         /// Validates the client_secret associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -639,8 +696,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns a boolean indicating whether the post_logout_redirect_uri was valid.
         /// </returns>
-        public virtual async Task<bool> ValidatePostLogoutRedirectUriAsync(
-            [NotNull] string address, CancellationToken cancellationToken)
+        public virtual async Task<bool> ValidatePostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -707,6 +763,38 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Populates the application using the specified descriptor.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        protected virtual async Task PopulateAsync([NotNull] TApplication application,
+            [NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            await Store.SetClientIdAsync(application, descriptor.ClientId, cancellationToken);
+            await Store.SetClientSecretAsync(application, descriptor.ClientSecret, cancellationToken);
+            await Store.SetClientTypeAsync(application, descriptor.Type, cancellationToken);
+            await Store.SetDisplayNameAsync(application, descriptor.DisplayName, cancellationToken);
+            await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
+                descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
+            await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
+                descriptor.RedirectUris.Select(address => address.OriginalString)), cancellationToken);
+        }
+
+        /// <summary>
         /// Validates the application to ensure it's in a consistent state.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -716,111 +804,55 @@ namespace OpenIddict.Core
         /// </returns>
         protected virtual async Task ValidateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
-            var descriptor = new OpenIddictApplicationDescriptor
+            if (string.IsNullOrEmpty(await Store.GetClientIdAsync(application, cancellationToken)))
             {
-                ClientId = await Store.GetClientIdAsync(application, cancellationToken),
-                ClientSecret = await Store.GetClientSecretAsync(application, cancellationToken),
-                DisplayName = await Store.GetDisplayNameAsync(application, cancellationToken),
-                Type = await Store.GetClientTypeAsync(application, cancellationToken)
-            };
-
-            foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
-            {
-                // Ensure the address is not null or empty.
-                if (string.IsNullOrEmpty(address))
-                {
-                    throw new ArgumentException("Callback URLs cannot be null or empty.");
-                }
-
-                // Ensure the address is a valid absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
-                {
-                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
-                }
-
-                descriptor.PostLogoutRedirectUris.Add(uri);
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(application));
             }
 
-            foreach (var address in await Store.GetRedirectUrisAsync(application, cancellationToken))
+            var type = await Store.GetClientTypeAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(type))
             {
-                // Ensure the address is not null or empty.
-                if (string.IsNullOrEmpty(address))
-                {
-                    throw new ArgumentException("Callback URLs cannot be null or empty.");
-                }
-
-                // Ensure the address is a valid absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
-                {
-                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
-                }
-
-                descriptor.RedirectUris.Add(uri);
-            }
-
-            await ValidateAsync(descriptor, cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the application descriptor to ensure it's in a consistent state.
-        /// </summary>
-        /// <param name="descriptor">The application descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual Task ValidateAsync([NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            if (string.IsNullOrEmpty(descriptor.ClientId))
-            {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(descriptor));
-            }
-
-            if (string.IsNullOrEmpty(descriptor.Type))
-            {
-                throw new ArgumentException("The client type cannot be null or empty.", nameof(descriptor));
+                throw new ArgumentException("The client type cannot be null or empty.", nameof(application));
             }
 
             // Ensure the application type is supported by the manager.
-            if (!string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Only 'confidential', 'hybrid' or 'public' applications are " +
-                                            "supported by the default application manager.", nameof(descriptor));
+                                            "supported by the default application manager.", nameof(application));
             }
 
             // Ensure a client secret was specified if the client is a confidential application.
-            if (string.IsNullOrEmpty(descriptor.ClientSecret) &&
-                string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+            var secret = await Store.GetClientSecretAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(secret) &&
+                string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("The client secret cannot be null or empty for a confidential application.", nameof(descriptor));
+                throw new ArgumentException("The client secret cannot be null or empty for a confidential application.", nameof(application));
             }
 
             // Ensure no client secret was specified if the client is a public application.
-            else if (!string.IsNullOrEmpty(descriptor.ClientSecret) &&
-                      string.Equals(descriptor.Type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+            else if (!string.IsNullOrEmpty(secret) &&
+                      string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("A client secret cannot be associated with a public application.", nameof(descriptor));
+                throw new ArgumentException("A client secret cannot be associated with a public application.", nameof(application));
             }
 
             // When callback URLs are specified, ensure they are valid and spec-compliant.
             // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
-            foreach (var uri in descriptor.PostLogoutRedirectUris.Concat(descriptor.RedirectUris))
+            foreach (var address in ImmutableArray.Create<string>()
+                .AddRange(await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+                .AddRange(await Store.GetRedirectUrisAsync(application, cancellationToken)))
             {
-                // Ensure the address is not null.
-                if (uri == null)
+                // Ensure the address is not null or empty.
+                if (string.IsNullOrEmpty(address))
                 {
-                    throw new ArgumentException("Callback URLs cannot be null.");
+                    throw new ArgumentException("Callback URLs cannot be null or empty.");
                 }
 
-                // Ensure the address is a valid and absolute URL.
-                if (!uri.IsAbsoluteUri || !uri.IsWellFormedOriginalString())
+                // Ensure the address is a valid absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
                 {
                     throw new ArgumentException("Callback URLs must be valid absolute URLs.");
                 }
@@ -831,8 +863,6 @@ namespace OpenIddict.Core
                     throw new ArgumentException("Callback URLs cannot contain a fragment.");
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         /// <summary>

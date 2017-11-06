@@ -115,22 +115,6 @@ namespace OpenIddict.EntityFramework
         }
 
         /// <summary>
-        /// Creates a new scope.
-        /// </summary>
-        /// <param name="descriptor">The scope descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
-        /// </returns>
-        public override async Task<TScope> CreateAsync([NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            var scope = new TScope();
-
-            await BindAsync(scope, descriptor, cancellationToken);
-            return await CreateAsync(scope, cancellationToken);
-        }
-
-        /// <summary>
         /// Removes an existing scope.
         /// </summary>
         /// <param name="scope">The scope to delete.</param>
@@ -214,33 +198,6 @@ namespace OpenIddict.EntityFramework
             Context.Entry(scope).State = EntityState.Modified;
 
             return Context.SaveChangesAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// Sets the scope properties based on the specified descriptor.
-        /// </summary>
-        /// <param name="scope">The scope to update.</param>
-        /// <param name="descriptor">The scope descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual Task BindAsync([NotNull] TScope scope, [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (scope == null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            scope.Description = descriptor.Description;
-            scope.Name = descriptor.Name;
-
-            return Task.CompletedTask;
         }
     }
 }

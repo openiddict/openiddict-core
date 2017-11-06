@@ -100,7 +100,7 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Creates a new scope.
+        /// Creates a new scope based on the specified descriptor.
         /// </summary>
         /// <param name="descriptor">The scope descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -114,17 +114,14 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            try
+            var scope = await Store.InstantiateAsync(cancellationToken);
+            if (scope == null)
             {
-                return await Store.CreateAsync(descriptor, cancellationToken);
+                throw new InvalidOperationException("An error occurred while trying to create a new scope.");
             }
 
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to create a new scope.");
-
-                throw;
-            }
+            await PopulateAsync(scope, descriptor, cancellationToken);
+            return await CreateAsync(scope, cancellationToken);
         }
 
         /// <summary>
@@ -236,6 +233,60 @@ namespace OpenIddict.Core
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Updates an existing scope.
+        /// </summary>
+        /// <param name="scope">The scope to update.</param>
+        /// <param name="operation">The delegate used to update the scope based on the given descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task UpdateAsync([NotNull] TScope scope,
+            [NotNull] Func<OpenIddictScopeDescriptor, Task> operation, CancellationToken cancellationToken)
+        {
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
+
+            var descriptor = new OpenIddictScopeDescriptor
+            {
+                Description = await Store.GetDescriptionAsync(scope, cancellationToken),
+                Name = await Store.GetNameAsync(scope, cancellationToken)
+            };
+
+            await operation(descriptor);
+            await PopulateAsync(scope, descriptor, cancellationToken);
+            await UpdateAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
+        /// Populates the scope using the specified descriptor.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        protected virtual async Task PopulateAsync([NotNull] TScope scope,
+            [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            await Store.SetDescriptionAsync(scope, descriptor.Description, cancellationToken);
+            await Store.SetNameAsync(scope, descriptor.Description, cancellationToken);
         }
     }
 }

@@ -108,7 +108,7 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Creates a new authorization.
+        /// Creates a new authorization based on the specified descriptor.
         /// </summary>
         /// <param name="descriptor">The authorization descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -122,26 +122,14 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            // If no type was explicitly specified, assume that
-            // the authorization is a permanent authorization.
-            if (string.IsNullOrEmpty(descriptor.Type))
+            var authorization = await Store.InstantiateAsync(cancellationToken);
+            if (authorization == null)
             {
-                descriptor.Type = OpenIddictConstants.AuthorizationTypes.Permanent;
+                throw new InvalidOperationException("An error occurred while trying to create a new authorization.");
             }
 
-            await ValidateAsync(descriptor, cancellationToken);
-
-            try
-            {
-                return await Store.CreateAsync(descriptor, cancellationToken);
-            }
-
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to create a new authorization.");
-
-                throw;
-            }
+            await PopulateAsync(authorization, descriptor, cancellationToken);
+            return await CreateAsync(authorization, cancellationToken);
         }
 
         /// <summary>
@@ -462,6 +450,70 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Updates an existing authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization to update.</param>
+        /// <param name="operation">The delegate used to update the authorization based on the given descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task UpdateAsync([NotNull] TAuthorization authorization,
+            [NotNull] Func<OpenIddictAuthorizationDescriptor, Task> operation, CancellationToken cancellationToken)
+        {
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
+
+            var descriptor = new OpenIddictAuthorizationDescriptor
+            {
+                ApplicationId = await Store.GetApplicationIdAsync(authorization, cancellationToken),
+                Status = await Store.GetStatusAsync(authorization, cancellationToken),
+                Subject = await Store.GetSubjectAsync(authorization, cancellationToken),
+                Type = await Store.GetTypeAsync(authorization, cancellationToken)
+            };
+
+            foreach (var scope in await Store.GetScopesAsync(authorization, cancellationToken))
+            {
+                descriptor.Scopes.Add(scope);
+            }
+
+            await operation(descriptor);
+            await PopulateAsync(authorization, descriptor, cancellationToken);
+            await UpdateAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Populates the authorization using the specified descriptor.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        protected virtual async Task PopulateAsync([NotNull] TAuthorization authorization,
+            [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            await Store.SetApplicationIdAsync(authorization, descriptor.ApplicationId, cancellationToken);
+            await Store.SetScopesAsync(authorization, ImmutableArray.CreateRange(descriptor.Scopes), cancellationToken);
+            await Store.SetStatusAsync(authorization, descriptor.Status, cancellationToken);
+            await Store.SetSubjectAsync(authorization, descriptor.Subject, cancellationToken);
+            await Store.SetTypeAsync(authorization, descriptor.Type, cancellationToken);
+        }
+
+        /// <summary>
         /// Validates the authorization to ensure it's in a consistent state.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -476,67 +528,41 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            var descriptor = new OpenIddictAuthorizationDescriptor
+            var type = await Store.GetTypeAsync(authorization, cancellationToken);
+            if (string.IsNullOrEmpty(type))
             {
-                Status = await Store.GetStatusAsync(authorization, cancellationToken),
-                Subject = await Store.GetSubjectAsync(authorization, cancellationToken),
-                Type = await Store.GetTypeAsync(authorization, cancellationToken)
-            };
-
-            await ValidateAsync(descriptor, cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the authorization descriptor to ensure it's in a consistent state.
-        /// </summary>
-        /// <param name="descriptor">The authorization descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual Task ValidateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
+                throw new ArgumentException("The authorization type cannot be null or empty.", nameof(authorization));
             }
 
-            if (string.IsNullOrEmpty(descriptor.Type))
+            if (!string.Equals(type, OpenIddictConstants.AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(type, OpenIddictConstants.AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("The authorization type cannot be null or empty.", nameof(descriptor));
+                throw new ArgumentException("The specified authorization type is not supported by the default token manager.", nameof(authorization));
             }
 
-            if (!string.Equals(descriptor.Type, OpenIddictConstants.AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(descriptor.Type, OpenIddictConstants.AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
             {
-                throw new ArgumentException("The specified authorization type is not supported by the default token manager.");
+                throw new ArgumentException("The status cannot be null or empty.", nameof(authorization));
             }
 
-            if (string.IsNullOrEmpty(descriptor.Status))
+            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(authorization, cancellationToken)))
             {
-                throw new ArgumentException("The status cannot be null or empty.");
-            }
-
-            if (string.IsNullOrEmpty(descriptor.Subject))
-            {
-                throw new ArgumentException("The subject cannot be null or empty.");
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(authorization));
             }
 
             // Ensure that the scopes are not null or empty and do not contain spaces.
-            foreach (var scope in descriptor.Scopes)
+            foreach (var scope in await Store.GetScopesAsync(authorization, cancellationToken))
             {
                 if (string.IsNullOrEmpty(scope))
                 {
-                    throw new ArgumentException("Scopes cannot be null or empty.", nameof(descriptor));
+                    throw new ArgumentException("Scopes cannot be null or empty.", nameof(authorization));
                 }
 
                 if (scope.Contains(OpenIddictConstants.Separators.Space))
                 {
-                    throw new ArgumentException("Scopes cannot contain spaces.", nameof(descriptor));
+                    throw new ArgumentException("Scopes cannot contain spaces.", nameof(authorization));
                 }
             }
-
-            return Task.CompletedTask;
         }
     }
 }

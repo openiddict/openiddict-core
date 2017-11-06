@@ -53,16 +53,6 @@ namespace OpenIddict.Core
         Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Creates a new application.
-        /// </summary>
-        /// <param name="descriptor">The application descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
-        /// </returns>
-        Task<TApplication> CreateAsync([NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Removes an existing application.
         /// </summary>
         /// <param name="application">The application to delete.</param>
@@ -208,6 +198,16 @@ namespace OpenIddict.Core
         Task<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Instantiates a new application.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
+        /// returns the instantiated application, that can be persisted in the database.
+        /// </returns>
+        Task<TApplication> InstantiateAsync(CancellationToken cancellationToken);
+
+        /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <param name="count">The number of results to return.</param>
@@ -232,6 +232,17 @@ namespace OpenIddict.Core
         Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Sets the client identifier associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="identifier">The client identifier associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetClientIdAsync([NotNull] TApplication application, [CanBeNull] string identifier, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Sets the client secret associated with an application.
         /// Note: depending on the manager used to create the application,
         /// the client secret may be hashed for security reasons.
@@ -253,7 +264,18 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task SetClientTypeAsync([NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken);
+        Task SetClientTypeAsync([NotNull] TApplication application, [CanBeNull] string type, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the display name associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="name">The display name associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetDisplayNameAsync([NotNull] TApplication application, [CanBeNull] string name, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the logout callback addresses associated with an application.
