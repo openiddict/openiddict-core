@@ -371,8 +371,17 @@ namespace OpenIddict.EntityFrameworkCore
         /// </returns>
         public override Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
 
             Context.Attach(authorization);
+
+            // Generate a new concurrency token and attach it
+            // to the authorization before persisting the changes.
+            authorization.ConcurrencyToken = Guid.NewGuid().ToString();
+
             Context.Update(authorization);
 
             return Context.SaveChangesAsync(cancellationToken);

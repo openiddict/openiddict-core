@@ -39,6 +39,11 @@ namespace OpenIddict.Models
         public virtual TApplication Application { get; set; }
 
         /// <summary>
+        /// Gets or sets the concurrency token.
+        /// </summary>
+        public virtual string ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
         /// Gets or sets the unique identifier
         /// associated with the current authorization.
         /// </summary>
@@ -59,12 +64,6 @@ namespace OpenIddict.Models
         /// Gets or sets the subject associated with the current authorization.
         /// </summary>
         public virtual string Subject { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timestamp associated with the current
-        /// authorization, which is used as a concurrency token.
-        /// </summary>
-        public virtual byte[] Timestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the list of tokens

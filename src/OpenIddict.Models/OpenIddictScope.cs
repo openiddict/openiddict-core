@@ -26,10 +26,9 @@ namespace OpenIddict.Models
     public class OpenIddictScope<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
-        /// Gets or sets the timestamp associated with the
-        /// current scope, which is used as a concurrency token.
+        /// Gets or sets the concurrency token.
         /// </summary>
-        public virtual byte[] Timestamp { get; set; }
+        public virtual string ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the public description

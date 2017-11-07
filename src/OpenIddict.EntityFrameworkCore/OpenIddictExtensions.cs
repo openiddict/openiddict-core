@@ -223,15 +223,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 entity.HasKey(application => application.Id);
 
                 entity.HasIndex(application => application.ClientId)
-                      .IsUnique(unique: true);
+                      .IsUnique();
 
                 entity.Property(application => application.ClientId)
-                      .IsRequired(required: true);
+                      .IsRequired();
 
-                entity.Property(application => application.Timestamp)
-                      .ValueGeneratedOnAddOrUpdate()
-                      .IsConcurrencyToken()
-                      .IsRowVersion();
+                entity.Property(application => application.ConcurrencyToken)
+                      .IsConcurrencyToken();
 
                 entity.Property(application => application.Type)
                       .IsRequired();
@@ -255,16 +253,14 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 entity.HasKey(authorization => authorization.Id);
 
+                entity.Property(authorization => authorization.ConcurrencyToken)
+                      .IsConcurrencyToken();
+
                 entity.Property(authorization => authorization.Status)
                       .IsRequired();
 
                 entity.Property(authorization => authorization.Subject)
                       .IsRequired();
-
-                entity.Property(authorization => authorization.Timestamp)
-                      .ValueGeneratedOnAddOrUpdate()
-                      .IsConcurrencyToken()
-                      .IsRowVersion();
 
                 entity.Property(authorization => authorization.Type)
                       .IsRequired();
@@ -283,10 +279,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 entity.HasKey(scope => scope.Id);
 
-                entity.Property(scope => scope.Timestamp)
-                      .ValueGeneratedOnAddOrUpdate()
-                      .IsConcurrencyToken()
-                      .IsRowVersion();
+                entity.Property(scope => scope.ConcurrencyToken)
+                      .IsConcurrencyToken();
 
                 entity.Property(scope => scope.Name)
                       .IsRequired();
@@ -300,15 +294,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 entity.HasKey(token => token.Id);
 
                 entity.HasIndex(token => token.Hash)
-                      .IsUnique(unique: true);
+                      .IsUnique();
+
+                entity.Property(token => token.ConcurrencyToken)
+                      .IsConcurrencyToken();
 
                 entity.Property(token => token.Subject)
                       .IsRequired();
-
-                entity.Property(token => token.Timestamp)
-                      .ValueGeneratedOnAddOrUpdate()
-                      .IsConcurrencyToken()
-                      .IsRowVersion();
 
                 entity.Property(token => token.Type)
                       .IsRequired();

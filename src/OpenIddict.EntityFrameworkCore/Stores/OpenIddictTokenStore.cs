@@ -463,6 +463,11 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             Context.Attach(token);
+
+            // Generate a new concurrency token and attach it
+            // to the token before persisting the changes.
+            token.ConcurrencyToken = Guid.NewGuid().ToString();
+
             Context.Update(token);
 
             return Context.SaveChangesAsync(cancellationToken);

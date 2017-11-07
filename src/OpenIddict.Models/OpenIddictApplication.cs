@@ -52,6 +52,11 @@ namespace OpenIddict.Models
         public virtual string ClientSecret { get; set; }
 
         /// <summary>
+        /// Gets or sets the concurrency token.
+        /// </summary>
+        public virtual string ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
+
+        /// <summary>
         /// Gets or sets the display name
         /// associated with the current application.
         /// </summary>
@@ -76,12 +81,6 @@ namespace OpenIddict.Models
         /// stored as a unique space-separated string.
         /// </summary>
         public virtual string RedirectUris { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timestamp associated with the current
-        /// application, which is used as a concurrency token.
-        /// </summary>
-        public virtual byte[] Timestamp { get; set; }
 
         /// <summary>
         /// Gets the list of the tokens associated with this application.
