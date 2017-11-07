@@ -193,10 +193,8 @@ namespace Microsoft.Extensions.DependencyInjection
                    .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 
             builder.Entity<TApplication>()
-                   .Property(application => application.Timestamp)
-                   .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed)
-                   .IsConcurrencyToken()
-                   .IsRowVersion();
+                   .Property(application => application.ConcurrencyToken)
+                   .IsConcurrencyToken();
 
             builder.Entity<TApplication>()
                    .Property(application => application.Type)
@@ -221,18 +219,16 @@ namespace Microsoft.Extensions.DependencyInjection
                    .HasKey(authorization => authorization.Id);
 
             builder.Entity<TAuthorization>()
+                   .Property(authorization => authorization.ConcurrencyToken)
+                   .IsConcurrencyToken();
+
+            builder.Entity<TAuthorization>()
                    .Property(authorization => authorization.Status)
                    .IsRequired();
 
             builder.Entity<TAuthorization>()
                    .Property(authorization => authorization.Subject)
                    .IsRequired();
-
-            builder.Entity<TAuthorization>()
-                   .Property(authorization => authorization.Timestamp)
-                   .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed)
-                   .IsConcurrencyToken()
-                   .IsRowVersion();
 
             builder.Entity<TAuthorization>()
                    .Property(authorization => authorization.Type)
@@ -252,14 +248,12 @@ namespace Microsoft.Extensions.DependencyInjection
                    .HasKey(scope => scope.Id);
 
             builder.Entity<TScope>()
-                   .Property(scope => scope.Name)
-                   .IsRequired();
+                   .Property(scope => scope.ConcurrencyToken)
+                   .IsConcurrencyToken();
 
             builder.Entity<TScope>()
-                   .Property(scope => scope.Timestamp)
-                   .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed)
-                   .IsConcurrencyToken()
-                   .IsRowVersion();
+                   .Property(scope => scope.Name)
+                   .IsRequired();
 
             builder.Entity<TScope>()
                    .ToTable("OpenIddictScopes");
@@ -269,6 +263,10 @@ namespace Microsoft.Extensions.DependencyInjection
                    .HasKey(token => token.Id);
 
             builder.Entity<TToken>()
+                   .Property(token => token.ConcurrencyToken)
+                   .IsConcurrencyToken();
+
+            builder.Entity<TToken>()
                    .Property(token => token.Hash)
                    .HasMaxLength(450)
                    .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
@@ -276,12 +274,6 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Entity<TToken>()
                    .Property(token => token.Subject)
                    .IsRequired();
-
-            builder.Entity<TToken>()
-                   .Property(token => token.Timestamp)
-                   .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed)
-                   .IsConcurrencyToken()
-                   .IsRowVersion();
 
             builder.Entity<TToken>()
                    .Property(token => token.Type)

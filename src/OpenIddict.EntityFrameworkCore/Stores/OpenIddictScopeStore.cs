@@ -206,7 +206,12 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             Context.Attach(scope);
-            Context.Entry(scope).State = EntityState.Modified;
+
+            // Generate a new concurrency token and attach it
+            // to the scope before persisting the changes.
+            scope.ConcurrencyToken = Guid.NewGuid().ToString();
+
+            Context.Update(scope);
 
             return Context.SaveChangesAsync(cancellationToken);
         }
