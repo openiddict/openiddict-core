@@ -107,14 +107,14 @@ namespace OpenIddict.Core
         Task<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Executes the specified query.
+        /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the single element returned when executing the specified query.
+        /// whose result returns the first element returned when executing the query.
         /// </returns>
         Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
@@ -163,7 +163,7 @@ namespace OpenIddict.Core
         Task<string> GetTypeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Executes the specified query.
+        /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
@@ -175,7 +175,7 @@ namespace OpenIddict.Core
         Task<ImmutableArray<TAuthorization>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Executes the specified query.
+        /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
