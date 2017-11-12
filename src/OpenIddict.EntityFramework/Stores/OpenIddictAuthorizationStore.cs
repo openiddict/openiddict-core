@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data.Entity;
 using System.Linq;
@@ -108,7 +109,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query.Invoke(Authorizations).LongCountAsync();
+            return query(Authorizations).LongCountAsync();
         }
 
         /// <summary>
@@ -169,11 +170,11 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            Task<TToken[]> ListTokensAsync()
+            Task<List<TToken>> ListTokensAsync()
             {
                 return (from token in Tokens
                         where token.Application.Id.Equals(authorization.Id)
-                        select token).ToArrayAsync(cancellationToken);
+                        select token).ToListAsync(cancellationToken);
             }
 
             // Remove all the tokens associated with the application.
@@ -255,7 +256,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query.Invoke(Authorizations).SingleOrDefaultAsync(cancellationToken);
+            return query(Authorizations).SingleOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -275,7 +276,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.Create(await query.Invoke(Authorizations).ToArrayAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Authorizations).ToListAsync(cancellationToken));
         }
 
         /// <summary>
