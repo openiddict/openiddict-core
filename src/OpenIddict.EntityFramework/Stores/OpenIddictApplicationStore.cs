@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data.Entity;
 using System.Linq;
@@ -108,7 +109,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query.Invoke(Applications).LongCountAsync();
+            return query(Applications).LongCountAsync();
         }
 
         /// <summary>
@@ -169,18 +170,18 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(application));
             }
 
-            Task<TAuthorization[]> ListAuthorizationsAsync()
+            Task<List<TAuthorization>> ListAuthorizationsAsync()
             {
                 return (from authorization in Authorizations.Include(authorization => authorization.Tokens)
                         where authorization.Application.Id.Equals(application.Id)
-                        select authorization).ToArrayAsync(cancellationToken);
+                        select authorization).ToListAsync(cancellationToken);
             }
 
-            Task<TToken[]> ListTokensAsync()
+            Task<List<TToken>> ListTokensAsync()
             {
                 return (from token in Tokens
                         where token.Application.Id.Equals(application.Id)
-                        select token).ToArrayAsync(cancellationToken);
+                        select token).ToListAsync(cancellationToken);
             }
 
             // Remove all the authorizations associated with the application and
@@ -242,7 +243,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query.Invoke(Applications).SingleOrDefaultAsync(cancellationToken);
+            return query(Applications).SingleOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -262,7 +263,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.Create(await query.Invoke(Applications).ToArrayAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Applications).ToListAsync(cancellationToken));
         }
 
         /// <summary>

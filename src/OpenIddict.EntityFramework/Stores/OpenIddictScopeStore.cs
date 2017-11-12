@@ -89,7 +89,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query.Invoke(Scopes).LongCountAsync();
+            return query(Scopes).LongCountAsync();
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query.Invoke(Scopes).SingleOrDefaultAsync(cancellationToken);
+            return query(Scopes).SingleOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -187,7 +187,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.Create(await query.Invoke(Scopes).ToArrayAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Scopes).ToListAsync(cancellationToken));
         }
 
         /// <summary>

@@ -108,7 +108,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query.Invoke(Tokens).LongCountAsync();
+            return query(Tokens).LongCountAsync();
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace OpenIddict.EntityFrameworkCore
                        select token;
             }
 
-            return ImmutableArray.Create(await Query(Applications, Tokens).ToArrayAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await Query(Applications, Tokens).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -237,7 +237,7 @@ namespace OpenIddict.EntityFrameworkCore
                        select token;
             }
 
-            return ImmutableArray.Create(await Query(Authorizations, Tokens).ToArrayAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await Query(Authorizations, Tokens).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query.Invoke(Tokens).SingleOrDefaultAsync(cancellationToken);
+            return query(Tokens).SingleOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -360,7 +360,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.Create(await query.Invoke(Tokens).ToArrayAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Tokens).ToListAsync(cancellationToken));
         }
 
         /// <summary>
