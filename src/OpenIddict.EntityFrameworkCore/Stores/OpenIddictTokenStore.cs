@@ -176,7 +176,7 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(identifier);
 
-                return from token in tokens
+                return from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
                        join application in applications on token.Application.Id equals application.Id
                        where application.Id.Equals(key)
                        select token;
@@ -210,7 +210,7 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(identifier);
 
-                return from token in tokens
+                return from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
                        join authorization in authorizations on token.Authorization.Id equals authorization.Id
                        where authorization.Id.Equals(key)
                        select token;
@@ -235,7 +235,17 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Tokens.FindAsync(new object[] { ConvertIdentifierFromString(identifier) }, cancellationToken);
+            var token = (from entry in Context.ChangeTracker.Entries<TToken>()
+                         where entry.Entity != null
+                         where entry.Entity.Id.Equals(ConvertIdentifierFromString(identifier))
+                         select entry.Entity).FirstOrDefault();
+
+            if (token != null)
+            {
+                return Task.FromResult(token);
+            }
+
+            return base.FindByIdAsync(identifier, cancellationToken);
         }
 
         /// <summary>
@@ -254,17 +264,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(token));
             }
 
-            // If the application is not attached to the token instance (which is expected
-            // if the token was retrieved using the default FindBy*Async APIs as they don't
-            // eagerly load the application from the database), try to load it manually.
+            // If the application is not attached to the token, try to load it manually.
             if (token.Application == null)
             {
-                return ConvertIdentifierToString(
-                    await Context.Entry(token)
-                        .Reference(entry => entry.Application)
-                        .Query()
-                        .Select(application => application.Id)
-                        .FirstOrDefaultAsync());
+                var reference = Context.Entry(token).Reference(entry => entry.Application);
+                if (reference.EntityEntry.State == EntityState.Detached)
+                {
+                    return null;
+                }
+
+                await reference.LoadAsync(cancellationToken);
+            }
+
+            if (token.Application == null)
+            {
+                return null;
             }
 
             return ConvertIdentifierToString(token.Application.Id);
@@ -287,7 +301,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Tokens).FirstOrDefaultAsync(cancellationToken);
+            return query(
+                Tokens.Include(token => token.Application)
+                      .Include(token => token.Authorization)).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -306,17 +322,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(token));
             }
 
-            // If the authorization is not attached to the token instance (which is expected
-            // if the token was retrieved using the default FindBy*Async APIs as they don't
-            // eagerly load the authorization from the database), try to load it manually.
+            // If the authorization is not attached to the token, try to load it manually.
             if (token.Authorization == null)
             {
-                return ConvertIdentifierToString(
-                    await Context.Entry(token)
-                        .Reference(entry => entry.Authorization)
-                        .Query()
-                        .Select(authorization => authorization.Id)
-                        .FirstOrDefaultAsync());
+                var reference = Context.Entry(token).Reference(entry => entry.Authorization);
+                if (reference.EntityEntry.State == EntityState.Detached)
+                {
+                    return null;
+                }
+
+                await reference.LoadAsync(cancellationToken);
+            }
+
+            if (token.Authorization == null)
+            {
+                return null;
             }
 
             return ConvertIdentifierToString(token.Authorization.Id);
@@ -339,7 +359,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(Tokens).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(
+                Tokens.Include(token => token.Application)
+                      .Include(token => token.Authorization)).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -371,15 +393,19 @@ namespace OpenIddict.EntityFrameworkCore
 
             else
             {
-                var key = await GetIdAsync(token, cancellationToken);
-
-                // Try to retrieve the application associated with the token.
-                // If none can be found, assume that no application is attached.
-                var application = await Applications.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
-                if (application != null)
+                // If the application is not attached to the token, try to load it manually.
+                if (token.Application == null)
                 {
-                    application.Tokens.Remove(token);
+                    var reference = Context.Entry(token).Reference(entry => entry.Application);
+                    if (reference.EntityEntry.State == EntityState.Detached)
+                    {
+                        return;
+                    }
+
+                    await reference.LoadAsync(cancellationToken);
                 }
+
+                token.Application = null;
             }
         }
 
@@ -412,15 +438,19 @@ namespace OpenIddict.EntityFrameworkCore
 
             else
             {
-                var key = await GetIdAsync(token, cancellationToken);
-
-                // Try to retrieve the authorization associated with the token.
-                // If none can be found, assume that no authorization is attached.
-                var authorization = await Authorizations.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
-                if (authorization != null)
+                // If the authorization is not attached to the token, try to load it manually.
+                if (token.Authorization == null)
                 {
-                    authorization.Tokens.Remove(token);
+                    var reference = Context.Entry(token).Reference(entry => entry.Authorization);
+                    if (reference.EntityEntry.State == EntityState.Detached)
+                    {
+                        return;
+                    }
+
+                    await reference.LoadAsync(cancellationToken);
                 }
+
+                token.Authorization = null;
             }
         }
 

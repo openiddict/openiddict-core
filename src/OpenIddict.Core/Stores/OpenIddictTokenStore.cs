@@ -243,12 +243,15 @@ namespace OpenIddict.Core
                 return ConvertIdentifierToString(token.Application.Id);
             }
 
-            var key = await GetAsync(tokens =>
-                from element in tokens
-                where element.Id.Equals(token.Id)
-                select element.Application.Id, cancellationToken);
+            IQueryable<TKey> Query(IQueryable<TToken> tokens)
+            {
+                return from element in tokens
+                       where element.Id.Equals(token.Id)
+                       where element.Application != null
+                       select element.Application.Id;
+            }
 
-            return ConvertIdentifierToString(key);
+            return ConvertIdentifierToString(await GetAsync(Query, cancellationToken));
         }
 
         /// <summary>
@@ -272,12 +275,15 @@ namespace OpenIddict.Core
                 return ConvertIdentifierToString(token.Authorization.Id);
             }
 
-            var key = await GetAsync(tokens =>
-                from element in tokens
-                where element.Id.Equals(token.Id)
-                select element.Authorization.Id, cancellationToken);
+            IQueryable<TKey> Query(IQueryable<TToken> tokens)
+            {
+                return from element in tokens
+                       where element.Id.Equals(token.Id)
+                       where element.Authorization != null
+                       select element.Authorization.Id;
+            }
 
-            return ConvertIdentifierToString(key);
+            return ConvertIdentifierToString(await GetAsync(Query, cancellationToken));
         }
 
         /// <summary>

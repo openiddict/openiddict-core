@@ -160,12 +160,15 @@ namespace OpenIddict.Core
                 return ConvertIdentifierToString(authorization.Application.Id);
             }
 
-            var key = await GetAsync(authorizations =>
-                from element in authorizations
-                where element.Id.Equals(authorization.Id)
-                select element.Application.Id, cancellationToken);
+            IQueryable<TKey> Query(IQueryable<TAuthorization> authorizations)
+            {
+                return from element in authorizations
+                       where element.Id.Equals(authorization.Id)
+                       where element.Application != null
+                       select element.Application.Id;
+            }
 
-            return ConvertIdentifierToString(key);
+            return ConvertIdentifierToString(await GetAsync(Query, cancellationToken));
         }
 
         /// <summary>

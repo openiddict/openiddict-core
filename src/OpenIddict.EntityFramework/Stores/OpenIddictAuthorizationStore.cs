@@ -183,7 +183,17 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Authorizations.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
+            var authorization = (from entry in Context.ChangeTracker.Entries<TAuthorization>()
+                                 where entry.Entity != null
+                                 where entry.Entity.Id.Equals(ConvertIdentifierFromString(identifier))
+                                 select entry.Entity).FirstOrDefault();
+
+            if (authorization != null)
+            {
+                return Task.FromResult(authorization);
+            }
+
+            return base.FindByIdAsync(identifier, cancellationToken);
         }
 
         /// <summary>
@@ -202,17 +212,21 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            // If the application is not attached to the authorization instance (which is expected
-            // if the token was retrieved using the default FindBy*Async APIs as they don't
-            // eagerly load the application from the database), try to load it manually.
+            // If the application is not attached to the authorization, try to load it manually.
             if (authorization.Application == null)
             {
-                return ConvertIdentifierToString(
-                    await Context.Entry(authorization)
-                        .Reference(entry => entry.Application)
-                        .Query()
-                        .Select(application => application.Id)
-                        .FirstOrDefaultAsync());
+                var reference = Context.Entry(authorization).Reference(entry => entry.Application);
+                if (reference.EntityEntry.State == EntityState.Detached)
+                {
+                    return null;
+                }
+
+                await reference.LoadAsync(cancellationToken);
+            }
+
+            if (authorization.Application == null)
+            {
+                return null;
             }
 
             return ConvertIdentifierToString(authorization.Application.Id);
@@ -235,7 +249,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Authorizations).FirstOrDefaultAsync(cancellationToken);
+            return query(Authorizations.Include(authorization => authorization.Application)).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -255,7 +269,8 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(Authorizations).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(
+                Authorizations.Include(authorization => authorization.Application)).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -287,15 +302,19 @@ namespace OpenIddict.EntityFramework
 
             else
             {
-                var key = await GetIdAsync(authorization, cancellationToken);
-
-                // Try to retrieve the application associated with the authorization.
-                // If none can be found, assume that no application is attached.
-                var application = await Applications.FirstOrDefaultAsync(element => element.Authorizations.Any(t => t.Id.Equals(key)));
-                if (application != null)
+                // If the application is not attached to the authorization, try to load it manually.
+                if (authorization.Application == null)
                 {
-                    application.Authorizations.Remove(authorization);
+                    var reference = Context.Entry(authorization).Reference(entry => entry.Application);
+                    if (reference.EntityEntry.State == EntityState.Detached)
+                    {
+                        return;
+                    }
+
+                    await reference.LoadAsync(cancellationToken);
                 }
+
+                authorization.Application = null;
             }
         }
 
