@@ -134,27 +134,6 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Creates a new token.
-        /// </summary>
-        /// <param name="descriptor">The token descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
-        /// </returns>
-        public override async Task<TToken> CreateAsync([NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            var token = new TToken();
-
-            await BindAsync(token, descriptor, cancellationToken);
-            return await CreateAsync(token, cancellationToken);
-        }
-
-        /// <summary>
         /// Removes a token.
         /// </summary>
         /// <param name="token">The token to delete.</param>
@@ -197,7 +176,7 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(identifier);
 
-                return from token in tokens
+                return from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
                        join application in applications on token.Application.Id equals application.Id
                        where application.Id.Equals(key)
                        select token;
@@ -231,13 +210,42 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(identifier);
 
-                return from token in tokens
+                return from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
                        join authorization in authorizations on token.Authorization.Id equals authorization.Id
                        where authorization.Id.Equals(key)
                        select token;
             }
 
             return ImmutableArray.CreateRange(await Query(Authorizations, Tokens).ToListAsync(cancellationToken));
+        }
+
+        /// <summary>
+        /// Retrieves a token using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the token corresponding to the unique identifier.
+        /// </returns>
+        public override Task<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            var token = (from entry in Context.ChangeTracker.Entries<TToken>()
+                         where entry.Entity != null
+                         where entry.Entity.Id.Equals(ConvertIdentifierFromString(identifier))
+                         select entry.Entity).FirstOrDefault();
+
+            if (token != null)
+            {
+                return Task.FromResult(token);
+            }
+
+            return base.FindByIdAsync(identifier, cancellationToken);
         }
 
         /// <summary>
@@ -257,7 +265,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Tokens).FirstOrDefaultAsync(cancellationToken);
+            return query(
+                Tokens.Include(token => token.Application)
+                      .Include(token => token.Authorization)).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -277,7 +287,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(Tokens).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(
+                Tokens.Include(token => token.Application)
+                      .Include(token => token.Authorization)).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -390,64 +402,6 @@ namespace OpenIddict.EntityFrameworkCore
             Context.Update(token);
 
             return Context.SaveChangesAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// Sets the token properties based on the specified descriptor.
-        /// </summary>
-        /// <param name="token">The token to update.</param>
-        /// <param name="descriptor">The token descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task BindAsync([NotNull] TToken token, [NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            token.Ciphertext = descriptor.Ciphertext;
-            token.CreationDate = descriptor.CreationDate;
-            token.ExpirationDate = descriptor.ExpirationDate;
-            token.Hash = descriptor.Hash;
-            token.Status = descriptor.Status;
-            token.Subject = descriptor.Subject;
-            token.Type = descriptor.Type;
-
-            // Bind the token to the specified client application, if applicable.
-            if (!string.IsNullOrEmpty(descriptor.ApplicationId))
-            {
-                var key = ConvertIdentifierFromString(descriptor.ApplicationId);
-
-                var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
-                if (application == null)
-                {
-                    throw new InvalidOperationException("The application associated with the token cannot be found.");
-                }
-
-                token.Application = application;
-            }
-
-            // Bind the token to the specified authorization, if applicable.
-            if (!string.IsNullOrEmpty(descriptor.AuthorizationId))
-            {
-                var key = ConvertIdentifierFromString(descriptor.AuthorizationId);
-
-                var authorization = await Authorizations.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
-                if (authorization == null)
-                {
-                    throw new InvalidOperationException("The authorization associated with the token cannot be found.");
-                }
-
-                token.Authorization = authorization;
-            }
         }
     }
 }

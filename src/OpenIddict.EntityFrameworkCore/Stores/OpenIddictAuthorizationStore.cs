@@ -135,27 +135,6 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Creates a new authorization.
-        /// </summary>
-        /// <param name="descriptor">The authorization descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
-        /// </returns>
-        public override async Task<TAuthorization> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            var authorization = new TAuthorization();
-
-            await BindAsync(authorization, descriptor, cancellationToken);
-            return await CreateAsync(authorization, cancellationToken);
-        }
-
-        /// <summary>
         /// Removes an existing authorization.
         /// </summary>
         /// <param name="authorization">The authorization to delete.</param>
@@ -220,7 +199,7 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 var key = ConvertIdentifierFromString(client);
 
-                return from authorization in authorizations
+                return from authorization in authorizations.Include(authorization => authorization.Application)
                        where authorization.Subject == subject
                        join application in applications on authorization.Application.Id equals application.Id
                        where application.Id.Equals(key)
@@ -228,6 +207,35 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return ImmutableArray.CreateRange(await Query(Authorizations, Applications).ToListAsync(cancellationToken));
+        }
+
+        /// <summary>
+        /// Retrieves an authorization using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorization corresponding to the identifier.
+        /// </returns>
+        public override Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            var authorization = (from entry in Context.ChangeTracker.Entries<TAuthorization>()
+                                 where entry.Entity != null
+                                 where entry.Entity.Id.Equals(ConvertIdentifierFromString(identifier))
+                                 select entry.Entity).FirstOrDefault();
+
+            if (authorization != null)
+            {
+                return Task.FromResult(authorization);
+            }
+
+            return base.FindByIdAsync(identifier, cancellationToken);
         }
 
         /// <summary>
@@ -247,7 +255,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Authorizations).FirstOrDefaultAsync(cancellationToken);
+            return query(Authorizations.Include(authorization => authorization.Application)).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -267,7 +275,8 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(Authorizations).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(
+                Authorizations.Include(authorization => authorization.Application)).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -337,51 +346,6 @@ namespace OpenIddict.EntityFrameworkCore
             Context.Update(authorization);
 
             return Context.SaveChangesAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// Sets the authorization properties based on the specified descriptor.
-        /// </summary>
-        /// <param name="authorization">The authorization to update.</param>
-        /// <param name="descriptor">The authorization descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task BindAsync([NotNull] TAuthorization authorization, [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
-        {
-            if (authorization == null)
-            {
-                throw new ArgumentNullException(nameof(authorization));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            authorization.Status = descriptor.Status;
-            authorization.Subject = descriptor.Subject;
-            authorization.Type = descriptor.Type;
-
-            if (descriptor.Scopes.Count != 0)
-            {
-                authorization.Scopes = string.Join(OpenIddictConstants.Separators.Space, descriptor.Scopes);
-            }
-
-            // Bind the authorization to the specified application, if applicable.
-            if (!string.IsNullOrEmpty(descriptor.ApplicationId))
-            {
-                var key = ConvertIdentifierFromString(descriptor.ApplicationId);
-
-                var application = await Applications.SingleOrDefaultAsync(entity => entity.Id.Equals(key));
-                if (application == null)
-                {
-                    throw new InvalidOperationException("The application associated with the authorization cannot be found.");
-                }
-
-                authorization.Application = application;
-            }
         }
     }
 }

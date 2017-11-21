@@ -65,16 +65,6 @@ namespace OpenIddict.Core
         public abstract Task<TToken> CreateAsync([NotNull] TToken token, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Creates a new token.
-        /// </summary>
-        /// <param name="descriptor">The token descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
-        /// </returns>
-        public abstract Task<TToken> CreateAsync([NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Removes a token.
         /// </summary>
         /// <param name="token">The token to delete.</param>
@@ -167,7 +157,7 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Retrieves an token using its unique identifier.
+        /// Retrieves a token using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -253,12 +243,15 @@ namespace OpenIddict.Core
                 return ConvertIdentifierToString(token.Application.Id);
             }
 
-            var key = await GetAsync(tokens =>
-                from element in tokens
-                where element.Id.Equals(token.Id)
-                select element.Application.Id, cancellationToken);
+            IQueryable<TKey> Query(IQueryable<TToken> tokens)
+            {
+                return from element in tokens
+                       where element.Id.Equals(token.Id)
+                       where element.Application != null
+                       select element.Application.Id;
+            }
 
-            return ConvertIdentifierToString(key);
+            return ConvertIdentifierToString(await GetAsync(Query, cancellationToken));
         }
 
         /// <summary>
@@ -282,12 +275,15 @@ namespace OpenIddict.Core
                 return ConvertIdentifierToString(token.Authorization.Id);
             }
 
-            var key = await GetAsync(tokens =>
-                from element in tokens
-                where element.Id.Equals(token.Id)
-                select element.Authorization.Id, cancellationToken);
+            IQueryable<TKey> Query(IQueryable<TToken> tokens)
+            {
+                return from element in tokens
+                       where element.Id.Equals(token.Id)
+                       where element.Authorization != null
+                       select element.Authorization.Id;
+            }
 
-            return ConvertIdentifierToString(key);
+            return ConvertIdentifierToString(await GetAsync(Query, cancellationToken));
         }
 
         /// <summary>
@@ -443,6 +439,16 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Instantiates a new token.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the instantiated token, that can be persisted in the database.
+        /// </returns>
+        public virtual Task<TToken> InstantiateAsync(CancellationToken cancellationToken) => Task.FromResult(new TToken());
+
+        /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <param name="count">The number of results to return.</param>
@@ -527,7 +533,7 @@ namespace OpenIddict.Core
         /// Sets the authorization identifier associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
-        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="identifier">The unique identifier associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
@@ -538,7 +544,7 @@ namespace OpenIddict.Core
         /// Sets the application identifier associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
-        /// <param name="identifier">The unique identifier associated with the client application.</param>
+        /// <param name="identifier">The unique identifier associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
@@ -546,10 +552,53 @@ namespace OpenIddict.Core
         public abstract Task SetApplicationIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Sets the ciphertext associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="ciphertext">The ciphertext associated with the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetCiphertextAsync([NotNull] TToken token, [CanBeNull] string ciphertext, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            token.Ciphertext = ciphertext;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Sets the creation date associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="date">The creation date.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetCreationDateAsync([NotNull] TToken token,
+            [CanBeNull] DateTimeOffset? date, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            token.CreationDate = date;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
         /// Sets the expiration date associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
-        /// <param name="date">The date on which the token will no longer be considered valid.</param>
+        /// <param name="date">The expiration date.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
@@ -568,6 +617,27 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Sets the hash associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="hash">The hash associated with the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetHashAsync([NotNull] TToken token, [CanBeNull] string hash, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            token.Hash = hash;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
         /// Sets the status associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
@@ -576,14 +646,71 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task SetStatusAsync([NotNull] TToken token, [NotNull] string status, CancellationToken cancellationToken)
+        public virtual Task SetStatusAsync([NotNull] TToken token, [CanBeNull] string status, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+            }
+
             token.Status = status;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Sets the subject associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="subject">The subject associated with the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetSubjectAsync([NotNull] TToken token, [CanBeNull] string subject, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            token.Subject = subject;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Sets the token type associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="type">The token type associated with the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetTokenTypeAsync([NotNull] TToken token, [CanBeNull] string type, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The token type cannot be null or empty.", nameof(type));
+            }
+
+            token.Type = type;
 
             return Task.FromResult(0);
         }
