@@ -172,17 +172,14 @@ namespace OpenIddict.EntityFrameworkCore
             // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-            IQueryable<TToken> Query(IQueryable<TApplication> applications, IQueryable<TToken> tokens)
-            {
-                var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TToken> Query(IQueryable<TApplication> applications, IQueryable<TToken> tokens, TKey key)
+                => from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
+                   join application in applications on token.Application.Id equals application.Id
+                   where application.Id.Equals(key)
+                   select token;
 
-                return from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
-                       join application in applications on token.Application.Id equals application.Id
-                       where application.Id.Equals(key)
-                       select token;
-            }
-
-            return ImmutableArray.CreateRange(await Query(Applications, Tokens).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await Query(
+                Applications, Tokens, ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -206,17 +203,14 @@ namespace OpenIddict.EntityFrameworkCore
             // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-            IQueryable<TToken> Query(IQueryable<TAuthorization> authorizations, IQueryable<TToken> tokens)
-            {
-                var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TToken> Query(IQueryable<TAuthorization> authorizations, IQueryable<TToken> tokens, TKey key)
+                => from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
+                   join authorization in authorizations on token.Authorization.Id equals authorization.Id
+                   where authorization.Id.Equals(key)
+                   select token;
 
-                return from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
-                       join authorization in authorizations on token.Authorization.Id equals authorization.Id
-                       where authorization.Id.Equals(key)
-                       select token;
-            }
-
-            return ImmutableArray.CreateRange(await Query(Authorizations, Tokens).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await Query(
+                Authorizations, Tokens, ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -287,14 +281,18 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public override Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public override Task<TResult> GetAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -303,7 +301,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             return query(
                 Tokens.Include(token => token.Application)
-                      .Include(token => token.Authorization)).FirstOrDefaultAsync(cancellationToken);
+                      .Include(token => token.Authorization), state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -345,14 +343,18 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public override async Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public override async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -361,7 +363,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             return ImmutableArray.CreateRange(await query(
                 Tokens.Include(token => token.Application)
-                      .Include(token => token.Authorization)).ToListAsync(cancellationToken));
+                      .Include(token => token.Authorization), state).ToListAsync(cancellationToken));
         }
 
         /// <summary>

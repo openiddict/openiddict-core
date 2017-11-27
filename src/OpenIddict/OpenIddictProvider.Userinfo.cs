@@ -25,7 +25,7 @@ namespace OpenIddict
             // the user code to handle the userinfo request.
             context.SkipHandler();
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }

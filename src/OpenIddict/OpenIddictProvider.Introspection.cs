@@ -28,10 +28,10 @@ namespace OpenIddict
                     error: OpenIdConnectConstants.Errors.InvalidRequest,
                     description: "The specified HTTP method is not valid.");
 
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context)

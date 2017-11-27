@@ -1439,7 +1439,7 @@ namespace OpenIddict.Tests
                         }));
                     }
 
-                    return Task.FromResult(0);
+                    return Task.CompletedTask;
                 });
             });
 

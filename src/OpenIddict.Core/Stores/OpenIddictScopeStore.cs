@@ -73,14 +73,18 @@ namespace OpenIddict.Core
         /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public abstract Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<TResult> GetAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the description associated with a scope.
@@ -142,37 +146,41 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task<ImmutableArray<TScope>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            IQueryable<TScope> Query(IQueryable<TScope> scopes)
+            IQueryable<TScope> Query(IQueryable<TScope> scopes, int? skip, int? take)
             {
                 var query = scopes.OrderBy(scope => scope.Id).AsQueryable();
 
-                if (offset.HasValue)
+                if (skip.HasValue)
                 {
-                    query = query.Skip(offset.Value);
+                    query = query.Skip(skip.Value);
                 }
 
-                if (count.HasValue)
+                if (take.HasValue)
                 {
-                    query = query.Take(count.Value);
+                    query = query.Take(take.Value);
                 }
 
                 return query;
             }
 
-            return ListAsync(Query, cancellationToken);
+            return ListAsync((scopes, state) => Query(scopes, state.offset, state.count), (offset, count), cancellationToken);
         }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public abstract Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the description associated with a scope.

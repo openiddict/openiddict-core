@@ -4,6 +4,7 @@
   <Import Project="version.props" />
 
   <PropertyGroup>
+    <LangVersion>latest</LangVersion>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugSymbols>true</DebugSymbols>

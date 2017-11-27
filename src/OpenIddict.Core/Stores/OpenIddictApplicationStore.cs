@@ -90,16 +90,12 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
-            {
-                var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications, TKey key)
+                => from application in applications
+                   where application.Id.Equals(key)
+                   select application;
 
-                return from application in applications
-                       where application.Id.Equals(key)
-                       select application;
-            }
-
-            return GetAsync(Query, cancellationToken);
+            return GetAsync((applications, key) => Query(applications, key), ConvertIdentifierFromString(identifier), cancellationToken);
         }
 
         /// <summary>
@@ -118,14 +114,12 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
-            {
-                return from application in applications
-                       where application.ClientId == identifier
-                       select application;
-            }
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications, string id)
+                => from application in applications
+                   where application.ClientId == id
+                   select application;
 
-            return GetAsync(Query, cancellationToken);
+            return GetAsync((applications, id) => Query(applications, id), identifier, cancellationToken);
         }
 
         /// <summary>
@@ -147,14 +141,12 @@ namespace OpenIddict.Core
             // To optimize the efficiency of the query, only applications whose stringified
             // LogoutRedirectUris property contains the specified address are returned. Once the
             // applications are retrieved, the LogoutRedirectUri property is manually split.
-            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
-            {
-                return from application in applications
-                       where application.PostLogoutRedirectUris.Contains(address)
-                       select application;
-            }
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications, string uri)
+                => from application in applications
+                   where application.PostLogoutRedirectUris.Contains(uri)
+                   select application;
 
-            var candidates = await ListAsync(Query, cancellationToken);
+            var candidates = await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken);
             if (candidates.IsDefaultOrEmpty)
             {
                 return ImmutableArray.Create<TApplication>();
@@ -208,14 +200,12 @@ namespace OpenIddict.Core
             // To optimize the efficiency of the query, only applications whose stringified
             // RedirectUris property contains the specified address are returned. Once the
             // applications are retrieved, the RedirectUri property is manually split.
-            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
-            {
-                return from application in applications
-                       where application.RedirectUris.Contains(address)
-                       select application;
-            }
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications, string uri)
+                => from application in applications
+                   where application.RedirectUris.Contains(uri)
+                   select application;
 
-            var candidates = await ListAsync(Query, cancellationToken);
+            var candidates = await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken);
             if (candidates.IsDefaultOrEmpty)
             {
                 return ImmutableArray.Create<TApplication>();
@@ -253,14 +243,18 @@ namespace OpenIddict.Core
         /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public abstract Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<TResult> GetAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the client identifier associated with an application.
@@ -437,37 +431,41 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task<ImmutableArray<TApplication>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            IQueryable<TApplication> Query(IQueryable<TApplication> applications)
+            IQueryable<TApplication> Query(IQueryable<TApplication> applications, int? skip, int? take)
             {
                 var query = applications.OrderBy(application => application.Id).AsQueryable();
 
-                if (offset.HasValue)
+                if (skip.HasValue)
                 {
-                    query = query.Skip(offset.Value);
+                    query = query.Skip(skip.Value);
                 }
 
-                if (count.HasValue)
+                if (take.HasValue)
                 {
-                    query = query.Take(count.Value);
+                    query = query.Take(take.Value);
                 }
 
                 return query;
             }
 
-            return ListAsync(Query, cancellationToken);
+            return ListAsync((applications, state) => Query(applications, state.offset, state.count), (offset, count), cancellationToken);
         }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public abstract Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the client identifier associated with an application.

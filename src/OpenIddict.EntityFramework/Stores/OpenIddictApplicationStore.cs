@@ -150,18 +150,14 @@ namespace OpenIddict.EntityFramework
             }
 
             Task<List<TAuthorization>> ListAuthorizationsAsync()
-            {
-                return (from authorization in Authorizations.Include(authorization => authorization.Tokens)
-                        where authorization.Application.Id.Equals(application.Id)
-                        select authorization).ToListAsync(cancellationToken);
-            }
+                => (from authorization in Authorizations.Include(authorization => authorization.Tokens)
+                    where authorization.Application.Id.Equals(application.Id)
+                    select authorization).ToListAsync(cancellationToken);
 
             Task<List<TToken>> ListTokensAsync()
-            {
-                return (from token in Tokens
-                        where token.Application.Id.Equals(application.Id)
-                        select token).ToListAsync(cancellationToken);
-            }
+                => (from token in Tokens
+                    where token.Application.Id.Equals(application.Id)
+                    select token).ToListAsync(cancellationToken);
 
             // Remove all the authorizations associated with the application and
             // the tokens attached to these implicit or explicit authorizations.
@@ -208,41 +204,49 @@ namespace OpenIddict.EntityFramework
         /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public override Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public override Task<TResult> GetAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Applications).FirstOrDefaultAsync(cancellationToken);
+            return query(Applications, state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public override async Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public override async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(Applications).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Applications, state).ToListAsync(cancellationToken));
         }
 
         /// <summary>

@@ -47,7 +47,7 @@ namespace OpenIddict.Mvc
 
                 context.Result = ModelBindingResult.Success(request);
 
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             else if (context.ModelType == typeof(OpenIdConnectResponse))
@@ -65,7 +65,7 @@ namespace OpenIddict.Mvc
 
                 context.Result = ModelBindingResult.Success(response);
 
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             throw new InvalidOperationException("The specified model type is not supported by this binder.");

@@ -97,18 +97,16 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
-            {
-                var key = ConvertIdentifierFromString(client);
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, TKey key, string principal)
+                => from authorization in authorizations
+                   where authorization.Application != null
+                   where authorization.Application.Id.Equals(key)
+                   where authorization.Subject == principal
+                   select authorization;
 
-                return from authorization in authorizations
-                       where authorization.Application != null
-                       where authorization.Application.Id.Equals(key)
-                       where authorization.Subject == subject
-                       select authorization;
-            }
-
-            return ListAsync(Query, cancellationToken);
+            return ListAsync(
+                (authorizations, state) => Query(authorizations, state.key, state.principal),
+                (key: ConvertIdentifierFromString(client), principal: subject), cancellationToken);
         }
 
         /// <summary>
@@ -127,16 +125,12 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
-            {
-                var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, TKey key)
+                => from authorization in authorizations
+                   where authorization.Id.Equals(key)
+                   select authorization;
 
-                return from authorization in authorizations
-                       where authorization.Id.Equals(key)
-                       select authorization;
-            }
-
-            return GetAsync(Query, cancellationToken);
+            return GetAsync((authorizations, key) => Query(authorizations, key), ConvertIdentifierFromString(identifier), cancellationToken);
         }
 
         /// <summary>
@@ -160,28 +154,31 @@ namespace OpenIddict.Core
                 return ConvertIdentifierToString(authorization.Application.Id);
             }
 
-            IQueryable<TKey> Query(IQueryable<TAuthorization> authorizations)
-            {
-                return from element in authorizations
-                       where element.Id.Equals(authorization.Id)
-                       where element.Application != null
-                       select element.Application.Id;
-            }
+            IQueryable<TKey> Query(IQueryable<TAuthorization> authorizations, TKey key)
+                => from element in authorizations
+                   where element.Id.Equals(key)
+                   where element.Application != null
+                   select element.Application.Id;
 
-            return ConvertIdentifierToString(await GetAsync(Query, cancellationToken));
+            return ConvertIdentifierToString(await GetAsync(
+                (authorizations, key) => Query(authorizations, key), authorization.Id, cancellationToken));
         }
 
         /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public abstract Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<TResult> GetAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the unique identifier associated with an authorization.
@@ -304,37 +301,41 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task<ImmutableArray<TAuthorization>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, int? skip, int? take)
             {
                 var query = authorizations.OrderBy(authorization => authorization.Id).AsQueryable();
 
-                if (offset.HasValue)
+                if (skip.HasValue)
                 {
-                    query = query.Skip(offset.Value);
+                    query = query.Skip(skip.Value);
                 }
 
-                if (count.HasValue)
+                if (take.HasValue)
                 {
-                    query = query.Take(count.Value);
+                    query = query.Take(take.Value);
                 }
 
                 return query;
             }
 
-            return ListAsync(Query, cancellationToken);
+            return ListAsync((authorizations, state) => Query(authorizations, state.offset, state.count), (offset, count), cancellationToken);
         }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public abstract Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Lists the ad-hoc authorizations that are marked as invalid or have no
@@ -349,7 +350,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task<ImmutableArray<TAuthorization>> ListInvalidAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations)
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, int? skip, int? take)
             {
                 var query = (from authorization in authorizations
                              where authorization.Status != OpenIddictConstants.Statuses.Valid ||
@@ -358,20 +359,20 @@ namespace OpenIddict.Core
                              orderby authorization.Id
                              select authorization).AsQueryable();
 
-                if (offset.HasValue)
+                if (skip.HasValue)
                 {
-                    query = query.Skip(offset.Value);
+                    query = query.Skip(skip.Value);
                 }
 
-                if (count.HasValue)
+                if (take.HasValue)
                 {
-                    query = query.Take(count.Value);
+                    query = query.Take(take.Value);
                 }
 
                 return query;
             }
 
-            return ListAsync(Query, cancellationToken);
+            return ListAsync((authorizations, state) => Query(authorizations, state.offset, state.count), (offset, count), cancellationToken);
         }
 
         /// <summary>
