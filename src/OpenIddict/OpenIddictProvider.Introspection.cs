@@ -12,6 +12,7 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using OpenIddict.Core;
 
 namespace OpenIddict
 {
@@ -63,6 +64,10 @@ namespace OpenIddict
                 return;
             }
 
+            // Store the application entity as a request property to make it accessible
+            // from the other provider methods without having to call the store twice.
+            context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
+
             // Reject introspection requests sent by public applications.
             if (await Applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
             {
@@ -99,8 +104,8 @@ namespace OpenIddict
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
             Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client_id parameter shouldn't be null.");
 
-            var identifier = context.Ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId);
-            Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
+            var identifier = context.Ticket.GetTokenId();
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
             // Note: the OpenID Connect server middleware allows authorized presenters (e.g relying parties) to introspect access tokens
             // but OpenIddict uses a stricter policy that only allows resource servers to use the introspection endpoint, unless the ticket
@@ -124,10 +129,11 @@ namespace OpenIddict
             // When the received ticket is revocable, ensure it is still valid.
             if (options.UseReferenceTokens || context.Ticket.IsAuthorizationCode() || context.Ticket.IsRefreshToken())
             {
-                // Retrieve the token from the database using the unique identifier stored in the authentication ticket:
-                // if the corresponding entry cannot be found, return Active = false to indicate that is is no longer valid.
-                var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-                if (token == null || !await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
+                // Retrieve the token from the request properties. If it's marked as invalid, return active = false.
+                var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
+                Debug.Assert(token != null, "The token shouldn't be null.");
+
+                if (!await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
                 {
                     Logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
 

@@ -267,6 +267,10 @@ namespace OpenIddict
                 return;
             }
 
+            // Store the application entity as a request property to make it accessible
+            // from the other provider methods without having to call the store twice.
+            context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
+
             // Ensure that the specified redirect_uri is valid and is associated with the client application.
             if (!await Applications.ValidateRedirectUriAsync(application, context.RedirectUri, context.HttpContext.RequestAborted))
             {

@@ -12,6 +12,7 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using OpenIddict.Core;
 
 namespace OpenIddict
 {
@@ -88,6 +89,10 @@ namespace OpenIddict
 
                 return;
             }
+
+            // Store the application entity as a request property to make it accessible
+            // from the other provider methods without having to call the store twice.
+            context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject revocation requests containing a client_secret if the application is a public client.
             if (await Applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
@@ -175,13 +180,14 @@ namespace OpenIddict
             }
 
             // Extract the token identifier from the authentication ticket.
-            var identifier = context.Ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId);
-            Debug.Assert(!string.IsNullOrEmpty(identifier), "The token should contain a ticket identifier.");
+            var identifier = context.Ticket.GetTokenId();
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
-            // Retrieve the token from the database. If the token cannot be found,
-            // assume it is invalid and consider the revocation as successful.
-            var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-            if (token == null || await Tokens.IsRevokedAsync(token, context.HttpContext.RequestAborted))
+            // Retrieve the token from the request properties. If it's already marked as revoked, directly return a 200 response.
+            var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
+            Debug.Assert(token != null, "The token shouldn't be null.");
+
+            if (await Tokens.IsRevokedAsync(token, context.HttpContext.RequestAborted))
             {
                 Logger.LogInformation("The token '{Identifier}' was not revoked because " +
                                       "it was already marked as invalid.", identifier);

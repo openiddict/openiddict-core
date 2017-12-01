@@ -131,6 +131,10 @@ namespace OpenIddict
                 return;
             }
 
+            // Store the application entity as a request property to make it accessible
+            // from the other provider methods without having to call the store twice.
+            context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
+
             if (await Applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
             {
                 // Note: public applications are not allowed to use the client credentials grant.
@@ -222,24 +226,11 @@ namespace OpenIddict
 
             // Extract the token identifier from the authentication ticket.
             var identifier = context.Ticket.GetTokenId();
-            Debug.Assert(!string.IsNullOrEmpty(identifier),
-                "The authentication ticket should contain a ticket identifier.");
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
-            // Retrieve the authorization code/refresh token from the database and ensure it is still valid.
-            var token = await Tokens.FindByIdAsync(identifier, context.HttpContext.RequestAborted);
-            if (token == null)
-            {
-                Logger.LogError("The token request was rejected because the authorization code " +
-                                "or refresh token '{Identifier}' was not found in the database.", identifier);
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidGrant,
-                    description: context.Request.IsAuthorizationCodeGrantType() ?
-                        "The specified authorization code is no longer valid." :
-                        "The specified refresh token is no longer valid.");
-
-                return;
-            }
+            // Retrieve the authorization code/refresh token from the request properties.
+            var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
+            Debug.Assert(token != null, "The token shouldn't be null.");
 
             // If the authorization code/refresh token is already marked as redeemed, this may indicate that
             // it was compromised. In this case, revoke the authorization and all the associated tokens. 

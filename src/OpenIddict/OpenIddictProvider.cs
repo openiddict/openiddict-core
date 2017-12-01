@@ -147,12 +147,15 @@ namespace OpenIddict
                     return;
                 }
 
+                var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{context.Ticket.GetTokenId()}");
+                Debug.Assert(token != null, "The token shouldn't be null.");
+
                 // If rolling tokens are enabled or if the request is a grant_type=authorization_code request,
                 // mark the authorization code or the refresh token as redeemed to prevent future reuses.
                 // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                 if (options.UseRollingTokens || context.Request.IsAuthorizationCodeGrantType())
                 {
-                    if (!await TryRedeemTokenAsync(context.Ticket, context.HttpContext))
+                    if (!await TryRedeemTokenAsync(token, context.HttpContext))
                     {
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -183,7 +186,7 @@ namespace OpenIddict
                 // with a new expiration date if sliding expiration was not disabled.
                 else if (options.UseSlidingExpiration && context.Request.IsRefreshTokenGrantType())
                 {
-                    if (!await TryExtendTokenAsync(context.Ticket, context.HttpContext, options))
+                    if (!await TryExtendTokenAsync(token, context.Ticket, context.HttpContext, options))
                     {
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,

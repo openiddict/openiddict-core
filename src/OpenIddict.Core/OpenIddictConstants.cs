@@ -39,8 +39,11 @@ namespace OpenIddict.Core
 
         public static class Properties
         {
+            public const string Application = ".application";
             public const string AuthenticationTicket = ".authentication_ticket";
             public const string AuthorizationId = ".authorization_id";
+            public const string ReferenceToken = ".reference_token";
+            public const string Token = ".token";
         }
 
         public static class PropertyTypes
