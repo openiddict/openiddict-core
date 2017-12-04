@@ -137,41 +137,49 @@ namespace OpenIddict.EntityFramework
         /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public override Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public override Task<TResult> GetAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Scopes).FirstOrDefaultAsync(cancellationToken);
+            return query(Scopes, state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public override async Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public override async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken)
         {
             if (query == null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(Scopes).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Scopes, state).ToListAsync(cancellationToken));
         }
 
         /// <summary>

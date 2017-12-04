@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
@@ -88,17 +89,13 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            IQueryable<TToken> Query(IQueryable<TToken> tokens)
-            {
-                var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TToken> Query(IQueryable<TToken> tokens, TKey key)
+                => from token in tokens
+                   where token.Application != null
+                   where token.Application.Id.Equals(key)
+                   select token;
 
-                return from token in tokens
-                       where token.Application != null
-                       where token.Application.Id.Equals(key)
-                       select token;
-            }
-
-            return ListAsync(Query, cancellationToken);
+            return ListAsync((tokens, key) => Query(tokens, key), ConvertIdentifierFromString(identifier), cancellationToken);
         }
 
         /// <summary>
@@ -117,17 +114,13 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            IQueryable<TToken> Query(IQueryable<TToken> tokens)
-            {
-                var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TToken> Query(IQueryable<TToken> tokens, TKey key)
+                => from token in tokens
+                   where token.Authorization != null
+                   where token.Authorization.Id.Equals(key)
+                   select token;
 
-                return from token in tokens
-                       where token.Authorization != null
-                       where token.Authorization.Id.Equals(key)
-                       select token;
-            }
-
-            return ListAsync(Query, cancellationToken);
+            return ListAsync((tokens, key) => Query(tokens, key), ConvertIdentifierFromString(identifier), cancellationToken);
         }
 
         /// <summary>
@@ -146,14 +139,12 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The hash cannot be null or empty.", nameof(hash));
             }
 
-            IQueryable<TToken> Query(IQueryable<TToken> tokens)
-            {
-                return from token in tokens
-                       where token.Hash == hash
-                       select token;
-            }
+            IQueryable<TToken> Query(IQueryable<TToken> tokens, string digest)
+                => from token in tokens
+                   where token.Hash == digest
+                   select token;
 
-            return GetAsync(Query, cancellationToken);
+            return GetAsync((tokens, digest) => Query(tokens, digest), hash, cancellationToken);
         }
 
         /// <summary>
@@ -172,16 +163,12 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            IQueryable<TToken> Query(IQueryable<TToken> tokens)
-            {
-                var key = ConvertIdentifierFromString(identifier);
+            IQueryable<TToken> Query(IQueryable<TToken> tokens, TKey key)
+                => from token in tokens
+                   where token.Id.Equals(key)
+                   select token;
 
-                return from token in tokens
-                       where token.Id.Equals(key)
-                       select token;
-            }
-
-            return GetAsync(Query, cancellationToken);
+            return GetAsync((tokens, key) => Query(tokens, key), ConvertIdentifierFromString(identifier), cancellationToken);
         }
 
         /// <summary>
@@ -200,27 +187,29 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            IQueryable<TToken> Query(IQueryable<TToken> tokens)
-            {
-                return from token in tokens
-                       where token.Subject == subject
-                       select token;
-            }
+            IQueryable<TToken> Query(IQueryable<TToken> tokens, string principal)
+                => from token in tokens
+                   where token.Subject == principal
+                   select token;
 
-            return ListAsync(Query, cancellationToken);
+            return ListAsync((tokens, principal) => Query(tokens, principal), subject, cancellationToken);
         }
 
         /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public abstract Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<TResult> GetAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the optional application identifier associated with a token.
@@ -243,15 +232,13 @@ namespace OpenIddict.Core
                 return ConvertIdentifierToString(token.Application.Id);
             }
 
-            IQueryable<TKey> Query(IQueryable<TToken> tokens)
-            {
-                return from element in tokens
-                       where element.Id.Equals(token.Id)
-                       where element.Application != null
-                       select element.Application.Id;
-            }
+            IQueryable<TKey> Query(IQueryable<TToken> tokens, TKey key)
+                => from element in tokens
+                   where element.Id.Equals(key)
+                   where element.Application != null
+                   select element.Application.Id;
 
-            return ConvertIdentifierToString(await GetAsync(Query, cancellationToken));
+            return ConvertIdentifierToString(await GetAsync((tokens, key) => Query(tokens, key), token.Id, cancellationToken));
         }
 
         /// <summary>
@@ -275,15 +262,13 @@ namespace OpenIddict.Core
                 return ConvertIdentifierToString(token.Authorization.Id);
             }
 
-            IQueryable<TKey> Query(IQueryable<TToken> tokens)
-            {
-                return from element in tokens
-                       where element.Id.Equals(token.Id)
-                       where element.Authorization != null
-                       select element.Authorization.Id;
-            }
+            IQueryable<TKey> Query(IQueryable<TToken> tokens, TKey key)
+                => from element in tokens
+                   where element.Id.Equals(key)
+                   where element.Authorization != null
+                   select element.Authorization.Id;
 
-            return ConvertIdentifierToString(await GetAsync(Query, cancellationToken));
+            return ConvertIdentifierToString(await GetAsync((tokens, key) => Query(tokens, key), token.Id, cancellationToken));
         }
 
         /// <summary>
@@ -460,37 +445,43 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task<ImmutableArray<TToken>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            IQueryable<TToken> Query(IQueryable<TToken> tokens)
+            IQueryable<TToken> Query(IQueryable<TToken> tokens, int? skip, int? take)
             {
                 var query = tokens.OrderBy(token => token.Id).AsQueryable();
 
-                if (offset.HasValue)
+                if (skip.HasValue)
                 {
-                    query = query.Skip(offset.Value);
+                    query = query.Skip(skip.Value);
                 }
 
-                if (count.HasValue)
+                if (take.HasValue)
                 {
-                    query = query.Take(count.Value);
+                    query = query.Take(take.Value);
                 }
 
                 return query;
             }
 
-            return ListAsync(Query, cancellationToken);
+            return ListAsync(
+                (tokens, state) => Query(tokens, state.Key, state.Value),
+                new KeyValuePair<int?, int?>(offset, count), cancellationToken);
         }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
+        /// <typeparam name="TState">The state type.</typeparam>
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
+        /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public abstract Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        public abstract Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
         /// Lists the tokens that are marked as expired or invalid
@@ -505,7 +496,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task<ImmutableArray<TToken>> ListInvalidAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            IQueryable<TToken> Query(IQueryable<TToken> tokens)
+            IQueryable<TToken> Query(IQueryable<TToken> tokens, int? skip, int? take)
             {
                 var query = (from token in tokens
                              where token.ExpirationDate < DateTimeOffset.UtcNow ||
@@ -513,20 +504,22 @@ namespace OpenIddict.Core
                              orderby token.Id
                              select token).AsQueryable();
 
-                if (offset.HasValue)
+                if (skip.HasValue)
                 {
-                    query = query.Skip(offset.Value);
+                    query = query.Skip(skip.Value);
                 }
 
-                if (count.HasValue)
+                if (take.HasValue)
                 {
-                    query = query.Take(count.Value);
+                    query = query.Take(take.Value);
                 }
 
                 return query;
             }
 
-            return ListAsync(Query, cancellationToken);
+            return ListAsync(
+                (tokens, state) => Query(tokens, state.Key, state.Value),
+                new KeyValuePair<int?, int?>(offset, count), cancellationToken);
         }
 
         /// <summary>
