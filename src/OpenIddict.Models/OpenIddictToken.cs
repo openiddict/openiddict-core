@@ -44,13 +44,6 @@ namespace OpenIddict.Models
         public virtual TAuthorization Authorization { get; set; }
 
         /// <summary>
-        /// Gets or sets the encrypted payload
-        /// of the current token, if applicable.
-        /// This property is only used for reference tokens.
-        /// </summary>
-        public virtual string Ciphertext { get; set; }
-
-        /// <summary>
         /// Gets or sets the concurrency token.
         /// </summary>
         public virtual string ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
@@ -68,17 +61,25 @@ namespace OpenIddict.Models
         public virtual DateTimeOffset? ExpirationDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the hashed identifier associated
-        /// with the current token, if applicable.
-        /// This property is only used for reference tokens.
-        /// </summary>
-        public virtual string Hash { get; set; }
-
-        /// <summary>
         /// Gets or sets the unique identifier
         /// associated with the current token.
         /// </summary>
         public virtual TKey Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payload of the current token, if applicable.
+        /// Note: this property is only used for reference tokens
+        /// and may be encrypted for security reasons.
+        /// </summary>
+        public virtual string Payload { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reference identifier associated
+        /// with the current token, if applicable.
+        /// Note: this property is only used for reference tokens
+        /// and may be hashed or encrypted for security reasons.
+        /// </summary>
+        public virtual string ReferenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the current token.

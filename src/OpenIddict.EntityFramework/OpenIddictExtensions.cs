@@ -265,7 +265,7 @@ namespace Microsoft.Extensions.DependencyInjection
                    .IsConcurrencyToken();
 
             builder.Entity<TToken>()
-                   .Property(token => token.Hash)
+                   .Property(token => token.ReferenceId)
                    .HasMaxLength(450)
                    .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 

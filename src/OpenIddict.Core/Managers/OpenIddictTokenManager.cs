@@ -7,6 +7,8 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -213,22 +215,24 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Retrieves the list of tokens corresponding to the specified hash.
+        /// Retrieves the list of tokens corresponding to the specified reference identifier.
+        /// Note: the reference identifier may be hashed or encrypted for security reasons.
         /// </summary>
-        /// <param name="hash">The hashed crypto-secure random identifier associated with the tokens.</param>
+        /// <param name="identifier">The reference identifier associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens corresponding to the specified hash.
+        /// whose result returns the tokens corresponding to the specified reference identifier.
         /// </returns>
-        public virtual Task<TToken> FindByHashAsync([NotNull] string hash, CancellationToken cancellationToken)
+        public virtual async Task<TToken> FindByReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(hash))
+            if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The hash cannot be null or empty.", nameof(hash));
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Store.FindByHashAsync(hash, cancellationToken);
+            identifier = await ObfuscateReferenceIdAsync(identifier, cancellationToken);
+            return await Store.FindByReferenceIdAsync(identifier, cancellationToken);
         }
 
         /// <summary>
@@ -347,25 +351,6 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Retrieves the ciphertext associated with a token.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the ciphertext associated with the specified token.
-        /// </returns>
-        public virtual Task<string> GetCiphertextAsync([NotNull] TToken token, CancellationToken cancellationToken)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            return Store.GetCiphertextAsync(token, cancellationToken);
-        }
-
-        /// <summary>
         /// Retrieves the creation date associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
@@ -404,22 +389,24 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Retrieves the hashed identifier associated with a token.
+        /// Retrieves the reference identifier associated with a token.
+        /// Note: depending on the manager used to create the token,
+        /// the reference identifier may be hashed for security reasons.
         /// </summary>
         /// <param name="token">The token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the hashed identifier associated with the specified token.
+        /// whose result returns the reference identifier associated with the specified token.
         /// </returns>
-        public virtual Task<string> GetHashAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual Task<string> GetReferenceIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            return Store.GetHashAsync(token, cancellationToken);
+            return Store.GetReferenceIdAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -439,6 +426,25 @@ namespace OpenIddict.Core
             }
 
             return Store.GetIdAsync(token, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the payload associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the payload associated with the specified token.
+        /// </returns>
+        public virtual Task<string> GetPayloadAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return Store.GetPayloadAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -597,6 +603,30 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Obfuscates the specified reference identifier so it can be safely stored in a database.
+        /// By default, this method returns a simple hashed representation computed using SHA256.
+        /// </summary>
+        /// <param name="identifier">The client identifier.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task<string> ObfuscateReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            using (var algorithm = SHA256.Create())
+            {
+                // Compute the digest of the generated identifier and use it as the hashed identifier of the reference token.
+                // Doing that prevents token identifiers stolen from the database from being used as valid reference tokens.
+                return Task.FromResult(Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(identifier))));
+            }
+        }
+
+        /// <summary>
         /// Redeems a token.
         /// </summary>
         /// <param name="token">The token to redeem.</param>
@@ -727,10 +757,10 @@ namespace OpenIddict.Core
             {
                 ApplicationId = await Store.GetApplicationIdAsync(token, cancellationToken),
                 AuthorizationId = await Store.GetAuthorizationIdAsync(token, cancellationToken),
-                Ciphertext = await Store.GetCiphertextAsync(token, cancellationToken),
                 CreationDate = await Store.GetCreationDateAsync(token, cancellationToken),
                 ExpirationDate = await Store.GetExpirationDateAsync(token, cancellationToken),
-                Hash = await Store.GetHashAsync(token, cancellationToken),
+                Payload = await Store.GetPayloadAsync(token, cancellationToken),
+                ReferenceId = await Store.GetReferenceIdAsync(token, cancellationToken),
                 Status = await Store.GetStatusAsync(token, cancellationToken),
                 Subject = await Store.GetSubjectAsync(token, cancellationToken),
                 Type = await Store.GetTokenTypeAsync(token, cancellationToken)
@@ -765,10 +795,10 @@ namespace OpenIddict.Core
 
             await Store.SetApplicationIdAsync(token, descriptor.ApplicationId, cancellationToken);
             await Store.SetAuthorizationIdAsync(token, descriptor.AuthorizationId, cancellationToken);
-            await Store.SetCiphertextAsync(token, descriptor.Ciphertext, cancellationToken);
             await Store.SetCreationDateAsync(token, descriptor.CreationDate, cancellationToken);
             await Store.SetExpirationDateAsync(token, descriptor.ExpirationDate, cancellationToken);
-            await Store.SetHashAsync(token, descriptor.Hash, cancellationToken);
+            await Store.SetPayloadAsync(token, descriptor.Payload, cancellationToken);
+            await Store.SetReferenceIdAsync(token, descriptor.ReferenceId, cancellationToken);
             await Store.SetStatusAsync(token, descriptor.Status, cancellationToken);
             await Store.SetSubjectAsync(token, descriptor.Subject, cancellationToken);
             await Store.SetTokenTypeAsync(token, descriptor.Type, cancellationToken);
