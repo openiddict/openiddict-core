@@ -152,7 +152,7 @@ namespace OpenIddict
                 // Note: the data format is automatically replaced at startup time to ensure
                 // that encrypted tokens stored in the database cannot be considered as
                 // valid tokens if the developer decides to disable reference tokens support.
-                descriptor.Ciphertext = format.Protect(ticket);
+                descriptor.Payload = format.Protect(ticket);
 
                 // Generate a new crypto-secure random identifier that will be
                 // substituted to the ciphertext returned by the data format.
@@ -160,14 +160,8 @@ namespace OpenIddict
                 options.RandomNumberGenerator.GetBytes(bytes);
                 result = Base64UrlEncoder.Encode(bytes);
 
-                // Compute the digest of the generated identifier and use
-                // it as the hashed identifier of the reference token.
-                // Doing that prevents token identifiers stolen from
-                // the database from being used as valid reference tokens.
-                using (var algorithm = SHA256.Create())
-                {
-                    descriptor.Hash = Convert.ToBase64String(algorithm.ComputeHash(bytes));
-                }
+                // Obfuscate the reference identifier so it can be safely stored in the databse.
+                descriptor.ReferenceId = await Tokens.ObfuscateReferenceIdAsync(result, context.RequestAborted);
             }
 
             // Otherwise, only create a token metadata entry for authorization codes and refresh tokens.
@@ -244,15 +238,11 @@ namespace OpenIddict
 
             if (options.UseReferenceTokens)
             {
-                string hash;
+                // Retrieve the token entry from the database.
+                // If it cannot be found, assume the token is not valid.
                 try
                 {
-                    // Compute the digest of the received token and use it
-                    // to retrieve the reference token from the database.
-                    using (var algorithm = SHA256.Create())
-                    {
-                        hash = Convert.ToBase64String(algorithm.ComputeHash(Base64UrlEncoder.DecodeBytes(value)));
-                    }
+                    token = await Tokens.FindByReferenceIdAsync(value, context.RequestAborted);
                 }
 
                 // Swallow format-related exceptions to ensure badly formed
@@ -262,13 +252,10 @@ namespace OpenIddict
                     return null;
                 }
 
-                // Retrieve the token entry from the database. If it
-                // cannot be found, assume the token is not valid.
-                token = await Tokens.FindByHashAsync(hash, context.RequestAborted);
                 if (token == null)
                 {
-                    Logger.LogInformation("The reference token corresponding to the '{Hash}' hashed " +
-                                          "identifier cannot be found in the database.", hash);
+                    Logger.LogInformation("The reference token corresponding to the '{Identifier}' " +
+                                          "reference identifier cannot be found in the database.", value);
 
                     return null;
                 }
@@ -284,8 +271,8 @@ namespace OpenIddict
 
                 // Extract the encrypted payload from the token. If it's null or empty,
                 // assume the token is not a reference token and consider it as invalid.
-                var ciphertext = await Tokens.GetCiphertextAsync(token, context.RequestAborted);
-                if (string.IsNullOrEmpty(ciphertext))
+                var payload = await Tokens.GetPayloadAsync(token, context.RequestAborted);
+                if (string.IsNullOrEmpty(payload))
                 {
                     Logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be retrieved. " +
                                       "This may indicate that the token is not a reference token.", identifier);
@@ -293,7 +280,7 @@ namespace OpenIddict
                     return null;
                 }
 
-                ticket = format.Unprotect(ciphertext);
+                ticket = format.Unprotect(payload);
                 if (ticket == null)
                 {
                     Logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be decrypted. " +

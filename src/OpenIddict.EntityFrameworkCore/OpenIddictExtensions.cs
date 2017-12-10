@@ -291,7 +291,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 entity.HasKey(token => token.Id);
 
-                entity.HasIndex(token => token.Hash)
+                entity.HasIndex(token => token.ReferenceId)
                       .IsUnique();
 
                 entity.Property(token => token.ConcurrencyToken)

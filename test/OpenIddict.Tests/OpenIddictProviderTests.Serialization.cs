@@ -140,7 +140,7 @@ namespace OpenIddict.Tests
             Assert.True((bool) response[OpenIdConnectConstants.Claims.Active]);
 
             format.Verify(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Fact]
@@ -151,7 +151,7 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
@@ -194,7 +194,7 @@ namespace OpenIddict.Tests
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
 
@@ -206,13 +206,13 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
-                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(value: null);
             });
 
@@ -252,7 +252,7 @@ namespace OpenIddict.Tests
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
 
@@ -269,13 +269,13 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
-                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
             });
 
@@ -317,7 +317,7 @@ namespace OpenIddict.Tests
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             format.Verify(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"), Times.Once());
         }
@@ -345,13 +345,13 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
-                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
 
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
@@ -413,7 +413,7 @@ namespace OpenIddict.Tests
             Assert.Equal(1483228800, (long) response[OpenIdConnectConstants.Claims.IssuedAt]);
             Assert.Equal(1484006400, (long) response[OpenIdConnectConstants.Claims.ExpiresAt]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
             format.Verify(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"), Times.Once());
         }
@@ -536,7 +536,7 @@ namespace OpenIddict.Tests
             Assert.True((bool) response[OpenIdConnectConstants.Claims.Active]);
 
             format.Verify(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Fact]
@@ -547,7 +547,7 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
@@ -590,7 +590,7 @@ namespace OpenIddict.Tests
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
 
@@ -602,13 +602,13 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
-                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(value: null);
             });
 
@@ -648,7 +648,7 @@ namespace OpenIddict.Tests
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
 
@@ -665,13 +665,13 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
-                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
             });
 
@@ -713,7 +713,7 @@ namespace OpenIddict.Tests
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             format.Verify(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"), Times.Once());
         }
@@ -739,13 +739,13 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
-                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
 
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
@@ -807,7 +807,7 @@ namespace OpenIddict.Tests
             Assert.Equal(1483228800, (long) response[OpenIdConnectConstants.Claims.IssuedAt]);
             Assert.Equal(1484006400, (long) response[OpenIdConnectConstants.Claims.ExpiresAt]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
             format.Verify(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"), Times.Once());
         }
@@ -1116,7 +1116,7 @@ namespace OpenIddict.Tests
             Assert.True((bool) response[OpenIdConnectConstants.Claims.Active]);
 
             format.Verify(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Fact]
@@ -1127,7 +1127,7 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
@@ -1170,7 +1170,7 @@ namespace OpenIddict.Tests
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
 
@@ -1182,13 +1182,13 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
-                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(value: null);
             });
 
@@ -1228,7 +1228,7 @@ namespace OpenIddict.Tests
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
 
@@ -1245,13 +1245,13 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
-                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
             });
 
@@ -1293,7 +1293,7 @@ namespace OpenIddict.Tests
             Assert.Single(response.GetParameters());
             Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             format.Verify(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"), Times.Once());
         }
@@ -1319,13 +1319,13 @@ namespace OpenIddict.Tests
 
             var manager = CreateTokenManager(instance =>
             {
-                instance.Setup(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
-                instance.Setup(mock => mock.GetCiphertextAsync(token, It.IsAny<CancellationToken>()))
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
 
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
@@ -1387,7 +1387,7 @@ namespace OpenIddict.Tests
             Assert.Equal(1483228800, (long) response[OpenIdConnectConstants.Claims.IssuedAt]);
             Assert.Equal(1484006400, (long) response[OpenIdConnectConstants.Claims.ExpiresAt]);
 
-            Mock.Get(manager).Verify(mock => mock.FindByHashAsync("jTwUlKz7IT5tRnmMnxYW26OdS28cPG2rM04zQr0ez70=", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("HQnldPTjH_9m85GcS-5PPYaCxmJTt1umxOa2y9ggVUQ", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
             format.Verify(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"), Times.Once());
         }
@@ -1627,6 +1627,9 @@ namespace OpenIddict.Tests
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                instance.Setup(mock => mock.ObfuscateReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("B1F0D503-55A4-4B03-B05B-EF07713C18E1");
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1656,12 +1659,15 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.AccessToken);
 
+            Mock.Get(manager).Verify(mock => mock.ObfuscateReferenceIdAsync(
+                It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.Ciphertext != null &&
-                    descriptor.Hash != null &&
                     descriptor.ExpirationDate == token.ExpirationDate &&
                     descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Payload != null &&
+                    descriptor.ReferenceId != null &&
                     descriptor.Subject == "Bob le Magnifique" &&
                     descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AccessToken),
                 It.IsAny<CancellationToken>()), Times.Once());
@@ -1887,10 +1893,10 @@ namespace OpenIddict.Tests
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.Ciphertext == null &&
-                    descriptor.Hash == null &&
                     descriptor.ExpirationDate == token.ExpirationDate &&
                     descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Payload == null &&
+                    descriptor.ReferenceId == null &&
                     descriptor.Subject == "Bob le Magnifique" &&
                     descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AuthorizationCode),
                 It.IsAny<CancellationToken>()), Times.Once());
@@ -1913,6 +1919,9 @@ namespace OpenIddict.Tests
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                instance.Setup(mock => mock.ObfuscateReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("B1F0D503-55A4-4B03-B05B-EF07713C18E1");
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1958,12 +1967,15 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.Code);
 
+            Mock.Get(manager).Verify(mock => mock.ObfuscateReferenceIdAsync(
+                It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
+
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.Ciphertext != null &&
-                    descriptor.Hash != null &&
                     descriptor.ExpirationDate == token.ExpirationDate &&
                     descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Payload != null &&
+                    descriptor.ReferenceId != null &&
                     descriptor.Subject == "Bob le Magnifique" &&
                     descriptor.Type == OpenIdConnectConstants.TokenTypeHints.AuthorizationCode),
                 It.IsAny<CancellationToken>()), Times.Once());
@@ -2244,10 +2256,10 @@ namespace OpenIddict.Tests
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.Ciphertext == null &&
-                    descriptor.Hash == null &&
                     descriptor.ExpirationDate == token.ExpirationDate &&
                     descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Payload == null &&
+                    descriptor.ReferenceId == null &&
                     descriptor.Subject == "Bob le Magnifique" &&
                     descriptor.Type == OpenIdConnectConstants.TokenTypeHints.RefreshToken),
                 It.IsAny<CancellationToken>()), Times.Once());
@@ -2270,6 +2282,9 @@ namespace OpenIddict.Tests
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                instance.Setup(mock => mock.ObfuscateReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("B1F0D503-55A4-4B03-B05B-EF07713C18E1");
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -2299,12 +2314,15 @@ namespace OpenIddict.Tests
             // Assert
             Assert.NotNull(response.RefreshToken);
 
+            Mock.Get(manager).Verify(mock => mock.ObfuscateReferenceIdAsync(
+                It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.Ciphertext != null &&
-                    descriptor.Hash != null &&
                     descriptor.ExpirationDate == token.ExpirationDate &&
                     descriptor.CreationDate == token.CreationDate &&
+                    descriptor.Payload != null &&
+                    descriptor.ReferenceId == "B1F0D503-55A4-4B03-B05B-EF07713C18E1" &&
                     descriptor.Subject == "Bob le Magnifique" &&
                     descriptor.Type == OpenIdConnectConstants.TokenTypeHints.RefreshToken),
                 It.IsAny<CancellationToken>()), Times.Once());

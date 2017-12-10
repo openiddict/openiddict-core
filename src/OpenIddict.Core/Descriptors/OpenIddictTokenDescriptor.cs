@@ -20,11 +20,6 @@ namespace OpenIddict.Core
         public string AuthorizationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the encrypted payload associated with the token.
-        /// </summary>
-        public string Ciphertext { get; set; }
-
-        /// <summary>
         /// Gets or sets the creation date associated with the token.
         /// </summary>
         public DateTimeOffset? CreationDate { get; set; }
@@ -35,9 +30,9 @@ namespace OpenIddict.Core
         public DateTimeOffset? ExpirationDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the cryptographic hash associated with the token.
+        /// Gets or sets the payload associated with the token.
         /// </summary>
-        public string Hash { get; set; }
+        public string Payload { get; set; }
 
         /// <summary>
         /// Gets or sets the optional principal associated with the token.
@@ -51,6 +46,11 @@ namespace OpenIddict.Core
         /// </summary>
         public IDictionary<string, string> Properties { get; } =
             new Dictionary<string, string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets or sets the reference identifier associated with the token.
+        /// </summary>
+        public string ReferenceId { get; set; }
 
         /// <summary>
         /// Gets or sets the status associated with the token.
