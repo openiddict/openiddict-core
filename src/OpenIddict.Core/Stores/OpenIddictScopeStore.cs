@@ -71,6 +71,30 @@ namespace OpenIddict.Core
         public abstract Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves an authorization using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorization corresponding to the identifier.
+        /// </returns>
+        public virtual Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            IQueryable<TScope> Query(IQueryable<TScope> scopes, TKey key)
+                => from scope in scopes
+                   where scope.Id.Equals(key)
+                   select scope;
+
+            return GetAsync((scopes, key) => Query(scopes, key), ConvertIdentifierFromString(identifier), cancellationToken);
+        }
+
+        /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TState">The state type.</typeparam>
@@ -103,6 +127,25 @@ namespace OpenIddict.Core
             }
 
             return Task.FromResult(scope.Description);
+        }
+
+        /// <summary>
+        /// Retrieves the unique identifier associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the scope.
+        /// </returns>
+        public virtual Task<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Task.FromResult(ConvertIdentifierToString(scope.Id));
         }
 
         /// <summary>
