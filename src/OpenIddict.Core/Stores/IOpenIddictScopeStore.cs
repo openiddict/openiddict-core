@@ -62,6 +62,17 @@ namespace OpenIddict.Core
         Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves an authorization using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorization corresponding to the identifier.
+        /// </returns>
+        Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TState">The state type.</typeparam>
@@ -87,6 +98,17 @@ namespace OpenIddict.Core
         /// whose result returns the description associated with the specified scope.
         /// </returns>
         Task<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the unique identifier associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the scope.
+        /// </returns>
+        Task<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the name associated with a scope.

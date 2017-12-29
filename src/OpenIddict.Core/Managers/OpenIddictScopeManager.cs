@@ -153,6 +153,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves an authorization using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorization corresponding to the identifier.
+        /// </returns>
+        public virtual Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            return Store.FindByIdAsync(identifier, cancellationToken);
+        }
+
+        /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -189,6 +208,25 @@ namespace OpenIddict.Core
             }
 
             return Store.GetAsync(query, state, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the unique identifier associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the scope.
+        /// </returns>
+        public virtual Task<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.GetIdAsync(scope, cancellationToken);
         }
 
         /// <summary>
