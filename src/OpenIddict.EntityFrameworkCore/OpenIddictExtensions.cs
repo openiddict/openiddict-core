@@ -161,10 +161,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            var extension = new OpenIddictExtension<TApplication, TAuthorization, TScope, TToken, TKey>();
-            ((IDbContextOptionsBuilderInfrastructure) builder).AddOrUpdateExtension(extension);
-
-            return builder;
+            return builder.ReplaceService<IModelCustomizer, OpenIddictCustomizer<TApplication, TAuthorization, TScope, TToken, TKey>>();
         }
 
         /// <summary>
