@@ -102,6 +102,68 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task ValidateTokenRequest_RequestIsRejectedWhenUnregisteredScopeIsSpecified()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(options =>
+            {
+                options.ValidateScopes();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w",
+                Scope = "unregistered_scope"
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("The specified 'scope' parameter is not valid.", response.ErrorDescription);
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsValidatedWhenRegisteredScopeIsSpecified()
+        {
+            // Arrange
+            var manager = CreateScopeManager(instance =>
+            {
+                instance.Setup(mock => mock.ValidateScopesAsync(
+                    It.Is<ImmutableArray<string>>(scopes => scopes[0] == "registered_scope"),
+                    It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+                builder.ValidateScopes();
+                builder.RegisterScopes("registered_scope");
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w",
+                Scope = "registered_scope"
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.AccessToken);
+        }
+
+        [Fact]
         public async Task ValidateTokenRequest_ClientCredentialsRequestWithOfflineAccessScopeIsRejected()
         {
             // Arrange
@@ -548,6 +610,85 @@ namespace OpenIddict.Tests
                 OpenIddictConstants.Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsRejectedWhenScopePermissionIsNotGranted()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Endpoints.Token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+
+                instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Prefixes.Scope +
+                    OpenIdConnectConstants.Scopes.Profile, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Prefixes.Scope +
+                    OpenIdConnectConstants.Scopes.Email, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w",
+                Scope = "openid offline_access profile email"
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Prefixes.Scope +
+                OpenIdConnectConstants.Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Prefixes.Scope +
+                OpenIdConnectConstants.Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Prefixes.Scope +
+                OpenIdConnectConstants.Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Prefixes.Scope +
+                OpenIdConnectConstants.Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -1166,6 +1307,12 @@ namespace OpenIddict.Tests
                 instance.Setup(mock => mock.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
 
+                instance.Setup(mock => mock.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("481FCAC6-06BC-43EE-92DB-37A78AA09B59");
+
+                instance.Setup(mock => mock.GetIdAsync(tokens[2], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("3BEA7A94-5ADA-49AF-9F41-8AB6156E31A8");
+
                 instance.Setup(mock => mock.GetAuthorizationIdAsync(tokens[0], It.IsAny<CancellationToken>()))
                     .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
 
@@ -1262,6 +1409,12 @@ namespace OpenIddict.Tests
 
                 instance.Setup(mock => mock.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
                     .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+                instance.Setup(mock => mock.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("481FCAC6-06BC-43EE-92DB-37A78AA09B59");
+
+                instance.Setup(mock => mock.GetIdAsync(tokens[2], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("3BEA7A94-5ADA-49AF-9F41-8AB6156E31A8");
 
                 instance.Setup(mock => mock.GetAuthorizationIdAsync(tokens[0], It.IsAny<CancellationToken>()))
                     .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");

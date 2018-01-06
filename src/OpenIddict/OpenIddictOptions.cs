@@ -74,6 +74,12 @@ namespace OpenIddict
         public RandomNumberGenerator RandomNumberGenerator { get; set; } = RandomNumberGenerator.Create();
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether scopes that are not explicitly registered
+        /// in the database are automatically rejected. This option is not enabled by default.
+        /// </summary>
+        public bool ValidateScopes { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean determining whether client identification is required.
         /// Enabling this option requires registering a client application and sending a
         /// valid client_id when communicating with the token and revocation endpoints.

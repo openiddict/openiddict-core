@@ -163,6 +163,45 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves a scope using its name.
+        /// </summary>
+        /// <param name="name">The name associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scope corresponding to the specified name.
+        /// </returns>
+        public virtual Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
+            }
+
+            return Store.FindByNameAsync(name, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves a list of scopes using their name.
+        /// </summary>
+        /// <param name="names">The names associated with the scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scopes corresponding to the specified names.
+        /// </returns>
+        public virtual Task<ImmutableArray<TScope>> FindByNamesAsync(
+            ImmutableArray<string> names, CancellationToken cancellationToken = default)
+        {
+            if (names.Any(name => string.IsNullOrEmpty(name)))
+            {
+                throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
+            }
+
+            return Store.FindByNamesAsync(names, cancellationToken);
+        }
+
+        /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -203,6 +242,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the description associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the description associated with the specified scope.
+        /// </returns>
+        public virtual Task<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.GetDescriptionAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the unique identifier associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -212,6 +270,25 @@ namespace OpenIddict.Core
         /// whose result returns the unique identifier associated with the scope.
         /// </returns>
         public virtual Task<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.GetIdAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the name associated with the specified scope.
+        /// </returns>
+        public virtual Task<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
@@ -354,6 +431,34 @@ namespace OpenIddict.Core
             }
 
             return results.ToImmutable();
+        }
+
+        /// <summary>
+        /// Validates the list of scopes to ensure they correspond to existing elements in the database.
+        /// </summary>
+        /// <param name="scopes">The scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the list of scopes is valid, <c>false</c> otherwise.</returns>
+        public virtual async Task<bool> ValidateScopesAsync(ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
+        {
+            if (scopes.Length == 0)
+            {
+                return true;
+            }
+
+            async Task<ImmutableHashSet<string>> GetScopesAsync()
+            {
+                var names = ImmutableHashSet.CreateBuilder(StringComparer.Ordinal);
+
+                foreach (var scope in await FindByNamesAsync(scopes, cancellationToken))
+                {
+                    names.Add(await GetNameAsync(scope, cancellationToken));
+                }
+
+                return names.ToImmutable();
+            }
+
+            return (await GetScopesAsync()).IsSupersetOf(scopes);
         }
 
         /// <summary>

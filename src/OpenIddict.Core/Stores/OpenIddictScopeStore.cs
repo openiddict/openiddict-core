@@ -97,6 +97,55 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves a scope using its name.
+        /// </summary>
+        /// <param name="name">The name associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scope corresponding to the specified name.
+        /// </returns>
+        public virtual Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
+            }
+
+            IQueryable<TScope> Query(IQueryable<TScope> scopes, string state)
+                => from scope in scopes
+                   where scope.Name == state
+                   select scope;
+
+            return GetAsync((scopes, state) => Query(scopes, state), name, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves a list of scopes using their name.
+        /// </summary>
+        /// <param name="names">The names associated with the scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scopes corresponding to the specified names.
+        /// </returns>
+        public virtual Task<ImmutableArray<TScope>> FindByNamesAsync(
+            ImmutableArray<string> names, CancellationToken cancellationToken)
+        {
+            if (names.Any(name => string.IsNullOrEmpty(name)))
+            {
+                throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
+            }
+
+            IQueryable<TScope> Query(IQueryable<TScope> scopes, string[] values)
+                => from scope in scopes
+                   where values.Contains(scope.Name)
+                   select scope;
+
+            return ListAsync((scopes, values) => Query(scopes, values), names.ToArray(), cancellationToken);
+        }
+
+        /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TState">The state type.</typeparam>

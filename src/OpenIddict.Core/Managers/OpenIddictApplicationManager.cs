@@ -483,7 +483,110 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return (await Store.GetPermissionsAsync(application, cancellationToken)).Contains(permission, StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(permission))
+            {
+                throw new ArgumentException("The permission name cannot be null or empty.", nameof(permission));
+            }
+
+            var permissions = await Store.GetPermissionsAsync(application, cancellationToken);
+
+            bool HasPermission(string name)
+            {
+                if (permissions.IsEmpty)
+                {
+                    return false;
+                }
+
+                return permissions.Contains(name);
+            }
+
+            bool HasEndpointPermission(string name)
+            {
+                // If the requested permission is an "endpoint" permission, return true if it has been
+                // explicitly granted OR if no other endpoint permission has been explicitly registered.
+
+                if (permissions.IsEmpty || HasPermission(name))
+                {
+                    return true;
+                }
+
+                if (permissions.Any(element => element.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            bool HasGrantTypePermission(string name)
+            {
+                // If the requested permission is a "grant_type" permission, return true if it has been
+                // explicitly granted OR if the application is allowed to use the corresponding endpoint
+                // AND no other grant type permission has been explicitly registered.
+
+                if (permissions.IsEmpty || HasPermission(name))
+                {
+                    return true;
+                }
+
+                if (permissions.Any(element => element.StartsWith(OpenIddictConstants.Permissions.Prefixes.GrantType)))
+                {
+                    return false;
+                }
+
+                switch (permission)
+                {
+                    case OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode:
+                        return HasEndpointPermission(OpenIddictConstants.Permissions.Endpoints.Authorization) &&
+                               HasEndpointPermission(OpenIddictConstants.Permissions.Endpoints.Token);
+
+                    case OpenIddictConstants.Permissions.GrantTypes.Implicit:
+                        return HasEndpointPermission(OpenIddictConstants.Permissions.Endpoints.Authorization);
+
+                    default:
+                    case OpenIddictConstants.Permissions.GrantTypes.ClientCredentials:
+                    case OpenIddictConstants.Permissions.GrantTypes.Password:
+                    case OpenIddictConstants.Permissions.GrantTypes.RefreshToken:
+                        return HasEndpointPermission(OpenIddictConstants.Permissions.Endpoints.Token);
+                }
+            }
+
+            bool HasScopePermission(string name)
+            {
+                // If the requested permission is a "scope" permission, return true if it has been
+                // explicitly granted OR if the application is allowed to use the authorization or
+                // token endpoints AND no other scope permission has been explicitly registered.
+
+                if (permissions.IsEmpty || HasPermission(name))
+                {
+                    return true;
+                }
+
+                if (permissions.Any(element => element.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope)))
+                {
+                    return false;
+                }
+
+                return HasEndpointPermission(OpenIddictConstants.Permissions.Endpoints.Authorization) ||
+                       HasEndpointPermission(OpenIddictConstants.Permissions.Endpoints.Token);
+            }
+
+            if (permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint))
+            {
+                return HasEndpointPermission(permission);
+            }
+
+            if (permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.GrantType))
+            {
+                return HasGrantTypePermission(permission);
+            }
+
+            if (permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope))
+            {
+                return HasScopePermission(permission);
+            }
+
+            return HasPermission(permission);
         }
 
         /// <summary>

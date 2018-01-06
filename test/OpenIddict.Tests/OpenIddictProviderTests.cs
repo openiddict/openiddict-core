@@ -789,6 +789,12 @@ namespace OpenIddict.Tests
                 instance.Setup(mock => mock.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
                     .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
 
+                instance.Setup(mock => mock.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("481FCAC6-06BC-43EE-92DB-37A78AA09B59");
+
+                instance.Setup(mock => mock.GetIdAsync(tokens[2], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("3BEA7A94-5ADA-49AF-9F41-8AB6156E31A8");
+
                 instance.Setup(mock => mock.GetAuthorizationIdAsync(tokens[0], It.IsAny<CancellationToken>()))
                     .ReturnsAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0");
 
@@ -863,6 +869,12 @@ namespace OpenIddict.Tests
 
                 instance.Setup(mock => mock.GetIdAsync(tokens[0], It.IsAny<CancellationToken>()))
                     .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+
+                instance.Setup(mock => mock.GetIdAsync(tokens[1], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("481FCAC6-06BC-43EE-92DB-37A78AA09B59");
+
+                instance.Setup(mock => mock.GetIdAsync(tokens[2], It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("3BEA7A94-5ADA-49AF-9F41-8AB6156E31A8");
 
                 instance.Setup(mock => mock.IsRedeemedAsync(tokens[0], It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);

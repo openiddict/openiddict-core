@@ -61,6 +61,7 @@ namespace OpenIddict.Core
             {
                 public const string Endpoint = "ept:";
                 public const string GrantType = "gt:";
+                public const string Scope = "scp:";
             }
         }
 
