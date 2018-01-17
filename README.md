@@ -47,18 +47,6 @@ To use OpenIddict, you need to:
 
   - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
-  - **Add the appropriate MyGet repositories to your NuGet sources**. This can be done by adding a new `NuGet.Config` file at the root of your solution:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <add key="NuGet" value="https://api.nuget.org/v3/index.json" />
-    <add key="aspnet-contrib" value="https://www.myget.org/F/aspnet-contrib/api/v3/index.json" />
-  </packageSources>
-</configuration>
-```
-
   - **Update your `.csproj` file** to reference `AspNet.Security.OAuth.Validation` and the `OpenIddict` packages:
 
 ```xml
