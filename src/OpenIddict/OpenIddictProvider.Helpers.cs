@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -57,11 +56,8 @@ namespace OpenIddict
             // If the client application is known, bind it to the authorization.
             if (!string.IsNullOrEmpty(request.ClientId))
             {
-                var application = await applications.FindByClientIdAsync(request.ClientId, context.RequestAborted);
-                if (application == null)
-                {
-                    throw new InvalidOperationException("The client application cannot be retrieved from the database.");
-                }
+                var application = request.GetProperty<TApplication>($"{OpenIddictConstants.Properties.Application}:{request.ClientId}");
+                Debug.Assert(application != null, "The client application shouldn't be null.");
 
                 descriptor.ApplicationId = await applications.GetIdAsync(application, context.RequestAborted);
             }
@@ -183,11 +179,8 @@ namespace OpenIddict
             // If the client application is known, associate it with the token.
             if (!string.IsNullOrEmpty(request.ClientId))
             {
-                var application = await applications.FindByClientIdAsync(request.ClientId, context.RequestAborted);
-                if (application == null)
-                {
-                    throw new InvalidOperationException("The client application cannot be retrieved from the database.");
-                }
+                var application = request.GetProperty<TApplication>($"{OpenIddictConstants.Properties.Application}:{request.ClientId}");
+                Debug.Assert(application != null, "The client application shouldn't be null.");
 
                 descriptor.ApplicationId = await applications.GetIdAsync(application, context.RequestAborted);
             }
@@ -247,18 +240,24 @@ namespace OpenIddict
 
             if (options.UseReferenceTokens)
             {
-                // Retrieve the token entry from the database.
-                // If it cannot be found, assume the token is not valid.
-                try
+                // For introspection or revocation requests, this method may be called more than once.
+                // For reference tokens, this may result in multiple database calls being made.
+                // To optimize that, the token is added to the request properties to indicate that
+                // a database lookup was already made with the same identifier. If the marker exists,
+                // the property value (that may be null) is used instead of making a database call.
+                if (request.HasProperty($"{OpenIddictConstants.Properties.ReferenceToken}:{value}"))
                 {
-                    token = await tokens.FindByReferenceIdAsync(value, context.RequestAborted);
+                    token = request.GetProperty<TToken>($"{OpenIddictConstants.Properties.ReferenceToken}:{value}");
                 }
 
-                // Swallow format-related exceptions to ensure badly formed
-                // or tampered tokens don't cause an exception at this stage.
-                catch
+                else
                 {
-                    return null;
+                    // Retrieve the token entry from the database. If it
+                    // cannot be found, assume the token is not valid.
+                    token = await tokens.FindByReferenceIdAsync(value, context.RequestAborted);
+
+                    // Store the token as a request property so it can be retrieved if this method is called another time.
+                    request.AddProperty($"{OpenIddictConstants.Properties.ReferenceToken}:{value}", token);
                 }
 
                 if (token == null)
@@ -299,6 +298,8 @@ namespace OpenIddict
 
                     return null;
                 }
+
+                request.SetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}", token);
             }
 
             else if (type == OpenIdConnectConstants.TokenUsages.AuthorizationCode ||
@@ -312,21 +313,38 @@ namespace OpenIddict
                     return null;
                 }
 
-                // Retrieve the authorization code/refresh token entry from the database.
-                // If it cannot be found, assume the authorization code/refresh token is not valid.
-                token = await tokens.FindByIdAsync(ticket.GetTokenId(), context.RequestAborted);
-                if (token == null)
-                {
-                    logger.LogInformation("The token '{Identifier}' cannot be found in the database.", ticket.GetTokenId());
-
-                    return null;
-                }
-
-                identifier = await tokens.GetIdAsync(token, context.RequestAborted);
+                identifier = ticket.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
                     logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
                                       "This may indicate that the token entry is corrupted.");
+
+                    return null;
+                }
+
+                // For introspection or revocation requests, this method may be called more than once.
+                // For codes/refresh tokens, this may result in multiple database calls being made.
+                // To optimize that, the token is added to the request properties to indicate that
+                // a database lookup was already made with the same identifier. If the marker exists,
+                // the property value (that may be null) is used instead of making a database call.
+                if (request.HasProperty($"{OpenIddictConstants.Properties.Token}:{identifier}"))
+                {
+                    token = request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
+                }
+
+                // Otherwise, retrieve the authorization code/refresh token entry from the database.
+                // If it cannot be found, assume the authorization code/refresh token is not valid.
+                else
+                {
+                    token = await tokens.FindByIdAsync(identifier, context.RequestAborted);
+
+                    // Store the token as a request property so it can be retrieved if this method is called another time.
+                    request.AddProperty($"{OpenIddictConstants.Properties.Token}:{identifier}", token);
+                }
+
+                if (token == null)
+                {
+                    logger.LogInformation("The token '{Identifier}' cannot be found in the database.", ticket.GetTokenId());
 
                     return null;
                 }
@@ -429,25 +447,13 @@ namespace OpenIddict
             return true;
         }
 
-        private async Task<bool> TryRedeemTokenAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
+        private async Task<bool> TryRedeemTokenAsync([NotNull] TToken token, [NotNull] HttpContext context)
         {
             var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
             var tokens = context.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
-            // Note: if the token identifier or the token itself
-            // cannot be found, return true as the token doesn't need
-            // to be revoked if it doesn't exist or is already invalid.
-            var identifier = ticket.GetTokenId();
-            if (string.IsNullOrEmpty(identifier))
-            {
-                return true;
-            }
-
-            var token = await tokens.FindByIdAsync(identifier, context.RequestAborted);
-            if (token == null)
-            {
-                return true;
-            }
+            var identifier = await tokens.GetIdAsync(token, context.RequestAborted);
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
 
             try
             {
@@ -468,22 +474,14 @@ namespace OpenIddict
         }
 
         private async Task<bool> TryExtendTokenAsync(
-            [NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context, [NotNull] OpenIddictOptions options)
+            [NotNull] TToken token, [NotNull] AuthenticationTicket ticket,
+            [NotNull] HttpContext context, [NotNull] OpenIddictOptions options)
         {
             var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
             var tokens = context.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
             var identifier = ticket.GetTokenId();
-            if (string.IsNullOrEmpty(identifier))
-            {
-                return false;
-            }
-
-            var token = await tokens.FindByIdAsync(identifier, context.RequestAborted);
-            if (token == null)
-            {
-                return false;
-            }
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
 
             try
             {
