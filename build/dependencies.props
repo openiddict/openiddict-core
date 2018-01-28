@@ -8,6 +8,7 @@
     <CryptoHelperVersion>3.0.0</CryptoHelperVersion>
     <EntityFrameworkVersion>6.1.3</EntityFrameworkVersion>
     <JetBrainsVersion>10.3.0</JetBrainsVersion>
+    <JsonNetVersion>10.0.2</JsonNetVersion>
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
     <ImmutableCollectionsVersion>1.4.0</ImmutableCollectionsVersion>
     <MoqVersion>4.7.63</MoqVersion>
