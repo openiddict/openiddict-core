@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Core
 {
@@ -124,6 +125,17 @@ namespace OpenIddict.Core
         Task<string> GetIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the additional properties associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the additional properties associated with the authorization.
+        /// </returns>
+        Task<JObject> GetPropertiesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the scopes associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -229,6 +241,17 @@ namespace OpenIddict.Core
         /// </returns>
         Task SetApplicationIdAsync([NotNull] TAuthorization authorization,
             [CanBeNull] string identifier, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the additional properties associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="properties">The additional properties associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetPropertiesAsync([NotNull] TAuthorization authorization, [CanBeNull] JObject properties, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the scopes associated with an authorization.

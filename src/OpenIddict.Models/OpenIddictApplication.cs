@@ -76,6 +76,12 @@ namespace OpenIddict.Models
         public virtual string PostLogoutRedirectUris { get; set; }
 
         /// <summary>
+        /// Gets or sets the additional properties serialized as a JSON object,
+        /// or <c>null</c> if no bag was associated with the current application.
+        /// </summary>
+        public virtual string Properties { get; set; }
+
+        /// <summary>
         /// Gets or sets the callback URLs
         /// associated with the current application,
         /// stored as a unique space-separated string.

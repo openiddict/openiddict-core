@@ -11,6 +11,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenIddict.Models;
 
 namespace OpenIddict.Core
@@ -382,6 +384,30 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the additional properties associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the additional properties associated with the application.
+        /// </returns>
+        public virtual Task<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(application.Properties))
+            {
+                return Task.FromResult(new JObject());
+            }
+
+            return Task.FromResult(JObject.Parse(application.Properties));
+        }
+
+        /// <summary>
         /// Retrieves the callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -592,6 +618,34 @@ namespace OpenIddict.Core
             }
 
             application.PostLogoutRedirectUris = string.Join(OpenIddictConstants.Separators.Space, addresses);
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the additional properties associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="properties">The additional properties associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (properties == null)
+            {
+                application.Properties = null;
+
+                return Task.CompletedTask;
+            }
+
+            application.Properties = properties.ToString(Formatting.None);
 
             return Task.CompletedTask;
         }

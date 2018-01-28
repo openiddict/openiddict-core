@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Core
 {
@@ -190,6 +191,17 @@ namespace OpenIddict.Core
         Task<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the additional properties associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the additional properties associated with the application.
+        /// </returns>
+        Task<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -295,6 +307,17 @@ namespace OpenIddict.Core
         /// </returns>
         Task SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the additional properties associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="properties">The additional properties associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the callback addresses associated with an application.
