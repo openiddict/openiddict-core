@@ -75,9 +75,8 @@ namespace OpenIddict.Models
         public virtual string Permissions { get; set; }
 
         /// <summary>
-        /// Gets or sets the logout callback URLs
-        /// associated with the current application,
-        /// stored as a unique space-separated string.
+        /// Gets or sets the logout callback URLs associated with
+        /// the current application, serialized as a JSON array.
         /// </summary>
         public virtual string PostLogoutRedirectUris { get; set; }
 
@@ -88,9 +87,8 @@ namespace OpenIddict.Models
         public virtual string Properties { get; set; }
 
         /// <summary>
-        /// Gets or sets the callback URLs
-        /// associated with the current application,
-        /// stored as a unique space-separated string.
+        /// Gets or sets the callback URLs associated with the
+        /// current application, serialized as a JSON array.
         /// </summary>
         public virtual string RedirectUris { get; set; }
 

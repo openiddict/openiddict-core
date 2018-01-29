@@ -246,11 +246,7 @@ namespace OpenIddict.Core
                 return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            var scopes = authorization.Scopes.Split(
-                new[] { OpenIddictConstants.Separators.Space },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            return Task.FromResult(ImmutableArray.Create(scopes));
+            return Task.FromResult(JArray.Parse(authorization.Scopes).Select(element => (string) element).ToImmutableArray());
         }
 
         /// <summary>
@@ -465,17 +461,7 @@ namespace OpenIddict.Core
                 return Task.CompletedTask;
             }
 
-            if (scopes.Any(scope => string.IsNullOrEmpty(scope)))
-            {
-                throw new ArgumentException("Scopes cannot be null or empty.", nameof(authorization));
-            }
-
-            if (scopes.Any(scope => scope.Contains(OpenIddictConstants.Separators.Space)))
-            {
-                throw new ArgumentException("Scopes cannot contain spaces.", nameof(authorization));
-            }
-
-            authorization.Scopes = string.Join(OpenIddictConstants.Separators.Space, scopes);
+            authorization.Scopes = new JArray(scopes.ToArray()).ToString(Formatting.None);
 
             return Task.CompletedTask;
         }

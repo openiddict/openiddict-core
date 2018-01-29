@@ -140,40 +140,27 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            // To optimize the efficiency of the query, only applications whose stringified
-            // LogoutRedirectUris property contains the specified address are returned. Once the
-            // applications are retrieved, the LogoutRedirectUri property is manually split.
+            // To optimize the efficiency of the query a bit, only applications whose stringified
+            // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this method in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
             IQueryable<TApplication> Query(IQueryable<TApplication> applications, string uri)
                 => from application in applications
                    where application.PostLogoutRedirectUris.Contains(uri)
                    select application;
 
-            var candidates = await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken);
-            if (candidates.IsDefaultOrEmpty)
+            var builder = ImmutableArray.CreateBuilder<TApplication>();
+
+            foreach (var application in await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken))
             {
-                return ImmutableArray.Create<TApplication>();
-            }
-
-            var builder = ImmutableArray.CreateBuilder<TApplication>(0);
-
-            foreach (var candidate in candidates)
-            {
-                var uris = candidate.PostLogoutRedirectUris?.Split(
-                    new[] { OpenIddictConstants.Separators.Space },
-                    StringSplitOptions.RemoveEmptyEntries);
-
-                if (uris == null)
-                {
-                    continue;
-                }
-
-                foreach (var uri in uris)
+                foreach (var uri in await GetPostLogoutRedirectUrisAsync(application, cancellationToken))
                 {
                     // Note: the post_logout_redirect_uri must be compared
                     // using case-sensitive "Simple String Comparison".
                     if (string.Equals(uri, address, StringComparison.Ordinal))
                     {
-                        builder.Add(candidate);
+                        builder.Add(application);
 
                         break;
                     }
@@ -199,40 +186,27 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            // To optimize the efficiency of the query, only applications whose stringified
-            // RedirectUris property contains the specified address are returned. Once the
-            // applications are retrieved, the RedirectUri property is manually split.
+            // To optimize the efficiency of the query a bit, only applications whose stringified
+            // RedirectUris property contains the specified URL are returned. Once the applications
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this method in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
             IQueryable<TApplication> Query(IQueryable<TApplication> applications, string uri)
                 => from application in applications
                    where application.RedirectUris.Contains(uri)
                    select application;
 
-            var candidates = await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken);
-            if (candidates.IsDefaultOrEmpty)
+            var builder = ImmutableArray.CreateBuilder<TApplication>();
+
+            foreach (var application in await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken))
             {
-                return ImmutableArray.Create<TApplication>();
-            }
-
-            var builder = ImmutableArray.CreateBuilder<TApplication>(0);
-
-            foreach (var candidate in candidates)
-            {
-                var uris = candidate.RedirectUris?.Split(
-                    new[] { OpenIddictConstants.Separators.Space },
-                    StringSplitOptions.RemoveEmptyEntries);
-
-                if (uris == null)
-                {
-                    continue;
-                }
-
-                foreach (var uri in uris)
+                foreach (var uri in await GetRedirectUrisAsync(application, cancellationToken))
                 {
                     // Note: the redirect_uri must be compared using case-sensitive "Simple String Comparison".
                     // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
                     if (string.Equals(uri, address, StringComparison.Ordinal))
                     {
-                        builder.Add(candidate);
+                        builder.Add(application);
 
                         break;
                     }
@@ -400,11 +374,7 @@ namespace OpenIddict.Core
                 return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            var uris = application.PostLogoutRedirectUris.Split(
-                new[] { OpenIddictConstants.Separators.Space },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            return Task.FromResult(ImmutableArray.Create(uris));
+            return Task.FromResult(JArray.Parse(application.PostLogoutRedirectUris).Select(element => (string) element).ToImmutableArray());
         }
 
         /// <summary>
@@ -452,11 +422,7 @@ namespace OpenIddict.Core
                 return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            var uris = application.RedirectUris.Split(
-                new[] { OpenIddictConstants.Separators.Space },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            return Task.FromResult(ImmutableArray.Create(uris));
+            return Task.FromResult(JArray.Parse(application.RedirectUris).Select(element => (string) element).ToImmutableArray());
         }
 
         /// <summary>
@@ -659,17 +625,7 @@ namespace OpenIddict.Core
                 return Task.CompletedTask;
             }
 
-            if (addresses.Any(address => string.IsNullOrEmpty(address)))
-            {
-                throw new ArgumentException("Callback addresses cannot be null or empty.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => address.Contains(OpenIddictConstants.Separators.Space)))
-            {
-                throw new ArgumentException("Callback addresses cannot contain spaces.", nameof(addresses));
-            }
-
-            application.PostLogoutRedirectUris = string.Join(OpenIddictConstants.Separators.Space, addresses);
+            application.PostLogoutRedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
 
             return Task.CompletedTask;
         }
@@ -726,17 +682,7 @@ namespace OpenIddict.Core
                 return Task.CompletedTask;
             }
 
-            if (addresses.Any(address => string.IsNullOrEmpty(address)))
-            {
-                throw new ArgumentException("Callback addresses cannot be null or empty.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => address.Contains(OpenIddictConstants.Separators.Space)))
-            {
-                throw new ArgumentException("Callback addresses cannot contain spaces.", nameof(addresses));
-            }
-
-            application.RedirectUris = string.Join(OpenIddictConstants.Separators.Space, addresses);
+            application.RedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
 
             return Task.CompletedTask;
         }
