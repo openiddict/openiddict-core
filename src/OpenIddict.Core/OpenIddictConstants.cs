@@ -37,6 +37,33 @@ namespace OpenIddict.Core
             public const string ExternalProvidersSupported = "external_providers_supported";
         }
 
+        public static class Permissions
+        {
+            public static class Endpoints
+            {
+                public const string Authorization = "ept:authorization";
+                public const string Introspection = "ept:introspection";
+                public const string Logout = "ept:logout";
+                public const string Revocation = "ept:revocation";
+                public const string Token = "ept:token";
+            }
+
+            public static class GrantTypes
+            {
+                public const string AuthorizationCode = "gt:authorization_code";
+                public const string ClientCredentials = "gt:client_credentials";
+                public const string Implicit = "gt:implicit";
+                public const string Password = "gt:password";
+                public const string RefreshToken = "gt:refresh_token";
+            }
+
+            public static class Prefixes
+            {
+                public const string Endpoint = "ept:";
+                public const string GrantType = "gt:";
+            }
+        }
+
         public static class Properties
         {
             public const string Application = ".application";

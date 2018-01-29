@@ -418,6 +418,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the permissions associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the permissions associated with the application.
+        /// </returns>
+        public virtual Task<ImmutableArray<string>> GetPermissionsAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Store.GetPermissionsAsync(application, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the logout callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -453,6 +472,23 @@ namespace OpenIddict.Core
             }
 
             return Store.GetRedirectUrisAsync(application, cancellationToken);
+        }
+
+        /// <summary>
+        /// Determines whether the specified permission has been granted to the application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="permission">The permission.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the application has been granted the specified permission, <c>false</c> otherwise.</returns>
+        public virtual async Task<bool> HasPermissionAsync([NotNull] TApplication application, [NotNull] string permission, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return (await Store.GetPermissionsAsync(application, cancellationToken)).Contains(permission, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -668,6 +704,8 @@ namespace OpenIddict.Core
                 Type = await Store.GetClientTypeAsync(application, cancellationToken)
             };
 
+            descriptor.Permissions.UnionWith(await Store.GetPermissionsAsync(application, cancellationToken));
+
             foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
             {
                 // Ensure the address is not null or empty.
@@ -783,6 +821,12 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is used, string.Equals(Ordinal) is manually called here.
             foreach (var application in await Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken))
             {
+                // If the application is not allowed to use the logout endpoint, ignore it and keep iterating.
+                if (!await HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Logout, cancellationToken))
+                {
+                    continue;
+                }
+
                 foreach (var uri in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
                 {
                     // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison".
@@ -864,6 +908,7 @@ namespace OpenIddict.Core
             await Store.SetClientSecretAsync(application, descriptor.ClientSecret, cancellationToken);
             await Store.SetClientTypeAsync(application, descriptor.Type, cancellationToken);
             await Store.SetDisplayNameAsync(application, descriptor.DisplayName, cancellationToken);
+            await Store.SetPermissionsAsync(application, ImmutableArray.CreateRange(descriptor.Permissions), cancellationToken);
             await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
                 descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
             await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(

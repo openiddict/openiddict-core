@@ -151,7 +151,15 @@ namespace Mvc.Server
                         ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
                         DisplayName = "MVC client application",
                         PostLogoutRedirectUris = { new Uri("http://localhost:53507/signout-callback-oidc") },
-                        RedirectUris = { new Uri("http://localhost:53507/signin-oidc") }
+                        RedirectUris = { new Uri("http://localhost:53507/signin-oidc") },
+                        Permissions =
+                        {
+                            OpenIddictConstants.Permissions.Endpoints.Authorization,
+                            OpenIddictConstants.Permissions.Endpoints.Logout,
+                            OpenIddictConstants.Permissions.Endpoints.Token,
+                            OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+                            OpenIddictConstants.Permissions.GrantTypes.RefreshToken
+                        }
                     };
 
                     await manager.CreateAsync(descriptor, cancellationToken);
@@ -172,7 +180,13 @@ namespace Mvc.Server
                     {
                         ClientId = "postman",
                         DisplayName = "Postman",
-                        RedirectUris = { new Uri("https://www.getpostman.com/oauth2/callback") }
+                        RedirectUris = { new Uri("https://www.getpostman.com/oauth2/callback") },
+                        Permissions =
+                        {
+                            OpenIddictConstants.Permissions.Endpoints.Authorization,
+                            OpenIddictConstants.Permissions.Endpoints.Token,
+                            OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode
+                        }
                     };
 
                     await manager.CreateAsync(descriptor, cancellationToken);

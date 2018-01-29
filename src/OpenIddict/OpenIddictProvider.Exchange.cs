@@ -25,8 +25,8 @@ namespace OpenIddict
             // Reject token requests that don't specify a supported grant type.
             if (!options.GrantTypes.Contains(context.Request.GrantType))
             {
-                Logger.LogError("The token request was rejected because the '{Grant}' " +
-                                "grant is not supported.", context.Request.GrantType);
+                Logger.LogError("The token request was rejected because the '{GrantType}' " +
+                                "grant type is not supported.", context.Request.GrantType);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
@@ -134,6 +134,34 @@ namespace OpenIddict
             // Store the application entity as a request property to make it accessible
             // from the other provider methods without having to call the store twice.
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
+
+            // Reject the request if the application is not allowed to use the token endpoint.
+            if (!await Applications.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Endpoints.Token, context.HttpContext.RequestAborted))
+            {
+                Logger.LogError("The token request was rejected because the application '{ClientId}' " +
+                                "was not allowed to use the token endpoint.", context.ClientId);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    description: "This client application is not allowed to use the token endpoint.");
+
+                return;
+            }
+
+            // Reject the request if the application is not allowed to use the specified grant type.
+            if (!await Applications.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Prefixes.GrantType + context.Request.GrantType, context.HttpContext.RequestAborted))
+            {
+                Logger.LogError("The token request was rejected because the application '{ClientId}' was not allowed to " +
+                                "use the specified grant type: {GrantType}.", context.ClientId, context.Request.GrantType);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    description: "This client application is not allowed to use the specified grant type.");
+
+                return;
+            }
 
             if (await Applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
             {

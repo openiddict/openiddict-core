@@ -356,6 +356,30 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the permissions associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the permissions associated with the application.
+        /// </returns>
+        public virtual Task<ImmutableArray<string>> GetPermissionsAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(application.Permissions))
+            {
+                return Task.FromResult(ImmutableArray.Create<string>());
+            }
+
+            return Task.FromResult(JArray.Parse(application.Permissions).Select(element => (string) element).ToImmutableArray());
+        }
+
+        /// <summary>
         /// Retrieves the logout callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -579,6 +603,34 @@ namespace OpenIddict.Core
             }
 
             application.DisplayName = name;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the permissions associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="permissions">The permissions associated with the application </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetPermissionsAsync([NotNull] TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (permissions.IsDefaultOrEmpty)
+            {
+                application.Permissions = null;
+
+                return Task.CompletedTask;
+            }
+
+            application.Permissions = new JArray(permissions.ToArray()).ToString(Formatting.None);
 
             return Task.CompletedTask;
         }
