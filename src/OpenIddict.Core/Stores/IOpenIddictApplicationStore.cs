@@ -180,6 +180,17 @@ namespace OpenIddict.Core
         Task<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the permissions associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the permissions associated with the application.
+        /// </returns>
+        Task<ImmutableArray<string>> GetPermissionsAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the logout callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -295,6 +306,17 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetDisplayNameAsync([NotNull] TApplication application, [CanBeNull] string name, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the permissions associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="permissions">The permissions associated with the application </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetPermissionsAsync([NotNull] TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the logout callback addresses associated with an application.

@@ -68,6 +68,20 @@ namespace OpenIddict
             // from the other provider methods without having to call the store twice.
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
+            // Reject the request if the application is not allowed to use the introspection endpoint.
+            if (!await Applications.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Endpoints.Introspection, context.HttpContext.RequestAborted))
+            {
+                Logger.LogError("The introspection request was rejected because the application '{ClientId}' " +
+                                "was not allowed to use the introspection endpoint.", context.ClientId);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    description: "This client application is not allowed to use the introspection endpoint.");
+
+                return;
+            }
+
             // Reject introspection requests sent by public applications.
             if (await Applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
             {

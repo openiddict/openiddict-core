@@ -271,19 +271,6 @@ namespace OpenIddict
             // from the other provider methods without having to call the store twice.
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
-            // Ensure that the specified redirect_uri is valid and is associated with the client application.
-            if (!await Applications.ValidateRedirectUriAsync(application, context.RedirectUri, context.HttpContext.RequestAborted))
-            {
-                Logger.LogError("The authorization request was rejected because the redirect_uri " +
-                                "was invalid: '{RedirectUri}'.", context.RedirectUri);
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The specified 'redirect_uri' parameter is not valid for this client application.");
-
-                return;
-            }
-
             // To prevent downgrade attacks, ensure that authorization requests returning a token directly from
             // the authorization endpoint are rejected if the client_id corresponds to a confidential application.
             // Note: when using the authorization code grant, ValidateTokenRequest is responsible of rejecting
@@ -293,8 +280,96 @@ namespace OpenIddict
                 context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token)))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
                     description: "The specified 'response_type' parameter is not valid for this client application.");
+
+                return;
+            }
+
+            // Reject the request if the application is not allowed to use the authorization endpoint.
+            if (!await Applications.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Endpoints.Authorization, context.HttpContext.RequestAborted))
+            {
+                Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                "was not allowed to use the authorization endpoint.", context.ClientId);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    description: "This client application is not allowed to use the authorization endpoint.");
+
+                return;
+            }
+
+            // Reject the request if the application is not allowed to use the authorization code flow.
+            if (context.Request.IsAuthorizationCodeFlow() && !await Applications.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, context.HttpContext.RequestAborted))
+            {
+                Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                "was not allowed to use the authorization code flow.", context.ClientId);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    description: "The client application is not allowed to use the authorization code flow.");
+
+                return;
+            }
+
+            // Reject the request if the application is not allowed to use the implicit flow.
+            if (context.Request.IsImplicitFlow() && !await Applications.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.GrantTypes.Implicit, context.HttpContext.RequestAborted))
+            {
+                Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                "was not allowed to use the implicit flow.", context.ClientId);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    description: "The client application is not allowed to use the implicit flow.");
+
+                return;
+            }
+
+            // Reject the request if the application is not allowed to use the authorization code/implicit flows.
+            if (context.Request.IsHybridFlow() &&
+               (!await Applications.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, context.HttpContext.RequestAborted) ||
+                !await Applications.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.GrantTypes.Implicit, context.HttpContext.RequestAborted)))
+            {
+                Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                "was not allowed to use the hybrid flow.", context.ClientId);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    description: "The client application is not allowed to use the hybrid flow.");
+
+                return;
+            }
+
+            // Reject the request if the offline_access scope was request and if the
+            // application is not allowed to use the authorization code/implicit flows.
+            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
+               !await Applications.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.GrantTypes.RefreshToken, context.HttpContext.RequestAborted))
+            {
+                Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                "was not allowed to request the 'offline_access' scope.", context.ClientId);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The client application is not allowed to use the 'offline_access' scope.");
+
+                return;
+            }
+
+            // Ensure that the specified redirect_uri is valid and is associated with the client application.
+            if (!await Applications.ValidateRedirectUriAsync(application, context.RedirectUri, context.HttpContext.RequestAborted))
+            {
+                Logger.LogError("The authorization request was rejected because the redirect_uri " +
+                                "was invalid: '{RedirectUri}'.", context.RedirectUri);
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The specified 'redirect_uri' parameter is not valid for this client application.");
 
                 return;
             }
