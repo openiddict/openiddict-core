@@ -56,8 +56,8 @@ namespace OpenIddict.Models
         public virtual string Properties { get; set; }
 
         /// <summary>
-        /// Gets or sets the space-delimited scopes
-        /// associated with the current authorization.
+        /// Gets or sets the scopes associated with the current
+        /// authorization, serialized as a JSON array.
         /// </summary>
         public virtual string Scopes { get; set; }
 
