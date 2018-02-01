@@ -12,6 +12,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenIddict.Models;
 
 namespace OpenIddict.Core
@@ -169,6 +171,30 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the additional properties associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the additional properties associated with the scope.
+        /// </returns>
+        public virtual Task<JObject> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (string.IsNullOrEmpty(scope.Properties))
+            {
+                return Task.FromResult(new JObject());
+            }
+
+            return Task.FromResult(JObject.Parse(scope.Properties));
+        }
+
+        /// <summary>
         /// Instantiates a new scope.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -266,6 +292,34 @@ namespace OpenIddict.Core
             }
 
             scope.Name = name;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Sets the additional properties associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="properties">The additional properties associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetPropertiesAsync([NotNull] TScope scope, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (properties == null)
+            {
+                scope.Properties = null;
+
+                return Task.FromResult(0);
+            }
+
+            scope.Properties = properties.ToString(Formatting.None);
 
             return Task.FromResult(0);
         }

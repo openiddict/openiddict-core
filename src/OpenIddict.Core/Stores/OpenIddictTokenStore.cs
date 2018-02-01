@@ -12,6 +12,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenIddict.Models;
 
 namespace OpenIddict.Core
@@ -349,6 +351,30 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the additional properties associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the additional properties associated with the token.
+        /// </returns>
+        public virtual Task<JObject> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (string.IsNullOrEmpty(token.Properties))
+            {
+                return Task.FromResult(new JObject());
+            }
+
+            return Task.FromResult(JObject.Parse(token.Properties));
+        }
+
+        /// <summary>
         /// Retrieves the reference identifier associated with a token.
         /// Note: depending on the manager used to create the token,
         /// the reference identifier may be hashed for security reasons.
@@ -608,6 +634,34 @@ namespace OpenIddict.Core
             }
 
             token.Payload = payload;
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Sets the additional properties associated with a token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="properties">The additional properties associated with the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetPropertiesAsync([NotNull] TToken token, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (properties == null)
+            {
+                token.Properties = null;
+
+                return Task.FromResult(0);
+            }
+
+            token.Properties = properties.ToString(Formatting.None);
 
             return Task.FromResult(0);
         }

@@ -28,6 +28,11 @@ namespace OpenIddict.Core
         public string DisplayName { get; set; }
 
         /// <summary>
+        /// Gets the permissions associated with the application.
+        /// </summary>
+        public ISet<string> Permissions { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Gets the logout callback URLs
         /// associated with the application.
         /// </summary>

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Core
 {
@@ -122,6 +123,17 @@ namespace OpenIddict.Core
         Task<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the additional properties associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the additional properties associated with the scope.
+        /// </returns>
+        Task<JObject> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Instantiates a new scope.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -180,6 +192,17 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the additional properties associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="properties">The additional properties associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetPropertiesAsync([NotNull] TScope scope, [CanBeNull] JObject properties, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing scope.

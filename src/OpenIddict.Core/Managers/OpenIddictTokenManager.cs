@@ -389,27 +389,6 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Retrieves the reference identifier associated with a token.
-        /// Note: depending on the manager used to create the token,
-        /// the reference identifier may be hashed for security reasons.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the reference identifier associated with the specified token.
-        /// </returns>
-        public virtual Task<string> GetReferenceIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            return Store.GetReferenceIdAsync(token, cancellationToken);
-        }
-
-        /// <summary>
         /// Retrieves the unique identifier associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
@@ -445,6 +424,27 @@ namespace OpenIddict.Core
             }
 
             return Store.GetPayloadAsync(token, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the reference identifier associated with a token.
+        /// Note: depending on the manager used to create the token,
+        /// the reference identifier may be hashed for security reasons.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the reference identifier associated with the specified token.
+        /// </returns>
+        public virtual Task<string> GetReferenceIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return Store.GetReferenceIdAsync(token, cancellationToken);
         }
 
         /// <summary>

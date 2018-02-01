@@ -12,6 +12,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenIddict.Models;
 
 namespace OpenIddict.Core
@@ -201,6 +203,30 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the additional properties associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the additional properties associated with the authorization.
+        /// </returns>
+        public virtual Task<JObject> GetPropertiesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            if (string.IsNullOrEmpty(authorization.Properties))
+            {
+                return Task.FromResult(new JObject());
+            }
+
+            return Task.FromResult(JObject.Parse(authorization.Properties));
+        }
+
+        /// <summary>
         /// Retrieves the scopes associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -221,11 +247,7 @@ namespace OpenIddict.Core
                 return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            var scopes = authorization.Scopes.Split(
-                new[] { OpenIddictConstants.Separators.Space },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            return Task.FromResult(ImmutableArray.Create(scopes));
+            return Task.FromResult(JArray.Parse(authorization.Scopes).Select(element => (string) element).ToImmutableArray());
         }
 
         /// <summary>
@@ -393,6 +415,34 @@ namespace OpenIddict.Core
             [CanBeNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Sets the additional properties associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="properties">The additional properties associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetPropertiesAsync([NotNull] TAuthorization authorization, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            if (properties == null)
+            {
+                authorization.Properties = null;
+
+                return Task.FromResult(0);
+            }
+
+            authorization.Properties = properties.ToString(Formatting.None);
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
         /// Sets the scopes associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -416,17 +466,7 @@ namespace OpenIddict.Core
                 return Task.FromResult(0);
             }
 
-            if (scopes.Any(scope => string.IsNullOrEmpty(scope)))
-            {
-                throw new ArgumentException("Scopes cannot be null or empty.", nameof(authorization));
-            }
-
-            if (scopes.Any(scope => scope.Contains(OpenIddictConstants.Separators.Space)))
-            {
-                throw new ArgumentException("Scopes cannot contain spaces.", nameof(authorization));
-            }
-
-            authorization.Scopes = string.Join(OpenIddictConstants.Separators.Space, scopes);
+            authorization.Scopes = new JArray(scopes.ToArray()).ToString(Formatting.None);
 
             return Task.FromResult(0);
         }

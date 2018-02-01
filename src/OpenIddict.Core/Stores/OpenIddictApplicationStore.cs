@@ -12,6 +12,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenIddict.Models;
 
 namespace OpenIddict.Core
@@ -139,40 +141,27 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            // To optimize the efficiency of the query, only applications whose stringified
-            // LogoutRedirectUris property contains the specified address are returned. Once the
-            // applications are retrieved, the LogoutRedirectUri property is manually split.
+            // To optimize the efficiency of the query a bit, only applications whose stringified
+            // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this method in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
             IQueryable<TApplication> Query(IQueryable<TApplication> applications, string uri)
                 => from application in applications
                    where application.PostLogoutRedirectUris.Contains(uri)
                    select application;
 
-            var candidates = await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken);
-            if (candidates.IsDefaultOrEmpty)
+            var builder = ImmutableArray.CreateBuilder<TApplication>();
+
+            foreach (var application in await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken))
             {
-                return ImmutableArray.Create<TApplication>();
-            }
-
-            var builder = ImmutableArray.CreateBuilder<TApplication>(0);
-
-            foreach (var candidate in candidates)
-            {
-                var uris = candidate.PostLogoutRedirectUris?.Split(
-                    new[] { OpenIddictConstants.Separators.Space },
-                    StringSplitOptions.RemoveEmptyEntries);
-
-                if (uris == null)
-                {
-                    continue;
-                }
-
-                foreach (var uri in uris)
+                foreach (var uri in await GetPostLogoutRedirectUrisAsync(application, cancellationToken))
                 {
                     // Note: the post_logout_redirect_uri must be compared
                     // using case-sensitive "Simple String Comparison".
                     if (string.Equals(uri, address, StringComparison.Ordinal))
                     {
-                        builder.Add(candidate);
+                        builder.Add(application);
 
                         break;
                     }
@@ -198,40 +187,27 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            // To optimize the efficiency of the query, only applications whose stringified
-            // RedirectUris property contains the specified address are returned. Once the
-            // applications are retrieved, the RedirectUri property is manually split.
+            // To optimize the efficiency of the query a bit, only applications whose stringified
+            // RedirectUris property contains the specified URL are returned. Once the applications
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this method in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
             IQueryable<TApplication> Query(IQueryable<TApplication> applications, string uri)
                 => from application in applications
                    where application.RedirectUris.Contains(uri)
                    select application;
 
-            var candidates = await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken);
-            if (candidates.IsDefaultOrEmpty)
+            var builder = ImmutableArray.CreateBuilder<TApplication>();
+
+            foreach (var application in await ListAsync((applications, uri) => Query(applications, uri), address, cancellationToken))
             {
-                return ImmutableArray.Create<TApplication>();
-            }
-
-            var builder = ImmutableArray.CreateBuilder<TApplication>(0);
-
-            foreach (var candidate in candidates)
-            {
-                var uris = candidate.RedirectUris?.Split(
-                    new[] { OpenIddictConstants.Separators.Space },
-                    StringSplitOptions.RemoveEmptyEntries);
-
-                if (uris == null)
-                {
-                    continue;
-                }
-
-                foreach (var uri in uris)
+                foreach (var uri in await GetRedirectUrisAsync(application, cancellationToken))
                 {
                     // Note: the redirect_uri must be compared using case-sensitive "Simple String Comparison".
                     // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest for more information.
                     if (string.Equals(uri, address, StringComparison.Ordinal))
                     {
-                        builder.Add(candidate);
+                        builder.Add(application);
 
                         break;
                     }
@@ -355,6 +331,30 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the permissions associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the permissions associated with the application.
+        /// </returns>
+        public virtual Task<ImmutableArray<string>> GetPermissionsAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(application.Permissions))
+            {
+                return Task.FromResult(ImmutableArray.Create<string>());
+            }
+
+            return Task.FromResult(JArray.Parse(application.Permissions).Select(element => (string) element).ToImmutableArray());
+        }
+
+        /// <summary>
         /// Retrieves the logout callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -375,11 +375,31 @@ namespace OpenIddict.Core
                 return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            var uris = application.PostLogoutRedirectUris.Split(
-                new[] { OpenIddictConstants.Separators.Space },
-                StringSplitOptions.RemoveEmptyEntries);
+            return Task.FromResult(JArray.Parse(application.PostLogoutRedirectUris).Select(element => (string) element).ToImmutableArray());
+        }
 
-            return Task.FromResult(ImmutableArray.Create(uris));
+        /// <summary>
+        /// Retrieves the additional properties associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// result returns all the additional properties associated with the application.
+        /// </returns>
+        public virtual Task<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(application.Properties))
+            {
+                return Task.FromResult(new JObject());
+            }
+
+            return Task.FromResult(JObject.Parse(application.Properties));
         }
 
         /// <summary>
@@ -403,11 +423,7 @@ namespace OpenIddict.Core
                 return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            var uris = application.RedirectUris.Split(
-                new[] { OpenIddictConstants.Separators.Space },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            return Task.FromResult(ImmutableArray.Create(uris));
+            return Task.FromResult(JArray.Parse(application.RedirectUris).Select(element => (string) element).ToImmutableArray());
         }
 
         /// <summary>
@@ -561,6 +577,34 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Sets the permissions associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="permissions">The permissions associated with the application </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetPermissionsAsync([NotNull] TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (permissions.IsDefaultOrEmpty)
+            {
+                application.Permissions = null;
+
+                return Task.FromResult(0);
+            }
+
+            application.Permissions = new JArray(permissions.ToArray()).ToString(Formatting.None);
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
         /// Sets the logout callback addresses associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -584,17 +628,35 @@ namespace OpenIddict.Core
                 return Task.FromResult(0);
             }
 
-            if (addresses.Any(address => string.IsNullOrEmpty(address)))
+            application.PostLogoutRedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
+
+            return Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Sets the additional properties associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="properties">The additional properties associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        {
+            if (application == null)
             {
-                throw new ArgumentException("Callback addresses cannot be null or empty.", nameof(addresses));
+                throw new ArgumentNullException(nameof(application));
             }
 
-            if (addresses.Any(address => address.Contains(OpenIddictConstants.Separators.Space)))
+            if (properties == null)
             {
-                throw new ArgumentException("Callback addresses cannot contain spaces.", nameof(addresses));
+                application.Properties = null;
+
+                return Task.FromResult(0);
             }
 
-            application.PostLogoutRedirectUris = string.Join(OpenIddictConstants.Separators.Space, addresses);
+            application.Properties = properties.ToString(Formatting.None);
 
             return Task.FromResult(0);
         }
@@ -623,17 +685,7 @@ namespace OpenIddict.Core
                 return Task.FromResult(0);
             }
 
-            if (addresses.Any(address => string.IsNullOrEmpty(address)))
-            {
-                throw new ArgumentException("Callback addresses cannot be null or empty.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => address.Contains(OpenIddictConstants.Separators.Space)))
-            {
-                throw new ArgumentException("Callback addresses cannot contain spaces.", nameof(addresses));
-            }
-
-            application.RedirectUris = string.Join(OpenIddictConstants.Separators.Space, addresses);
+            application.RedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
 
             return Task.FromResult(0);
         }

@@ -102,6 +102,47 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task ValidateRevocationRequest_RequestIsRejectedWhenEndpointPermissionIsNotGranted()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(RevocationEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                Token = "SlAV32hkKG",
+                TokenTypeHint = OpenIdConnectConstants.TokenTypeHints.RefreshToken
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
+            Assert.Equal("This client application is not allowed to use the revocation endpoint.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
         public async Task ValidateRevocationRequest_ClientSecretCannotBeUsedByPublicClients()
         {
             // Arrange
@@ -111,6 +152,10 @@ namespace OpenIddict.Tests
             {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
@@ -137,6 +182,8 @@ namespace OpenIddict.Tests
             Assert.Equal("The 'client_secret' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -150,6 +197,10 @@ namespace OpenIddict.Tests
             {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
@@ -176,6 +227,8 @@ namespace OpenIddict.Tests
             Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -189,6 +242,10 @@ namespace OpenIddict.Tests
             {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Hybrid);
@@ -215,6 +272,8 @@ namespace OpenIddict.Tests
             Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -228,6 +287,10 @@ namespace OpenIddict.Tests
             {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);

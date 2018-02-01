@@ -50,8 +50,14 @@ namespace OpenIddict.Models
         public virtual TKey Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the space-delimited scopes
-        /// associated with the current authorization.
+        /// Gets or sets the additional properties serialized as a JSON object,
+        /// or <c>null</c> if no bag was associated with the current authorization.
+        /// </summary>
+        public virtual string Properties { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scopes associated with the current
+        /// authorization, serialized as a JSON array.
         /// </summary>
         public virtual string Scopes { get; set; }
 

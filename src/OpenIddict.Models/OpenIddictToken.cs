@@ -74,6 +74,12 @@ namespace OpenIddict.Models
         public virtual string Payload { get; set; }
 
         /// <summary>
+        /// Gets or sets the additional properties serialized as a JSON object,
+        /// or <c>null</c> if no bag was associated with the current token.
+        /// </summary>
+        public virtual string Properties { get; set; }
+
+        /// <summary>
         /// Gets or sets the reference identifier associated
         /// with the current token, if applicable.
         /// Note: this property is only used for reference tokens
