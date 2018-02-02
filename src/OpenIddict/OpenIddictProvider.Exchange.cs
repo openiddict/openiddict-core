@@ -269,8 +269,8 @@ namespace OpenIddict
                 // If the operation fails, the helpers will automatically log
                 // and swallow the exception to ensure that a valid error
                 // response will be returned to the client application.
-                await TryRevokeAuthorizationAsync(context.Ticket, context.HttpContext);
-                await TryRevokeTokensAsync(context.Ticket, context.HttpContext);
+                await TryRevokeAuthorizationAsync(context.Ticket);
+                await TryRevokeTokensAsync(context.Ticket);
 
                 Logger.LogError("The token request was rejected because the authorization code " +
                                 "or refresh token '{Identifier}' has already been redeemed.", identifier);

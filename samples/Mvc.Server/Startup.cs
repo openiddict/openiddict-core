@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Builder;
@@ -130,10 +129,10 @@ namespace Mvc.Server
 
             // Seed the database with the sample applications.
             // Note: in a real world application, this step should be part of a setup script.
-            InitializeAsync(app.ApplicationServices, CancellationToken.None).GetAwaiter().GetResult();
+            InitializeAsync(app.ApplicationServices).GetAwaiter().GetResult();
         }
 
-        private async Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken)
+        private async Task InitializeAsync(IServiceProvider services)
         {
             // Create a new service scope to ensure the database context is correctly disposed when this methods returns.
             using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
@@ -143,7 +142,7 @@ namespace Mvc.Server
 
                 var manager = scope.ServiceProvider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
 
-                if (await manager.FindByClientIdAsync("mvc", cancellationToken) == null)
+                if (await manager.FindByClientIdAsync("mvc") == null)
                 {
                     var descriptor = new OpenIddictApplicationDescriptor
                     {
@@ -162,7 +161,7 @@ namespace Mvc.Server
                         }
                     };
 
-                    await manager.CreateAsync(descriptor, cancellationToken);
+                    await manager.CreateAsync(descriptor);
                 }
 
                 // To test this sample with Postman, use the following settings:
@@ -174,7 +173,7 @@ namespace Mvc.Server
                 // * Scope: openid email profile roles
                 // * Grant type: authorization code
                 // * Request access token locally: yes
-                if (await manager.FindByClientIdAsync("postman", cancellationToken) == null)
+                if (await manager.FindByClientIdAsync("postman") == null)
                 {
                     var descriptor = new OpenIddictApplicationDescriptor
                     {
@@ -189,7 +188,7 @@ namespace Mvc.Server
                         }
                     };
 
-                    await manager.CreateAsync(descriptor, cancellationToken);
+                    await manager.CreateAsync(descriptor);
                 }
             }
         }

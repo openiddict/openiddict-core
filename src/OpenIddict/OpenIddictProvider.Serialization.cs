@@ -25,7 +25,7 @@ namespace OpenIddict
 
             context.Ticket = await ReceiveTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AccessToken,
-                context.AccessToken, options, context.HttpContext,
+                context.AccessToken, options,
                 context.Request, context.DataFormat);
 
             // Prevent the OpenID Connect server middleware from using
@@ -46,7 +46,7 @@ namespace OpenIddict
 
             context.Ticket = await ReceiveTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AuthorizationCode,
-                context.AuthorizationCode, options, context.HttpContext,
+                context.AuthorizationCode, options,
                 context.Request, context.DataFormat);
 
             // Prevent the OpenID Connect server middleware from using its default logic.
@@ -63,7 +63,7 @@ namespace OpenIddict
 
             context.Ticket = await ReceiveTokenAsync(
                 OpenIdConnectConstants.TokenUsages.RefreshToken,
-                context.RefreshToken, options, context.HttpContext,
+                context.RefreshToken, options,
                 context.Request, context.DataFormat);
 
             // Prevent the OpenID Connect server middleware from using its default logic.
@@ -80,8 +80,7 @@ namespace OpenIddict
 
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AccessToken,
-                context.Ticket, options, context.HttpContext,
-                context.Request, context.DataFormat);
+                context.Ticket, options, context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -107,8 +106,7 @@ namespace OpenIddict
 
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AuthorizationCode,
-                context.Ticket, options, context.HttpContext,
-                context.Request, context.DataFormat);
+                context.Ticket, options, context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
@@ -134,8 +132,7 @@ namespace OpenIddict
 
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.RefreshToken,
-                context.Ticket, options, context.HttpContext,
-                context.Request, context.DataFormat);
+                context.Ticket, options, context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.

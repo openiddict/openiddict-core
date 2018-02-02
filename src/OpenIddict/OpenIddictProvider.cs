@@ -155,7 +155,7 @@ namespace OpenIddict
                 // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                 if (options.UseRollingTokens || context.Request.IsAuthorizationCodeGrantType())
                 {
-                    if (!await TryRedeemTokenAsync(token, context.HttpContext))
+                    if (!await TryRedeemTokenAsync(token))
                     {
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -171,7 +171,7 @@ namespace OpenIddict
                 // with the authorization if the request is a grant_type=refresh_token request.
                 if (options.UseRollingTokens && context.Request.IsRefreshTokenGrantType())
                 {
-                    if (!await TryRevokeTokensAsync(context.Ticket, context.HttpContext))
+                    if (!await TryRevokeTokensAsync(context.Ticket))
                     {
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -186,7 +186,7 @@ namespace OpenIddict
                 // with a new expiration date if sliding expiration was not disabled.
                 else if (options.UseSlidingExpiration && context.Request.IsRefreshTokenGrantType())
                 {
-                    if (!await TryExtendTokenAsync(token, context.Ticket, context.HttpContext, options))
+                    if (!await TryExtendTokenAsync(token, context.Ticket, options))
                     {
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -206,7 +206,7 @@ namespace OpenIddict
             if (!context.Ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId) &&
                 (context.IncludeAuthorizationCode || context.IncludeRefreshToken))
             {
-                await CreateAuthorizationAsync(context.Ticket, options, context.HttpContext, context.Request);
+                await CreateAuthorizationAsync(context.Ticket, options, context.Request);
             }
 
             // Add the custom properties that are marked as public as authorization or
