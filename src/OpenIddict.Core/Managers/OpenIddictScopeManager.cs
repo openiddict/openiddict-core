@@ -46,7 +46,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes in the database.
         /// </returns>
-        public virtual Task<long> CountAsync(CancellationToken cancellationToken)
+        public virtual Task<long> CountAsync(CancellationToken cancellationToken = default)
         {
             return Store.CountAsync(cancellationToken);
         }
@@ -61,7 +61,8 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes that match the specified query.
         /// </returns>
-        public virtual Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual Task<long> CountAsync<TResult>(
+            [NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
             if (query == null)
             {
@@ -79,7 +80,7 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
         /// </returns>
-        public virtual async Task<TScope> CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual async Task<TScope> CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
@@ -107,7 +108,8 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
         /// </returns>
-        public virtual async Task<TScope> CreateAsync([NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
+        public virtual async Task<TScope> CreateAsync(
+            [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
         {
             if (descriptor == null)
             {
@@ -132,7 +134,7 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual async Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
@@ -161,7 +163,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the identifier.
         /// </returns>
-        public virtual Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -181,7 +183,8 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual Task<TResult> GetAsync<TResult>(
+            [NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
             return GetAsync((scopes, state) => state(scopes), query, cancellationToken);
         }
@@ -200,7 +203,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken)
+            [CanBeNull] TState state, CancellationToken cancellationToken = default)
         {
             if (query == null)
             {
@@ -219,7 +222,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the scope.
         /// </returns>
-        public virtual Task<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual Task<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
@@ -239,7 +242,8 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public virtual Task<ImmutableArray<TScope>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<TScope>> ListAsync(
+            [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken = default)
         {
             return Store.ListAsync(count, offset, cancellationToken);
         }
@@ -254,7 +258,8 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public virtual Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<TResult>> ListAsync<TResult>(
+            [NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
             return ListAsync((scopes, state) => state(scopes), query, cancellationToken);
         }
@@ -273,7 +278,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
-            [CanBeNull] TState state, CancellationToken cancellationToken)
+            [CanBeNull] TState state, CancellationToken cancellationToken = default)
         {
             if (query == null)
             {
@@ -291,7 +296,7 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual async Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
@@ -321,7 +326,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual async Task UpdateAsync([NotNull] TScope scope,
-            [NotNull] Func<OpenIddictScopeDescriptor, Task> operation, CancellationToken cancellationToken)
+            [NotNull] Func<OpenIddictScopeDescriptor, Task> operation, CancellationToken cancellationToken = default)
         {
             if (operation == null)
             {
@@ -349,7 +354,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         protected virtual async Task PopulateAsync([NotNull] TScope scope,
-            [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
+            [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {

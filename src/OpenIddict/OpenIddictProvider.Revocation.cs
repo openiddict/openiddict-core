@@ -223,7 +223,7 @@ namespace OpenIddict
             // will be returned to the client application.
             try
             {
-                await tokens.RevokeAsync(token, context.HttpContext.RequestAborted);
+                await tokens.RevokeAsync(token);
             }
 
             catch (Exception exception)

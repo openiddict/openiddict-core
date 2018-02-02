@@ -59,13 +59,13 @@ namespace OpenIddict
                 var application = request.GetProperty<TApplication>($"{OpenIddictConstants.Properties.Application}:{request.ClientId}");
                 Debug.Assert(application != null, "The client application shouldn't be null.");
 
-                descriptor.ApplicationId = await applications.GetIdAsync(application, context.RequestAborted);
+                descriptor.ApplicationId = await applications.GetIdAsync(application);
             }
 
-            var authorization = await authorizations.CreateAsync(descriptor, context.RequestAborted);
+            var authorization = await authorizations.CreateAsync(descriptor);
             if (authorization != null)
             {
-                var identifier = await authorizations.GetIdAsync(authorization, context.RequestAborted);
+                var identifier = await authorizations.GetIdAsync(authorization);
 
                 if (string.IsNullOrEmpty(request.ClientId))
                 {
@@ -166,7 +166,7 @@ namespace OpenIddict
                 result = Base64UrlEncoder.Encode(bytes);
 
                 // Obfuscate the reference identifier so it can be safely stored in the databse.
-                descriptor.ReferenceId = await tokens.ObfuscateReferenceIdAsync(result, context.RequestAborted);
+                descriptor.ReferenceId = await tokens.ObfuscateReferenceIdAsync(result);
             }
 
             // Otherwise, only create a token metadata entry for authorization codes and refresh tokens.
@@ -182,18 +182,22 @@ namespace OpenIddict
                 var application = request.GetProperty<TApplication>($"{OpenIddictConstants.Properties.Application}:{request.ClientId}");
                 Debug.Assert(application != null, "The client application shouldn't be null.");
 
-                descriptor.ApplicationId = await applications.GetIdAsync(application, context.RequestAborted);
+
+                descriptor.ApplicationId = await applications.GetIdAsync(application);
             }
 
             // If a null value was returned by CreateAsync(), return immediately.
-            var token = await tokens.CreateAsync(descriptor, context.RequestAborted);
+
+            // Note: the request cancellation token is deliberately not used here to ensure the caller
+            // cannot prevent this operation from being executed by resetting the TCP connection.
+            var token = await tokens.CreateAsync(descriptor);
             if (token == null)
             {
                 return null;
             }
 
             // Throw an exception if the token identifier can't be resolved.
-            var identifier = await tokens.GetIdAsync(token, context.RequestAborted);
+            var identifier = await tokens.GetIdAsync(token);
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new InvalidOperationException("The unique key associated with a refresh token cannot be null or empty.");
@@ -254,7 +258,7 @@ namespace OpenIddict
                 {
                     // Retrieve the token entry from the database. If it
                     // cannot be found, assume the token is not valid.
-                    token = await tokens.FindByReferenceIdAsync(value, context.RequestAborted);
+                    token = await tokens.FindByReferenceIdAsync(value);
 
                     // Store the token as a request property so it can be retrieved if this method is called another time.
                     request.AddProperty($"{OpenIddictConstants.Properties.ReferenceToken}:{value}", token);
@@ -268,8 +272,7 @@ namespace OpenIddict
                     return null;
                 }
 
-
-                identifier = await tokens.GetIdAsync(token, context.RequestAborted);
+                identifier = await tokens.GetIdAsync(token);
                 if (string.IsNullOrEmpty(identifier))
                 {
                     logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
@@ -280,7 +283,7 @@ namespace OpenIddict
 
                 // Extract the encrypted payload from the token. If it's null or empty,
                 // assume the token is not a reference token and consider it as invalid.
-                var payload = await tokens.GetPayloadAsync(token, context.RequestAborted);
+                var payload = await tokens.GetPayloadAsync(token);
                 if (string.IsNullOrEmpty(payload))
                 {
                     logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be retrieved. " +
@@ -294,7 +297,7 @@ namespace OpenIddict
                 {
                     logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be decrypted. " +
                                       "This may indicate that the token entry is corrupted or tampered.",
-                                      await tokens.GetIdAsync(token, context.RequestAborted));
+                                      await tokens.GetIdAsync(token));
 
                     return null;
                 }
@@ -336,7 +339,7 @@ namespace OpenIddict
                 // If it cannot be found, assume the authorization code/refresh token is not valid.
                 else
                 {
-                    token = await tokens.FindByIdAsync(identifier, context.RequestAborted);
+                    token = await tokens.FindByIdAsync(identifier);
 
                     // Store the token as a request property so it can be retrieved if this method is called another time.
                     request.AddProperty($"{OpenIddictConstants.Properties.Token}:{identifier}", token);
@@ -360,12 +363,12 @@ namespace OpenIddict
             ticket.SetTokenId(identifier);
 
             // Dynamically set the creation and expiration dates.
-            ticket.Properties.IssuedUtc = await tokens.GetCreationDateAsync(token, context.RequestAborted);
-            ticket.Properties.ExpiresUtc = await tokens.GetExpirationDateAsync(token, context.RequestAborted);
+            ticket.Properties.IssuedUtc = await tokens.GetCreationDateAsync(token);
+            ticket.Properties.ExpiresUtc = await tokens.GetExpirationDateAsync(token);
 
             // Restore the authorization identifier using the identifier attached with the database entry.
             ticket.SetProperty(OpenIddictConstants.Properties.AuthorizationId,
-                await tokens.GetAuthorizationIdAsync(token, context.RequestAborted));
+                await tokens.GetAuthorizationIdAsync(token));
 
             logger.LogTrace("The token '{Identifier}' was successfully decrypted and " +
                             "retrieved from the database: {Claims} ; {Properties}.",
@@ -388,7 +391,7 @@ namespace OpenIddict
                 return true;
             }
 
-            var authorization = await authorizations.FindByIdAsync(identifier, context.RequestAborted);
+            var authorization = await authorizations.FindByIdAsync(identifier);
             if (authorization == null)
             {
                 return true;
@@ -396,7 +399,9 @@ namespace OpenIddict
 
             try
             {
-                await authorizations.RevokeAsync(authorization, context.RequestAborted);
+                // Note: the request cancellation token is deliberately not used here to ensure the caller
+                // cannot prevent this operation from being executed by resetting the TCP connection.
+                await authorizations.RevokeAsync(authorization);
 
                 logger.LogInformation("The authorization '{Identifier}' was automatically revoked.", identifier);
 
@@ -424,22 +429,23 @@ namespace OpenIddict
                 return true;
             }
 
-            foreach (var token in await tokens.FindByAuthorizationIdAsync(identifier, context.RequestAborted))
+            foreach (var token in await tokens.FindByAuthorizationIdAsync(identifier))
             {
                 try
                 {
-                    await tokens.RevokeAsync(token, context.RequestAborted);
+                    // Note: the request cancellation token is deliberately not used here to ensure the caller
+                    // cannot prevent this operation from being executed by resetting the TCP connection.
+                    await tokens.RevokeAsync(token);
 
                     logger.LogInformation("The token '{Identifier}' was automatically revoked.",
-                        await tokens.GetIdAsync(token, context.RequestAborted));
+                        await tokens.GetIdAsync(token));
                 }
 
                 catch (Exception exception)
                 {
                     logger.LogWarning(0, exception, "An exception occurred while trying to revoke the tokens " +
                                                     "associated with the token '{Identifier}'.",
-                                                    await tokens.GetIdAsync(token, context.RequestAborted));
-
+                                                    await tokens.GetIdAsync(token));
                     return false;
                 }
             }
@@ -452,12 +458,15 @@ namespace OpenIddict
             var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
             var tokens = context.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
-            var identifier = await tokens.GetIdAsync(token, context.RequestAborted);
+            var identifier = await tokens.GetIdAsync(token);
+
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
 
             try
             {
-                await tokens.RedeemAsync(token, context.RequestAborted);
+                // Note: the request cancellation token is deliberately not used here to ensure the caller
+                // cannot prevent this operation from being executed by resetting the TCP connection.
+                await tokens.RedeemAsync(token);
 
                 logger.LogInformation("The token '{Identifier}' was automatically marked as redeemed.", identifier);
 
@@ -489,7 +498,9 @@ namespace OpenIddict
                 var date = options.SystemClock.UtcNow;
                 date += ticket.GetRefreshTokenLifetime() ?? options.RefreshTokenLifetime;
 
-                await tokens.ExtendAsync(token, date, context.RequestAborted);
+                // Note: the request cancellation token is deliberately not used here to ensure the caller
+                // cannot prevent this operation from being executed by resetting the TCP connection.
+                await tokens.ExtendAsync(token, date);
 
                 logger.LogInformation("The expiration date of the refresh token '{Identifier}' " +
                                       "was automatically updated: {Date}.", identifier, date);
