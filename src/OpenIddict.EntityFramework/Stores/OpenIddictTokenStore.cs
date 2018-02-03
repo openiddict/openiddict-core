@@ -117,9 +117,9 @@ namespace OpenIddict.EntityFramework
         /// <param name="token">The token to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task<TToken> CreateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public override Task CreateAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -128,9 +128,7 @@ namespace OpenIddict.EntityFramework
 
             Tokens.Add(token);
 
-            await Context.SaveChangesAsync(cancellationToken);
-
-            return token;
+            return Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>

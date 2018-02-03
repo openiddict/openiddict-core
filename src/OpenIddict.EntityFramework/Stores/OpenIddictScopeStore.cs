@@ -98,9 +98,9 @@ namespace OpenIddict.EntityFramework
         /// <param name="scope">The scope to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task<TScope> CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public override Task CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -109,9 +109,7 @@ namespace OpenIddict.EntityFramework
 
             Scopes.Add(scope);
 
-            await Context.SaveChangesAsync(cancellationToken);
-
-            return scope;
+            return Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>

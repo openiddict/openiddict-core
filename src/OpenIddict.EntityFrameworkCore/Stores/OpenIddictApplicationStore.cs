@@ -118,9 +118,9 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="application">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the application.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public override Task CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -129,9 +129,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             Context.Add(application);
 
-            await Context.SaveChangesAsync(cancellationToken);
-
-            return application;
+            return Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>

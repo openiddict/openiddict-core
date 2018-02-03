@@ -78,10 +78,9 @@ namespace OpenIddict.Core
         /// <param name="authorization">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task<TAuthorization> CreateAsync(
-            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual async Task CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -98,7 +97,7 @@ namespace OpenIddict.Core
 
             try
             {
-                return await Store.CreateAsync(authorization, cancellationToken);
+                await Store.CreateAsync(authorization, cancellationToken);
             }
 
             catch (Exception exception)
@@ -132,7 +131,9 @@ namespace OpenIddict.Core
             }
 
             await PopulateAsync(authorization, descriptor, cancellationToken);
-            return await CreateAsync(authorization, cancellationToken);
+            await CreateAsync(authorization, cancellationToken);
+
+            return authorization;
         }
 
         /// <summary>

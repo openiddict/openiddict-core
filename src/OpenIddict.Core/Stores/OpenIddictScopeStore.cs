@@ -58,9 +58,9 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public abstract Task<TScope> CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        public abstract Task CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes an existing scope.

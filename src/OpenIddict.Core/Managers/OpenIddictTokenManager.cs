@@ -80,9 +80,9 @@ namespace OpenIddict.Core
         /// <param name="token">The token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the token.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task<TToken> CreateAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
+        public virtual async Task CreateAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
         {
             if (token == null)
             {
@@ -93,7 +93,7 @@ namespace OpenIddict.Core
 
             try
             {
-                return await Store.CreateAsync(token, cancellationToken);
+                await Store.CreateAsync(token, cancellationToken);
             }
 
             catch (Exception exception)
@@ -127,7 +127,9 @@ namespace OpenIddict.Core
             }
 
             await PopulateAsync(token, descriptor, cancellationToken);
-            return await CreateAsync(token, cancellationToken);
+            await CreateAsync(token, cancellationToken);
+
+            return token;
         }
 
         /// <summary>

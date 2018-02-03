@@ -79,13 +79,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the unique identifier associated with the application.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task<TApplication> CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
-        {
-            return CreateAsync(application, /* secret: */ null, cancellationToken);
-        }
+        public virtual Task CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+            => CreateAsync(application, /* secret: */ null, cancellationToken);
 
         /// <summary>
         /// Creates a new application.
@@ -96,10 +93,9 @@ namespace OpenIddict.Core
         /// <param name="secret">The client secret associated with the application, if applicable.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the unique identifier associated with the application.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task<TApplication> CreateAsync(
+        public virtual async Task CreateAsync(
             [NotNull] TApplication application,
             [CanBeNull] string secret, CancellationToken cancellationToken = default)
         {
@@ -141,7 +137,7 @@ namespace OpenIddict.Core
 
             try
             {
-                return await Store.CreateAsync(application, cancellationToken);
+                await Store.CreateAsync(application, cancellationToken);
             }
 
             catch (Exception exception)
@@ -183,10 +179,14 @@ namespace OpenIddict.Core
             if (!string.IsNullOrEmpty(secret))
             {
                 await Store.SetClientSecretAsync(application, /* secret: */ null, cancellationToken);
-                return await CreateAsync(application, secret, cancellationToken);
+                await CreateAsync(application, secret, cancellationToken);
+            }
+            else
+            {
+                await CreateAsync(application, cancellationToken);
             }
 
-            return await CreateAsync(application, cancellationToken);
+            return application;
         }
 
         /// <summary>
