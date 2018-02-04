@@ -192,35 +192,6 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Retrieves the authorizations corresponding to the specified subject, associated with
-        /// the application identifier and for which the specified scopes have been granted.
-        /// </summary>
-        /// <param name="subject">The subject associated with the authorization.</param>
-        /// <param name="client">The client associated with the authorization.</param>
-        /// <param name="scopes">The minimal scopes associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns the authorizations corresponding to the specified subject/client/scopes.
-        /// </returns>
-        public virtual Task<ImmutableArray<TAuthorization>> FindAsync(
-            [NotNull] string subject, [NotNull] string client,
-            ImmutableArray<string> scopes, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(subject))
-            {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
-            }
-
-            if (string.IsNullOrEmpty(client))
-            {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
-            }
-
-            return Store.FindAsync(subject, client, scopes, cancellationToken);
-        }
-
-        /// <summary>
         /// Retrieves an authorization using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the authorization.</param>
@@ -319,6 +290,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the scopes associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scopes associated with the specified authorization.
+        /// </returns>
+        public virtual Task<ImmutableArray<string>> GetScopesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return Store.GetScopesAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the status associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -335,6 +325,108 @@ namespace OpenIddict.Core
             }
 
             return Store.GetStatusAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the subject associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the subject associated with the specified authorization.
+        /// </returns>
+        public virtual Task<string> GetSubjectAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return Store.GetSubjectAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the type associated with an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the type associated with the specified authorization.
+        /// </returns>
+        public virtual Task<string> GetTypeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return Store.GetTypeAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Determines whether the specified scopes are included in the authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="scopes">The scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the scopes are included in the authorization, <c>false</c> otherwise.</returns>
+        public virtual async Task<bool> HasScopesAsync([NotNull] TAuthorization authorization,
+            ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            return (await Store.GetScopesAsync(authorization, cancellationToken))
+                .ToImmutableHashSet(StringComparer.Ordinal)
+                .IsSupersetOf(scopes);
+        }
+
+        /// <summary>
+        /// Determines whether a given authorization is ad hoc.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the authorization is ad hoc, <c>false</c> otherwise.</returns>
+        public async Task<bool> IsAdHocAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            var type = await GetTypeAsync(authorization, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                return false;
+            }
+
+            return string.Equals(type, OpenIddictConstants.AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Determines whether a given authorization is permanent.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the authorization is permanent, <c>false</c> otherwise.</returns>
+        public async Task<bool> IsPermanentAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            var type = await GetTypeAsync(authorization, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                return false;
+            }
+
+            return string.Equals(type, OpenIddictConstants.AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
