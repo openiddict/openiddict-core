@@ -63,9 +63,9 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public abstract Task<TAuthorization> CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
+        public abstract Task CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes an existing authorization.
@@ -110,6 +110,46 @@ namespace OpenIddict.Core
             return ListAsync(
                 (authorizations, state) => Query(authorizations, state.Key, state.Value),
                 new KeyValuePair<TKey, string>(ConvertIdentifierFromString(client), subject), cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the authorizations corresponding to the specified subject, associated with
+        /// the application identifier and for which the specified scopes have been granted.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="scopes">The minimal scopes associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
+        /// returns the authorizations corresponding to the specified subject/client/scopes.
+        /// </returns>
+        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            ImmutableArray<string> scopes, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client cannot be null or empty.", nameof(client));
+            }
+
+            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+            foreach (var authorization in await FindAsync(subject, client, cancellationToken))
+            {
+                var set = new HashSet<string>(await GetScopesAsync(authorization, cancellationToken), StringComparer.Ordinal);
+                if (set.IsSupersetOf(scopes))
+                {
+                    builder.Add(authorization);
+                }
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
