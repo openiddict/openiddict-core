@@ -81,7 +81,7 @@ namespace OpenIddict
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
+            var application = await applications.FindByClientIdAsync(context.ClientId);
             if (application == null)
             {
                 logger.LogError("The revocation request was rejected because the client " +
@@ -99,8 +99,7 @@ namespace OpenIddict
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the revocation endpoint.
-            if (!await applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Endpoints.Revocation, context.HttpContext.RequestAborted))
+            if (!await applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Revocation))
             {
                 logger.LogError("The revocation request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the revocation endpoint.", context.ClientId);
@@ -113,7 +112,7 @@ namespace OpenIddict
             }
 
             // Reject revocation requests containing a client_secret if the application is a public client.
-            if (await applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
+            if (await applications.IsPublicAsync(application))
             {
                 if (!string.IsNullOrEmpty(context.ClientSecret))
                 {
@@ -151,7 +150,7 @@ namespace OpenIddict
                 return;
             }
 
-            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted))
+            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret))
             {
                 logger.LogError("The revocation request was rejected because the confidential or hybrid application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
@@ -208,7 +207,7 @@ namespace OpenIddict
             var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
             Debug.Assert(token != null, "The token shouldn't be null.");
 
-            if (await tokens.IsRevokedAsync(token, context.HttpContext.RequestAborted))
+            if (await tokens.IsRevokedAsync(token))
             {
                 logger.LogInformation("The token '{Identifier}' was not revoked because " +
                                       "it was already marked as invalid.", identifier);

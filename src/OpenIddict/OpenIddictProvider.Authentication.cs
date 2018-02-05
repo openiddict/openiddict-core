@@ -259,7 +259,7 @@ namespace OpenIddict
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
+            var application = await applications.FindByClientIdAsync(context.ClientId);
             if (application == null)
             {
                 logger.LogError("The authorization request was rejected because the client " +
@@ -280,7 +280,7 @@ namespace OpenIddict
             // the authorization endpoint are rejected if the client_id corresponds to a confidential application.
             // Note: when using the authorization code grant, ValidateTokenRequest is responsible of rejecting
             // the token request if the client_id corresponds to an unauthenticated confidential client.
-            if (await applications.IsConfidentialAsync(application, context.HttpContext.RequestAborted) &&
+            if (await applications.IsConfidentialAsync(application) &&
                (context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.IdToken) ||
                 context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token)))
             {
@@ -292,8 +292,7 @@ namespace OpenIddict
             }
 
             // Reject the request if the application is not allowed to use the authorization endpoint.
-            if (!await applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Endpoints.Authorization, context.HttpContext.RequestAborted))
+            if (!await applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Authorization))
             {
                 logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the authorization endpoint.", context.ClientId);
@@ -306,8 +305,8 @@ namespace OpenIddict
             }
 
             // Reject the request if the application is not allowed to use the authorization code flow.
-            if (context.Request.IsAuthorizationCodeFlow() && !await applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, context.HttpContext.RequestAborted))
+            if (context.Request.IsAuthorizationCodeFlow() && !await applications.HasPermissionAsync(
+                application, OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode))
             {
                 logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the authorization code flow.", context.ClientId);
@@ -320,8 +319,8 @@ namespace OpenIddict
             }
 
             // Reject the request if the application is not allowed to use the implicit flow.
-            if (context.Request.IsImplicitFlow() && !await applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.GrantTypes.Implicit, context.HttpContext.RequestAborted))
+            if (context.Request.IsImplicitFlow() && !await applications.HasPermissionAsync(
+                application, OpenIddictConstants.Permissions.GrantTypes.Implicit))
             {
                 logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the implicit flow.", context.ClientId);
@@ -334,11 +333,9 @@ namespace OpenIddict
             }
 
             // Reject the request if the application is not allowed to use the authorization code/implicit flows.
-            if (context.Request.IsHybridFlow() &&
-               (!await applications.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, context.HttpContext.RequestAborted) ||
-                !await applications.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.GrantTypes.Implicit, context.HttpContext.RequestAborted)))
+            if (context.Request.IsHybridFlow() && 
+               (!await applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode) ||
+                !await applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.Implicit)))
             {
                 logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the hybrid flow.", context.ClientId);
@@ -353,8 +350,7 @@ namespace OpenIddict
             // Reject the request if the offline_access scope was request and if the
             // application is not allowed to use the authorization code/implicit flows.
             if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
-               !await applications.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.GrantTypes.RefreshToken, context.HttpContext.RequestAborted))
+               !await applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.RefreshToken))
             {
                 logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to request the 'offline_access' scope.", context.ClientId);
@@ -368,7 +364,7 @@ namespace OpenIddict
 
 
             // Ensure that the specified redirect_uri is valid and is associated with the client application.
-            if (!await applications.ValidateRedirectUriAsync(application, context.RedirectUri, context.HttpContext.RequestAborted))
+            if (!await applications.ValidateRedirectUriAsync(application, context.RedirectUri))
             {
                 logger.LogError("The authorization request was rejected because the redirect_uri " +
                                 "was invalid: '{RedirectUri}'.", context.RedirectUri);

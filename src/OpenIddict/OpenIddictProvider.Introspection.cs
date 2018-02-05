@@ -55,7 +55,7 @@ namespace OpenIddict
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
+            var application = await applications.FindByClientIdAsync(context.ClientId);
             if (application == null)
             {
                 logger.LogError("The introspection request was rejected because the client " +
@@ -73,8 +73,7 @@ namespace OpenIddict
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the introspection endpoint.
-            if (!await applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Endpoints.Introspection, context.HttpContext.RequestAborted))
+            if (!await applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Introspection))
             {
                 logger.LogError("The introspection request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the introspection endpoint.", context.ClientId);
@@ -87,7 +86,7 @@ namespace OpenIddict
             }
 
             // Reject introspection requests sent by public applications.
-            if (await applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
+            if (await applications.IsPublicAsync(application))
             {
                 logger.LogError("The introspection request was rejected because the public application " +
                                 "'{ClientId}' was not allowed to use this endpoint.", context.ClientId);
@@ -100,7 +99,7 @@ namespace OpenIddict
             }
 
             // Validate the client credentials.
-            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted))
+            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret))
             {
                 logger.LogError("The introspection request was rejected because the confidential or hybrid application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
@@ -154,7 +153,7 @@ namespace OpenIddict
                 var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
                 Debug.Assert(token != null, "The token shouldn't be null.");
 
-                if (!await tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
+                if (!await tokens.IsValidAsync(token))
                 {
                     logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
 
