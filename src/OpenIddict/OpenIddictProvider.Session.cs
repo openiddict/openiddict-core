@@ -109,7 +109,7 @@ namespace OpenIddict
                     return;
                 }
 
-                if (!await Applications.ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri, context.HttpContext.RequestAborted))
+                if (!await Applications.ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                 {
                     Logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
                                     "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);

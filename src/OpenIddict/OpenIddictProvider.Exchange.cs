@@ -118,7 +118,7 @@ namespace OpenIddict
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await Applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
+            var application = await Applications.FindByClientIdAsync(context.ClientId);
             if (application == null)
             {
                 Logger.LogError("The token request was rejected because the client " +
@@ -136,8 +136,7 @@ namespace OpenIddict
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the token endpoint.
-            if (!await Applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Endpoints.Token, context.HttpContext.RequestAborted))
+            if (!await Applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Token))
             {
                 Logger.LogError("The token request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the token endpoint.", context.ClientId);
@@ -151,7 +150,7 @@ namespace OpenIddict
 
             // Reject the request if the application is not allowed to use the specified grant type.
             if (!await Applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Prefixes.GrantType + context.Request.GrantType, context.HttpContext.RequestAborted))
+                OpenIddictConstants.Permissions.Prefixes.GrantType + context.Request.GrantType))
             {
                 Logger.LogError("The token request was rejected because the application '{ClientId}' was not allowed to " +
                                 "use the specified grant type: {GrantType}.", context.ClientId, context.Request.GrantType);
@@ -163,7 +162,7 @@ namespace OpenIddict
                 return;
             }
 
-            if (await Applications.IsPublicAsync(application, context.HttpContext.RequestAborted))
+            if (await Applications.IsPublicAsync(application))
             {
                 // Note: public applications are not allowed to use the client credentials grant.
                 if (context.Request.IsClientCredentialsGrantType())
@@ -215,7 +214,7 @@ namespace OpenIddict
                 return;
             }
 
-            if (!await Applications.ValidateClientSecretAsync(application, context.ClientSecret, context.HttpContext.RequestAborted))
+            if (!await Applications.ValidateClientSecretAsync(application, context.ClientSecret))
             {
                 Logger.LogError("The token request was rejected because the confidential or hybrid application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
@@ -263,7 +262,7 @@ namespace OpenIddict
             // If the authorization code/refresh token is already marked as redeemed, this may indicate that
             // it was compromised. In this case, revoke the authorization and all the associated tokens. 
             // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
-            if (await Tokens.IsRedeemedAsync(token, context.HttpContext.RequestAborted))
+            if (await Tokens.IsRedeemedAsync(token))
             {
                 // Try to revoke the authorization and the associated tokens.
                 // If the operation fails, the helpers will automatically log
@@ -284,7 +283,7 @@ namespace OpenIddict
                 return;
             }
 
-            else if (!await Tokens.IsValidAsync(token, context.HttpContext.RequestAborted))
+            else if (!await Tokens.IsValidAsync(token))
             {
                 Logger.LogError("The token request was rejected because the authorization code " +
                                 "or refresh token '{Identifier}' was no longer valid.", identifier);

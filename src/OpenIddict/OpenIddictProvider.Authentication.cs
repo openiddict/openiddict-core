@@ -253,7 +253,7 @@ namespace OpenIddict
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await Applications.FindByClientIdAsync(context.ClientId, context.HttpContext.RequestAborted);
+            var application = await Applications.FindByClientIdAsync(context.ClientId);
             if (application == null)
             {
                 Logger.LogError("The authorization request was rejected because the client " +
@@ -274,7 +274,7 @@ namespace OpenIddict
             // the authorization endpoint are rejected if the client_id corresponds to a confidential application.
             // Note: when using the authorization code grant, ValidateTokenRequest is responsible of rejecting
             // the token request if the client_id corresponds to an unauthenticated confidential client.
-            if (await Applications.IsConfidentialAsync(application, context.HttpContext.RequestAborted) &&
+            if (await Applications.IsConfidentialAsync(application) &&
                (context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.IdToken) ||
                 context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token)))
             {
@@ -286,8 +286,7 @@ namespace OpenIddict
             }
 
             // Reject the request if the application is not allowed to use the authorization endpoint.
-            if (!await Applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Endpoints.Authorization, context.HttpContext.RequestAborted))
+            if (!await Applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Authorization))
             {
                 Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the authorization endpoint.", context.ClientId);
@@ -300,8 +299,8 @@ namespace OpenIddict
             }
 
             // Reject the request if the application is not allowed to use the authorization code flow.
-            if (context.Request.IsAuthorizationCodeFlow() && !await Applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, context.HttpContext.RequestAborted))
+            if (context.Request.IsAuthorizationCodeFlow() && !await Applications.HasPermissionAsync(
+                application, OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode))
             {
                 Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the authorization code flow.", context.ClientId);
@@ -314,8 +313,8 @@ namespace OpenIddict
             }
 
             // Reject the request if the application is not allowed to use the implicit flow.
-            if (context.Request.IsImplicitFlow() && !await Applications.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.GrantTypes.Implicit, context.HttpContext.RequestAborted))
+            if (context.Request.IsImplicitFlow() && !await Applications.HasPermissionAsync(
+                application, OpenIddictConstants.Permissions.GrantTypes.Implicit))
             {
                 Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the implicit flow.", context.ClientId);
@@ -328,11 +327,9 @@ namespace OpenIddict
             }
 
             // Reject the request if the application is not allowed to use the authorization code/implicit flows.
-            if (context.Request.IsHybridFlow() &&
-               (!await Applications.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, context.HttpContext.RequestAborted) ||
-                !await Applications.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.GrantTypes.Implicit, context.HttpContext.RequestAborted)))
+            if (context.Request.IsHybridFlow() && 
+               (!await Applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode) ||
+                !await Applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.Implicit)))
             {
                 Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the hybrid flow.", context.ClientId);
@@ -347,8 +344,7 @@ namespace OpenIddict
             // Reject the request if the offline_access scope was request and if the
             // application is not allowed to use the authorization code/implicit flows.
             if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
-               !await Applications.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.GrantTypes.RefreshToken, context.HttpContext.RequestAborted))
+               !await Applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.RefreshToken))
             {
                 Logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to request the 'offline_access' scope.", context.ClientId);
@@ -361,7 +357,7 @@ namespace OpenIddict
             }
 
             // Ensure that the specified redirect_uri is valid and is associated with the client application.
-            if (!await Applications.ValidateRedirectUriAsync(application, context.RedirectUri, context.HttpContext.RequestAborted))
+            if (!await Applications.ValidateRedirectUriAsync(application, context.RedirectUri))
             {
                 Logger.LogError("The authorization request was rejected because the redirect_uri " +
                                 "was invalid: '{RedirectUri}'.", context.RedirectUri);

@@ -57,7 +57,7 @@ namespace Mvc.Server
                 "Make sure services.AddOpenIddict().AddMvcBinders() is correctly called.");
 
             // Retrieve the application details from the database.
-            var application = await _applicationManager.FindByClientIdAsync(request.ClientId, HttpContext.RequestAborted);
+            var application = await _applicationManager.FindByClientIdAsync(request.ClientId);
             if (application == null)
             {
                 return View("Error", new ErrorViewModel
