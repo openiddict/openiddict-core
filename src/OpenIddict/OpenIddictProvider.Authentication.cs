@@ -112,9 +112,8 @@ namespace OpenIddict
             var options = (OpenIddictOptions) context.Options;
 
             // Note: the OpenID Connect server middleware supports authorization code, implicit, hybrid,
-            // none and custom flows but OpenIddict uses a stricter policy rejecting unknown flows.
-            if (!context.Request.IsAuthorizationCodeFlow() && !context.Request.IsHybridFlow() &&
-                !context.Request.IsImplicitFlow() && !context.Request.IsNoneFlow())
+            // none and custom flows but OpenIddict uses a stricter policy rejecting none and custum flows.
+            if (!context.Request.IsAuthorizationCodeFlow() && !context.Request.IsHybridFlow() && !context.Request.IsImplicitFlow())
             {
                 Logger.LogError("The authorization request was rejected because the '{ResponseType}' " +
                                 "response type is not supported.", context.Request.ResponseType);

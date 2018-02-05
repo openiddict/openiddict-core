@@ -115,6 +115,27 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task ValidateAuthorizationRequest_NoneFlowIsRejected()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = OpenIdConnectConstants.ResponseTypes.None
+            });
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedResponseType, response.Error);
+            Assert.Equal("The specified 'response_type' parameter is not supported.", response.ErrorDescription);
+        }
+
+        [Fact]
         public async Task ValidateAuthorizationRequest_UnknownResponseTypeParameterIsRejected()
         {
             // Arrange
