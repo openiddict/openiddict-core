@@ -938,9 +938,19 @@ namespace OpenIddict.Core
         /// </returns>
         protected virtual async Task ValidateAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(await Store.GetClientIdAsync(application, cancellationToken)))
+            var identifier = await Store.GetClientIdAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The client identifier cannot be null or empty.", nameof(application));
+            }
+
+            // Ensure the client_id is not already used for a different application.
+            var other = await Store.FindByClientIdAsync(identifier, cancellationToken);
+            if (other != null && !string.Equals(
+                await Store.GetIdAsync(other, cancellationToken),
+                await Store.GetIdAsync(application, cancellationToken), StringComparison.Ordinal))
+            {
+                throw new ArgumentException("An application with the same client identifier already exists.", nameof(application));
             }
 
             var type = await Store.GetClientTypeAsync(application, cancellationToken);

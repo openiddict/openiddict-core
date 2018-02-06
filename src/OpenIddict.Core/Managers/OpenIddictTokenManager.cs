@@ -833,6 +833,20 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(token));
             }
 
+            // If a reference identifier was associated with the token,
+            // ensure it's not already used for a different token.
+            var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                var other = await Store.FindByReferenceIdAsync(identifier, cancellationToken);
+                if (other != null && !string.Equals(
+                    await Store.GetIdAsync(other, cancellationToken),
+                    await Store.GetIdAsync(token, cancellationToken), StringComparison.Ordinal))
+                {
+                    throw new ArgumentException("A token with the same reference identifier already exists.", nameof(token));
+                }
+            }
+
             var type = await Store.GetTokenTypeAsync(token, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
