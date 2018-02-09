@@ -395,8 +395,8 @@ namespace OpenIddict
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An exception occurred while trying to revoke the authorization " +
-                                             "associated with the token '{Identifier}'.", identifier);
+                Logger.LogDebug(exception, "An exception occurred while trying to revoke the authorization " +
+                                           "associated with the token '{Identifier}'.", identifier);
 
                 return false;
             }
@@ -420,8 +420,8 @@ namespace OpenIddict
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An exception occurred while trying to revoke " +
-                                             "the token '{Identifier}'.", identifier);
+                Logger.LogDebug(exception, "An exception occurred while trying to revoke " +
+                                           "the token '{Identifier}'.", identifier);
 
                 return false;
             }
@@ -470,8 +470,8 @@ namespace OpenIddict
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An exception occurred while trying to " +
-                                             "redeem the token '{Identifier}'.", identifier);
+                Logger.LogDebug(exception, "An exception occurred while trying to " +
+                                           "redeem the token '{Identifier}'.", identifier);
 
                 return false;
             }
@@ -501,8 +501,8 @@ namespace OpenIddict
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An exception occurred while trying to update the " +
-                                             "expiration date of the token '{Identifier}'.", identifier);
+                Logger.LogDebug(exception, "An exception occurred while trying to update the " +
+                                           "expiration date of the token '{Identifier}'.", identifier);
 
                 return false;
             }
