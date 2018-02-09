@@ -1035,7 +1035,7 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
-        public async Task ProcessSigninResponse_ReturnsErrorResponseWhenExtendingLifetimeOfExistingTokenFailed()
+        public async Task ProcessSigninResponse_IgnoresErrorWhenExtendingLifetimeOfExistingTokenFailed()
         {
             // Arrange
             var ticket = new AuthenticationTicket(
@@ -1098,8 +1098,7 @@ namespace OpenIddict.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
-            Assert.Equal("The specified refresh token is no longer valid.", response.ErrorDescription);
+            Assert.NotNull(response.AccessToken);
 
             Mock.Get(manager).Verify(mock => mock.ExtendAsync(token,
                 new DateTimeOffset(2017, 01, 15, 00, 00, 00, TimeSpan.Zero),
