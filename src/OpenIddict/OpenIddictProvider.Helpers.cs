@@ -456,6 +456,8 @@ namespace OpenIddict
                 return true;
             }
 
+            var result = true;
+
             foreach (var token in await tokens.FindByAuthorizationIdAsync(identifier))
             {
                 // Don't change the status of the token used in the token request.
@@ -464,10 +466,10 @@ namespace OpenIddict
                     continue;
                 }
 
-                await TryRevokeTokenAsync(token, context);
+                result &= await TryRevokeTokenAsync(token, context);
             }
 
-            return true;
+            return result;
         }
 
         private async Task<bool> TryRedeemTokenAsync([NotNull] TToken token, [NotNull] HttpContext context)
