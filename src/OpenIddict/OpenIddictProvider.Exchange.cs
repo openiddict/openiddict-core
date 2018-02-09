@@ -277,6 +277,7 @@ namespace OpenIddict
                 // response will be returned to the client application.
                 await TryRevokeAuthorizationAsync(context.Ticket, context.HttpContext);
                 await TryRevokeTokensAsync(context.Ticket, context.HttpContext);
+                await TryRevokeTokenAsync(token, context.HttpContext);
 
                 logger.LogError("The token request was rejected because the authorization code " +
                                 "or refresh token '{Identifier}' has already been redeemed.", identifier);

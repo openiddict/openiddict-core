@@ -417,9 +417,36 @@ namespace OpenIddict
             }
         }
 
-        private async Task<bool> TryRevokeTokensAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
+        private async Task<bool> TryRevokeTokenAsync([NotNull] TToken token, [NotNull] HttpContext context)
         {
             var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var tokens = context.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
+
+            var identifier = await tokens.GetIdAsync(token);
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
+
+            try
+            {
+                // Note: the request cancellation token is deliberately not used here to ensure the caller
+                // cannot prevent this operation from being executed by resetting the TCP connection.
+                await tokens.RevokeAsync(token);
+
+                logger.LogInformation("The token '{Identifier}' was automatically revoked.", identifier);
+
+                return true;
+            }
+
+            catch (Exception exception)
+            {
+                logger.LogWarning(0, exception, "An exception occurred while trying to revoke " +
+                                                "the token '{Identifier}'.", identifier);
+
+                return false;
+            }
+        }
+
+        private async Task<bool> TryRevokeTokensAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
+        {
             var tokens = context.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
 
             // Note: if the authorization identifier is null, return true as no tokens need to be revoked.
@@ -431,23 +458,13 @@ namespace OpenIddict
 
             foreach (var token in await tokens.FindByAuthorizationIdAsync(identifier))
             {
-                try
+                // Don't change the status of the token used in the token request.
+                if (string.Equals(ticket.GetTokenId(), await tokens.GetIdAsync(token), StringComparison.Ordinal))
                 {
-                    // Note: the request cancellation token is deliberately not used here to ensure the caller
-                    // cannot prevent this operation from being executed by resetting the TCP connection.
-                    await tokens.RevokeAsync(token);
-
-                    logger.LogInformation("The token '{Identifier}' was automatically revoked.",
-                        await tokens.GetIdAsync(token));
+                    continue;
                 }
 
-                catch (Exception exception)
-                {
-                    logger.LogWarning(0, exception, "An exception occurred while trying to revoke the tokens " +
-                                                    "associated with the token '{Identifier}'.",
-                                                    await tokens.GetIdAsync(token));
-                    return false;
-                }
+                await TryRevokeTokenAsync(token, context);
             }
 
             return true;
