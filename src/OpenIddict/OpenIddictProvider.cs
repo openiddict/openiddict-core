@@ -167,26 +167,12 @@ namespace OpenIddict
                     }
                 }
 
-                // When rolling tokens are enabled, revoke all the previously issued tokens associated
-                // with the authorization if the request is a grant_type=refresh_token request.
-                if (options.UseRollingTokens && context.Request.IsRefreshTokenGrantType())
+                if (context.Request.IsRefreshTokenGrantType())
                 {
-                    if (!await TryRevokeTokensAsync(context.Ticket))
-                    {
-                        context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidGrant,
-                            description: "The specified refresh token is no longer valid.");
-
-                        return;
-                    }
-                }
-
-                // When rolling tokens are disabled, extend the expiration date
-                // of the existing token instead of returning a new refresh token
-                // with a new expiration date if sliding expiration was not disabled.
-                else if (options.UseSlidingExpiration && context.Request.IsRefreshTokenGrantType())
-                {
-                    if (!await TryExtendTokenAsync(token, context.Ticket, options))
+                    // When rolling tokens are enabled, revoke all the previously issued tokens associated
+                    // with the authorization if the request is a grant_type=refresh_token request.
+                    // If the operation fails, return an error indicating the token is not valid.
+                    if (options.UseRollingTokens && !await TryRevokeTokensAsync(context.Ticket))
                     {
                         context.Reject(
                             error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -195,8 +181,19 @@ namespace OpenIddict
                         return;
                     }
 
-                    // Prevent the OpenID Connect server from returning a new refresh token.
-                    context.IncludeRefreshToken = false;
+                    // When rolling tokens are disabled, extend the expiration date
+                    // of the existing token instead of returning a new refresh token
+                    // with a new expiration date if sliding expiration was not disabled.
+                    // If the operation fails, return an error indicating the token is not valid.
+                    if (!options.UseRollingTokens && options.UseSlidingExpiration &&
+                        !await TryExtendTokenAsync(token, context.Ticket, options))
+                    {
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            description: "The specified refresh token is no longer valid.");
+
+                        return;
+                    }
                 }
             }
 
