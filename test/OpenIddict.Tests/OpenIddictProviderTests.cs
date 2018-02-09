@@ -824,6 +824,7 @@ namespace OpenIddict.Tests
             Assert.NotNull(response.RefreshToken);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[1], It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[2], It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -893,6 +894,7 @@ namespace OpenIddict.Tests
             Assert.Null(response.RefreshToken);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[1], It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[2], It.IsAny<CancellationToken>()), Times.Never());
         }

@@ -402,6 +402,31 @@ namespace OpenIddict
             }
         }
 
+        private async Task<bool> TryRevokeTokenAsync([NotNull] TToken token)
+        {
+            var identifier = await Tokens.GetIdAsync(token);
+            Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
+
+            try
+            {
+                // Note: the request cancellation token is deliberately not used here to ensure the caller
+                // cannot prevent this operation from being executed by resetting the TCP connection.
+                await Tokens.RevokeAsync(token);
+
+                Logger.LogInformation("The token '{Identifier}' was automatically revoked.", identifier);
+
+                return true;
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogWarning(exception, "An exception occurred while trying to revoke " +
+                                             "the token '{Identifier}'.", identifier);
+
+                return false;
+            }
+        }
+
         private async Task<bool> TryRevokeTokensAsync([NotNull] AuthenticationTicket ticket)
         {
             // Note: if the authorization identifier is null, return true as no tokens need to be revoked.
@@ -413,24 +438,13 @@ namespace OpenIddict
 
             foreach (var token in await Tokens.FindByAuthorizationIdAsync(identifier))
             {
-                try
+                // Don't change the status of the token used in the token request.
+                if (string.Equals(ticket.GetTokenId(), await Tokens.GetIdAsync(token), StringComparison.Ordinal))
                 {
-                    // Note: the request cancellation token is deliberately not used here to ensure the caller
-                    // cannot prevent this operation from being executed by resetting the TCP connection.
-                    await Tokens.RevokeAsync(token);
-
-                    Logger.LogInformation("The token '{Identifier}' was automatically revoked.",
-                        await Tokens.GetIdAsync(token));
+                    continue;
                 }
 
-                catch (Exception exception)
-                {
-                    Logger.LogWarning(exception, "An exception occurred while trying to revoke the tokens " +
-                                                 "associated with the token '{Identifier}'.",
-                                                 await Tokens.GetIdAsync(token));
-
-                    return false;
-                }
+                await TryRevokeTokenAsync(token);
             }
 
             return true;
