@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,17 +88,13 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            try
+            var results = await ValidateAsync(scope, cancellationToken);
+            if (results.Any(result => result != ValidationResult.Success))
             {
-                await Store.CreateAsync(scope, cancellationToken);
+                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, scope);
             }
 
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to create a new scope.");
-
-                throw;
-            }
+            await Store.CreateAsync(scope, cancellationToken);
         }
 
         /// <summary>
@@ -136,24 +133,14 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+        public virtual Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            try
-            {
-                await Store.DeleteAsync(scope, cancellationToken);
-            }
-
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to delete an existing scope.");
-
-                throw;
-            }
+            return Store.DeleteAsync(scope, cancellationToken);
         }
 
         /// <summary>
@@ -305,17 +292,13 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            try
+            var results = await ValidateAsync(scope, cancellationToken);
+            if (results.Any(result => result != ValidationResult.Success))
             {
-                await Store.UpdateAsync(scope, cancellationToken);
+                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, scope);
             }
 
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to update an existing scope.");
-
-                throw;
-            }
+            await Store.UpdateAsync(scope, cancellationToken);
         }
 
         /// <summary>
@@ -344,6 +327,33 @@ namespace OpenIddict.Core
             await operation(descriptor);
             await PopulateAsync(scope, descriptor, cancellationToken);
             await UpdateAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
+        /// Validates the scope to ensure it's in a consistent state.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the validation error encountered when validating the scope.
+        /// </returns>
+        public virtual async Task<ImmutableArray<ValidationResult>> ValidateAsync(
+            [NotNull] TScope scope, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            var results = ImmutableArray.CreateBuilder<ValidationResult>();
+
+            if (string.IsNullOrEmpty(await Store.GetNameAsync(scope, cancellationToken)))
+            {
+                results.Add(new ValidationResult("The scope name cannot be null or empty."));
+            }
+
+            return results.ToImmutable();
         }
 
         /// <summary>

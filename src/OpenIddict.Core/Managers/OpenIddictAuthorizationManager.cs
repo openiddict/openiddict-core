@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,19 +94,13 @@ namespace OpenIddict.Core
                 await Store.SetTypeAsync(authorization, OpenIddictConstants.AuthorizationTypes.Permanent, cancellationToken);
             }
 
-            await ValidateAsync(authorization, cancellationToken);
-
-            try
+            var results = await ValidateAsync(authorization, cancellationToken);
+            if (results.Any(result => result != ValidationResult.Success))
             {
-                await Store.CreateAsync(authorization, cancellationToken);
+                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, authorization);
             }
 
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to create a new authorization.");
-
-                throw;
-            }
+            await Store.CreateAsync(authorization, cancellationToken);
         }
 
         /// <summary>
@@ -144,24 +139,14 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            try
-            {
-                await Store.DeleteAsync(authorization, cancellationToken);
-            }
-
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to delete an existing authorization.");
-
-                throw;
-            }
+            return Store.DeleteAsync(authorization, cancellationToken);
         }
 
         /// <summary>
@@ -563,7 +548,13 @@ namespace OpenIddict.Core
             if (!string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
             {
                 await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Revoked, cancellationToken);
-                await ValidateAsync(authorization, cancellationToken);
+
+                var results = await ValidateAsync(authorization, cancellationToken);
+                if (results.Any(result => result != ValidationResult.Success))
+                {
+                    throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, authorization);
+                }
+
                 await UpdateAsync(authorization, cancellationToken);
             }
         }
@@ -604,19 +595,13 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            await ValidateAsync(authorization, cancellationToken);
-
-            try
+            var results = await ValidateAsync(authorization, cancellationToken);
+            if (results.Any(result => result != ValidationResult.Success))
             {
-                await Store.UpdateAsync(authorization, cancellationToken);
+                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, authorization);
             }
 
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to update an existing authorization.");
-
-                throw;
-            }
+            await Store.UpdateAsync(authorization, cancellationToken);
         }
 
         /// <summary>
@@ -655,6 +640,68 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Validates the authorization to ensure it's in a consistent state.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the validation error encountered when validating the authorization.
+        /// </returns>
+        public virtual async Task<ImmutableArray<ValidationResult>> ValidateAsync(
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            var results = ImmutableArray.CreateBuilder<ValidationResult>();
+
+            var type = await Store.GetTypeAsync(authorization, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                results.Add(new ValidationResult("The authorization type cannot be null or empty."));
+            }
+
+            else if (!string.Equals(type, OpenIddictConstants.AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, OpenIddictConstants.AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
+            {
+                results.Add(new ValidationResult("The specified authorization type is not supported by the default token manager."));
+            }
+
+            if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
+            {
+                results.Add(new ValidationResult("The status cannot be null or empty."));
+            }
+
+            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(authorization, cancellationToken)))
+            {
+                results.Add(new ValidationResult("The subject cannot be null or empty."));
+            }
+
+            // Ensure that the scopes are not null or empty and do not contain spaces.
+            foreach (var scope in await Store.GetScopesAsync(authorization, cancellationToken))
+            {
+                if (string.IsNullOrEmpty(scope))
+                {
+                    results.Add(new ValidationResult("Scopes cannot be null or empty."));
+
+                    break;
+                }
+
+                if (scope.Contains(OpenIddictConstants.Separators.Space))
+                {
+                    results.Add(new ValidationResult("Scopes cannot contain spaces."));
+
+                    break;
+                }
+            }
+
+            return results.ToImmutable();
+        }
+
+        /// <summary>
         /// Populates the authorization using the specified descriptor.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -681,58 +728,6 @@ namespace OpenIddict.Core
             await Store.SetStatusAsync(authorization, descriptor.Status, cancellationToken);
             await Store.SetSubjectAsync(authorization, descriptor.Subject, cancellationToken);
             await Store.SetTypeAsync(authorization, descriptor.Type, cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the authorization to ensure it's in a consistent state.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task ValidateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
-        {
-            if (authorization == null)
-            {
-                throw new ArgumentNullException(nameof(authorization));
-            }
-
-            var type = await Store.GetTypeAsync(authorization, cancellationToken);
-            if (string.IsNullOrEmpty(type))
-            {
-                throw new ArgumentException("The authorization type cannot be null or empty.", nameof(authorization));
-            }
-
-            if (!string.Equals(type, OpenIddictConstants.AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("The specified authorization type is not supported by the default token manager.", nameof(authorization));
-            }
-
-            if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
-            {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(authorization));
-            }
-
-            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(authorization, cancellationToken)))
-            {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(authorization));
-            }
-
-            // Ensure that the scopes are not null or empty and do not contain spaces.
-            foreach (var scope in await Store.GetScopesAsync(authorization, cancellationToken))
-            {
-                if (string.IsNullOrEmpty(scope))
-                {
-                    throw new ArgumentException("Scopes cannot be null or empty.", nameof(authorization));
-                }
-
-                if (scope.Contains(OpenIddictConstants.Separators.Space))
-                {
-                    throw new ArgumentException("Scopes cannot contain spaces.", nameof(authorization));
-                }
-            }
         }
     }
 }

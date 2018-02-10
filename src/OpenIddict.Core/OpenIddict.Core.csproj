@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
     <PackageReference Include="System.Collections.Immutable" Version="$(ImmutableCollectionsVersion)" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(DataAnnotationsVersion)" />
   </ItemGroup>
 
 </Project>

@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -89,19 +90,13 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(token));
             }
 
-            await ValidateAsync(token, cancellationToken);
-
-            try
+            var results = await ValidateAsync(token, cancellationToken);
+            if (results.Any(result => result != ValidationResult.Success))
             {
-                await Store.CreateAsync(token, cancellationToken);
+                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, token);
             }
 
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to create a new token.");
-
-                throw;
-            }
+            await Store.CreateAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -140,24 +135,14 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
+        public virtual Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            try
-            {
-                await Store.DeleteAsync(token, cancellationToken);
-            }
-
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to delete an existing token.");
-
-                throw;
-            }
+            return Store.DeleteAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -737,17 +722,13 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(token));
             }
 
-            try
+            var results = await ValidateAsync(token, cancellationToken);
+            if (results.Any(result => result != ValidationResult.Success))
             {
-                await Store.UpdateAsync(token, cancellationToken);
+                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, token);
             }
 
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to update an existing token.");
-
-                throw;
-            }
+            await Store.UpdateAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -786,6 +767,65 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Validates the token to ensure it's in a consistent state.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the validation error encountered when validating the token.
+        /// </returns>
+        public virtual async Task<ImmutableArray<ValidationResult>> ValidateAsync(
+            [NotNull] TToken token, CancellationToken cancellationToken = default)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            var results = ImmutableArray.CreateBuilder<ValidationResult>();
+
+            // If a reference identifier was associated with the token,
+            // ensure it's not already used for a different token.
+            var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                var other = await Store.FindByReferenceIdAsync(identifier, cancellationToken);
+                if (other != null && !string.Equals(
+                    await Store.GetIdAsync(other, cancellationToken),
+                    await Store.GetIdAsync(token, cancellationToken), StringComparison.Ordinal))
+                {
+                    results.Add(new ValidationResult("A token with the same reference identifier already exists."));
+                }
+            }
+
+            var type = await Store.GetTokenTypeAsync(token, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                results.Add(new ValidationResult("The token type cannot be null or empty."));
+            }
+
+            else if (!string.Equals(type, OpenIddictConstants.TokenTypes.AccessToken, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, OpenIddictConstants.TokenTypes.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, OpenIddictConstants.TokenTypes.RefreshToken, StringComparison.OrdinalIgnoreCase))
+            {
+                results.Add(new ValidationResult("The specified token type is not supported by the default token manager."));
+            }
+
+            if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
+            {
+                results.Add(new ValidationResult("The status cannot be null or empty."));
+            }
+
+            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(token, cancellationToken)))
+            {
+                results.Add(new ValidationResult("The subject cannot be null or empty."));
+            }
+
+            return results.ToImmutable();
+        }
+
+        /// <summary>
         /// Populates the token using the specified descriptor.
         /// </summary>
         /// <param name="token">The token.</param>
@@ -816,59 +856,6 @@ namespace OpenIddict.Core
             await Store.SetStatusAsync(token, descriptor.Status, cancellationToken);
             await Store.SetSubjectAsync(token, descriptor.Subject, cancellationToken);
             await Store.SetTokenTypeAsync(token, descriptor.Type, cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the token to ensure it's in a consistent state.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task ValidateAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            // If a reference identifier was associated with the token,
-            // ensure it's not already used for a different token.
-            var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
-            if (!string.IsNullOrEmpty(identifier))
-            {
-                var other = await Store.FindByReferenceIdAsync(identifier, cancellationToken);
-                if (other != null && !string.Equals(
-                    await Store.GetIdAsync(other, cancellationToken),
-                    await Store.GetIdAsync(token, cancellationToken), StringComparison.Ordinal))
-                {
-                    throw new ArgumentException("A token with the same reference identifier already exists.", nameof(token));
-                }
-            }
-
-            var type = await Store.GetTokenTypeAsync(token, cancellationToken);
-            if (string.IsNullOrEmpty(type))
-            {
-                throw new ArgumentException("The token type cannot be null or empty.", nameof(token));
-            }
-
-            if (!string.Equals(type, OpenIddictConstants.TokenTypes.AccessToken, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.TokenTypes.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.TokenTypes.RefreshToken, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("The specified token type is not supported by the default token manager.", nameof(token));
-            }
-
-            if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
-            {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(token));
-            }
-
-            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(token, cancellationToken)))
-            {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(token));
-            }
         }
     }
 }

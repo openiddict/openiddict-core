@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -133,19 +134,13 @@ namespace OpenIddict.Core
                 await Store.SetClientSecretAsync(application, secret, cancellationToken);
             }
 
-            await ValidateAsync(application, cancellationToken);
-
-            try
+            var results = await ValidateAsync(application, cancellationToken);
+            if (results.Any(result => result != ValidationResult.Success))
             {
-                await Store.CreateAsync(application, cancellationToken);
+                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, application);
             }
 
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to create a new application.");
-
-                throw;
-            }
+            await Store.CreateAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -197,24 +192,14 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            try
-            {
-                await Store.DeleteAsync(application, cancellationToken);
-            }
-
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to delete an existing application.");
-
-                throw;
-            }
+            return Store.DeleteAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -639,19 +624,13 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            await ValidateAsync(application, cancellationToken);
-
-            try
+            var results = await ValidateAsync(application, cancellationToken);
+            if (results.Any(result => result != ValidationResult.Success))
             {
-                await Store.UpdateAsync(application, cancellationToken);
+                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, application);
             }
 
-            catch (Exception exception)
-            {
-                Logger.LogError(exception, "An exception occurred while trying to update an existing application.");
-
-                throw;
-            }
+            await Store.UpdateAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -684,7 +663,12 @@ namespace OpenIddict.Core
                 await Store.SetClientSecretAsync(application, secret, cancellationToken);
             }
 
-            await ValidateAsync(application, cancellationToken);
+            var results = await ValidateAsync(application, cancellationToken);
+            if (results.Any(result => result != ValidationResult.Success))
+            {
+                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, application);
+            }
+
             await UpdateAsync(application, cancellationToken);
         }
 
@@ -765,6 +749,110 @@ namespace OpenIddict.Core
             }
 
             await UpdateAsync(application, cancellationToken);
+        }
+
+        /// <summary>
+        /// Validates the application to ensure it's in a consistent state.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the validation error encountered when validating the application.
+        /// </returns>
+        public virtual async Task<ImmutableArray<ValidationResult>> ValidateAsync(
+            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var results = ImmutableArray.CreateBuilder<ValidationResult>();
+
+            var identifier = await Store.GetClientIdAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(identifier))
+            {
+                results.Add(new ValidationResult("The client identifier cannot be null or empty."));
+            }
+
+            else
+            {
+                // Ensure the client_id is not already used for a different application.
+                var other = await Store.FindByClientIdAsync(identifier, cancellationToken);
+                if (other != null && !string.Equals(
+                    await Store.GetIdAsync(other, cancellationToken),
+                    await Store.GetIdAsync(application, cancellationToken), StringComparison.Ordinal))
+                {
+                    results.Add(new ValidationResult("An application with the same client identifier already exists."));
+                }
+            }
+
+            var type = await Store.GetClientTypeAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                results.Add(new ValidationResult("The client type cannot be null or empty."));
+            }
+
+            else
+            {
+                // Ensure the application type is supported by the manager.
+                if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                {
+                    results.Add(new ValidationResult("Only 'confidential', 'hybrid' or 'public' applications are " +
+                                                     "supported by the default application manager."));
+                }
+
+                // Ensure a client secret was specified if the client is a confidential application.
+                var secret = await Store.GetClientSecretAsync(application, cancellationToken);
+                if (string.IsNullOrEmpty(secret) &&
+                    string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+                {
+                    results.Add(new ValidationResult("The client secret cannot be null or empty for a confidential application."));
+                }
+
+                // Ensure no client secret was specified if the client is a public application.
+                else if (!string.IsNullOrEmpty(secret) &&
+                          string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                {
+                    results.Add(new ValidationResult("A client secret cannot be associated with a public application."));
+                }
+            }
+
+            // When callback URLs are specified, ensure they are valid and spec-compliant.
+            // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
+            foreach (var address in ImmutableArray.Create<string>()
+                .AddRange(await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+                .AddRange(await Store.GetRedirectUrisAsync(application, cancellationToken)))
+            {
+                // Ensure the address is not null or empty.
+                if (string.IsNullOrEmpty(address))
+                {
+                    results.Add(new ValidationResult("Callback URLs cannot be null or empty."));
+
+                    break;
+                }
+
+                // Ensure the address is a valid absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                {
+                    results.Add(new ValidationResult("Callback URLs must be valid absolute URLs."));
+
+                    break;
+                }
+
+                // Ensure the address doesn't contain a fragment.
+                if (!string.IsNullOrEmpty(uri.Fragment))
+                {
+                    results.Add(new ValidationResult("Callback URLs cannot contain a fragment."));
+
+                    break;
+                }
+            }
+
+            return results.ToImmutable();
         }
 
         /// <summary>
@@ -926,87 +1014,6 @@ namespace OpenIddict.Core
                 descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
             await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
                 descriptor.RedirectUris.Select(address => address.OriginalString)), cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the application to ensure it's in a consistent state.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task ValidateAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
-        {
-            var identifier = await Store.GetClientIdAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(application));
-            }
-
-            // Ensure the client_id is not already used for a different application.
-            var other = await Store.FindByClientIdAsync(identifier, cancellationToken);
-            if (other != null && !string.Equals(
-                await Store.GetIdAsync(other, cancellationToken),
-                await Store.GetIdAsync(application, cancellationToken), StringComparison.Ordinal))
-            {
-                throw new ArgumentException("An application with the same client identifier already exists.", nameof(application));
-            }
-
-            var type = await Store.GetClientTypeAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(type))
-            {
-                throw new ArgumentException("The client type cannot be null or empty.", nameof(application));
-            }
-
-            // Ensure the application type is supported by the manager.
-            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Only 'confidential', 'hybrid' or 'public' applications are " +
-                                            "supported by the default application manager.", nameof(application));
-            }
-
-            // Ensure a client secret was specified if the client is a confidential application.
-            var secret = await Store.GetClientSecretAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(secret) &&
-                string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("The client secret cannot be null or empty for a confidential application.", nameof(application));
-            }
-
-            // Ensure no client secret was specified if the client is a public application.
-            else if (!string.IsNullOrEmpty(secret) &&
-                      string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("A client secret cannot be associated with a public application.", nameof(application));
-            }
-
-            // When callback URLs are specified, ensure they are valid and spec-compliant.
-            // See https://tools.ietf.org/html/rfc6749#section-3.1 for more information.
-            foreach (var address in ImmutableArray.Create<string>()
-                .AddRange(await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
-                .AddRange(await Store.GetRedirectUrisAsync(application, cancellationToken)))
-            {
-                // Ensure the address is not null or empty.
-                if (string.IsNullOrEmpty(address))
-                {
-                    throw new ArgumentException("Callback URLs cannot be null or empty.");
-                }
-
-                // Ensure the address is a valid absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
-                {
-                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
-                }
-
-                // Ensure the address doesn't contain a fragment.
-                if (!string.IsNullOrEmpty(uri.Fragment))
-                {
-                    throw new ArgumentException("Callback URLs cannot contain a fragment.");
-                }
-            }
         }
 
         /// <summary>
