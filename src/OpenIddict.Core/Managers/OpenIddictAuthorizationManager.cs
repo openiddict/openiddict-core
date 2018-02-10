@@ -532,6 +532,49 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Removes the ad-hoc authorizations that are marked as invalid or have no valid token attached.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PruneInvalidAsync(CancellationToken cancellationToken = default)
+        {
+            ImmutableArray<TAuthorization> authorizations;
+
+            do
+            {
+                // Note: don't use an offset here, as the elements returned by this method
+                // are progressively removed from the database immediately after calling it.
+                authorizations = await ListInvalidAsync(100, 0, cancellationToken);
+
+                foreach (var authorization in authorizations)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    try
+                    {
+                        await DeleteAsync(authorization, cancellationToken);
+
+                        Logger.LogDebug("The authorization {AuthorizationId} was successfully removed from the database.",
+                            await GetIdAsync(authorization, cancellationToken));
+                    }
+
+                    catch (Exception exception)
+                    {
+                        Logger.LogDebug(exception,
+                            "An error occurred while removing the authorization {AuthorizationId} from the database.",
+                            await GetIdAsync(authorization, cancellationToken));
+                    }
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            while (!authorizations.IsDefaultOrEmpty);
+        }
+
+        /// <summary>
         /// Revokes an authorization.
         /// </summary>
         /// <param name="authorization">The authorization to revoke.</param>

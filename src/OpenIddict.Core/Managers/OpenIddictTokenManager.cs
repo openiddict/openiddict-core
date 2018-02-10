@@ -624,6 +624,49 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Removes the tokens that are marked as expired or invalid.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PruneInvalidAsync(CancellationToken cancellationToken = default)
+        {
+            ImmutableArray<TToken> tokens;
+
+            do
+            {
+                // Note: don't use an offset here, as the elements returned by this method
+                // are progressively removed from the database immediately after calling it.
+                tokens = await ListInvalidAsync(100, 0, cancellationToken);
+
+                foreach (var token in tokens)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    try
+                    {
+                        await DeleteAsync(token, cancellationToken);
+
+                        Logger.LogDebug("The token {TokenId} was successfully removed from the database.",
+                            await GetIdAsync(token, cancellationToken));
+                    }
+
+                    catch (Exception exception)
+                    {
+                        Logger.LogDebug(exception,
+                            "An error occurred while removing the token {TokenId} from the database.",
+                            await GetIdAsync(token, cancellationToken));
+                    }
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            while (!tokens.IsDefaultOrEmpty);
+        }
+
+        /// <summary>
         /// Redeems a token.
         /// </summary>
         /// <param name="token">The token to redeem.</param>
