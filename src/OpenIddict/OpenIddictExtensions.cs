@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict;
+using OpenIddict.Core;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -795,6 +796,21 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return builder.Configure(options => options.UserinfoEndpointPath = path);
+        }
+
+        /// <summary>
+        /// Rejects authorization and token requests that specify scopes that have not been
+        /// registered in the database using <see cref="OpenIddictScopeManager{TScope}"/>.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        public static OpenIddictBuilder ValidateScopes([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.Configure(options => options.ValidateScopes = true);
         }
 
         /// <summary>

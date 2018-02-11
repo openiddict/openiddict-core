@@ -74,6 +74,28 @@ namespace OpenIddict.Core
         Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves a scope using its name.
+        /// </summary>
+        /// <param name="name">The name associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scope corresponding to the specified name.
+        /// </returns>
+        Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves a list of scopes using their name.
+        /// </summary>
+        /// <param name="names">The names associated with the scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scopes corresponding to the specified names.
+        /// </returns>
+        Task<ImmutableArray<TScope>> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TState">The state type.</typeparam>

@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -116,6 +117,7 @@ namespace OpenIddict
 
             var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var scopes = context.HttpContext.RequestServices.GetRequiredService<OpenIddictScopeManager<TScope>>();
 
             // Note: the OpenID Connect server middleware supports authorization code, implicit, hybrid,
             // none and custom flows but OpenIddict uses a stricter policy rejecting none and custum flows.
@@ -167,6 +169,22 @@ namespace OpenIddict
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
                     description: "The specified 'response_type' parameter is not allowed.");
+
+                return;
+            }
+
+            // If the corresponding option was enabled, reject the request if scopes can't be validated.
+            if (options.ValidateScopes && !await scopes.ValidateScopesAsync(
+                context.Request.GetScopes()
+                    .ToImmutableArray()
+                    .Remove(OpenIdConnectConstants.Scopes.OfflineAccess)
+                    .Remove(OpenIdConnectConstants.Scopes.OpenId)))
+            {
+                logger.LogError("The authorization request was rejected because an unregistered scope was specified.");
+
+                context.Reject(
+                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    description: "The specified 'scope' parameter is not valid.");
 
                 return;
             }
@@ -374,6 +392,29 @@ namespace OpenIddict
                     description: "The specified 'redirect_uri' parameter is not valid for this client application.");
 
                 return;
+            }
+
+            foreach (var scope in context.Request.GetScopes())
+            {
+                // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
+                if (string.Equals(scope, OpenIdConnectConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
+                    string.Equals(scope, OpenIdConnectConstants.Scopes.OpenId, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                // Reject the request if the application is not allowed to use the iterated scope.
+                if (!await applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.Prefixes.Scope + scope))
+                {
+                    logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "This client application is not allowed to use the specified scope.");
+
+                    return;
+                }
             }
 
             context.Validate();
