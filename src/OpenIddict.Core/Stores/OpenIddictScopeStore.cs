@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Models;
@@ -27,6 +28,21 @@ namespace OpenIddict.Core
         where TScope : OpenIddictScope<TKey>, new()
         where TKey : IEquatable<TKey>
     {
+        protected OpenIddictScopeStore([NotNull] IMemoryCache cache)
+        {
+            if (cache == null)
+            {
+                throw new ArgumentNullException(nameof(cache));
+            }
+
+            Cache = cache;
+        }
+
+        /// <summary>
+        /// Gets the memory cached associated with the current store.
+        /// </summary>
+        protected IMemoryCache Cache { get; }
+
         /// <summary>
         /// Determines the number of scopes that exist in the database.
         /// </summary>

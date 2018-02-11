@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Caching.Memory;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
@@ -27,7 +28,12 @@ namespace OpenIddict.EntityFramework
                                                                                    OpenIddictToken, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictApplicationStore([NotNull] TContext context) : base(context) { }
+        public OpenIddictApplicationStore(
+            [NotNull] TContext context,
+            [NotNull] IMemoryCache cache)
+            : base(context, cache)
+        {
+        }
     }
 
     /// <summary>
@@ -42,7 +48,12 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictApplicationStore([NotNull] TContext context) : base(context) { }
+        public OpenIddictApplicationStore(
+            [NotNull] TContext context,
+            [NotNull] IMemoryCache cache)
+            : base(context, cache)
+        {
+        }
     }
 
     /// <summary>
@@ -62,7 +73,10 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictApplicationStore([NotNull] TContext context)
+        public OpenIddictApplicationStore(
+            [NotNull] TContext context,
+            [NotNull] IMemoryCache cache)
+            : base(cache)
         {
             if (context == null)
             {

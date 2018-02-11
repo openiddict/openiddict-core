@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Models;
@@ -31,6 +32,21 @@ namespace OpenIddict.Core
         where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
         where TKey : IEquatable<TKey>
     {
+        protected OpenIddictApplicationStore([NotNull] IMemoryCache cache)
+        {
+            if (cache == null)
+            {
+                throw new ArgumentNullException(nameof(cache));
+            }
+
+            Cache = cache;
+        }
+
+        /// <summary>
+        /// Gets the memory cached associated with the current store.
+        /// </summary>
+        protected IMemoryCache Cache { get; }
+
         /// <summary>
         /// Determines the number of applications that exist in the database.
         /// </summary>
@@ -350,7 +366,19 @@ namespace OpenIddict.Core
                 return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            return Task.FromResult(JArray.Parse(application.Permissions).Select(element => (string) element).ToImmutableArray());
+            // Note: parsing the stringified permissions is an expensive operation.
+            // To mitigate that, the resulting array is stored in the memory cache.
+            var key = string.Concat(nameof(GetPermissionsAsync), "\x1e", application.Permissions);
+
+            var permissions = Cache.Get(key) as ImmutableArray<string>?;
+            if (permissions == null)
+            {
+                permissions = Cache.Set(key, JArray.Parse(application.Permissions)
+                    .Select(element => (string) element)
+                    .ToImmutableArray());
+            }
+
+            return Task.FromResult(permissions.GetValueOrDefault());
         }
 
         /// <summary>
@@ -374,7 +402,19 @@ namespace OpenIddict.Core
                 return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            return Task.FromResult(JArray.Parse(application.PostLogoutRedirectUris).Select(element => (string) element).ToImmutableArray());
+            // Note: parsing the stringified addresses is an expensive operation.
+            // To mitigate that, the resulting array is stored in the memory cache.
+            var key = string.Concat(nameof(GetPostLogoutRedirectUrisAsync), "\x1e", application.PostLogoutRedirectUris);
+
+            var addresses = Cache.Get(key) as ImmutableArray<string>?;
+            if (addresses == null)
+            {
+                addresses = Cache.Set(key, JArray.Parse(application.PostLogoutRedirectUris)
+                    .Select(element => (string) element)
+                    .ToImmutableArray());
+            }
+
+            return Task.FromResult(addresses.GetValueOrDefault());
         }
 
         /// <summary>
@@ -422,7 +462,19 @@ namespace OpenIddict.Core
                 return Task.FromResult(ImmutableArray.Create<string>());
             }
 
-            return Task.FromResult(JArray.Parse(application.RedirectUris).Select(element => (string) element).ToImmutableArray());
+            // Note: parsing the stringified addresses is an expensive operation.
+            // To mitigate that, the resulting array is stored in the memory cache.
+            var key = string.Concat(nameof(GetRedirectUrisAsync), "\x1e", application.RedirectUris);
+
+            var addresses = Cache.Get(key) as ImmutableArray<string>?;
+            if (addresses == null)
+            {
+                addresses = Cache.Set(key, JArray.Parse(application.RedirectUris)
+                    .Select(element => (string) element)
+                    .ToImmutableArray());
+            }
+
+            return Task.FromResult(addresses.GetValueOrDefault());
         }
 
         /// <summary>
