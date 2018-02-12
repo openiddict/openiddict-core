@@ -955,6 +955,56 @@ namespace OpenIddict.Core
                 }
             }
 
+            var permissions = await Store.GetPermissionsAsync(application, cancellationToken);
+            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode))
+            {
+                if (!permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Authorization) &&
+                     permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
+                {
+                    results.Add(new ValidationResult(
+                        "The authorization code flow permission requires adding the authorization endpoint permission."));
+                }
+
+                if (!permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
+                     permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
+                {
+                    results.Add(new ValidationResult(
+                        "The authorization code flow permission requires adding the token endpoint permission."));
+                }
+            }
+
+            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.ClientCredentials) &&
+               !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
+                permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
+            {
+                results.Add(new ValidationResult(
+                    "The client credentials flow permission requires adding the token endpoint permission."));
+            }
+
+            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.Implicit) &&
+               !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Authorization) &&
+                permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
+            {
+                results.Add(new ValidationResult(
+                    "The implicit flow permission requires adding the authorization endpoint permission."));
+            }
+
+            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.Password) &&
+               !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
+                permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
+            {
+                results.Add(new ValidationResult(
+                    "The password flow permission requires adding the token endpoint permission."));
+            }
+
+            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.RefreshToken) &&
+               !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
+                permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
+            {
+                results.Add(new ValidationResult(
+                    "The refresh token flow permission requires adding the token endpoint permission."));
+            }
+
             return results.ToImmutable();
         }
 
