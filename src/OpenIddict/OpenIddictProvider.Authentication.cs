@@ -166,22 +166,6 @@ namespace OpenIddict
                 return;
             }
 
-            // If the corresponding option was enabled, reject the request if scopes can't be validated.
-            if (options.ValidateScopes && !await Scopes.ValidateScopesAsync(
-                context.Request.GetScopes()
-                    .ToImmutableArray()
-                    .Remove(OpenIdConnectConstants.Scopes.OfflineAccess)
-                    .Remove(OpenIdConnectConstants.Scopes.OpenId)))
-            {
-                Logger.LogError("The authorization request was rejected because an unregistered scope was specified.");
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The specified 'scope' parameter is not valid.");
-
-                return;
-            }
-
             // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
             if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
                !options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
@@ -191,6 +175,23 @@ namespace OpenIddict
                     description: "The 'offline_access' scope is not allowed.");
 
                 return;
+            }
+
+            // Validates scopes, unless scope validation was explicitly disabled.
+            foreach (var scope in context.Request.GetScopes())
+            {
+                if (options.EnableScopeValidation && !options.Scopes.Contains(scope) &&
+                    await Scopes.FindByNameAsync(scope) == null)
+                {
+                    Logger.LogError("The authorization request was rejected because an " +
+                                    "unregistered scope was specified: {Scope}.", scope);
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The specified 'scope' parameter is not valid.");
+
+                    return;
+                }
             }
 
             // Note: the OpenID Connect server middleware supports the query, form_post and fragment response modes

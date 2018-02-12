@@ -259,6 +259,42 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the resources associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the resources associated with the scope.
+        /// </returns>
+        public virtual Task<ImmutableArray<string>> GetResourcesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (string.IsNullOrEmpty(scope.Resources))
+            {
+                return Task.FromResult(ImmutableArray.Create<string>());
+            }
+
+            // Note: parsing the stringified resources is an expensive operation.
+            // To mitigate that, the resulting array is stored in the memory cache.
+            var key = string.Concat(nameof(GetResourcesAsync), "\x1e", scope.Resources);
+
+            var resources = Cache.Get(key) as ImmutableArray<string>?;
+            if (resources == null)
+            {
+                resources = Cache.Set(key, JArray.Parse(scope.Resources)
+                    .Select(element => (string) element)
+                    .ToImmutableArray());
+            }
+
+            return Task.FromResult(resources.GetValueOrDefault());
+        }
+
+        /// <summary>
         /// Instantiates a new scope.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -387,6 +423,34 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Sets the resources associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="resources">The resources associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetResourcesAsync([NotNull] TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (resources.IsDefaultOrEmpty)
+            {
+                scope.Resources = null;
+
+                return Task.CompletedTask;
+            }
+
+            scope.Resources = new JArray(resources.ToArray()).ToString(Formatting.None);
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// Updates an existing scope.
         /// </summary>
         /// <param name="scope">The scope to update.</param>
@@ -405,7 +469,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                return default(TKey);
+                return default;
             }
 
             return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);

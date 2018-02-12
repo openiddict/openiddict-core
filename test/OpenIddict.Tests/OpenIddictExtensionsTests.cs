@@ -461,6 +461,22 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public void EnableScopeValidation_ScopeValidationIsDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.EnableScopeValidation();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.EnableScopeValidation);
+        }
+
+        [Fact]
         public void EnableTokenEndpoint_TokenEndpointIsEnabled()
         {
             // Arrange

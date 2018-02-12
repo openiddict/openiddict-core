@@ -53,5 +53,11 @@ namespace OpenIddict.Models
         /// or <c>null</c> if no bag was associated with the current scope.
         /// </summary>
         public virtual string Properties { get; set; }
+
+        /// <summary>
+        /// Gets or sets the resources associated with the
+        /// current scope, serialized as a JSON array.
+        /// </summary>
+        public virtual string Resources { get; set; }
     }
 }

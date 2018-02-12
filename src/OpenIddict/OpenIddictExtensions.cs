@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
@@ -688,6 +689,22 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Rejects authorization and token requests that specify scopes that have not been
+        /// registered in the database using <see cref="RegisterScopes(OpenIddictBuilder, string[])"/>
+        /// or <see cref="OpenIddictScopeManager{TScope}.CreateAsync(TScope, CancellationToken)"/>.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        public static OpenIddictBuilder EnableScopeValidation([NotNull] this OpenIddictBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.Configure(options => options.EnableScopeValidation = true);
+        }
+
+        /// <summary>
         /// Enables the token endpoint.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
@@ -729,21 +746,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return builder.Configure(options => options.UserinfoEndpointPath = path);
-        }
-
-        /// <summary>
-        /// Rejects authorization and token requests that specify scopes that have not been
-        /// registered in the database using <see cref="OpenIddictScopeManager{TScope}"/>.
-        /// </summary>
-        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
-        public static OpenIddictBuilder ValidateScopes([NotNull] this OpenIddictBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            return builder.Configure(options => options.ValidateScopes = true);
         }
 
         /// <summary>

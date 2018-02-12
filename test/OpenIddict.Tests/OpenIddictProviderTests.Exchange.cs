@@ -83,7 +83,10 @@ namespace OpenIddict.Tests
         public async Task ValidateTokenRequest_AuthorizationCodeRequestIsRejectedWhenRedirectUriIsMissing()
         {
             // Arrange
-            var server = CreateAuthorizationServer();
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.EnableScopeValidation();
+            });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
@@ -105,9 +108,9 @@ namespace OpenIddict.Tests
         public async Task ValidateTokenRequest_RequestIsRejectedWhenUnregisteredScopeIsSpecified()
         {
             // Arrange
-            var server = CreateAuthorizationServer(options =>
+            var server = CreateAuthorizationServer(builder =>
             {
-                options.ValidateScopes();
+                builder.EnableScopeValidation();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -127,22 +130,46 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task ValidateTokenRequest_RequestIsValidatedWhenScopeRegisteredInOptionsIsSpecified()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.EnableScopeValidation();
+                builder.RegisterScopes("registered_scope");
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w",
+                Scope = "registered_scope"
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.AccessToken);
+        }
+
+        [Fact]
         public async Task ValidateTokenRequest_RequestIsValidatedWhenRegisteredScopeIsSpecified()
         {
             // Arrange
             var manager = CreateScopeManager(instance =>
             {
-                instance.Setup(mock => mock.ValidateScopesAsync(
-                    It.Is<ImmutableArray<string>>(scopes => scopes[0] == "registered_scope"),
-                    It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
+                instance.Setup(mock => mock.FindByNameAsync("registered_scope", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictScope());
             });
 
             var server = CreateAuthorizationServer(builder =>
             {
                 builder.Services.AddSingleton(manager);
-                builder.ValidateScopes();
-                builder.RegisterScopes("registered_scope");
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -658,6 +685,7 @@ namespace OpenIddict.Tests
             var server = CreateAuthorizationServer(builder =>
             {
                 builder.Services.AddSingleton(manager);
+                builder.RegisterScopes(OpenIdConnectConstants.Scopes.Email, OpenIdConnectConstants.Scopes.Profile);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());

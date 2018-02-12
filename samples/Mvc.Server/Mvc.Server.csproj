@@ -12,11 +12,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Certificate.pfx" />
-
-    <None Include="config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

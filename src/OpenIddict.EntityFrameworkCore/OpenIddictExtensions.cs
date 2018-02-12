@@ -274,6 +274,9 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 entity.HasKey(scope => scope.Id);
 
+                entity.HasIndex(scope => scope.Name)
+                      .IsUnique();
+
                 entity.Property(scope => scope.ConcurrencyToken)
                       .IsConcurrencyToken();
 

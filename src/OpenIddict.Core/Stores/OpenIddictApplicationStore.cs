@@ -758,7 +758,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                return default(TKey);
+                return default;
             }
 
             return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);

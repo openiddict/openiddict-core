@@ -48,6 +48,11 @@ namespace OpenIddict
         };
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether scope validation is enabled.
+        /// </summary>
+        public bool EnableScopeValidation { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether token revocation should be disabled.
         /// When disabled, authorization code and refresh tokens are not stored
         /// and cannot be revoked. Using this option is generally not recommended.
@@ -72,12 +77,6 @@ namespace OpenIddict
         /// Gets or sets the random number generator used to generate crypto-secure identifiers.
         /// </summary>
         public RandomNumberGenerator RandomNumberGenerator { get; set; } = RandomNumberGenerator.Create();
-
-        /// <summary>
-        /// Gets or sets a boolean indicating whether scopes that are not explicitly registered
-        /// in the database are automatically rejected. This option is not enabled by default.
-        /// </summary>
-        public bool ValidateScopes { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean determining whether client identification is required.

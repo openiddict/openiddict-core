@@ -197,19 +197,9 @@ namespace OpenIddict.Tests
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenUnregisteredScopeIsSpecified()
         {
             // Arrange
-            var manager = CreateScopeManager(instance =>
-            {
-                instance.Setup(mock => mock.ValidateScopesAsync(
-                    It.Is<ImmutableArray<string>>(scopes => scopes[0] == "unregistered_scope"),
-                    It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-            });
-
             var server = CreateAuthorizationServer(builder =>
             {
-                builder.Services.AddSingleton(manager);
-
-                builder.ValidateScopes();
+                builder.EnableScopeValidation();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -229,15 +219,68 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenScopeRegisteredInOptionsIsSpecified()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
+                    var application = new OpenIddictApplication();
+
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(application);
+
+                    instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+
+                    instance.Setup(mock => mock.HasPermissionAsync(application,
+                        OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+
+                    instance.Setup(mock => mock.HasPermissionAsync(application,
+                        OpenIddictConstants.Permissions.GrantTypes.Implicit, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+
+                    instance.Setup(mock => mock.HasPermissionAsync(application,
+                        OpenIddictConstants.Permissions.Prefixes.Scope + "registered_scope", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+                }));
+
+                builder.EnableScopeValidation();
+                builder.RegisterScopes("registered_scope");
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                Nonce = "n-0S6_WzA2Mj",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = OpenIdConnectConstants.ResponseTypes.Token,
+                Scope = "registered_scope"
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.AccessToken);
+        }
+
+        [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenRegisteredScopeIsSpecified()
         {
             // Arrange
             var manager = CreateScopeManager(instance =>
             {
-                instance.Setup(mock => mock.ValidateScopesAsync(
-                    It.Is<ImmutableArray<string>>(scopes => scopes[0] == "registered_scope"),
-                    It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
+                instance.Setup(mock => mock.FindByNameAsync("registered_scope", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictScope());
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -268,9 +311,8 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
                 }));
 
+                builder.EnableScopeValidation();
                 builder.Services.AddSingleton(manager);
-
-                builder.ValidateScopes();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -718,6 +760,7 @@ namespace OpenIddict.Tests
             var server = CreateAuthorizationServer(builder =>
             {
                 builder.Services.AddSingleton(manager);
+                builder.RegisterScopes(OpenIdConnectConstants.Scopes.Email, OpenIdConnectConstants.Scopes.Profile);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());

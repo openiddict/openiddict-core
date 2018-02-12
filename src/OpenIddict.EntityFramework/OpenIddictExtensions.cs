@@ -251,7 +251,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Entity<TScope>()
                    .Property(scope => scope.Name)
-                   .IsRequired();
+                   .IsRequired()
+                   .HasMaxLength(450)
+                   .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 
             builder.Entity<TScope>()
                    .ToTable("OpenIddictScopes");

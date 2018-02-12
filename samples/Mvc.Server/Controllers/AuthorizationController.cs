@@ -5,18 +5,17 @@
  */
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Mvc.Server.Helpers;
 using Mvc.Server.Models;
 using Mvc.Server.ViewModels.Authorization;
@@ -29,18 +28,15 @@ namespace Mvc.Server
     public class AuthorizationController : Controller
     {
         private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
-        private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public AuthorizationController(
             OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
-            IOptions<IdentityOptions> identityOptions,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager)
         {
             _applicationManager = applicationManager;
-            _identityOptions = identityOptions;
             _signInManager = signInManager;
             _userManager = userManager;
         }
@@ -242,51 +238,60 @@ namespace Mvc.Server
 
             if (!request.IsAuthorizationCodeGrantType() && !request.IsRefreshTokenGrantType())
             {
-                // Set the list of scopes granted to the client application.
-                // Note: the offline_access scope must be granted
-                // to allow OpenIddict to return a refresh token.
-                ticket.SetScopes(new[]
-                {
-                    OpenIdConnectConstants.Scopes.OpenId,
-                    OpenIdConnectConstants.Scopes.Email,
-                    OpenIdConnectConstants.Scopes.Profile,
-                    OpenIdConnectConstants.Scopes.OfflineAccess,
-                    OpenIddictConstants.Scopes.Roles
-                }.Intersect(request.GetScopes()));
+                // Note: in this sample, the granted scopes match the requested scope
+                // but you may want to allow the user to uncheck specific scopes.
+                // For that, simply restrict the list of scopes before calling SetScopes.
+                ticket.SetScopes(request.GetScopes());
+                ticket.SetResources("resource_server");
             }
 
-            ticket.SetResources("resource_server");
+            foreach (var claim in ticket.Principal.Claims)
+            {
+                claim.SetDestinations(GetDestinations(claim, ticket));
+            }
 
+            return ticket;
+        }
+
+        private IEnumerable<string> GetDestinations(Claim claim, AuthenticationTicket ticket)
+        {
             // Note: by default, claims are NOT automatically included in the access and identity tokens.
             // To allow OpenIddict to serialize them, you must attach them a destination, that specifies
             // whether they should be included in access tokens, in identity tokens or in both.
 
-            foreach (var claim in ticket.Principal.Claims)
+            switch (claim.Type)
             {
+                case OpenIdConnectConstants.Claims.Name:
+                    yield return OpenIdConnectConstants.Destinations.AccessToken;
+
+                    if (ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
+                        yield return OpenIdConnectConstants.Destinations.IdentityToken;
+
+                    yield break;
+
+                case OpenIdConnectConstants.Claims.Email:
+                    yield return OpenIdConnectConstants.Destinations.AccessToken;
+
+                    if (ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
+                        yield return OpenIdConnectConstants.Destinations.IdentityToken;
+
+                    yield break;
+
+                case OpenIdConnectConstants.Claims.Role:
+                    yield return OpenIdConnectConstants.Destinations.AccessToken;
+
+                    if (ticket.HasScope(OpenIddictConstants.Claims.Roles))
+                        yield return OpenIdConnectConstants.Destinations.IdentityToken;
+
+                    yield break;
+
                 // Never include the security stamp in the access and identity tokens, as it's a secret value.
-                if (claim.Type == _identityOptions.Value.ClaimsIdentity.SecurityStampClaimType)
-                {
-                    continue;
-                }
+                case "AspNet.Identity.SecurityStamp": yield break;
 
-                var destinations = new List<string>
-                {
-                    OpenIdConnectConstants.Destinations.AccessToken
-                };
-
-                // Only add the iterated claim to the id_token if the corresponding scope was granted to the client application.
-                // The other claims will only be added to the access_token, which is encrypted when using the default format.
-                if ((claim.Type == OpenIdConnectConstants.Claims.Name && ticket.HasScope(OpenIdConnectConstants.Scopes.Profile)) ||
-                    (claim.Type == OpenIdConnectConstants.Claims.Email && ticket.HasScope(OpenIdConnectConstants.Scopes.Email)) ||
-                    (claim.Type == OpenIdConnectConstants.Claims.Role && ticket.HasScope(OpenIddictConstants.Claims.Roles)))
-                {
-                    destinations.Add(OpenIdConnectConstants.Destinations.IdentityToken);
-                }
-
-                claim.SetDestinations(destinations);
+                default:
+                    yield return OpenIdConnectConstants.Destinations.AccessToken;
+                    yield break;
             }
-
-            return ticket;
         }
     }
 }
