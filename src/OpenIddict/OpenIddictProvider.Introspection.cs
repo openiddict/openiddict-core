@@ -120,40 +120,58 @@ namespace OpenIddict
             var identifier = context.Ticket.GetTokenId();
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
-            // Note: the OpenID Connect server middleware allows authorized presenters (e.g relying parties) to introspect access tokens
-            // but OpenIddict uses a stricter policy that only allows resource servers to use the introspection endpoint, unless the ticket
-            // doesn't have any audience: in this case, the caller is allowed to introspect the token even if it's not listed as a valid audience.
-            if (context.Ticket.IsAccessToken() && context.Ticket.HasAudience() && !context.Ticket.HasAudience(context.Request.ClientId))
+            if (!context.Ticket.IsAccessToken())
             {
-                Logger.LogWarning("The client application '{ClientId}' is not allowed to introspect the access " +
-                                  "token '{Identifier}' because it's not listed as a valid audience.",
-                                  context.Request.ClientId, identifier);
+                Logger.LogError("The token '{Identifier}' is not an access token and thus cannot be introspected.", identifier);
 
                 context.Active = false;
 
                 return;
             }
 
-            if (options.DisableTokenRevocation)
+            // Note: the OpenID Connect server middleware allows authorized presenters (e.g relying parties) to introspect
+            // tokens but OpenIddict uses a stricter policy that only allows resource servers to use the introspection endpoint.
+            // For that, an error is automatically returned if no explicit audience is attached to the authentication ticket.
+            if (!context.Ticket.HasAudience())
+            {
+                Logger.LogError("The token '{Identifier}' doesn't have any audience attached " +
+                                "and cannot be introspected. To add an audience, use the " +
+                                "'ticket.SetResources(...)' extension when creating the ticket.", identifier);
+
+                context.Active = false;
+
+                return;
+            }
+
+            if (!context.Ticket.HasAudience(context.Request.ClientId))
+            {
+                Logger.LogError("The client application '{ClientId}' is not allowed to introspect the access " +
+                                "token '{Identifier}' because it's not listed as a valid audience.",
+                                context.Request.ClientId, identifier);
+
+                context.Active = false;
+
+                return;
+            }
+
+            // If the received token is not a reference access token,
+            // skip the additional reference token validation checks.
+            if (!options.UseReferenceTokens)
             {
                 return;
             }
 
-            // When the received ticket is revocable, ensure it is still valid.
-            if (options.UseReferenceTokens || context.Ticket.IsAuthorizationCode() || context.Ticket.IsRefreshToken())
+            // Retrieve the token from the request properties. If it's marked as invalid, return active = false.
+            var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
+            Debug.Assert(token != null, "The token shouldn't be null.");
+
+            if (!await Tokens.IsValidAsync(token))
             {
-                // Retrieve the token from the request properties. If it's marked as invalid, return active = false.
-                var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
-                Debug.Assert(token != null, "The token shouldn't be null.");
+                Logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
 
-                if (!await Tokens.IsValidAsync(token))
-                {
-                    Logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
+                context.Active = false;
 
-                    context.Active = false;
-
-                    return;
-                }
+                return;
             }
         }
     }
