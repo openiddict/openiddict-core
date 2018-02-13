@@ -37,6 +37,12 @@ namespace OpenIddict.Models
         public virtual string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the display name
+        /// associated with the current scope.
+        /// </summary>
+        public virtual string DisplayName { get; set; }
+
+        /// <summary>
         /// Gets or sets the unique identifier
         /// associated with the current scope.
         /// </summary>

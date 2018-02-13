@@ -262,6 +262,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the display name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the display name associated with the scope.
+        /// </returns>
+        public virtual Task<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.GetDisplayNameAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the unique identifier associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -452,6 +471,7 @@ namespace OpenIddict.Core
             var descriptor = new OpenIddictScopeDescriptor
             {
                 Description = await Store.GetDescriptionAsync(scope, cancellationToken),
+                DisplayName = await Store.GetDisplayNameAsync(scope, cancellationToken),
                 Name = await Store.GetNameAsync(scope, cancellationToken)
             };
 
@@ -512,6 +532,7 @@ namespace OpenIddict.Core
             }
 
             await Store.SetDescriptionAsync(scope, descriptor.Description, cancellationToken);
+            await Store.SetDisplayNameAsync(scope, descriptor.DisplayName, cancellationToken);
             await Store.SetNameAsync(scope, descriptor.Name, cancellationToken);
             await Store.SetResourcesAsync(scope, descriptor.Resources.ToImmutableArray(), cancellationToken);
         }
