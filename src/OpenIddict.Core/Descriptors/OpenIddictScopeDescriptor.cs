@@ -15,6 +15,12 @@ namespace OpenIddict.Core
         public virtual string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the display name
+        /// associated with the scope.
+        /// </summary>
+        public virtual string DisplayName { get; set; }
+
+        /// <summary>
         /// Gets or sets the unique name
         /// associated with the scope.
         /// </summary>

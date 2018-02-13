@@ -197,6 +197,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the display name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the display name associated with the scope.
+        /// </returns>
+        public virtual Task<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Task.FromResult(scope.DisplayName);
+        }
+
+        /// <summary>
         /// Retrieves the unique identifier associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -369,6 +388,27 @@ namespace OpenIddict.Core
             }
 
             scope.Description = description;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the display name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="name">The display name associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetDisplayNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            scope.DisplayName = name;
 
             return Task.CompletedTask;
         }

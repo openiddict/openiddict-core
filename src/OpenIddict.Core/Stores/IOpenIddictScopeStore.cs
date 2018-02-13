@@ -123,6 +123,17 @@ namespace OpenIddict.Core
         Task<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the display name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the display name associated with the scope.
+        /// </returns>
+        Task<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the unique identifier associated with a scope.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -214,6 +225,17 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetDescriptionAsync([NotNull] TScope scope, [CanBeNull] string description, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the display name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="name">The display name associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetDisplayNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the name associated with a scope.
