@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -295,7 +296,27 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return Store.GetIdAsync(scope, cancellationToken);
+            return Store.GetNameAsync(scope, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the resources associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the resources associated with the scope.
+        /// </returns>
+        public virtual Task<ImmutableArray<string>> GetResourcesAsync(
+            [NotNull] TScope scope, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return Store.GetResourcesAsync(scope, cancellationToken);
         }
 
         /// <summary>
@@ -355,6 +376,39 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Lists all the resources associated with the specified scopes.
+        /// </summary>
+        /// <param name="scopes">The scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the resources associated with the specified scopes.
+        /// </returns>
+        public virtual async Task<ImmutableArray<string>> ListResourcesAsync(
+            ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
+        {
+            if (scopes.IsDefaultOrEmpty)
+            {
+                return ImmutableArray.Create<string>();
+            }
+
+            var set = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var scope in await FindByNamesAsync(scopes, cancellationToken))
+            {
+                var resources = await GetResourcesAsync(scope, cancellationToken);
+                if (resources.IsDefaultOrEmpty)
+                {
+                    continue;
+                }
+
+                set.UnionWith(resources);
+            }
+
+            return set.ToImmutableArray();
+        }
+
+        /// <summary>
         /// Updates an existing scope.
         /// </summary>
         /// <param name="scope">The scope to update.</param>
@@ -401,6 +455,8 @@ namespace OpenIddict.Core
                 Name = await Store.GetNameAsync(scope, cancellationToken)
             };
 
+            descriptor.Resources.UnionWith(await Store.GetResourcesAsync(scope, cancellationToken));
+
             await operation(descriptor);
             await PopulateAsync(scope, descriptor, cancellationToken);
             await UpdateAsync(scope, cancellationToken);
@@ -434,34 +490,6 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Validates the list of scopes to ensure they correspond to existing elements in the database.
-        /// </summary>
-        /// <param name="scopes">The scopes.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the list of scopes is valid, <c>false</c> otherwise.</returns>
-        public virtual async Task<bool> ValidateScopesAsync(ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
-        {
-            if (scopes.Length == 0)
-            {
-                return true;
-            }
-
-            async Task<ImmutableHashSet<string>> GetScopesAsync()
-            {
-                var names = ImmutableHashSet.CreateBuilder(StringComparer.Ordinal);
-
-                foreach (var scope in await FindByNamesAsync(scopes, cancellationToken))
-                {
-                    names.Add(await GetNameAsync(scope, cancellationToken));
-                }
-
-                return names.ToImmutable();
-            }
-
-            return (await GetScopesAsync()).IsSupersetOf(scopes);
-        }
-
-        /// <summary>
         /// Populates the scope using the specified descriptor.
         /// </summary>
         /// <param name="scope">The scope.</param>
@@ -484,7 +512,8 @@ namespace OpenIddict.Core
             }
 
             await Store.SetDescriptionAsync(scope, descriptor.Description, cancellationToken);
-            await Store.SetNameAsync(scope, descriptor.Description, cancellationToken);
+            await Store.SetNameAsync(scope, descriptor.Name, cancellationToken);
+            await Store.SetResourcesAsync(scope, descriptor.Resources.ToImmutableArray(), cancellationToken);
         }
     }
 }

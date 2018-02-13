@@ -67,22 +67,6 @@ namespace OpenIddict
                 return;
             }
 
-            // If the corresponding option was enabled, reject the request if scopes can't be validated.
-            if (options.ValidateScopes && !await scopes.ValidateScopesAsync(
-                context.Request.GetScopes()
-                    .ToImmutableArray()
-                    .Remove(OpenIdConnectConstants.Scopes.OfflineAccess)
-                    .Remove(OpenIdConnectConstants.Scopes.OpenId)))
-            {
-                logger.LogError("The token request was rejected because an unregistered scope was specified.");
-
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The specified 'scope' parameter is not valid.");
-
-                return;
-            }
-
             // Note: the OpenID Connect server middleware allows returning a refresh token with grant_type=client_credentials,
             // though it's usually not recommended by the OAuth2 specification. To encourage developers to make a new
             // grant_type=client_credentials request instead of using refresh tokens, OpenIddict uses a stricter policy
@@ -96,6 +80,23 @@ namespace OpenIddict
                     description: "The 'offline_access' scope is not valid for the specified 'grant_type' parameter.");
 
                 return;
+            }
+
+            // Validates scopes, unless scope validation was explicitly disabled.
+            foreach (var scope in context.Request.GetScopes())
+            {
+                if (options.EnableScopeValidation && !options.Scopes.Contains(scope) &&
+                    await scopes.FindByNameAsync(scope) == null)
+                {
+                    logger.LogError("The token request was rejected because an " +
+                                    "unregistered scope was specified: {Scope}.", scope);
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The specified 'scope' parameter is not valid.");
+
+                    return;
+                }
             }
 
             // Optimization: the OpenID Connect server middleware automatically rejects grant_type=client_credentials

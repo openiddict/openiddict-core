@@ -1,4 +1,7 @@
-﻿namespace OpenIddict.Core
+﻿using System;
+using System.Collections.Generic;
+
+namespace OpenIddict.Core
 {
     /// <summary>
     /// Represents an OpenIddict scope descriptor.
@@ -16,5 +19,11 @@
         /// associated with the scope.
         /// </summary>
         public virtual string Name { get; set; }
+
+        /// <summary>
+        /// Gets the resources associated with the scope.
+        /// </summary>
+        public virtual ISet<string> Resources { get; }
+            = new HashSet<string>(StringComparer.Ordinal);
     }
 }

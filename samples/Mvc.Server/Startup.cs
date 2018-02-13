@@ -16,19 +16,20 @@ namespace Mvc.Server
 {
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("config.json")
+        public IConfiguration Configuration { get; }
+            = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
                 .AddEnvironmentVariables()
                 .Build();
 
+        public void ConfigureServices(IServiceCollection services)
+        {
             services.AddMvc();
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 // Configure the context to use Microsoft SQL Server.
-                options.UseSqlServer(configuration["Data:DefaultConnection:ConnectionString"]);
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
 
                 // Register the entity sets needed by OpenIddict.
                 // Note: use the generic overload if you need
@@ -74,8 +75,9 @@ namespace Mvc.Server
                        .AllowPasswordFlow()
                        .AllowRefreshTokenFlow();
 
-                // Mark the "profile" scope as a supported scope in the discovery document.
-                options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
+                // Mark the "email" and "profile" scopes as supported scopes.
+                options.RegisterScopes(OpenIdConnectConstants.Scopes.Email,
+                                       OpenIdConnectConstants.Scopes.Profile);
 
                 // Make the "client_id" parameter mandatory when sending a token request.
                 options.RequireClientIdentification();
@@ -86,6 +88,10 @@ namespace Mvc.Server
                 // This allows flowing large OpenID Connect requests even when using
                 // an external authentication provider like Google, Facebook or Twitter.
                 options.EnableRequestCaching();
+
+                // Enable scope validation, so that authorization and token requests
+                // that specify unregistered scopes are automatically rejected.
+                options.EnableScopeValidation();
 
                 // During development, you can disable the HTTPS requirement.
                 options.DisableHttpsRequirement();
