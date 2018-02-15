@@ -90,9 +90,10 @@ namespace Mvc.Server
                        .AllowPasswordFlow()
                        .AllowRefreshTokenFlow();
 
-                // Mark the "email" and "profile" scopes as supported scopes.
+                // Mark the "email", "profile" and "roles" scopes as supported scopes.
                 options.RegisterScopes(OpenIdConnectConstants.Scopes.Email,
-                                       OpenIdConnectConstants.Scopes.Profile);
+                                       OpenIdConnectConstants.Scopes.Profile,
+                                       OpenIddictConstants.Scopes.Roles);
 
                 // Make the "client_id" parameter mandatory when sending a token request.
                 options.RequireClientIdentification();

@@ -371,6 +371,31 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the consent type associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the consent type of the application (by default, "explicit").
+        /// </returns>
+        public virtual async Task<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var type = await Store.GetConsentTypeAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(type))
+            {
+                return OpenIddictConstants.ConsentTypes.Explicit;
+            }
+
+            return type;
+        }
+
+        /// <summary>
         /// Retrieves the display name associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -799,6 +824,7 @@ namespace OpenIddict.Core
             {
                 ClientId = await Store.GetClientIdAsync(application, cancellationToken),
                 ClientSecret = secret,
+                ConsentType = await Store.GetConsentTypeAsync(application, cancellationToken),
                 DisplayName = await Store.GetDisplayNameAsync(application, cancellationToken),
                 Type = await Store.GetClientTypeAsync(application, cancellationToken)
             };
@@ -1161,6 +1187,7 @@ namespace OpenIddict.Core
             await Store.SetClientIdAsync(application, descriptor.ClientId, cancellationToken);
             await Store.SetClientSecretAsync(application, descriptor.ClientSecret, cancellationToken);
             await Store.SetClientTypeAsync(application, descriptor.Type, cancellationToken);
+            await Store.SetConsentTypeAsync(application, descriptor.ConsentType, cancellationToken);
             await Store.SetDisplayNameAsync(application, descriptor.DisplayName, cancellationToken);
             await Store.SetPermissionsAsync(application, ImmutableArray.CreateRange(descriptor.Permissions), cancellationToken);
             await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(

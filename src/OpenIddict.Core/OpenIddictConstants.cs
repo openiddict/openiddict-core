@@ -26,6 +26,13 @@ namespace OpenIddict.Core
             public const string Public = "public";
         }
 
+        public static class ConsentTypes
+        {
+            public const string Explicit = "explicit";
+            public const string External = "external";
+            public const string Implicit = "implicit";
+        }
+
         public static class Environment
         {
             public const string AuthorizationRequest = "openiddict-authorization-request:";

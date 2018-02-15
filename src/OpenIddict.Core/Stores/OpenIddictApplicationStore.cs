@@ -308,6 +308,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the consent type associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the consent type of the application (by default, "explicit").
+        /// </returns>
+        public virtual Task<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Task.FromResult(application.ConsentType);
+        }
+
+        /// <summary>
         /// Retrieves the display name associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -599,6 +618,28 @@ namespace OpenIddict.Core
             }
 
             application.Type = type;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the consent type associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="type">The consent type associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetConsentTypeAsync([NotNull] TApplication application,
+            [CanBeNull] string type, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            application.ConsentType = type;
 
             return Task.CompletedTask;
         }

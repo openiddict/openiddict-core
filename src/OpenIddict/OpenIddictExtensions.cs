@@ -690,8 +690,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Rejects authorization and token requests that specify scopes that have not been
-        /// registered in the database using <see cref="RegisterScopes(OpenIddictBuilder, string[])"/>
-        /// or <see cref="OpenIddictScopeManager{TScope}.CreateAsync(TScope, CancellationToken)"/>.
+        /// registered using <see cref="RegisterScopes(OpenIddictBuilder, string[])"/> or
+        /// <see cref="OpenIddictScopeManager{TScope}.CreateAsync(TScope, CancellationToken)"/>.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         public static OpenIddictBuilder EnableScopeValidation([NotNull] this OpenIddictBuilder builder)

@@ -158,6 +158,17 @@ namespace OpenIddict.Core
         Task<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the consent type associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the consent type of the application (by default, "explicit").
+        /// </returns>
+        Task<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the display name associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -295,6 +306,17 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         Task SetClientTypeAsync([NotNull] TApplication application, [CanBeNull] string type, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the consent type associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="type">The consent type associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        Task SetConsentTypeAsync([NotNull] TApplication application, [CanBeNull] string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the display name associated with an application.

@@ -90,6 +90,12 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(token));
             }
 
+            // If no status was explicitly specified, assume that the token is valid.
+            if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
+            {
+                await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Valid, cancellationToken);
+            }
+
             var results = await ValidateAsync(token, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {

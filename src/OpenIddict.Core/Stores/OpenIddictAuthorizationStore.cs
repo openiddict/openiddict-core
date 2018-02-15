@@ -104,7 +104,8 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorizations corresponding to the subject/client.
         /// </returns>
-        public virtual Task<ImmutableArray<TAuthorization>> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
+        public virtual Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
             {
@@ -118,14 +119,65 @@ namespace OpenIddict.Core
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, TKey key, string principal)
                 => from authorization in authorizations
-                   where authorization.Application != null
-                   where authorization.Application.Id.Equals(key)
-                   where authorization.Subject == principal
+                   where authorization.Application != null &&
+                         authorization.Application.Id.Equals(key) &&
+                         authorization.Subject == principal
                    select authorization;
 
             return ListAsync(
                 (authorizations, state) => Query(authorizations, state.key, state.principal),
                 (key: ConvertIdentifierFromString(client), principal: subject), cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the authorizations matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="status">The status associated with the authorization.</param>
+        /// <param name="type">The type associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the subject/client.
+        /// </returns>
+        public virtual Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+            }
+
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.", nameof(client));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The type cannot be null or empty.", nameof(client));
+            }
+
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
+                TKey key, string principal, string state, string kind)
+                => from authorization in authorizations
+                   where authorization.Application != null &&
+                         authorization.Application.Id.Equals(key) &&
+                         authorization.Subject == principal &&
+                         authorization.Status == state &&
+                         authorization.Type == kind
+                   select authorization;
+
+            return ListAsync(
+                (authorizations, state) => Query(authorizations, state.key, state.principal, state.state, state.kind),
+                (key: ConvertIdentifierFromString(client), principal: subject, state: status, kind: type), cancellationToken);
         }
 
         /// <summary>
@@ -153,6 +205,31 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves all the authorizations corresponding to the specified subject.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the specified subject.
+        /// </returns>
+        public virtual Task<ImmutableArray<TAuthorization>> FindBySubjectAsync(
+            [NotNull] string subject, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, string principal)
+                => from authorization in authorizations
+                   where authorization.Subject == principal
+                   select authorization;
+
+            return ListAsync((authorizations, principal) => Query(authorizations, principal), subject, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves the optional application identifier associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -175,8 +252,8 @@ namespace OpenIddict.Core
 
             IQueryable<TKey> Query(IQueryable<TAuthorization> authorizations, TKey key)
                 => from element in authorizations
-                   where element.Id.Equals(key)
-                   where element.Application != null
+                   where element.Id.Equals(key) &&
+                         element.Application != null
                    select element.Application.Id;
 
             return ConvertIdentifierToString(await GetAsync(
