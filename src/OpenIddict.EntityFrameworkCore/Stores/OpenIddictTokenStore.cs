@@ -242,8 +242,8 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             var token = (from entry in Context.ChangeTracker.Entries<TToken>()
-                         where entry.Entity != null
-                         where entry.Entity.Id.Equals(ConvertIdentifierFromString(identifier))
+                         where entry.Entity != null &&
+                               entry.Entity.Id.Equals(ConvertIdentifierFromString(identifier))
                          select entry.Entity).FirstOrDefault();
 
             if (token != null)

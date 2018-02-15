@@ -76,6 +76,22 @@ namespace OpenIddict.Core
         Task<ImmutableArray<TAuthorization>> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the authorizations matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="status">The status associated with the authorization.</param>
+        /// <param name="type">The type associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the subject/client.
+        /// </returns>
+        Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves an authorization using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the authorization.</param>
@@ -85,6 +101,17 @@ namespace OpenIddict.Core
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
         Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves all the authorizations corresponding to the specified subject.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the specified subject.
+        /// </returns>
+        Task<ImmutableArray<TAuthorization>> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the optional application identifier associated with an authorization.

@@ -109,8 +109,8 @@ namespace OpenIddict.Core
 
             IQueryable<TToken> Query(IQueryable<TToken> tokens, TKey key)
                 => from token in tokens
-                   where token.Application != null
-                   where token.Application.Id.Equals(key)
+                   where token.Application != null &&
+                         token.Application.Id.Equals(key)
                    select token;
 
             return ListAsync((tokens, key) => Query(tokens, key), ConvertIdentifierFromString(identifier), cancellationToken);
@@ -134,8 +134,8 @@ namespace OpenIddict.Core
 
             IQueryable<TToken> Query(IQueryable<TToken> tokens, TKey key)
                 => from token in tokens
-                   where token.Authorization != null
-                   where token.Authorization.Id.Equals(key)
+                   where token.Authorization != null &&
+                         token.Authorization.Id.Equals(key)
                    select token;
 
             return ListAsync((tokens, key) => Query(tokens, key), ConvertIdentifierFromString(identifier), cancellationToken);
@@ -253,8 +253,8 @@ namespace OpenIddict.Core
 
             IQueryable<TKey> Query(IQueryable<TToken> tokens, TKey key)
                 => from element in tokens
-                   where element.Id.Equals(key)
-                   where element.Application != null
+                   where element.Id.Equals(key) &&
+                         element.Application != null
                    select element.Application.Id;
 
             return ConvertIdentifierToString(await GetAsync((tokens, key) => Query(tokens, key), token.Id, cancellationToken));
@@ -283,8 +283,8 @@ namespace OpenIddict.Core
 
             IQueryable<TKey> Query(IQueryable<TToken> tokens, TKey key)
                 => from element in tokens
-                   where element.Id.Equals(key)
-                   where element.Authorization != null
+                   where element.Id.Equals(key) &&
+                         element.Authorization != null
                    select element.Authorization.Id;
 
             return ConvertIdentifierToString(await GetAsync((tokens, key) => Query(tokens, key), token.Id, cancellationToken));

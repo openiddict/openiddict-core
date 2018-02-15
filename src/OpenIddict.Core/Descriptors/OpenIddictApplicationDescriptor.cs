@@ -22,6 +22,12 @@ namespace OpenIddict.Core
         public string ClientSecret { get; set; }
 
         /// <summary>
+        /// Gets or sets the consent type
+        /// associated with the application.
+        /// </summary>
+        public virtual string ConsentType { get; set; }
+
+        /// <summary>
         /// Gets or sets the display name
         /// associated with the application.
         /// </summary>

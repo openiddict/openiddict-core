@@ -501,9 +501,27 @@ namespace OpenIddict.Core
 
             var results = ImmutableArray.CreateBuilder<ValidationResult>();
 
-            if (string.IsNullOrEmpty(await Store.GetNameAsync(scope, cancellationToken)))
+            var name = await Store.GetNameAsync(scope, cancellationToken);
+            if (string.IsNullOrEmpty(name))
             {
                 results.Add(new ValidationResult("The scope name cannot be null or empty."));
+            }
+
+            else if (name.Contains(OpenIddictConstants.Separators.Space))
+            {
+                results.Add(new ValidationResult("The scope name cannot contain spaces."));
+            }
+
+            else
+            {
+                // Ensure the name is not already used for a different name.
+                var other = await Store.FindByNameAsync(name, cancellationToken);
+                if (other != null && !string.Equals(
+                    await Store.GetIdAsync(other, cancellationToken),
+                    await Store.GetIdAsync(scope, cancellationToken), StringComparison.Ordinal))
+                {
+                    results.Add(new ValidationResult("A scope with the same name already exists."));
+                }
             }
 
             return results.ToImmutable();

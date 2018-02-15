@@ -57,6 +57,12 @@ namespace OpenIddict.Models
         public virtual string ConcurrencyToken { get; set; } = Guid.NewGuid().ToString();
 
         /// <summary>
+        /// Gets or sets the consent type
+        /// associated with the current application.
+        /// </summary>
+        public virtual string ConsentType { get; set; }
+
+        /// <summary>
         /// Gets or sets the display name
         /// associated with the current application.
         /// </summary>

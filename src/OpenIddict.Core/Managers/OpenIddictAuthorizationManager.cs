@@ -5,9 +5,11 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -88,6 +90,12 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(authorization));
             }
 
+            // If no status was explicitly specified, assume that the authorization is valid.
+            if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
+            {
+                await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Valid, cancellationToken);
+            }
+
             // If no type was explicitly specified, assume that the authorization is a permanent authorization.
             if (string.IsNullOrEmpty(await Store.GetTypeAsync(authorization, cancellationToken)))
             {
@@ -129,6 +137,58 @@ namespace OpenIddict.Core
             await CreateAsync(authorization, cancellationToken);
 
             return authorization;
+        }
+
+        /// <summary>
+        /// Creates a new permanent authorization based on the specified parameters.
+        /// </summary>
+        /// <param name="principal">The principal associated with the authorization.</param>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="scopes">The minimal scopes associated with the authorization.</param>
+        /// <param name="properties">The authentication properties associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+        /// </returns>
+        public virtual Task<TAuthorization> CreateAsync(
+            [NotNull] ClaimsPrincipal principal, [NotNull] string subject,
+            [NotNull] string client, ImmutableArray<string> scopes,
+            [CanBeNull] ImmutableDictionary<string, string> properties, CancellationToken cancellationToken = default)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+            }
+
+            var descriptor = new OpenIddictAuthorizationDescriptor
+            {
+                ApplicationId = client,
+                Principal = principal,
+                Subject = subject
+            };
+
+            descriptor.Scopes.UnionWith(scopes);
+
+            if (properties != null)
+            {
+                foreach (var property in properties)
+                {
+                    descriptor.Properties.Add(property);
+                }
+            }
+
+            return CreateAsync(descriptor, cancellationToken);
         }
 
         /// <summary>
@@ -177,6 +237,57 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the authorizations matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="status">The status associated with the authorization.</param>
+        /// <param name="type">The type associated with the authorization.</param>
+        /// <param name="scopes">The minimal scopes associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the subject/client.
+        /// </returns>
+        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, [NotNull] string type,
+            ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+            }
+
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.", nameof(client));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The type cannot be null or empty.", nameof(client));
+            }
+
+            var authorizations = ImmutableArray.CreateBuilder<TAuthorization>();
+
+            foreach (var authorization in await Store.FindAsync(subject, client, status, type, cancellationToken))
+            {
+                if (await HasScopesAsync(authorization, scopes, cancellationToken))
+                {
+                    authorizations.Add(authorization);
+                }
+            }
+
+            return authorizations.ToImmutable();
+        }
+
+        /// <summary>
         /// Retrieves an authorization using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the authorization.</param>
@@ -193,6 +304,26 @@ namespace OpenIddict.Core
             }
 
             return Store.FindByIdAsync(identifier, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves all the authorizations corresponding to the specified subject.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the specified subject.
+        /// </returns>
+        public virtual Task<ImmutableArray<TAuthorization>> FindBySubjectAsync(
+            [NotNull] string subject, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            return Store.FindBySubjectAsync(subject, cancellationToken);
         }
 
         /// <summary>
