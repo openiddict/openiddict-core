@@ -676,7 +676,7 @@ namespace OpenIddict.Core
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var results = await ListAsync(100, offset, cancellationToken);
+                var results = await ListInvalidAsync(100, offset, cancellationToken);
                 if (results.IsEmpty)
                 {
                     break;
