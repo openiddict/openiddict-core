@@ -134,12 +134,12 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
-        /// <param name="status">The status associated with the authorization.</param>
-        /// <param name="type">The type associated with the authorization.</param>
+        /// <param name="status">The authorization status.</param>
+        /// <param name="type">The authorization type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the subject/client.
+        /// whose result returns the authorizations corresponding to the criteria.
         /// </returns>
         public virtual Task<ImmutableArray<TAuthorization>> FindAsync(
             [NotNull] string subject, [NotNull] string client,
