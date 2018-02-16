@@ -135,6 +135,44 @@ namespace OpenIddict.Core
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="status">The authorization status.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the criteria.
+        /// </returns>
+        public virtual Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client cannot be null or empty.", nameof(client));
+            }
+
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, TKey key, string principal, string state)
+                => from authorization in authorizations
+                   where authorization.Application != null &&
+                         authorization.Application.Id.Equals(key) &&
+                         authorization.Subject == principal &&
+                         authorization.Status == state
+                   select authorization;
+
+            return ListAsync(
+                (authorizations, state) => Query(authorizations, state.key, state.principal, state.state),
+                (key: ConvertIdentifierFromString(client), principal: subject, state: status), cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the authorizations matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="status">The authorization status.</param>
         /// <param name="type">The authorization type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>

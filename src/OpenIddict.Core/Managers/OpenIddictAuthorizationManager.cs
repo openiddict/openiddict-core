@@ -239,17 +239,48 @@ namespace OpenIddict.Core
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="status">The authorization status.</param>
-        /// <param name="type">The authorization type.</param>
-        /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorizations corresponding to the criteria.
         /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        public virtual Task<ImmutableArray<TAuthorization>> FindAsync(
             [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, [NotNull] string type,
-            ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
+            [NotNull] string status, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+            }
+
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.", nameof(client));
+            }
+
+            return Store.FindAsync(subject, client, status, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the authorizations matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="status">The authorization status.</param>
+        /// <param name="type">The authorization type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the criteria.
+        /// </returns>
+        public virtual Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(subject))
             {
@@ -271,9 +302,30 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The type cannot be null or empty.", nameof(client));
             }
 
+            return Store.FindAsync(subject, client, status, type, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the authorizations matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="status">The authorization status.</param>
+        /// <param name="type">The authorization type.</param>
+        /// <param name="scopes">The minimal scopes associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the criteria.
+        /// </returns>
+        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, [NotNull] string type,
+            ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
+        {
             var authorizations = ImmutableArray.CreateBuilder<TAuthorization>();
 
-            foreach (var authorization in await Store.FindAsync(subject, client, status, type, cancellationToken))
+            foreach (var authorization in await FindAsync(subject, client, status, type, cancellationToken))
             {
                 if (await HasScopesAsync(authorization, scopes, cancellationToken))
                 {
