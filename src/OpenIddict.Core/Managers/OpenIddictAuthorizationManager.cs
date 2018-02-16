@@ -96,12 +96,6 @@ namespace OpenIddict.Core
                 await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Valid, cancellationToken);
             }
 
-            // If no type was explicitly specified, assume that the authorization is a permanent authorization.
-            if (string.IsNullOrEmpty(await Store.GetTypeAsync(authorization, cancellationToken)))
-            {
-                await Store.SetTypeAsync(authorization, OpenIddictConstants.AuthorizationTypes.Permanent, cancellationToken);
-            }
-
             var results = await ValidateAsync(authorization, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
@@ -145,6 +139,7 @@ namespace OpenIddict.Core
         /// <param name="principal">The principal associated with the authorization.</param>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="type">The authorization type.</param>
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="properties">The authentication properties associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -153,7 +148,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual Task<TAuthorization> CreateAsync(
             [NotNull] ClaimsPrincipal principal, [NotNull] string subject,
-            [NotNull] string client, ImmutableArray<string> scopes,
+            [NotNull] string client, [NotNull] string type, ImmutableArray<string> scopes,
             [CanBeNull] ImmutableDictionary<string, string> properties, CancellationToken cancellationToken = default)
         {
             if (principal == null)
@@ -175,7 +170,9 @@ namespace OpenIddict.Core
             {
                 ApplicationId = client,
                 Principal = principal,
-                Subject = subject
+                Status = OpenIddictConstants.Statuses.Valid,
+                Subject = subject,
+                Type = type
             };
 
             descriptor.Scopes.UnionWith(scopes);
@@ -241,13 +238,13 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
-        /// <param name="status">The status associated with the authorization.</param>
-        /// <param name="type">The type associated with the authorization.</param>
+        /// <param name="status">The authorization status.</param>
+        /// <param name="type">The authorization type.</param>
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the subject/client.
+        /// whose result returns the authorizations corresponding to the criteria.
         /// </returns>
         public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
             [NotNull] string subject, [NotNull] string client,
