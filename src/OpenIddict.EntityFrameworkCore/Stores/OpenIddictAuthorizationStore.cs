@@ -163,7 +163,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             Task<List<TToken>> ListTokensAsync()
                 => (from token in Tokens
-                    where token.Application.Id.Equals(authorization.Id)
+                    where token.Authorization.Id.Equals(authorization.Id)
                     select token).ToListAsync(cancellationToken);
 
             // Remove all the tokens associated with the application.
