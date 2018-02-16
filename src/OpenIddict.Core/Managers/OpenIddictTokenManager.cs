@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -638,38 +639,48 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async Task PruneInvalidAsync(CancellationToken cancellationToken = default)
         {
-            ImmutableArray<TToken> tokens;
+            IList<Exception> exceptions = null;
+            var tokens = new List<TToken>();
 
-            do
+            // First, start retrieving the invalid tokens from the database.
+            for (var offset = 0; offset < 10_000; offset = offset + 100)
             {
-                // Note: don't use an offset here, as the elements returned by this method
-                // are progressively removed from the database immediately after calling it.
-                tokens = await ListInvalidAsync(100, 0, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                foreach (var token in tokens)
+                var results = await ListInvalidAsync(100, offset, cancellationToken);
+                if (results.IsEmpty)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    try
-                    {
-                        await DeleteAsync(token, cancellationToken);
-
-                        Logger.LogDebug("The token {TokenId} was successfully removed from the database.",
-                            await GetIdAsync(token, cancellationToken));
-                    }
-
-                    catch (Exception exception)
-                    {
-                        Logger.LogDebug(exception,
-                            "An error occurred while removing the token {TokenId} from the database.",
-                            await GetIdAsync(token, cancellationToken));
-                    }
+                    break;
                 }
 
-                cancellationToken.ThrowIfCancellationRequested();
+                tokens.AddRange(results);
             }
 
-            while (!tokens.IsDefaultOrEmpty);
+            // Then, remove the invalid tokens one by one.
+            foreach (var token in tokens)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
+                {
+                    await DeleteAsync(token, cancellationToken);
+                }
+
+                catch (Exception exception)
+                {
+                    if (exceptions == null)
+                    {
+                        exceptions = new List<Exception>(capacity: 1);
+                    }
+
+                    exceptions.Add(exception);
+                }
+            }
+
+            if (exceptions != null)
+            {
+                throw new AggregateException("An error occurred while pruning tokens.", exceptions);
+            }
         }
 
         /// <summary>
