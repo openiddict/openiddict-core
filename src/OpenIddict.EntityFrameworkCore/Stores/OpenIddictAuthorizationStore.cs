@@ -224,6 +224,40 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="status">The authorization status.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the criteria.
+        /// </returns>
+        public override async Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, CancellationToken cancellationToken)
+        {
+
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
+            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
+            // this method is overriden to use an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
+                IQueryable<TApplication> applications, TKey key, string principal, string state)
+                => from authorization in authorizations.Include(authorization => authorization.Application)
+                   where authorization.Subject == principal &&
+                         authorization.Status == state
+                   join application in applications on authorization.Application.Id equals application.Id
+                   where application.Id.Equals(key)
+                   select authorization;
+
+            return ImmutableArray.CreateRange(await Query(
+                Authorizations, Applications, ConvertIdentifierFromString(client), subject, status).ToListAsync(cancellationToken));
+        }
+
+        /// <summary>
+        /// Retrieves the authorizations matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="status">The authorization status.</param>
         /// <param name="type">The authorization type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>

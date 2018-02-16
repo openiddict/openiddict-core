@@ -73,7 +73,23 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorizations corresponding to the subject/client.
         /// </returns>
-        Task<ImmutableArray<TAuthorization>> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken);
+        Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the authorizations matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="status">The authorization status.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the criteria.
+        /// </returns>
+        Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the authorizations matching the specified parameters.
