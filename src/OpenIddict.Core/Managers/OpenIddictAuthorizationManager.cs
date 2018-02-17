@@ -166,6 +166,11 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
             }
 
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+            }
+
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
                 ApplicationId = client,
@@ -260,7 +265,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(client));
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
             return Store.FindAsync(subject, client, status, cancellationToken);
@@ -294,12 +299,12 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(client));
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(client));
+                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
             return Store.FindAsync(subject, client, status, type, cancellationToken);
