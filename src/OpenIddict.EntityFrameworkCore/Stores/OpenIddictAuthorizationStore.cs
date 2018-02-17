@@ -233,6 +233,20 @@ namespace OpenIddict.EntityFrameworkCore
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+            }
+
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+            }
 
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
@@ -280,12 +294,12 @@ namespace OpenIddict.EntityFrameworkCore
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(client));
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(client));
+                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be

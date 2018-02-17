@@ -154,6 +154,11 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+            }
+
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, TKey key, string principal, string state)
                 => from authorization in authorizations
                    where authorization.Application != null &&
@@ -195,12 +200,12 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(client));
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(client));
+                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
