@@ -161,9 +161,15 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(authorization));
             }
 
+            // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
+            // filtered using token.Application.Id.Equals(key). To work around this issue,
+            // this local method uses an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
             Task<List<TToken>> ListTokensAsync()
                 => (from token in Tokens
-                    where token.Authorization.Id.Equals(authorization.Id)
+                    join element in Authorizations on token.Authorization.Id equals element.Id
+                    where element.Id.Equals(authorization.Id)
                     select token).ToListAsync(cancellationToken);
 
             // Remove all the tokens associated with the application.
