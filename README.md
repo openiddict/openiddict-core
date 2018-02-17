@@ -37,6 +37,10 @@ with the power to control who can access your API and the information that is ex
 
 > **Samples for ASP.NET Core 1.x can be found [in the master branch of the samples repository](https://github.com/openiddict/openiddict-samples/tree/master)**.
 
+## Migrating to OpenIddict RC2?
+
+**Before updating your application, read [the migration guide](https://openiddict.github.io/openiddict-documentation/guide/migration.html)**.
+
 --------------
 
 ## Getting started
