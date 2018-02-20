@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -34,24 +35,6 @@ namespace OpenIddict.Tests
 
             Assert.Equal("The OpenIddict services cannot be resolved from the dependency injection container. " +
                          "Make sure 'services.AddOpenIddict()' is correctly called from 'ConfigureServices()'.", exception.Message);
-        }
-
-        [Fact]
-        public void UseOpenIddict_ThrowsAnExceptionWhenNoDistributedCacheIsRegisteredIfRequestCachingIsEnabled()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-
-            services.AddOpenIddict()
-                .EnableRequestCaching();
-
-            var builder = new ApplicationBuilder(services.BuildServiceProvider());
-
-            // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddict());
-
-            Assert.Equal("A distributed cache implementation must be registered in the OpenIddict options " +
-                         "or in the dependency injection container when enabling request caching support.", exception.Message);
         }
 
         [Fact]

@@ -65,17 +65,11 @@ namespace Microsoft.AspNetCore.Builder
                         /* TToken: */ builder.TokenType));
             }
 
-            // When no distributed cache has been registered in the options,
-            // try to resolve it from the dependency injection container.
+            // When no distributed cache has been registered in the options, use the
+            // global instance registered in the dependency injection container.
             if (options.Cache == null)
             {
-                options.Cache = app.ApplicationServices.GetService<IDistributedCache>();
-
-                if (options.EnableRequestCaching && options.Cache == null)
-                {
-                    throw new InvalidOperationException("A distributed cache implementation must be registered in the OpenIddict options " +
-                                                        "or in the dependency injection container when enabling request caching support.");
-                }
+                options.Cache = app.ApplicationServices.GetRequiredService<IDistributedCache>();
             }
 
             // If OpenIddict was configured to use reference tokens, replace the default access tokens/
