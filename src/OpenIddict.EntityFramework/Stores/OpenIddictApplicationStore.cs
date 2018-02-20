@@ -29,9 +29,7 @@ namespace OpenIddict.EntityFramework
                                                                                    OpenIddictToken, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictApplicationStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictApplicationStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -49,9 +47,7 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictApplicationStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictApplicationStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -74,9 +70,7 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictApplicationStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictApplicationStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(cache)
         {
             if (context == null)
@@ -214,25 +208,6 @@ namespace OpenIddict.EntityFramework
                 await Context.SaveChangesAsync(cancellationToken);
                 transaction?.Commit();
             }
-        }
-
-        /// <summary>
-        /// Retrieves an application using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client application corresponding to the identifier.
-        /// </returns>
-        public override Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
-            }
-
-            return Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
         }
 
         /// <summary>

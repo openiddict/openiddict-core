@@ -389,15 +389,17 @@ namespace OpenIddict.Core
             // To mitigate that, the resulting array is stored in the memory cache.
             var key = string.Concat(nameof(GetPermissionsAsync), "\x1e", application.Permissions);
 
-            var permissions = Cache.Get(key) as ImmutableArray<string>?;
-            if (permissions == null)
+            var permissions = Cache.GetOrCreate(key, entry =>
             {
-                permissions = Cache.Set(key, JArray.Parse(application.Permissions)
-                    .Select(element => (string) element)
-                    .ToImmutableArray());
-            }
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-            return new ValueTask<ImmutableArray<string>>(permissions.GetValueOrDefault());
+                return JArray.Parse(application.Permissions)
+                    .Select(element => (string) element)
+                    .ToImmutableArray();
+            });
+
+            return new ValueTask<ImmutableArray<string>>(permissions);
         }
 
         /// <summary>
@@ -425,15 +427,17 @@ namespace OpenIddict.Core
             // To mitigate that, the resulting array is stored in the memory cache.
             var key = string.Concat(nameof(GetPostLogoutRedirectUrisAsync), "\x1e", application.PostLogoutRedirectUris);
 
-            var addresses = Cache.Get(key) as ImmutableArray<string>?;
-            if (addresses == null)
+            var addresses = Cache.GetOrCreate(key, entry =>
             {
-                addresses = Cache.Set(key, JArray.Parse(application.PostLogoutRedirectUris)
-                    .Select(element => (string) element)
-                    .ToImmutableArray());
-            }
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-            return new ValueTask<ImmutableArray<string>>(addresses.GetValueOrDefault());
+                return JArray.Parse(application.PostLogoutRedirectUris)
+                    .Select(element => (string) element)
+                    .ToImmutableArray();
+            });
+
+            return new ValueTask<ImmutableArray<string>>(addresses);
         }
 
         /// <summary>
@@ -485,15 +489,17 @@ namespace OpenIddict.Core
             // To mitigate that, the resulting array is stored in the memory cache.
             var key = string.Concat(nameof(GetRedirectUrisAsync), "\x1e", application.RedirectUris);
 
-            var addresses = Cache.Get(key) as ImmutableArray<string>?;
-            if (addresses == null)
+            var addresses = Cache.GetOrCreate(key, entry =>
             {
-                addresses = Cache.Set(key, JArray.Parse(application.RedirectUris)
-                    .Select(element => (string) element)
-                    .ToImmutableArray());
-            }
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-            return new ValueTask<ImmutableArray<string>>(addresses.GetValueOrDefault());
+                return JArray.Parse(application.RedirectUris)
+                    .Select(element => (string) element)
+                    .ToImmutableArray();
+            });
+
+            return new ValueTask<ImmutableArray<string>>(addresses);
         }
 
         /// <summary>

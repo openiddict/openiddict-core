@@ -302,15 +302,17 @@ namespace OpenIddict.Core
             // To mitigate that, the resulting array is stored in the memory cache.
             var key = string.Concat(nameof(GetResourcesAsync), "\x1e", scope.Resources);
 
-            var resources = Cache.Get(key) as ImmutableArray<string>?;
-            if (resources == null)
+            var resources = Cache.GetOrCreate(key, entry =>
             {
-                resources = Cache.Set(key, JArray.Parse(scope.Resources)
-                    .Select(element => (string) element)
-                    .ToImmutableArray());
-            }
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-            return new ValueTask<ImmutableArray<string>>(resources.GetValueOrDefault());
+                return JArray.Parse(scope.Resources)
+                    .Select(element => (string) element)
+                    .ToImmutableArray();
+            });
+
+            return new ValueTask<ImmutableArray<string>>(resources);
         }
 
         /// <summary>

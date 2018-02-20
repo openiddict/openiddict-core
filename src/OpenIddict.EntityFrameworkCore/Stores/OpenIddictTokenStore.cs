@@ -9,11 +9,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using OpenIddict.Core;
@@ -31,9 +33,7 @@ namespace OpenIddict.EntityFrameworkCore
                                                                        OpenIddictAuthorization, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictTokenStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictTokenStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -51,9 +51,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictTokenStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictTokenStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -76,9 +74,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictTokenStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictTokenStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(cache)
         {
             if (context == null)
@@ -183,19 +179,28 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
+            const string key = nameof(FindByApplicationIdAsync) + "\x1e" + nameof(identifier);
+
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+            var query = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.NeverRemove);
 
-            IQueryable<TToken> Query(IQueryable<TApplication> applications, IQueryable<TToken> tokens, TKey key)
-                => from token in tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
-                   join application in applications.AsTracking() on token.Application.Id equals application.Id
-                   where application.Id.Equals(key)
-                   select token;
+                return EF.CompileAsyncQuery((TContext context, TKey id) =>
+                    from token in context.Set<TToken>()
+                        .Include(token => token.Application)
+                        .Include(token => token.Authorization)
+                        .AsTracking()
+                    join application in context.Set<TApplication>().AsTracking() on token.Application.Id equals application.Id
+                    where application.Id.Equals(id)
+                    select token);
+            });
 
-            return ImmutableArray.CreateRange(await Query(
-                Applications, Tokens, ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Context,
+                ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -214,19 +219,28 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
+            const string key = nameof(FindByAuthorizationIdAsync) + "\x1e" + nameof(identifier);
+
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Authorization.Id.Equals(key). To work around this issue,
             // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+            var query = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.NeverRemove);
 
-            IQueryable<TToken> Query(IQueryable<TAuthorization> authorizations, IQueryable<TToken> tokens, TKey key)
-                => from token in tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
-                   join authorization in authorizations.AsTracking() on token.Authorization.Id equals authorization.Id
-                   where authorization.Id.Equals(key)
-                   select token;
+                return EF.CompileAsyncQuery<TContext, TKey, TToken>((TContext context, TKey id) =>
+                    from token in context.Set<TToken>()
+                        .Include(token => token.Application)
+                        .Include(token => token.Authorization)
+                        .AsTracking()
+                    join authorization in context.Set<TAuthorization>().AsTracking() on token.Authorization.Id equals authorization.Id
+                    where authorization.Id.Equals(id)
+                    select token);
+            });
 
-            return ImmutableArray.CreateRange(await Query(
-                Authorizations, Tokens, ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Context,
+                ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -245,17 +259,91 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var token = (from entry in Context.ChangeTracker.Entries<TToken>()
-                         where entry.Entity != null &&
-                               entry.Entity.Id.Equals(ConvertIdentifierFromString(identifier))
-                         select entry.Entity).FirstOrDefault();
+            const string key = nameof(FindByIdAsync) + "\x1e" + nameof(identifier);
 
-            if (token != null)
+            var query = Cache.GetOrCreate(key, entry =>
             {
-                return Task.FromResult(token);
+                entry.SetPriority(CacheItemPriority.NeverRemove);
+
+                return EF.CompileAsyncQuery((TContext context, TKey id) =>
+                    (from token in context.Set<TToken>()
+                        .Include(token => token.Application)
+                        .Include(token => token.Authorization)
+                        .AsTracking()
+                     where token.Id.Equals(id)
+                     select token).FirstOrDefault());
+            });
+
+            return query(Context, ConvertIdentifierFromString(identifier));
+        }
+
+        /// <summary>
+        /// Retrieves the list of tokens corresponding to the specified reference identifier.
+        /// Note: the reference identifier may be hashed or encrypted for security reasons.
+        /// </summary>
+        /// <param name="identifier">The reference identifier associated with the tokens.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens corresponding to the specified reference identifier.
+        /// </returns>
+        public override Task<TToken> FindByReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return base.FindByIdAsync(identifier, cancellationToken);
+            const string key = nameof(FindByReferenceIdAsync) + "\x1e" + nameof(identifier);
+
+            var query = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.NeverRemove);
+
+                return EF.CompileAsyncQuery((TContext context, string id) =>
+                    (from token in context.Set<TToken>()
+                        .Include(token => token.Application)
+                        .Include(token => token.Authorization)
+                        .AsTracking()
+                     where token.ReferenceId == id
+                     select token).FirstOrDefault());
+            });
+
+            return query(Context, identifier);
+        }
+
+        /// <summary>
+        /// Retrieves the list of tokens corresponding to the specified subject.
+        /// </summary>
+        /// <param name="subject">The subject associated with the tokens.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens corresponding to the specified subject.
+        /// </returns>
+        public override async Task<ImmutableArray<TToken>> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            const string key = nameof(FindBySubjectAsync) + "\x1e" + nameof(subject);
+
+            var query = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.NeverRemove);
+
+                return EF.CompileAsyncQuery((TContext context, string principal) =>
+                    from token in context.Set<TToken>()
+                        .Include(token => token.Application)
+                        .Include(token => token.Authorization)
+                        .AsTracking()
+                    where token.Subject == principal
+                    select token);
+            });
+
+            return ImmutableArray.CreateRange(await query(Context, subject).ToListAsync(cancellationToken));
         }
 
         /// <summary>

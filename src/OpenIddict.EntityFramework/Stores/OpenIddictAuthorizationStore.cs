@@ -29,9 +29,7 @@ namespace OpenIddict.EntityFramework
                                                                                        OpenIddictToken, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictAuthorizationStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictAuthorizationStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -49,9 +47,7 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictAuthorizationStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictAuthorizationStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -74,9 +70,7 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictAuthorizationStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictAuthorizationStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(cache)
         {
             if (context == null)
@@ -196,35 +190,6 @@ namespace OpenIddict.EntityFramework
                 await Context.SaveChangesAsync(cancellationToken);
                 transaction?.Commit();
             }
-        }
-
-        /// <summary>
-        /// Retrieves an authorization using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorization corresponding to the identifier.
-        /// </returns>
-        public override Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
-            }
-
-            var authorization = (from entry in Context.ChangeTracker.Entries<TAuthorization>()
-                                 where entry.Entity != null
-                                 where entry.Entity.Id.Equals(ConvertIdentifierFromString(identifier))
-                                 select entry.Entity).FirstOrDefault();
-
-            if (authorization != null)
-            {
-                return Task.FromResult(authorization);
-            }
-
-            return base.FindByIdAsync(identifier, cancellationToken);
         }
 
         /// <summary>

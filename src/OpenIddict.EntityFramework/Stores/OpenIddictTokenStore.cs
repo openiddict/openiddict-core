@@ -29,9 +29,7 @@ namespace OpenIddict.EntityFramework
                                                                        OpenIddictAuthorization, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictTokenStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictTokenStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -49,9 +47,7 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictTokenStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictTokenStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -74,9 +70,7 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictTokenStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictTokenStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(cache)
         {
             if (context == null)
@@ -163,35 +157,6 @@ namespace OpenIddict.EntityFramework
             Tokens.Remove(token);
 
             return Context.SaveChangesAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// Retrieves a token using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the token corresponding to the unique identifier.
-        /// </returns>
-        public override Task<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
-            }
-
-            var token = (from entry in Context.ChangeTracker.Entries<TToken>()
-                         where entry.Entity != null
-                         where entry.Entity.Id.Equals(ConvertIdentifierFromString(identifier))
-                         select entry.Entity).FirstOrDefault();
-
-            if (token != null)
-            {
-                return Task.FromResult(token);
-            }
-
-            return base.FindByIdAsync(identifier, cancellationToken);
         }
 
         /// <summary>

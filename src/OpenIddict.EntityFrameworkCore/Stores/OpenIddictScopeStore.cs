@@ -11,8 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Caching.Memory;
-using OpenIddict.Core;
 using OpenIddict.Models;
 
 namespace OpenIddict.EntityFrameworkCore
@@ -25,9 +25,7 @@ namespace OpenIddict.EntityFrameworkCore
     public class OpenIddictScopeStore<TContext> : OpenIddictScopeStore<OpenIddictScope, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictScopeStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictScopeStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -43,9 +41,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictScopeStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -63,9 +59,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictScopeStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(cache)
         {
             if (context == null)
@@ -162,7 +156,82 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Scopes.FindAsync(new object[] { ConvertIdentifierFromString(identifier) }, cancellationToken);
+            const string key = nameof(FindByIdAsync) + "\x1e" + nameof(identifier);
+
+            var query = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.NeverRemove);
+
+                return EF.CompileAsyncQuery((TContext context, TKey id) =>
+                    (from scope in context.Set<TScope>().AsTracking()
+                     where scope.Id.Equals(id)
+                     select scope).FirstOrDefault());
+            });
+
+            return query(Context, ConvertIdentifierFromString(identifier));
+        }
+
+        /// <summary>
+        /// Retrieves a scope using its name.
+        /// </summary>
+        /// <param name="name">The name associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scope corresponding to the specified name.
+        /// </returns>
+        public override Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
+            }
+
+            const string key = nameof(FindByNameAsync) + "\x1e" + nameof(name);
+
+            var query = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.NeverRemove);
+
+                return EF.CompileAsyncQuery((TContext context, string id) =>
+                    (from scope in context.Set<TScope>().AsTracking()
+                     where scope.Name == id
+                     select scope).FirstOrDefault());
+            });
+
+            return query(Context, name);
+        }
+
+        /// <summary>
+        /// Retrieves a list of scopes using their name.
+        /// </summary>
+        /// <param name="names">The names associated with the scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scopes corresponding to the specified names.
+        /// </returns>
+        public override async Task<ImmutableArray<TScope>> FindByNamesAsync(
+            ImmutableArray<string> names, CancellationToken cancellationToken)
+        {
+            if (names.Any(name => string.IsNullOrEmpty(name)))
+            {
+                throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
+            }
+
+            const string key = nameof(FindByNamesAsync) + "\x1e" + nameof(names);
+
+            var query = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.NeverRemove);
+
+                return EF.CompileAsyncQuery((TContext context, ImmutableArray<string> ids) =>
+                    from scope in context.Set<TScope>().AsTracking()
+                    where ids.Contains(scope.Name)
+                    select scope);
+            });
+
+            return ImmutableArray.CreateRange(await query(Context, names).ToListAsync(cancellationToken));
         }
 
         /// <summary>
