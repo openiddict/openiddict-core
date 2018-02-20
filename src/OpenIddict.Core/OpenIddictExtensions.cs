@@ -64,6 +64,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
+            services.AddDistributedMemoryCache();
+            services.AddMemoryCache();
             services.AddOptions();
 
             // Register the OpenIddict core services in the DI container.
