@@ -170,12 +170,12 @@ namespace OpenIddict.EntityFrameworkCore
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
             Task<List<TToken>> ListTokensAsync()
-                => (from token in Tokens
-                    join element in Authorizations on token.Authorization.Id equals element.Id
+                => (from token in Tokens.AsTracking()
+                    join element in Authorizations.AsTracking() on token.Authorization.Id equals element.Id
                     where element.Id.Equals(authorization.Id)
                     select token).ToListAsync(cancellationToken);
 
-            // Remove all the tokens associated with the application.
+            // Remove all the tokens associated with the authorization.
             foreach (var token in await ListTokensAsync())
             {
                 Context.Remove(token);
@@ -217,9 +217,9 @@ namespace OpenIddict.EntityFrameworkCore
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
                 IQueryable<TApplication> applications, TKey key, string principal)
-                => from authorization in authorizations.Include(authorization => authorization.Application)
+                => from authorization in authorizations.Include(authorization => authorization.Application).AsTracking()
                    where authorization.Subject == principal
-                   join application in applications on authorization.Application.Id equals application.Id
+                   join application in applications.AsTracking() on authorization.Application.Id equals application.Id
                    where application.Id.Equals(key)
                    select authorization;
 
@@ -264,10 +264,9 @@ namespace OpenIddict.EntityFrameworkCore
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
                 IQueryable<TApplication> applications, TKey key, string principal, string state)
-                => from authorization in authorizations.Include(authorization => authorization.Application)
-                   where authorization.Subject == principal &&
-                         authorization.Status == state
-                   join application in applications on authorization.Application.Id equals application.Id
+                => from authorization in authorizations.Include(authorization => authorization.Application).AsTracking()
+                   where authorization.Subject == principal && authorization.Status == state
+                   join application in applications.AsTracking() on authorization.Application.Id equals application.Id
                    where application.Id.Equals(key)
                    select authorization;
 
@@ -318,11 +317,11 @@ namespace OpenIddict.EntityFrameworkCore
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
                 IQueryable<TApplication> applications, TKey key, string principal, string state, string kind)
-                => from authorization in authorizations.Include(authorization => authorization.Application)
+                => from authorization in authorizations.Include(authorization => authorization.Application).AsTracking()
                    where authorization.Subject == principal &&
                          authorization.Status == state &&
                          authorization.Type == kind
-                   join application in applications on authorization.Application.Id equals application.Id
+                   join application in applications.AsTracking() on authorization.Application.Id equals application.Id
                    where application.Id.Equals(key)
                    select authorization;
 
@@ -416,7 +415,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Authorizations.Include(authorization => authorization.Application), state).FirstOrDefaultAsync(cancellationToken);
+            return query(
+                Authorizations.Include(authorization => authorization.Application)
+                              .AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -441,7 +442,8 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return ImmutableArray.CreateRange(await query(
-                Authorizations.Include(authorization => authorization.Application), state).ToListAsync(cancellationToken));
+                Authorizations.Include(authorization => authorization.Application)
+                              .AsTracking(), state).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -460,7 +462,7 @@ namespace OpenIddict.EntityFrameworkCore
             IList<Exception> exceptions = null;
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, int offset)
-                => (from authorization in authorizations.Include(authorization => authorization.Tokens)
+                => (from authorization in authorizations.Include(authorization => authorization.Tokens).AsTracking()
                     where authorization.Status != OpenIddictConstants.Statuses.Valid ||
                          (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
                          !authorization.Tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid))
@@ -545,7 +547,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task SetApplicationIdAsync([NotNull] TAuthorization authorization, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        public override async Task SetApplicationIdAsync([NotNull] TAuthorization authorization,
+            [CanBeNull] string identifier, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {

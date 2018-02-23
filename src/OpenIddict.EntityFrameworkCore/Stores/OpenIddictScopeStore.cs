@@ -186,7 +186,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Scopes, state).FirstOrDefaultAsync(cancellationToken);
+            return query(Scopes.AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(Scopes, state).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Scopes.AsTracking(), state).ToListAsync(cancellationToken));
         }
 
         /// <summary>

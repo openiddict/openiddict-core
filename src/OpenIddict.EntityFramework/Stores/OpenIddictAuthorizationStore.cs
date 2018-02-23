@@ -167,7 +167,7 @@ namespace OpenIddict.EntityFramework
                     where token.Authorization.Id.Equals(authorization.Id)
                     select token).ToListAsync(cancellationToken);
 
-            // Remove all the tokens associated with the application.
+            // Remove all the tokens associated with the authorization.
             foreach (var token in await ListTokensAsync())
             {
                 Tokens.Remove(token);
@@ -383,7 +383,8 @@ namespace OpenIddict.EntityFramework
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task SetApplicationIdAsync([NotNull] TAuthorization authorization, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        public override async Task SetApplicationIdAsync([NotNull] TAuthorization authorization,
+            [CanBeNull] string identifier, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {

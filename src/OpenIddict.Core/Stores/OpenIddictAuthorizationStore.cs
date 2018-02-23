@@ -281,7 +281,7 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the authorization.
         /// </returns>
-        public virtual async ValueTask<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -290,17 +290,22 @@ namespace OpenIddict.Core
 
             if (authorization.Application != null)
             {
-                return ConvertIdentifierToString(authorization.Application.Id);
+                return new ValueTask<string>(ConvertIdentifierToString(authorization.Application.Id));
             }
 
-            IQueryable<TKey> Query(IQueryable<TAuthorization> authorizations, TKey key)
-                => from element in authorizations
-                   where element.Id.Equals(key) &&
-                         element.Application != null
-                   select element.Application.Id;
+            async Task<string> RetrieveApplicationIdAsync()
+            {
+                IQueryable<TKey> Query(IQueryable<TAuthorization> authorizations, TKey key)
+                    => from element in authorizations
+                       where element.Id.Equals(key) &&
+                             element.Application != null
+                       select element.Application.Id;
 
-            return ConvertIdentifierToString(await GetAsync(
-                (authorizations, key) => Query(authorizations, key), authorization.Id, cancellationToken));
+                return ConvertIdentifierToString(await GetAsync(
+                    (authorizations, key) => Query(authorizations, key), authorization.Id, cancellationToken));
+            }
+
+            return new ValueTask<string>(RetrieveApplicationIdAsync());
         }
 
         /// <summary>

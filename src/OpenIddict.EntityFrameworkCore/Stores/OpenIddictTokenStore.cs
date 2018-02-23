@@ -189,8 +189,8 @@ namespace OpenIddict.EntityFrameworkCore
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
             IQueryable<TToken> Query(IQueryable<TApplication> applications, IQueryable<TToken> tokens, TKey key)
-                => from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
-                   join application in applications on token.Application.Id equals application.Id
+                => from token in tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                   join application in applications.AsTracking() on token.Application.Id equals application.Id
                    where application.Id.Equals(key)
                    select token;
 
@@ -220,8 +220,8 @@ namespace OpenIddict.EntityFrameworkCore
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
             IQueryable<TToken> Query(IQueryable<TAuthorization> authorizations, IQueryable<TToken> tokens, TKey key)
-                => from token in tokens.Include(token => token.Application).Include(token => token.Authorization)
-                   join authorization in authorizations on token.Authorization.Id equals authorization.Id
+                => from token in tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                   join authorization in authorizations.AsTracking() on token.Authorization.Id equals authorization.Id
                    where authorization.Id.Equals(key)
                    select token;
 
@@ -317,7 +317,8 @@ namespace OpenIddict.EntityFrameworkCore
 
             return query(
                 Tokens.Include(token => token.Application)
-                      .Include(token => token.Authorization), state).FirstOrDefaultAsync(cancellationToken);
+                      .Include(token => token.Authorization)
+                      .AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -379,7 +380,8 @@ namespace OpenIddict.EntityFrameworkCore
 
             return ImmutableArray.CreateRange(await query(
                 Tokens.Include(token => token.Application)
-                      .Include(token => token.Authorization), state).ToListAsync(cancellationToken));
+                      .Include(token => token.Authorization)
+                      .AsTracking(), state).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -398,7 +400,7 @@ namespace OpenIddict.EntityFrameworkCore
             IList<Exception> exceptions = null;
 
             IQueryable<TToken> Query(IQueryable<TToken> tokens, int offset)
-                => (from token in tokens
+                => (from token in tokens.AsTracking()
                     where token.ExpirationDate < DateTimeOffset.UtcNow ||
                           token.Status != OpenIddictConstants.Statuses.Valid
                     orderby token.Id
@@ -481,7 +483,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task SetApplicationIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        public override async Task SetApplicationIdAsync([NotNull] TToken token,
+            [CanBeNull] string identifier, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -526,7 +529,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task SetAuthorizationIdAsync([NotNull] TToken token, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        public override async Task SetAuthorizationIdAsync([NotNull] TToken token,
+            [CanBeNull] string identifier, CancellationToken cancellationToken)
         {
             if (token == null)
             {

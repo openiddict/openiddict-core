@@ -168,6 +168,7 @@ namespace OpenIddict.EntityFramework
 
             Task<List<TToken>> ListTokensAsync()
                 => (from token in Tokens
+                    where token.Authorization == null
                     where token.Application.Id.Equals(application.Id)
                     select token).ToListAsync(cancellationToken);
 

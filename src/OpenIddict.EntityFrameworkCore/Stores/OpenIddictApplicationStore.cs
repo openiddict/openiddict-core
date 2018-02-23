@@ -167,8 +167,8 @@ namespace OpenIddict.EntityFrameworkCore
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
             Task<List<TAuthorization>> ListAuthorizationsAsync()
-                => (from authorization in Authorizations.Include(authorization => authorization.Tokens)
-                    join element in Applications on authorization.Application.Id equals element.Id
+                => (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
+                    join element in Applications.AsTracking() on authorization.Application.Id equals element.Id
                     where element.Id.Equals(application.Id)
                     select authorization).ToListAsync(cancellationToken);
 
@@ -178,8 +178,9 @@ namespace OpenIddict.EntityFrameworkCore
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
             Task<List<TToken>> ListTokensAsync()
-                => (from token in Tokens
-                    join element in Applications on token.Application.Id equals element.Id
+                => (from token in Tokens.AsTracking()
+                    where token.Authorization == null
+                    join element in Applications.AsTracking() on token.Application.Id equals element.Id
                     where element.Id.Equals(application.Id)
                     select token).ToListAsync(cancellationToken);
 
@@ -246,7 +247,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Applications, state).FirstOrDefaultAsync(cancellationToken);
+            return query(Applications.AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -270,7 +271,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(Applications, state).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await query(Applications.AsTracking(), state).ToListAsync(cancellationToken));
         }
 
         /// <summary>

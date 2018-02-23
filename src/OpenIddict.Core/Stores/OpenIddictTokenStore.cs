@@ -239,7 +239,7 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the token.
         /// </returns>
-        public virtual async ValueTask<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -248,16 +248,21 @@ namespace OpenIddict.Core
 
             if (token.Application != null)
             {
-                return ConvertIdentifierToString(token.Application.Id);
+                return new ValueTask<string>(ConvertIdentifierToString(token.Application.Id));
             }
 
-            IQueryable<TKey> Query(IQueryable<TToken> tokens, TKey key)
-                => from element in tokens
-                   where element.Id.Equals(key) &&
-                         element.Application != null
-                   select element.Application.Id;
+            async Task<string> RetrieveApplicationIdAsync()
+            {
+                IQueryable<TKey> Query(IQueryable<TToken> tokens, TKey key)
+                    => from element in tokens
+                       where element.Id.Equals(key) &&
+                             element.Application != null
+                       select element.Application.Id;
 
-            return ConvertIdentifierToString(await GetAsync((tokens, key) => Query(tokens, key), token.Id, cancellationToken));
+                return ConvertIdentifierToString(await GetAsync((tokens, key) => Query(tokens, key), token.Id, cancellationToken));
+            }
+
+            return new ValueTask<string>(RetrieveApplicationIdAsync());
         }
 
         /// <summary>
@@ -269,7 +274,7 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization identifier associated with the token.
         /// </returns>
-        public virtual async ValueTask<string> GetAuthorizationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetAuthorizationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -278,16 +283,21 @@ namespace OpenIddict.Core
 
             if (token.Authorization != null)
             {
-                return ConvertIdentifierToString(token.Authorization.Id);
+                return new ValueTask<string>(ConvertIdentifierToString(token.Authorization.Id));
             }
 
-            IQueryable<TKey> Query(IQueryable<TToken> tokens, TKey key)
-                => from element in tokens
-                   where element.Id.Equals(key) &&
-                         element.Authorization != null
-                   select element.Authorization.Id;
+            async Task<string> RetrieveAuthorizationIdAsync()
+            {
+                IQueryable<TKey> Query(IQueryable<TToken> tokens, TKey key)
+                    => from element in tokens
+                       where element.Id.Equals(key) &&
+                             element.Authorization != null
+                       select element.Authorization.Id;
 
-            return ConvertIdentifierToString(await GetAsync((tokens, key) => Query(tokens, key), token.Id, cancellationToken));
+                return ConvertIdentifierToString(await GetAsync((tokens, key) => Query(tokens, key), token.Id, cancellationToken));
+            }
+
+            return new ValueTask<string>(RetrieveAuthorizationIdAsync());
         }
 
         /// <summary>
