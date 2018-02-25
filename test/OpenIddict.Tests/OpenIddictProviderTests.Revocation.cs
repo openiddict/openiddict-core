@@ -156,7 +156,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                    .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -201,7 +201,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                    .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -246,7 +246,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(OpenIddictConstants.ClientTypes.Hybrid);
+                    .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Hybrid));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -291,7 +291,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                    .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                 instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
@@ -520,7 +520,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
             });
 
             var server = CreateAuthorizationServer(builder =>

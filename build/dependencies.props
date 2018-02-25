@@ -16,6 +16,7 @@
     <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
     <NetStandardLibraryNetFrameworkVersion>2.0.0</NetStandardLibraryNetFrameworkVersion>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+    <TasksExtensionsVersion>4.4.0</TasksExtensionsVersion>
     <TestSdkVersion>15.3.0</TestSdkVersion>
     <XunitVersion>2.3.1</XunitVersion>
   </PropertyGroup>

@@ -45,7 +45,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -123,7 +123,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -164,7 +164,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(value: null);
+                    .Returns(new ValueTask<string>(result: null));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -181,7 +181,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -223,10 +223,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(value: null);
+                    .Returns(new ValueTask<string>(result: null));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -243,7 +243,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -290,10 +290,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
+                    .Returns(new ValueTask<string>("2YotnFZFEjr1zCsicMWpAA"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -310,7 +310,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -371,10 +371,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
+                    .Returns(new ValueTask<string>("2YotnFZFEjr1zCsicMWpAA"));
 
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
@@ -383,10 +383,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetCreationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero)));
 
                 instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero)));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -403,7 +403,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -469,7 +469,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -530,7 +530,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
@@ -554,7 +554,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -596,7 +596,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(value: null);
+                    .Returns(new ValueTask<string>(result: null));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -617,7 +617,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -660,10 +660,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(value: null);
+                    .Returns(new ValueTask<string>(result: null));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -684,7 +684,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -732,10 +732,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
+                    .Returns(new ValueTask<string>("2YotnFZFEjr1zCsicMWpAA"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -756,7 +756,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -817,10 +817,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
+                    .Returns(new ValueTask<string>("2YotnFZFEjr1zCsicMWpAA"));
 
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
@@ -829,10 +829,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetCreationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero)));
 
                 instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero)));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -853,7 +853,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -927,7 +927,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -980,7 +980,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -1036,16 +1036,16 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetCreationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero)));
 
                 instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero)));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1066,7 +1066,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -1123,7 +1123,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Confidential);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
 
                     instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -1180,7 +1180,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
@@ -1221,7 +1221,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(value: null);
+                    .Returns(new ValueTask<string>(result: null));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1260,10 +1260,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(value: null);
+                    .Returns(new ValueTask<string>(result: null));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1307,10 +1307,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
+                    .Returns(new ValueTask<string>("2YotnFZFEjr1zCsicMWpAA"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1365,10 +1365,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("2YotnFZFEjr1zCsicMWpAA");
+                    .Returns(new ValueTask<string>("2YotnFZFEjr1zCsicMWpAA"));
 
                 instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
@@ -1377,10 +1377,10 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetCreationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero)));
 
                 instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero)));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1508,16 +1508,16 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetCreationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero)));
 
                 instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero));
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2017, 01, 10, 00, 00, 00, TimeSpan.Zero)));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1597,7 +1597,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.ObfuscateReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync("B1F0D503-55A4-4B03-B05B-EF07713C18E1");
@@ -1656,7 +1656,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1677,10 +1677,10 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
 
                     instance.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                        .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
                 }));
 
                 builder.Services.AddSingleton(manager);
@@ -1723,7 +1723,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1789,7 +1789,7 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
                 }));
 
                 builder.Services.AddSingleton(manager);
@@ -1834,7 +1834,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -1858,10 +1858,10 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
 
                     instance.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                        .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
                 }));
 
                 builder.Services.AddSingleton(manager);
@@ -1913,7 +1913,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.ObfuscateReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync("B1F0D503-55A4-4B03-B05B-EF07713C18E1");
@@ -1940,10 +1940,10 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
 
                     instance.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                        .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
                 }));
 
                 builder.Services.AddSingleton(manager);
@@ -1996,7 +1996,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -2020,10 +2020,10 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
 
                     instance.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                        .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
                 }));
 
                 builder.Services.AddSingleton(manager);
@@ -2062,7 +2062,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -2086,10 +2086,10 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
 
                     instance.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                        .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
                 }));
 
                 builder.Services.AddSingleton(CreateAuthorizationManager(instance =>
@@ -2152,7 +2152,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("60FFF7EA-F98E-437B-937E-5073CC313103");
+                    .Returns(new ValueTask<string>("60FFF7EA-F98E-437B-937E-5073CC313103951EFBA23A56"));
 
                 instance.Setup(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
@@ -2245,7 +2245,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -2300,7 +2300,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
                 instance.Setup(mock => mock.ObfuscateReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync("B1F0D503-55A4-4B03-B05B-EF07713C18E1");
@@ -2359,7 +2359,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -2380,10 +2380,10 @@ namespace OpenIddict.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(OpenIddictConstants.ClientTypes.Public);
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
 
                     instance.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                        .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
                 }));
 
                 builder.Services.AddSingleton(manager);
@@ -2424,7 +2424,7 @@ namespace OpenIddict.Tests
                     .ReturnsAsync(token);
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+                    .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
             });
 
             var server = CreateAuthorizationServer(builder =>
