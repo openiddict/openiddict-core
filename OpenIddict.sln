@@ -3,6 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{19E887E7-7B1C-47E3-8F0C-06B007B2CE05}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
+		build\key.snk = build\key.snk
+		build\packages.props = build\packages.props
+		build\repo.props = build\repo.props
+		build\tests.props = build\tests.props
+		build\version.props = build\version.props
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D544447C-D701-46BB-9A5B-C76C612A596B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F47D1283-0EE9-4728-8026-58405C29B786}"
@@ -31,9 +42,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Tests", "test\Op
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Models", "src\OpenIddict.Models\OpenIddict.Models.csproj", "{0102A6CC-41A6-4B34-B49E-65AFE95882BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.EntityFramework", "src\OpenIddict.EntityFramework\OpenIddict.EntityFramework.csproj", "{BF42CC6C-0B56-4F66-9866-18B8393F3C06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.EntityFramework", "src\OpenIddict.EntityFramework\OpenIddict.EntityFramework.csproj", "{BF42CC6C-0B56-4F66-9866-18B8393F3C06}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.EntityFramework.Tests", "test\OpenIddict.EntityFramework.Tests\OpenIddict.EntityFramework.Tests.csproj", "{96325E37-9897-43AC-8408-7B17F58E8788}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.EntityFramework.Tests", "test\OpenIddict.EntityFramework.Tests\OpenIddict.EntityFramework.Tests.csproj", "{96325E37-9897-43AC-8408-7B17F58E8788}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

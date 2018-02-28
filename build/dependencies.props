@@ -1,6 +1,6 @@
 <Project>
 
-  <PropertyGroup>
+  <PropertyGroup Label="Package Versions">
     <AspNetContribOpenIdExtensionsVersion>2.0.0-rc2-final</AspNetContribOpenIdExtensionsVersion>
     <AspNetContribOpenIdServerVersion>2.0.0-rc2-final</AspNetContribOpenIdServerVersion>
     <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
@@ -17,7 +17,7 @@
     <NetStandardLibraryNetFrameworkVersion>2.0.0</NetStandardLibraryNetFrameworkVersion>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0</TestSdkVersion>
-    <XunitVersion>2.3.0-*</XunitVersion>
+    <XunitVersion>2.3.1</XunitVersion>
   </PropertyGroup>
 
 </Project>
