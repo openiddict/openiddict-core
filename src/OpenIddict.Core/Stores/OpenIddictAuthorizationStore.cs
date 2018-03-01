@@ -497,42 +497,13 @@ namespace OpenIddict.Core
             [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Lists the ad-hoc authorizations that are marked as invalid or have no
-        /// valid token attached and that can be safely removed from the database.
+        /// Removes the ad-hoc authorizations that are marked as invalid or have no valid token attached.
         /// </summary>
-        /// <param name="count">The number of results to return.</param>
-        /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task<ImmutableArray<TAuthorization>> ListInvalidAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
-        {
-            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, int? skip, int? take)
-            {
-                var query = (from authorization in authorizations
-                             where authorization.Status != OpenIddictConstants.Statuses.Valid ||
-                                  (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
-                                  !authorization.Tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid))
-                             orderby authorization.Id
-                             select authorization).AsQueryable();
-
-                if (skip.HasValue)
-                {
-                    query = query.Skip(skip.Value);
-                }
-
-                if (take.HasValue)
-                {
-                    query = query.Take(take.Value);
-                }
-
-                return query;
-            }
-
-            return ListAsync((authorizations, state) => Query(authorizations, state.offset, state.count), (offset, count), cancellationToken);
-        }
+        public abstract Task PruneAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the application identifier associated with an authorization.

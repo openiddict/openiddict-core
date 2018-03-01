@@ -590,23 +590,6 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Lists the tokens that are marked as expired or invalid
-        /// and that can be safely removed from the database.
-        /// </summary>
-        /// <param name="count">The number of results to return.</param>
-        /// <param name="offset">The number of results to skip.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual Task<ImmutableArray<TToken>> ListInvalidAsync(
-            [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken = default)
-        {
-            return Store.ListInvalidAsync(count, offset, cancellationToken);
-        }
-
-        /// <summary>
         /// Obfuscates the specified reference identifier so it can be safely stored in a database.
         /// By default, this method returns a simple hashed representation computed using SHA256.
         /// </summary>
@@ -637,51 +620,8 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task PruneInvalidAsync(CancellationToken cancellationToken = default)
-        {
-            IList<Exception> exceptions = null;
-            var tokens = new List<TToken>();
-
-            // First, start retrieving the invalid tokens from the database.
-            for (var offset = 0; offset < 10_000; offset = offset + 100)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var results = await ListInvalidAsync(100, offset, cancellationToken);
-                if (results.IsEmpty)
-                {
-                    break;
-                }
-
-                tokens.AddRange(results);
-            }
-
-            // Then, remove the invalid tokens one by one.
-            foreach (var token in tokens)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    await DeleteAsync(token, cancellationToken);
-                }
-
-                catch (Exception exception)
-                {
-                    if (exceptions == null)
-                    {
-                        exceptions = new List<Exception>(capacity: 1);
-                    }
-
-                    exceptions.Add(exception);
-                }
-            }
-
-            if (exceptions != null)
-            {
-                throw new AggregateException("An error occurred while pruning tokens.", exceptions);
-            }
-        }
+        public virtual Task PruneAsync(CancellationToken cancellationToken = default)
+            => Store.PruneAsync(cancellationToken);
 
         /// <summary>
         /// Redeems a token.

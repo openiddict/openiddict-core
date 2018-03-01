@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
@@ -526,41 +527,13 @@ namespace OpenIddict.Core
             [CanBeNull] TState state, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Lists the tokens that are marked as expired or invalid
-        /// and that can be safely removed from the database.
+        /// Removes the tokens that are marked as expired or invalid.
         /// </summary>
-        /// <param name="count">The number of results to return.</param>
-        /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task<ImmutableArray<TToken>> ListInvalidAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
-        {
-            IQueryable<TToken> Query(IQueryable<TToken> tokens, int? skip, int? take)
-            {
-                var query = (from token in tokens
-                             where token.ExpirationDate < DateTimeOffset.UtcNow ||
-                                   token.Status != OpenIddictConstants.Statuses.Valid
-                             orderby token.Id
-                             select token).AsQueryable();
-
-                if (skip.HasValue)
-                {
-                    query = query.Skip(skip.Value);
-                }
-
-                if (take.HasValue)
-                {
-                    query = query.Take(take.Value);
-                }
-
-                return query;
-            }
-
-            return ListAsync((tokens, state) => Query(tokens, state.offset, state.count), (offset, count), cancellationToken);
-        }
+        public abstract Task PruneAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the authorization identifier associated with a token.

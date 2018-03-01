@@ -5,12 +5,16 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using OpenIddict.Core;
 using OpenIddict.Models;
@@ -376,6 +380,96 @@ namespace OpenIddict.EntityFrameworkCore
             return ImmutableArray.CreateRange(await query(
                 Tokens.Include(token => token.Application)
                       .Include(token => token.Authorization), state).ToListAsync(cancellationToken));
+        }
+
+        /// <summary>
+        /// Removes the tokens that are marked as expired or invalid.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public override async Task PruneAsync(CancellationToken cancellationToken = default)
+        {
+            // Note: Entity Framework Core doesn't support set-based deletes, which prevents removing
+            // entities in a single command without having to retrieve and materialize them first.
+            // To work around this limitation, entities are manually listed and deleted using a batch logic.
+
+            IList<Exception> exceptions = null;
+
+            IQueryable<TToken> Query(IQueryable<TToken> tokens, int offset)
+                => (from token in tokens
+                    where token.ExpirationDate < DateTimeOffset.UtcNow ||
+                          token.Status != OpenIddictConstants.Statuses.Valid
+                    orderby token.Id
+                    select token).Skip(offset).Take(1_000);
+
+            async Task<IDbContextTransaction> CreateTransactionAsync()
+            {
+                // Note: transactions that specify an explicit isolation level are only supported by
+                // relational providers and trying to use them with a different provider results in
+                // an invalid operation exception being thrown at runtime. To prevent that, a manual
+                // check is made to ensure the underlying transaction manager is relational.
+                var manager = Context.Database.GetService<IDbContextTransactionManager>();
+                if (manager is IRelationalTransactionManager)
+                {
+                    // Note: relational providers like Sqlite are known to lack proper support
+                    // for repeatable read transactions. To ensure this method can be safely used
+                    // with such providers, the database transaction is created in a try/catch block.
+                    try
+                    {
+                        return await Context.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, cancellationToken);
+                    }
+
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                return null;
+            }
+
+            for (var offset = 0; offset < 100_000; offset = offset + 1_000)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // To prevent concurrency exceptions from being thrown if an entry is modified
+                // after it was retrieved from the database, the following logic is executed in
+                // a repeatable read transaction, that will put a lock on the retrieved entries
+                // and thus prevent them from being concurrently modified outside this block.
+                using (var transaction = await CreateTransactionAsync())
+                {
+                    var tokens = await ListAsync((source, state) => Query(source, state), offset, cancellationToken);
+                    if (tokens.IsEmpty)
+                    {
+                        break;
+                    }
+
+                    Context.RemoveRange(tokens);
+
+                    try
+                    {
+                        await Context.SaveChangesAsync(cancellationToken);
+                        transaction?.Commit();
+                    }
+
+                    catch (Exception exception)
+                    {
+                        if (exceptions == null)
+                        {
+                            exceptions = new List<Exception>(capacity: 1);
+                        }
+
+                        exceptions.Add(exception);
+                    }
+                }
+            }
+
+            if (exceptions != null)
+            {
+                throw new AggregateException("An error occurred while pruning tokens.", exceptions);
+            }
         }
 
         /// <summary>
