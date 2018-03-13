@@ -5,7 +5,7 @@
     <AspNetContribOpenIdExtensionsVersion>1.0.0</AspNetContribOpenIdExtensionsVersion>
     <AspNetContribOpenIdServerVersion>1.0.2</AspNetContribOpenIdServerVersion>
     <ClaimsVersion>4.0.1</ClaimsVersion>
-    <CryptoHelperVersion>2.0.3</CryptoHelperVersion>
+    <CryptoHelperVersion>2.0.4</CryptoHelperVersion>
     <DataAnnotationsVersion>4.1.0</DataAnnotationsVersion>
     <EntityFrameworkVersion>6.1.3</EntityFrameworkVersion>
     <ImmutableCollectionsVersion>1.2.0</ImmutableCollectionsVersion>
