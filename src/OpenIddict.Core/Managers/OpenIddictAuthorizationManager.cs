@@ -700,74 +700,14 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Lists the ad-hoc authorizations that are marked as invalid or have no
-        /// valid token attached and that can be safely removed from the database.
-        /// </summary>
-        /// <param name="count">The number of results to return.</param>
-        /// <param name="offset">The number of results to skip.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual Task<ImmutableArray<TAuthorization>> ListInvalidAsync(
-            [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken = default)
-        {
-            return Store.ListInvalidAsync(count, offset, cancellationToken);
-        }
-
-        /// <summary>
         /// Removes the ad-hoc authorizations that are marked as invalid or have no valid token attached.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task PruneInvalidAsync(CancellationToken cancellationToken = default)
-        {
-            IList<Exception> exceptions = null;
-            var authorizations = new List<TAuthorization>();
-
-            // First, start retrieving the invalid authorizations from the database.
-            for (var offset = 0; offset < 10_000; offset = offset + 100)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var results = await ListInvalidAsync(100, offset, cancellationToken);
-                if (results.IsEmpty)
-                {
-                    break;
-                }
-
-                authorizations.AddRange(results);
-            }
-
-            // Then, remove the invalid authorizations one by one.
-            foreach (var authorization in authorizations)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    await DeleteAsync(authorization, cancellationToken);
-                }
-
-                catch (Exception exception)
-                {
-                    if (exceptions == null)
-                    {
-                        exceptions = new List<Exception>(capacity: 1);
-                    }
-
-                    exceptions.Add(exception);
-                }
-            }
-
-            if (exceptions != null)
-            {
-                throw new AggregateException("An error occurred while pruning authorizations.", exceptions);
-            }
-        }
+        public virtual Task PruneAsync(CancellationToken cancellationToken = default)
+            => Store.PruneAsync(cancellationToken);
 
         /// <summary>
         /// Revokes an authorization.

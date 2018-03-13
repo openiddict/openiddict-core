@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading;
@@ -289,6 +290,88 @@ namespace OpenIddict.EntityFramework
 
             return ImmutableArray.CreateRange(await query(
                 Authorizations.Include(authorization => authorization.Application), state).ToListAsync(cancellationToken));
+        }
+
+        /// <summary>
+        /// Removes the ad-hoc authorizations that are marked as invalid or have no valid token attached.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public override async Task PruneAsync(CancellationToken cancellationToken = default)
+        {
+            // Note: Entity Framework 6.x doesn't support set-based deletes, which prevents removing
+            // entities in a single command without having to retrieve and materialize them first.
+            // To work around this limitation, entities are manually listed and deleted using a batch logic.
+
+            IList<Exception> exceptions = null;
+
+            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, int offset)
+                => (from authorization in authorizations.Include(authorization => authorization.Tokens)
+                    where authorization.Status != OpenIddictConstants.Statuses.Valid ||
+                         (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
+                         !authorization.Tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid))
+                    orderby authorization.Id
+                    select authorization).Skip(offset).Take(1_000);
+
+            DbContextTransaction CreateTransaction()
+            {
+                // Note: relational providers like Sqlite are known to lack proper support
+                // for repeatable read transactions. To ensure this method can be safely used
+                // with such providers, the database transaction is created in a try/catch block.
+                try
+                {
+                    return Context.Database.BeginTransaction(IsolationLevel.RepeatableRead);
+                }
+
+                catch
+                {
+                    return null;
+                }
+            }
+
+            for (var offset = 0; offset < 100_000; offset = offset + 1_000)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // To prevent concurrency exceptions from being thrown if an entry is modified
+                // after it was retrieved from the database, the following logic is executed in
+                // a repeatable read transaction, that will put a lock on the retrieved entries
+                // and thus prevent them from being concurrently modified outside this block.
+                using (var transaction = CreateTransaction())
+                {
+                    var authorizations = await ListAsync((source, state) => Query(source, state), offset, cancellationToken);
+                    if (authorizations.IsEmpty)
+                    {
+                        break;
+                    }
+
+                    Authorizations.RemoveRange(authorizations);
+                    Tokens.RemoveRange(authorizations.SelectMany(authorization => authorization.Tokens));
+
+                    try
+                    {
+                        await Context.SaveChangesAsync(cancellationToken);
+                        transaction?.Commit();
+                    }
+
+                    catch (Exception exception)
+                    {
+                        if (exceptions == null)
+                        {
+                            exceptions = new List<Exception>(capacity: 1);
+                        }
+
+                        exceptions.Add(exception);
+                    }
+                }
+            }
+
+            if (exceptions != null)
+            {
+                throw new AggregateException("An error occurred while pruning authorizations.", exceptions);
+            }
         }
 
         /// <summary>
