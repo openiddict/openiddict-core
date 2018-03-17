@@ -386,10 +386,10 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the authorization.
         /// </returns>
-        public virtual Task<string> GetApplicationIdAsync(
+        public virtual ValueTask<string> GetApplicationIdAsync(
             [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
@@ -446,10 +446,10 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the authorization.
         /// </returns>
-        public virtual Task<string> GetIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -465,10 +465,10 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scopes associated with the specified authorization.
         /// </returns>
-        public virtual Task<ImmutableArray<string>> GetScopesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual ValueTask<ImmutableArray<string>> GetScopesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -484,10 +484,10 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the status associated with the specified authorization.
         /// </returns>
-        public virtual Task<string> GetStatusAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetStatusAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -503,10 +503,10 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the subject associated with the specified authorization.
         /// </returns>
-        public virtual Task<string> GetSubjectAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetSubjectAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -522,10 +522,10 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the type associated with the specified authorization.
         /// </returns>
-        public virtual Task<string> GetTypeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetTypeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {

@@ -200,18 +200,22 @@ namespace OpenIddict.EntityFramework
         /// <param name="token">The token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the token.
         /// </returns>
-        public override async Task<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public override ValueTask<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            // If the application is not attached to the token, try to load it manually.
-            if (token.Application == null)
+            if (token.Application != null)
+            {
+                return new ValueTask<string>(ConvertIdentifierToString(token.Application.Id));
+            }
+
+            async Task<string> RetrieveApplicationIdAsync()
             {
                 var reference = Context.Entry(token).Reference(entry => entry.Application);
                 if (reference.EntityEntry.State == EntityState.Detached)
@@ -220,14 +224,16 @@ namespace OpenIddict.EntityFramework
                 }
 
                 await reference.LoadAsync(cancellationToken);
+
+                if (token.Application == null)
+                {
+                    return null;
+                }
+
+                return ConvertIdentifierToString(token.Application.Id);
             }
 
-            if (token.Application == null)
-            {
-                return null;
-            }
-
-            return ConvertIdentifierToString(token.Application.Id);
+            return new ValueTask<string>(RetrieveApplicationIdAsync());
         }
 
         /// <summary>
@@ -262,18 +268,22 @@ namespace OpenIddict.EntityFramework
         /// <param name="token">The token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization identifier associated with the token.
         /// </returns>
-        public override async Task<string> GetAuthorizationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public override ValueTask<string> GetAuthorizationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            // If the authorization is not attached to the token, try to load it manually.
-            if (token.Authorization == null)
+            if (token.Authorization != null)
+            {
+                return new ValueTask<string>(ConvertIdentifierToString(token.Authorization.Id));
+            }
+
+            async Task<string> RetrieveAuthorizationIdAsync()
             {
                 var reference = Context.Entry(token).Reference(entry => entry.Authorization);
                 if (reference.EntityEntry.State == EntityState.Detached)
@@ -282,14 +292,16 @@ namespace OpenIddict.EntityFramework
                 }
 
                 await reference.LoadAsync(cancellationToken);
+
+                if (token.Authorization == null)
+                {
+                    return null;
+                }
+
+                return ConvertIdentifierToString(token.Authorization.Id);
             }
 
-            if (token.Authorization == null)
-            {
-                return null;
-            }
-
-            return ConvertIdentifierToString(token.Authorization.Id);
+            return new ValueTask<string>(RetrieveAuthorizationIdAsync());
         }
 
         /// <summary>

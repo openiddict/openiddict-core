@@ -255,17 +255,17 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client identifier associated with the application.
         /// </returns>
-        public virtual Task<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(application.ClientId);
+            return new ValueTask<string>(application.ClientId);
         }
 
         /// <summary>
@@ -276,17 +276,17 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client secret associated with the application.
         /// </returns>
-        public virtual Task<string> GetClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(application.ClientSecret);
+            return new ValueTask<string>(application.ClientSecret);
         }
 
         /// <summary>
@@ -295,17 +295,17 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client type of the application (by default, "public").
         /// </returns>
-        public virtual Task<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(application.Type);
+            return new ValueTask<string>(application.Type);
         }
 
         /// <summary>
@@ -314,17 +314,17 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the consent type of the application (by default, "explicit").
         /// </returns>
-        public virtual Task<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(application.ConsentType);
+            return new ValueTask<string>(application.ConsentType);
         }
 
         /// <summary>
@@ -333,17 +333,17 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the application.
         /// </returns>
-        public virtual Task<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(application.DisplayName);
+            return new ValueTask<string>(application.DisplayName);
         }
 
         /// <summary>
@@ -352,17 +352,17 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
-        public virtual Task<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Task.FromResult(ConvertIdentifierToString(application.Id));
+            return new ValueTask<string>(ConvertIdentifierToString(application.Id));
         }
 
         /// <summary>
@@ -371,10 +371,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the permissions associated with the application.
         /// </returns>
-        public virtual Task<ImmutableArray<string>> GetPermissionsAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableArray<string>> GetPermissionsAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -383,7 +383,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(application.Permissions))
             {
-                return Task.FromResult(ImmutableArray.Create<string>());
+                return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
 
             // Note: parsing the stringified permissions is an expensive operation.
@@ -398,7 +398,7 @@ namespace OpenIddict.Core
                     .ToImmutableArray());
             }
 
-            return Task.FromResult(permissions.GetValueOrDefault());
+            return new ValueTask<ImmutableArray<string>>(permissions.GetValueOrDefault());
         }
 
         /// <summary>
@@ -407,10 +407,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
-        /// result returns all the post_logout_redirect_uri associated with the application.
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the post_logout_redirect_uri associated with the application.
         /// </returns>
-        public virtual Task<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -419,7 +419,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(application.PostLogoutRedirectUris))
             {
-                return Task.FromResult(ImmutableArray.Create<string>());
+                return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
 
             // Note: parsing the stringified addresses is an expensive operation.
@@ -434,7 +434,7 @@ namespace OpenIddict.Core
                     .ToImmutableArray());
             }
 
-            return Task.FromResult(addresses.GetValueOrDefault());
+            return new ValueTask<ImmutableArray<string>>(addresses.GetValueOrDefault());
         }
 
         /// <summary>
@@ -443,10 +443,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
-        /// result returns all the additional properties associated with the application.
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the application.
         /// </returns>
-        public virtual Task<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -455,10 +455,10 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(application.Properties))
             {
-                return Task.FromResult(new JObject());
+                return new ValueTask<JObject>(new JObject());
             }
 
-            return Task.FromResult(JObject.Parse(application.Properties));
+            return new ValueTask<JObject>(JObject.Parse(application.Properties));
         }
 
         /// <summary>
@@ -467,10 +467,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the redirect_uri associated with the application.
         /// </returns>
-        public virtual Task<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -479,7 +479,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(application.RedirectUris))
             {
-                return Task.FromResult(ImmutableArray.Create<string>());
+                return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
 
             // Note: parsing the stringified addresses is an expensive operation.
@@ -494,7 +494,7 @@ namespace OpenIddict.Core
                     .ToImmutableArray());
             }
 
-            return Task.FromResult(addresses.GetValueOrDefault());
+            return new ValueTask<ImmutableArray<string>>(addresses.GetValueOrDefault());
         }
 
         /// <summary>
@@ -502,10 +502,11 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns the instantiated application, that can be persisted in the database.
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the instantiated application, that can be persisted in the database.
         /// </returns>
-        public virtual Task<TApplication> InstantiateAsync(CancellationToken cancellationToken) => Task.FromResult(new TApplication());
+        public virtual ValueTask<TApplication> InstantiateAsync(CancellationToken cancellationToken)
+            => new ValueTask<TApplication>(new TApplication());
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

@@ -128,10 +128,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client identifier associated with the application.
         /// </returns>
-        Task<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the client secret associated with an application.
@@ -141,10 +141,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client secret associated with the application.
         /// </returns>
-        Task<string> GetClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<string> GetClientSecretAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the client type associated with an application.
@@ -152,10 +152,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client type of the application (by default, "public").
         /// </returns>
-        Task<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<string> GetClientTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the consent type associated with an application.
@@ -163,10 +163,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the consent type of the application (by default, "explicit").
         /// </returns>
-        Task<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the display name associated with an application.
@@ -174,10 +174,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the application.
         /// </returns>
-        Task<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the unique identifier associated with an application.
@@ -185,10 +185,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the application.
         /// </returns>
-        Task<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<string> GetIdAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the permissions associated with an application.
@@ -196,10 +196,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the permissions associated with the application.
         /// </returns>
-        Task<ImmutableArray<string>> GetPermissionsAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<ImmutableArray<string>> GetPermissionsAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the logout callback addresses associated with an application.
@@ -207,10 +207,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
-        /// result returns all the post_logout_redirect_uri associated with the application.
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the post_logout_redirect_uri associated with the application.
         /// </returns>
-        Task<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the additional properties associated with an application.
@@ -218,10 +218,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
-        /// result returns all the additional properties associated with the application.
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the application.
         /// </returns>
-        Task<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the callback addresses associated with an application.
@@ -229,20 +229,20 @@ namespace OpenIddict.Core
         /// <param name="application">The application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the redirect_uri associated with the application.
         /// </returns>
-        Task<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Instantiates a new application.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns the instantiated application, that can be persisted in the database.
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the instantiated application, that can be persisted in the database.
         /// </returns>
-        Task<TApplication> InstantiateAsync(CancellationToken cancellationToken);
+        ValueTask<TApplication> InstantiateAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

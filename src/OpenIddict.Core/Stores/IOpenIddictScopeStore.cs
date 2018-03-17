@@ -117,10 +117,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the description associated with the specified scope.
         /// </returns>
-        Task<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        ValueTask<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the display name associated with a scope.
@@ -128,10 +128,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the scope.
         /// </returns>
-        Task<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        ValueTask<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the unique identifier associated with a scope.
@@ -139,10 +139,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the scope.
         /// </returns>
-        Task<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        ValueTask<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the name associated with a scope.
@@ -150,10 +150,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the name associated with the specified scope.
         /// </returns>
-        Task<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        ValueTask<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the additional properties associated with a scope.
@@ -161,10 +161,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation, whose
         /// result returns all the additional properties associated with the scope.
         /// </returns>
-        Task<JObject> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        ValueTask<JObject> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the resources associated with a scope.
@@ -172,20 +172,20 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the resources associated with the scope.
         /// </returns>
-        Task<ImmutableArray<string>> GetResourcesAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        ValueTask<ImmutableArray<string>> GetResourcesAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Instantiates a new scope.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the instantiated scope, that can be persisted in the database.
         /// </returns>
-        Task<TScope> InstantiateAsync(CancellationToken cancellationToken);
+        ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

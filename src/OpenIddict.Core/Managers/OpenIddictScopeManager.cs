@@ -248,10 +248,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the description associated with the specified scope.
         /// </returns>
-        public virtual Task<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
@@ -267,10 +267,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the scope.
         /// </returns>
-        public virtual Task<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
@@ -286,10 +286,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the scope.
         /// </returns>
-        public virtual Task<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
@@ -305,10 +305,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the name associated with the specified scope.
         /// </returns>
-        public virtual Task<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
@@ -324,10 +324,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the resources associated with the scope.
         /// </returns>
-        public virtual Task<ImmutableArray<string>> GetResourcesAsync(
+        public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync(
             [NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)

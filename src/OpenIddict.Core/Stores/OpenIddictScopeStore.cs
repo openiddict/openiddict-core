@@ -184,17 +184,17 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the description associated with the specified scope.
         /// </returns>
-        public virtual Task<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return Task.FromResult(scope.Description);
+            return new ValueTask<string>(scope.Description);
         }
 
         /// <summary>
@@ -203,17 +203,17 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the scope.
         /// </returns>
-        public virtual Task<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return Task.FromResult(scope.DisplayName);
+            return new ValueTask<string>(scope.DisplayName);
         }
 
         /// <summary>
@@ -222,17 +222,17 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the unique identifier associated with the scope.
         /// </returns>
-        public virtual Task<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return Task.FromResult(ConvertIdentifierToString(scope.Id));
+            return new ValueTask<string>(ConvertIdentifierToString(scope.Id));
         }
 
         /// <summary>
@@ -241,17 +241,17 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the name associated with the specified scope.
         /// </returns>
-        public virtual Task<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return Task.FromResult(scope.Name);
+            return new ValueTask<string>(scope.Name);
         }
 
         /// <summary>
@@ -260,10 +260,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose
-        /// result returns all the additional properties associated with the scope.
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the scope.
         /// </returns>
-        public virtual Task<JObject> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -272,10 +272,10 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(scope.Properties))
             {
-                return Task.FromResult(new JObject());
+                return new ValueTask<JObject>(new JObject());
             }
 
-            return Task.FromResult(JObject.Parse(scope.Properties));
+            return new ValueTask<JObject>(JObject.Parse(scope.Properties));
         }
 
         /// <summary>
@@ -284,10 +284,10 @@ namespace OpenIddict.Core
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the resources associated with the scope.
         /// </returns>
-        public virtual Task<ImmutableArray<string>> GetResourcesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -296,7 +296,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(scope.Resources))
             {
-                return Task.FromResult(ImmutableArray.Create<string>());
+                return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
 
             // Note: parsing the stringified resources is an expensive operation.
@@ -311,7 +311,7 @@ namespace OpenIddict.Core
                     .ToImmutableArray());
             }
 
-            return Task.FromResult(resources.GetValueOrDefault());
+            return new ValueTask<ImmutableArray<string>>(resources.GetValueOrDefault());
         }
 
         /// <summary>
@@ -319,10 +319,11 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the instantiated scope, that can be persisted in the database.
         /// </returns>
-        public virtual Task<TScope> InstantiateAsync(CancellationToken cancellationToken) => Task.FromResult(new TScope());
+        public virtual ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken)
+            => new ValueTask<TScope>(new TScope());
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

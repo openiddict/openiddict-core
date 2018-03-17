@@ -213,18 +213,22 @@ namespace OpenIddict.EntityFramework
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the authorization.
         /// </returns>
-        public override async Task<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public override ValueTask<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            // If the application is not attached to the authorization, try to load it manually.
-            if (authorization.Application == null)
+            if (authorization.Application != null)
+            {
+                return new ValueTask<string>(ConvertIdentifierToString(authorization.Application.Id));
+            }
+
+            async Task<string> RetrieveApplicationIdAsync()
             {
                 var reference = Context.Entry(authorization).Reference(entry => entry.Application);
                 if (reference.EntityEntry.State == EntityState.Detached)
@@ -233,14 +237,16 @@ namespace OpenIddict.EntityFramework
                 }
 
                 await reference.LoadAsync(cancellationToken);
+
+                if (authorization.Application == null)
+                {
+                    return null;
+                }
+
+                return ConvertIdentifierToString(authorization.Application.Id);
             }
 
-            if (authorization.Application == null)
-            {
-                return null;
-            }
-
-            return ConvertIdentifierToString(authorization.Application.Id);
+            return new ValueTask<string>(RetrieveApplicationIdAsync());
         }
 
         /// <summary>
