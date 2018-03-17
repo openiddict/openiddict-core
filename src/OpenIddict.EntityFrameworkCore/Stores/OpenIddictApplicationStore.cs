@@ -7,11 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using OpenIddict.Core;
 using OpenIddict.Models;
@@ -161,6 +164,29 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(application));
             }
 
+            async Task<IDbContextTransaction> CreateTransactionAsync()
+            {
+                // Note: transactions that specify an explicit isolation level are only supported by
+                // relational providers and trying to use them with a different provider results in
+                // an invalid operation exception being thrown at runtime. To prevent that, a manual
+                // check is made to ensure the underlying transaction manager is relational.
+                var manager = Context.Database.GetService<IDbContextTransactionManager>();
+                if (manager is IRelationalTransactionManager)
+                {
+                    try
+                    {
+                        return await Context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+                    }
+
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                return null;
+            }
+
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this local method uses an explicit join before applying the equality check.
@@ -184,27 +210,34 @@ namespace OpenIddict.EntityFrameworkCore
                     where element.Id.Equals(application.Id)
                     select token).ToListAsync(cancellationToken);
 
-            // Remove all the authorizations associated with the application and
-            // the tokens attached to these implicit or explicit authorizations.
-            foreach (var authorization in await ListAuthorizationsAsync())
+            // To prevent an SQL exception from being thrown if a new associated entity is
+            // created after the existing entries have been listed, the following logic is
+            // executed in a serializable transaction, that will lock the affected tables.
+            using (var transaction = await CreateTransactionAsync())
             {
-                foreach (var token in authorization.Tokens)
+                // Remove all the authorizations associated with the application and
+                // the tokens attached to these implicit or explicit authorizations.
+                foreach (var authorization in await ListAuthorizationsAsync())
+                {
+                    foreach (var token in authorization.Tokens)
+                    {
+                        Context.Remove(token);
+                    }
+
+                    Context.Remove(authorization);
+                }
+
+                // Remove all the tokens associated with the application.
+                foreach (var token in await ListTokensAsync())
                 {
                     Context.Remove(token);
                 }
 
-                Context.Remove(authorization);
+                Context.Remove(application);
+
+                await Context.SaveChangesAsync(cancellationToken);
+                transaction?.Commit();
             }
-
-            // Remove all the tokens associated with the application.
-            foreach (var token in await ListTokensAsync())
-            {
-                Context.Remove(token);
-            }
-
-            Context.Remove(application);
-
-            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>

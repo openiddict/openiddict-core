@@ -162,20 +162,40 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(authorization));
             }
 
+            DbContextTransaction CreateTransaction()
+            {
+                try
+                {
+                    return Context.Database.BeginTransaction(IsolationLevel.Serializable);
+                }
+
+                catch
+                {
+                    return null;
+                }
+            }
+
             Task<List<TToken>> ListTokensAsync()
                 => (from token in Tokens
                     where token.Authorization.Id.Equals(authorization.Id)
                     select token).ToListAsync(cancellationToken);
 
-            // Remove all the tokens associated with the authorization.
-            foreach (var token in await ListTokensAsync())
+            // To prevent an SQL exception from being thrown if a new associated entity is
+            // created after the existing entries have been listed, the following logic is
+            // executed in a serializable transaction, that will lock the affected tables.
+            using (var transaction = CreateTransaction())
             {
-                Tokens.Remove(token);
+                // Remove all the tokens associated with the authorization.
+                foreach (var token in await ListTokensAsync())
+                {
+                    Tokens.Remove(token);
+                }
+
+                Authorizations.Remove(authorization);
+
+                await Context.SaveChangesAsync(cancellationToken);
+                transaction?.Commit();
             }
-
-            Authorizations.Remove(authorization);
-
-            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -347,6 +367,10 @@ namespace OpenIddict.EntityFramework
                         break;
                     }
 
+                    // Note: new tokens may be attached after the authorizations were retrieved
+                    // from the database since the transaction level is deliberately limited to
+                    // repeatable read instead of serializable for performance reasons). In this
+                    // case, the operation will fail, which is considered an acceptable risk.
                     Authorizations.RemoveRange(authorizations);
                     Tokens.RemoveRange(authorizations.SelectMany(authorization => authorization.Tokens));
 

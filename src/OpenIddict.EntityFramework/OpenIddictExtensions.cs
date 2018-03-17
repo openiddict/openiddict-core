@@ -236,7 +236,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Entity<TAuthorization>()
                    .HasMany(application => application.Tokens)
                    .WithOptional(token => token.Authorization)
-                   .Map(association => association.MapKey("AuthorizationId"));
+                   .Map(association => association.MapKey("AuthorizationId"))
+                   .WillCascadeOnDelete();
 
             builder.Entity<TAuthorization>()
                    .ToTable("OpenIddictAuthorizations");

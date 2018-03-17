@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading;
@@ -161,6 +162,19 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(application));
             }
 
+            DbContextTransaction CreateTransaction()
+            {
+                try
+                {
+                    return Context.Database.BeginTransaction(IsolationLevel.Serializable);
+                }
+
+                catch
+                {
+                    return null;
+                }
+            }
+
             Task<List<TAuthorization>> ListAuthorizationsAsync()
                 => (from authorization in Authorizations.Include(authorization => authorization.Tokens)
                     where authorization.Application.Id.Equals(application.Id)
@@ -172,27 +186,34 @@ namespace OpenIddict.EntityFramework
                     where token.Application.Id.Equals(application.Id)
                     select token).ToListAsync(cancellationToken);
 
-            // Remove all the authorizations associated with the application and
-            // the tokens attached to these implicit or explicit authorizations.
-            foreach (var authorization in await ListAuthorizationsAsync())
+            // To prevent an SQL exception from being thrown if a new associated entity is
+            // created after the existing entries have been listed, the following logic is
+            // executed in a serializable transaction, that will lock the affected tables.
+            using (var transaction = CreateTransaction())
             {
-                foreach (var token in authorization.Tokens)
+                // Remove all the authorizations associated with the application and
+                // the tokens attached to these implicit or explicit authorizations.
+                foreach (var authorization in await ListAuthorizationsAsync())
+                {
+                    foreach (var token in authorization.Tokens)
+                    {
+                        Tokens.Remove(token);
+                    }
+
+                    Authorizations.Remove(authorization);
+                }
+
+                // Remove all the tokens associated with the application.
+                foreach (var token in await ListTokensAsync())
                 {
                     Tokens.Remove(token);
                 }
 
-                Authorizations.Remove(authorization);
+                Applications.Remove(application);
+
+                await Context.SaveChangesAsync(cancellationToken);
+                transaction?.Commit();
             }
-
-            // Remove all the tokens associated with the application.
-            foreach (var token in await ListTokensAsync())
-            {
-                Tokens.Remove(token);
-            }
-
-            Applications.Remove(application);
-
-            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>

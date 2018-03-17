@@ -264,7 +264,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 entity.HasMany(authorization => authorization.Tokens)
                       .WithOne(token => token.Authorization)
                       .HasForeignKey("AuthorizationId")
-                      .IsRequired(required: false);
+                      .IsRequired(required: false)
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.ToTable("OpenIddictAuthorizations");
             });

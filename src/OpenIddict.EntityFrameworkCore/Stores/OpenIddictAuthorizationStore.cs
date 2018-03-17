@@ -164,6 +164,29 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(authorization));
             }
 
+            async Task<IDbContextTransaction> CreateTransactionAsync()
+            {
+                // Note: transactions that specify an explicit isolation level are only supported by
+                // relational providers and trying to use them with a different provider results in
+                // an invalid operation exception being thrown at runtime. To prevent that, a manual
+                // check is made to ensure the underlying transaction manager is relational.
+                var manager = Context.Database.GetService<IDbContextTransactionManager>();
+                if (manager is IRelationalTransactionManager)
+                {
+                    try
+                    {
+                        return await Context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+                    }
+
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                return null;
+            }
+
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this local method uses an explicit join before applying the equality check.
@@ -175,15 +198,22 @@ namespace OpenIddict.EntityFrameworkCore
                     where element.Id.Equals(authorization.Id)
                     select token).ToListAsync(cancellationToken);
 
-            // Remove all the tokens associated with the authorization.
-            foreach (var token in await ListTokensAsync())
+            // To prevent an SQL exception from being thrown if a new associated entity is
+            // created after the existing entries have been listed, the following logic is
+            // executed in a serializable transaction, that will lock the affected tables.
+            using (var transaction = await CreateTransactionAsync())
             {
-                Context.Remove(token);
+                // Remove all the tokens associated with the authorization.
+                foreach (var token in await ListTokensAsync())
+                {
+                    Context.Remove(token);
+                }
+
+                Context.Remove(authorization);
+
+                await Context.SaveChangesAsync(cancellationToken);
+                transaction?.Commit();
             }
-
-            Context.Remove(authorization);
-
-            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -511,6 +541,10 @@ namespace OpenIddict.EntityFrameworkCore
                         break;
                     }
 
+                    // Note: new tokens may be attached after the authorizations were retrieved
+                    // from the database since the transaction level is deliberately limited to
+                    // repeatable read instead of serializable for performance reasons). In this
+                    // case, the operation will fail, which is considered an acceptable risk.
                     Context.RemoveRange(authorizations);
                     Context.RemoveRange(authorizations.SelectMany(authorization => authorization.Tokens));
 
