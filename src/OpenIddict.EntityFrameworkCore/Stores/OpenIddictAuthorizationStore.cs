@@ -164,26 +164,56 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(authorization));
             }
 
+            async Task<IDbContextTransaction> CreateTransactionAsync()
+            {
+                // Note: transactions that specify an explicit isolation level are only supported by
+                // relational providers and trying to use them with a different provider results in
+                // an invalid operation exception being thrown at runtime. To prevent that, a manual
+                // check is made to ensure the underlying transaction manager is relational.
+                var manager = Context.Database.GetService<IDbContextTransactionManager>();
+                if (manager is IRelationalTransactionManager)
+                {
+                    try
+                    {
+                        return await Context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+                    }
+
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                return null;
+            }
+
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this local method uses an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
             Task<List<TToken>> ListTokensAsync()
-                => (from token in Tokens
-                    join element in Authorizations on token.Authorization.Id equals element.Id
+                => (from token in Tokens.AsTracking()
+                    join element in Authorizations.AsTracking() on token.Authorization.Id equals element.Id
                     where element.Id.Equals(authorization.Id)
                     select token).ToListAsync(cancellationToken);
 
-            // Remove all the tokens associated with the application.
-            foreach (var token in await ListTokensAsync())
+            // To prevent an SQL exception from being thrown if a new associated entity is
+            // created after the existing entries have been listed, the following logic is
+            // executed in a serializable transaction, that will lock the affected tables.
+            using (var transaction = await CreateTransactionAsync())
             {
-                Context.Remove(token);
+                // Remove all the tokens associated with the authorization.
+                foreach (var token in await ListTokensAsync())
+                {
+                    Context.Remove(token);
+                }
+
+                Context.Remove(authorization);
+
+                await Context.SaveChangesAsync(cancellationToken);
+                transaction?.Commit();
             }
-
-            Context.Remove(authorization);
-
-            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -217,9 +247,9 @@ namespace OpenIddict.EntityFrameworkCore
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
                 IQueryable<TApplication> applications, TKey key, string principal)
-                => from authorization in authorizations.Include(authorization => authorization.Application)
+                => from authorization in authorizations.Include(authorization => authorization.Application).AsTracking()
                    where authorization.Subject == principal
-                   join application in applications on authorization.Application.Id equals application.Id
+                   join application in applications.AsTracking() on authorization.Application.Id equals application.Id
                    where application.Id.Equals(key)
                    select authorization;
 
@@ -264,10 +294,9 @@ namespace OpenIddict.EntityFrameworkCore
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
                 IQueryable<TApplication> applications, TKey key, string principal, string state)
-                => from authorization in authorizations.Include(authorization => authorization.Application)
-                   where authorization.Subject == principal &&
-                         authorization.Status == state
-                   join application in applications on authorization.Application.Id equals application.Id
+                => from authorization in authorizations.Include(authorization => authorization.Application).AsTracking()
+                   where authorization.Subject == principal && authorization.Status == state
+                   join application in applications.AsTracking() on authorization.Application.Id equals application.Id
                    where application.Id.Equals(key)
                    select authorization;
 
@@ -318,11 +347,11 @@ namespace OpenIddict.EntityFrameworkCore
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
                 IQueryable<TApplication> applications, TKey key, string principal, string state, string kind)
-                => from authorization in authorizations.Include(authorization => authorization.Application)
+                => from authorization in authorizations.Include(authorization => authorization.Application).AsTracking()
                    where authorization.Subject == principal &&
                          authorization.Status == state &&
                          authorization.Type == kind
-                   join application in applications on authorization.Application.Id equals application.Id
+                   join application in applications.AsTracking() on authorization.Application.Id equals application.Id
                    where application.Id.Equals(key)
                    select authorization;
 
@@ -380,7 +409,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Authorizations.Include(authorization => authorization.Application), state).FirstOrDefaultAsync(cancellationToken);
+            return query(
+                Authorizations.Include(authorization => authorization.Application)
+                              .AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -405,7 +436,8 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return ImmutableArray.CreateRange(await query(
-                Authorizations.Include(authorization => authorization.Application), state).ToListAsync(cancellationToken));
+                Authorizations.Include(authorization => authorization.Application)
+                              .AsTracking(), state).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -424,7 +456,7 @@ namespace OpenIddict.EntityFrameworkCore
             IList<Exception> exceptions = null;
 
             IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations, int offset)
-                => (from authorization in authorizations.Include(authorization => authorization.Tokens)
+                => (from authorization in authorizations.Include(authorization => authorization.Tokens).AsTracking()
                     where authorization.Status != OpenIddictConstants.Statuses.Valid ||
                          (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
                          !authorization.Tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid))
@@ -473,6 +505,10 @@ namespace OpenIddict.EntityFrameworkCore
                         break;
                     }
 
+                    // Note: new tokens may be attached after the authorizations were retrieved
+                    // from the database since the transaction level is deliberately limited to
+                    // repeatable read instead of serializable for performance reasons). In this
+                    // case, the operation will fail, which is considered an acceptable risk.
                     Context.RemoveRange(authorizations);
                     Context.RemoveRange(authorizations.SelectMany(authorization => authorization.Tokens));
 
@@ -509,7 +545,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task SetApplicationIdAsync([NotNull] TAuthorization authorization, [CanBeNull] string identifier, CancellationToken cancellationToken)
+        public override async Task SetApplicationIdAsync([NotNull] TAuthorization authorization,
+            [CanBeNull] string identifier, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
