@@ -31,9 +31,7 @@ namespace OpenIddict.EntityFrameworkCore
                                                                                    OpenIddictToken, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictApplicationStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictApplicationStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -51,9 +49,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictApplicationStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictApplicationStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -76,9 +72,7 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictApplicationStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictApplicationStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(cache)
         {
             if (context == null)

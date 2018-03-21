@@ -43,9 +43,7 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictScopeStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(context, cache)
         {
         }
@@ -63,9 +61,7 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore(
-            [NotNull] TContext context,
-            [NotNull] IMemoryCache cache)
+        public OpenIddictScopeStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
             : base(cache)
         {
             if (context == null)
@@ -144,25 +140,6 @@ namespace OpenIddict.EntityFramework
             Scopes.Remove(scope);
 
             return Context.SaveChangesAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// Retrieves a scope using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scope corresponding to the identifier.
-        /// </returns>
-        public override Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
-            }
-
-            return Scopes.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
         }
 
         /// <summary>
