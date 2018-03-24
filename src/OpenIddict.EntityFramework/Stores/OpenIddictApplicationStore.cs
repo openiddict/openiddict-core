@@ -14,8 +14,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
-using OpenIddict.Core;
 using OpenIddict.Models;
+using OpenIddict.Stores;
 
 namespace OpenIddict.EntityFramework
 {

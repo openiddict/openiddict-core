@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Caching.Memory;
 using OpenIddict.Models;
 
@@ -54,7 +53,7 @@ namespace OpenIddict.EntityFrameworkCore
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-    public class OpenIddictScopeStore<TScope, TContext, TKey> : Core.OpenIddictScopeStore<TScope, TKey>
+    public class OpenIddictScopeStore<TScope, TContext, TKey> : Stores.OpenIddictScopeStore<TScope, TKey>
         where TScope : OpenIddictScope<TKey>, new()
         where TContext : DbContext
         where TKey : IEquatable<TKey>

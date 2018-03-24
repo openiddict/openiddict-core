@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
@@ -15,9 +14,10 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OpenIddict.Core;
 using OpenIddict.Models;
 
-namespace OpenIddict.Core
+namespace OpenIddict.Stores
 {
     /// <summary>
     /// Provides methods allowing to manage the authorizations stored in a database.

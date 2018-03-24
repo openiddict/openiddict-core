@@ -6,45 +6,26 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using OpenIddict.Models;
 using Xunit;
 
 namespace OpenIddict.Core.Tests
 {
     public class OpenIddictExtensionsTests
     {
-        [Theory]
-        [InlineData(typeof(OpenIddictApplicationManager<OpenIddictApplication>))]
-        [InlineData(typeof(OpenIddictAuthorizationManager<OpenIddictAuthorization>))]
-        [InlineData(typeof(OpenIddictScopeManager<OpenIddictScope>))]
-        [InlineData(typeof(OpenIddictTokenManager<OpenIddictToken>))]
-        public void AddOpenIddict_KeyTypeDefaultsToString(Type type)
+        [Fact]
+        public void AddOpenIddict_CustomEntitiesAreCorrectlySet()
         {
             // Arrange
             var services = new ServiceCollection();
 
             // Act
-            services.AddOpenIddict();
+            var builder = services.AddOpenIddict<object, object, object, object>();
 
             // Assert
-            Assert.Contains(services, service => service.ImplementationType == type);
-        }
-
-        [Theory]
-        [InlineData(typeof(OpenIddictApplicationManager<OpenIddictApplication<Guid>>))]
-        [InlineData(typeof(OpenIddictAuthorizationManager<OpenIddictAuthorization<Guid>>))]
-        [InlineData(typeof(OpenIddictScopeManager<OpenIddictScope<Guid>>))]
-        [InlineData(typeof(OpenIddictTokenManager<OpenIddictToken<Guid>>))]
-        public void AddOpenIddict_KeyTypeCanBeOverriden(Type type)
-        {
-            // Arrange
-            var services = new ServiceCollection();
-
-            // Act
-            services.AddOpenIddict<Guid>();
-
-            // Assert
-            Assert.Contains(services, service => service.ImplementationType == type);
+            Assert.Equal(typeof(object), builder.ApplicationType);
+            Assert.Equal(typeof(object), builder.AuthorizationType);
+            Assert.Equal(typeof(object), builder.ScopeType);
+            Assert.Equal(typeof(object), builder.TokenType);
         }
 
         [Theory]
@@ -52,7 +33,7 @@ namespace OpenIddict.Core.Tests
         [InlineData(typeof(OpenIddictAuthorizationManager<object>))]
         [InlineData(typeof(OpenIddictScopeManager<object>))]
         [InlineData(typeof(OpenIddictTokenManager<object>))]
-        public void AddOpenIddict_DefaultEntitiesCanBeReplaced(Type type)
+        public void AddOpenIddict_ManagersForCustomEntitiesAreCorrectlyRegistered(Type type)
         {
             // Arrange
             var services = new ServiceCollection();

@@ -20,7 +20,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Arrange
             var builder = new OpenIddictBuilder(new ServiceCollection())
             {
-                ApplicationType = typeof(object)
+                ApplicationType = typeof(object),
+                AuthorizationType = typeof(OpenIddictAuthorization),
+                ScopeType = typeof(OpenIddictScope),
+                TokenType = typeof(OpenIddictToken)
             };
 
             // Act and assert
@@ -39,7 +42,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Arrange
             var builder = new OpenIddictBuilder(new ServiceCollection())
             {
-                AuthorizationType = typeof(object)
+                ApplicationType = typeof(OpenIddictApplication),
+                AuthorizationType = typeof(object),
+                ScopeType = typeof(OpenIddictScope),
+                TokenType = typeof(OpenIddictToken)
             };
 
             // Act and assert
@@ -58,7 +64,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Arrange
             var builder = new OpenIddictBuilder(new ServiceCollection())
             {
-                ScopeType = typeof(object)
+                ApplicationType = typeof(OpenIddictApplication),
+                AuthorizationType = typeof(OpenIddictAuthorization),
+                ScopeType = typeof(object),
+                TokenType = typeof(OpenIddictToken)
             };
 
             // Act and assert
@@ -77,6 +86,9 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Arrange
             var builder = new OpenIddictBuilder(new ServiceCollection())
             {
+                ApplicationType = typeof(OpenIddictApplication),
+                AuthorizationType = typeof(OpenIddictAuthorization),
+                ScopeType = typeof(OpenIddictScope),
                 TokenType = typeof(object)
             };
 
@@ -99,7 +111,13 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         {
             // Arrange
             var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
+            var builder = new OpenIddictBuilder(services)
+            {
+                ApplicationType = typeof(OpenIddictApplication),
+                AuthorizationType = typeof(OpenIddictAuthorization),
+                ScopeType = typeof(OpenIddictScope),
+                TokenType = typeof(OpenIddictToken)
+            };
 
             // Act
             builder.AddEntityFrameworkCoreStores<DbContext>();

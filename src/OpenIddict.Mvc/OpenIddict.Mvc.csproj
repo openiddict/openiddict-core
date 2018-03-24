@@ -13,11 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
+    <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNet.Security.OpenIdConnect.Server" Version="$(AspNetContribOpenIdServerVersion)" />
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="$(AspNetCoreVersion)" />
   </ItemGroup>

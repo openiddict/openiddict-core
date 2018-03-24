@@ -1390,7 +1390,7 @@ namespace OpenIddict.Tests
                     // Register the X.509 certificate used to sign the identity tokens.
                     options.AddSigningCertificate(
                         assembly: typeof(OpenIddictProviderTests).GetTypeInfo().Assembly,
-                        resource: "OpenIddict.Tests.Certificate.pfx",
+                        resource: "OpenIddict.Server.Tests.Certificate.pfx",
                         password: "OpenIddict");
 
                     // Note: overriding the default data protection provider is not necessary for the tests to pass,
