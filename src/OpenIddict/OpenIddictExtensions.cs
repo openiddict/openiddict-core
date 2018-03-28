@@ -6,10 +6,9 @@
 
 using System;
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Models;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class OpenIddictExtensions
     {
