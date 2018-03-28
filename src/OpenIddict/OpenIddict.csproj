@@ -13,8 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Models\OpenIddict.Models.csproj" />
     <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
-    <ProjectReference Include="..\OpenIddict.Stores\OpenIddict.Stores.csproj" />
   </ItemGroup>
 
   <ItemGroup>
