@@ -230,8 +230,20 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
             identifier = await ObfuscateReferenceIdAsync(identifier, cancellationToken);
-            return await Store.FindByReferenceIdAsync(identifier, cancellationToken);
+
+            var token = await Store.FindByReferenceIdAsync(identifier, cancellationToken);
+            if (token == null ||
+                !string.Equals(await Store.GetReferenceIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return token;
         }
 
         /// <summary>
@@ -262,7 +274,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified subject.
         /// </returns>
-        public virtual Task<ImmutableArray<TToken>> FindBySubjectAsync(
+        public virtual async Task<ImmutableArray<TToken>> FindBySubjectAsync(
             [NotNull] string subject, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(subject))
@@ -270,7 +282,29 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            return Store.FindBySubjectAsync(subject, cancellationToken);
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var tokens = await Store.FindBySubjectAsync(subject, cancellationToken);
+            if (tokens.IsEmpty)
+            {
+                return ImmutableArray.Create<TToken>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<TToken>(tokens.Length);
+
+            foreach (var token in tokens)
+            {
+                if (string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
+                {
+                    builder.Add(token);
+                }
+            }
+
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
@@ -821,46 +855,52 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var results = ImmutableArray.CreateBuilder<ValidationResult>();
+            var builder = ImmutableArray.CreateBuilder<ValidationResult>();
 
             // If a reference identifier was associated with the token,
             // ensure it's not already used for a different token.
             var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
             if (!string.IsNullOrEmpty(identifier))
             {
+                // Note: depending on the database/table/query collation used by the store, a reference token
+                // whose identifier doesn't exactly match the specified value may be returned (e.g because
+                // the casing is different). To avoid issues when the reference identifier is part of an index
+                // using the same collation, an error is added even if the two identifiers don't exactly match.
                 var other = await Store.FindByReferenceIdAsync(identifier, cancellationToken);
                 if (other != null && !string.Equals(
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(token, cancellationToken), StringComparison.Ordinal))
                 {
-                    results.Add(new ValidationResult("A token with the same reference identifier already exists."));
+                    builder.Add(new ValidationResult("A token with the same reference identifier already exists."));
                 }
             }
 
             var type = await Store.GetTokenTypeAsync(token, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                results.Add(new ValidationResult("The token type cannot be null or empty."));
+                builder.Add(new ValidationResult("The token type cannot be null or empty."));
             }
 
             else if (!string.Equals(type, OpenIddictConstants.TokenTypes.AccessToken, StringComparison.OrdinalIgnoreCase) &&
                      !string.Equals(type, OpenIddictConstants.TokenTypes.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
                      !string.Equals(type, OpenIddictConstants.TokenTypes.RefreshToken, StringComparison.OrdinalIgnoreCase))
             {
-                results.Add(new ValidationResult("The specified token type is not supported by the default token manager."));
+                builder.Add(new ValidationResult("The specified token type is not supported by the default token manager."));
             }
 
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
             {
-                results.Add(new ValidationResult("The status cannot be null or empty."));
+                builder.Add(new ValidationResult("The status cannot be null or empty."));
             }
 
             if (string.IsNullOrEmpty(await Store.GetSubjectAsync(token, cancellationToken)))
             {
-                results.Add(new ValidationResult("The subject cannot be null or empty."));
+                builder.Add(new ValidationResult("The subject cannot be null or empty."));
             }
 
-            return results.ToImmutable();
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>

@@ -230,14 +230,25 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual Task<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
+        public virtual async Task<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Store.FindByClientIdAsync(identifier, cancellationToken);
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var application = await Store.FindByClientIdAsync(identifier, cancellationToken);
+            if (application == null ||
+                !string.Equals(await Store.GetClientIdAsync(application, cancellationToken), identifier, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return application;
         }
 
         /// <summary>
@@ -249,7 +260,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        public virtual Task<ImmutableArray<TApplication>> FindByPostLogoutRedirectUriAsync(
+        public virtual async Task<ImmutableArray<TApplication>> FindByPostLogoutRedirectUriAsync(
             [NotNull] string address, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(address))
@@ -257,7 +268,33 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            return Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken);
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var applications = await Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken);
+            if (applications.IsEmpty)
+            {
+                return ImmutableArray.Create<TApplication>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<TApplication>(applications.Length);
+
+            foreach (var application in applications)
+            {
+                foreach (var uri in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+                {
+                    // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison".
+                    if (string.Equals(uri, address, StringComparison.Ordinal))
+                    {
+                        builder.Add(application);
+                    }
+                }
+            }
+
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
@@ -269,7 +306,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        public virtual Task<ImmutableArray<TApplication>> FindByRedirectUriAsync(
+        public virtual async Task<ImmutableArray<TApplication>> FindByRedirectUriAsync(
             [NotNull] string address, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(address))
@@ -277,7 +314,33 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            return Store.FindByRedirectUriAsync(address, cancellationToken);
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var applications = await Store.FindByRedirectUriAsync(address, cancellationToken);
+            if (applications.IsEmpty)
+            {
+                return ImmutableArray.Create<TApplication>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<TApplication>(applications.Length);
+
+            foreach (var application in applications)
+            {
+                foreach (var uri in await Store.GetRedirectUrisAsync(application, cancellationToken))
+                {
+                    // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison".
+                    if (string.Equals(uri, address, StringComparison.Ordinal))
+                    {
+                        builder.Add(application);
+                    }
+                }
+            }
+
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
@@ -512,6 +575,8 @@ namespace OpenIddict.Core
             {
                 throw new ArgumentException("The permission name cannot be null or empty.", nameof(permission));
             }
+
+            // Note: all the string-based comparisons used by this method are ordinal (and thus case-sensitive).
 
             var permissions = await Store.GetPermissionsAsync(application, cancellationToken);
 
@@ -897,30 +962,34 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var results = ImmutableArray.CreateBuilder<ValidationResult>();
+            var builder = ImmutableArray.CreateBuilder<ValidationResult>();
 
+            // Ensure the client_id is not null or empty and is not already used for a different application.
             var identifier = await Store.GetClientIdAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(identifier))
             {
-                results.Add(new ValidationResult("The client identifier cannot be null or empty."));
+                builder.Add(new ValidationResult("The client identifier cannot be null or empty."));
             }
 
             else
             {
-                // Ensure the client_id is not already used for a different application.
+                // Note: depending on the database/table/query collation used by the store, an application
+                // whose client_id doesn't exactly match the specified value may be returned (e.g because
+                // the casing is different). To avoid issues when the client identifier is part of an index
+                // using the same collation, an error is added even if the two identifiers don't exactly match.
                 var other = await Store.FindByClientIdAsync(identifier, cancellationToken);
                 if (other != null && !string.Equals(
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(application, cancellationToken), StringComparison.Ordinal))
                 {
-                    results.Add(new ValidationResult("An application with the same client identifier already exists."));
+                    builder.Add(new ValidationResult("An application with the same client identifier already exists."));
                 }
             }
 
             var type = await Store.GetClientTypeAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                results.Add(new ValidationResult("The client type cannot be null or empty."));
+                builder.Add(new ValidationResult("The client type cannot be null or empty."));
             }
 
             else
@@ -930,7 +999,7 @@ namespace OpenIddict.Core
                     !string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
-                    results.Add(new ValidationResult("Only 'confidential', 'hybrid' or 'public' applications are " +
+                    builder.Add(new ValidationResult("Only 'confidential', 'hybrid' or 'public' applications are " +
                                                      "supported by the default application manager."));
                 }
 
@@ -939,14 +1008,14 @@ namespace OpenIddict.Core
                 if (string.IsNullOrEmpty(secret) &&
                     string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
                 {
-                    results.Add(new ValidationResult("The client secret cannot be null or empty for a confidential application."));
+                    builder.Add(new ValidationResult("The client secret cannot be null or empty for a confidential application."));
                 }
 
                 // Ensure no client secret was specified if the client is a public application.
                 else if (!string.IsNullOrEmpty(secret) &&
                           string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
-                    results.Add(new ValidationResult("A client secret cannot be associated with a public application."));
+                    builder.Add(new ValidationResult("A client secret cannot be associated with a public application."));
                 }
             }
 
@@ -959,7 +1028,7 @@ namespace OpenIddict.Core
                 // Ensure the address is not null or empty.
                 if (string.IsNullOrEmpty(address))
                 {
-                    results.Add(new ValidationResult("Callback URLs cannot be null or empty."));
+                    builder.Add(new ValidationResult("Callback URLs cannot be null or empty."));
 
                     break;
                 }
@@ -967,7 +1036,7 @@ namespace OpenIddict.Core
                 // Ensure the address is a valid absolute URL.
                 if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
                 {
-                    results.Add(new ValidationResult("Callback URLs must be valid absolute URLs."));
+                    builder.Add(new ValidationResult("Callback URLs must be valid absolute URLs."));
 
                     break;
                 }
@@ -975,7 +1044,7 @@ namespace OpenIddict.Core
                 // Ensure the address doesn't contain a fragment.
                 if (!string.IsNullOrEmpty(uri.Fragment))
                 {
-                    results.Add(new ValidationResult("Callback URLs cannot contain a fragment."));
+                    builder.Add(new ValidationResult("Callback URLs cannot contain a fragment."));
 
                     break;
                 }
@@ -987,14 +1056,14 @@ namespace OpenIddict.Core
                 if (!permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Authorization) &&
                      permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
                 {
-                    results.Add(new ValidationResult(
+                    builder.Add(new ValidationResult(
                         "The authorization code flow permission requires adding the authorization endpoint permission."));
                 }
 
                 if (!permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
                      permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
                 {
-                    results.Add(new ValidationResult(
+                    builder.Add(new ValidationResult(
                         "The authorization code flow permission requires adding the token endpoint permission."));
                 }
             }
@@ -1003,7 +1072,7 @@ namespace OpenIddict.Core
                !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
                 permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
             {
-                results.Add(new ValidationResult(
+                builder.Add(new ValidationResult(
                     "The client credentials flow permission requires adding the token endpoint permission."));
             }
 
@@ -1011,7 +1080,7 @@ namespace OpenIddict.Core
                !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Authorization) &&
                 permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
             {
-                results.Add(new ValidationResult(
+                builder.Add(new ValidationResult(
                     "The implicit flow permission requires adding the authorization endpoint permission."));
             }
 
@@ -1019,7 +1088,7 @@ namespace OpenIddict.Core
                !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
                 permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
             {
-                results.Add(new ValidationResult(
+                builder.Add(new ValidationResult(
                     "The password flow permission requires adding the token endpoint permission."));
             }
 
@@ -1027,11 +1096,13 @@ namespace OpenIddict.Core
                !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
                 permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
             {
-                results.Add(new ValidationResult(
+                builder.Add(new ValidationResult(
                     "The refresh token flow permission requires adding the token endpoint permission."));
             }
 
-            return results.ToImmutable();
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
@@ -1097,9 +1168,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            // Warning: SQL engines like Microsoft SQL Server are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is used, string.Equals(Ordinal) is manually called here.
-            foreach (var application in await Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken))
+            foreach (var application in await FindByPostLogoutRedirectUriAsync(address, cancellationToken))
             {
                 // If the application is not allowed to use the logout endpoint, ignore it and keep iterating.
                 if (!await HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Logout, cancellationToken))
@@ -1107,14 +1176,7 @@ namespace OpenIddict.Core
                     continue;
                 }
 
-                foreach (var uri in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
-                {
-                    // Note: the post_logout_redirect_uri must be compared using case-sensitive "Simple String Comparison".
-                    if (string.Equals(uri, address, StringComparison.Ordinal))
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
 
             Logger.LogWarning("Client validation failed because '{PostLogoutRedirectUri}' " +

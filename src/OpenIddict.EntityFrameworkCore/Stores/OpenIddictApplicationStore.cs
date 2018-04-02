@@ -346,7 +346,9 @@ namespace OpenIddict.EntityFrameworkCore
                 }
             }
 
-            return builder.ToImmutable();
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
@@ -399,7 +401,9 @@ namespace OpenIddict.EntityFrameworkCore
                 }
             }
 
-            return builder.ToImmutable();
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
