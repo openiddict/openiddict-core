@@ -172,14 +172,24 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the specified name.
         /// </returns>
-        public virtual Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken = default)
+        public virtual async Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
             }
 
-            return Store.FindByNameAsync(name, cancellationToken);
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var scope = await Store.FindByNameAsync(name, cancellationToken);
+            if (scope == null || !string.Equals(await Store.GetNameAsync(scope, cancellationToken), name, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return scope;
         }
 
         /// <summary>
@@ -191,7 +201,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scopes corresponding to the specified names.
         /// </returns>
-        public virtual Task<ImmutableArray<TScope>> FindByNamesAsync(
+        public virtual async Task<ImmutableArray<TScope>> FindByNamesAsync(
             ImmutableArray<string> names, CancellationToken cancellationToken = default)
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
@@ -199,7 +209,29 @@ namespace OpenIddict.Core
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
-            return Store.FindByNamesAsync(names, cancellationToken);
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var scopes = await Store.FindByNamesAsync(names, cancellationToken);
+            if (scopes.IsEmpty)
+            {
+                return ImmutableArray.Create<TScope>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<TScope>(scopes.Length);
+
+            foreach (var scope in scopes)
+            {
+                if (names.Contains(await Store.GetNameAsync(scope, cancellationToken)))
+                {
+                    builder.Add(scope);
+                }
+            }
+
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
@@ -499,32 +531,39 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            var results = ImmutableArray.CreateBuilder<ValidationResult>();
+            var builder = ImmutableArray.CreateBuilder<ValidationResult>();
 
+            // Ensure the name is not null or empty, does not contain a
+            // space and is not already used for a different scope entity.
             var name = await Store.GetNameAsync(scope, cancellationToken);
             if (string.IsNullOrEmpty(name))
             {
-                results.Add(new ValidationResult("The scope name cannot be null or empty."));
+                builder.Add(new ValidationResult("The scope name cannot be null or empty."));
             }
 
             else if (name.Contains(OpenIddictConstants.Separators.Space))
             {
-                results.Add(new ValidationResult("The scope name cannot contain spaces."));
+                builder.Add(new ValidationResult("The scope name cannot contain spaces."));
             }
 
             else
             {
-                // Ensure the name is not already used for a different name.
+                // Note: depending on the database/table/query collation used by the store, a scope
+                // whose name doesn't exactly match the specified value may be returned (e.g because
+                // the casing is different). To avoid issues when the scope name is part of an index
+                // using the same collation, an error is added even if the two names don't exactly match.
                 var other = await Store.FindByNameAsync(name, cancellationToken);
                 if (other != null && !string.Equals(
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(scope, cancellationToken), StringComparison.Ordinal))
                 {
-                    results.Add(new ValidationResult("A scope with the same name already exists."));
+                    builder.Add(new ValidationResult("A scope with the same name already exists."));
                 }
             }
 
-            return results.ToImmutable();
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
