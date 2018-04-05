@@ -155,15 +155,13 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            const string key = nameof(FindByIdAsync) + "\x1e" + nameof(identifier);
-
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("485f3372-2d38-4418-8d1e-acd8aa0c3555", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
-                return EF.CompileAsyncQuery((TContext context, TKey id) =>
+                return EF.CompileAsyncQuery((TContext context, TKey key) =>
                     (from scope in context.Set<TScope>().AsTracking()
-                     where scope.Id.Equals(id)
+                     where scope.Id.Equals(key)
                      select scope).FirstOrDefault());
             });
 
@@ -186,9 +184,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
             }
 
-            const string key = nameof(FindByNameAsync) + "\x1e" + nameof(name);
-
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("71cb2f7a-7adb-4b3e-8833-772e254f9b03", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
@@ -218,9 +214,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
-            const string key = nameof(FindByNamesAsync) + "\x1e" + nameof(names);
-
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("e19404af-8586-4693-9b9c-8185b653ee2d", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 

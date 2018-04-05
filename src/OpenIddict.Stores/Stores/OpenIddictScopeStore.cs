@@ -301,9 +301,7 @@ namespace OpenIddict.Stores
 
             // Note: parsing the stringified resources is an expensive operation.
             // To mitigate that, the resulting array is stored in the memory cache.
-            var key = string.Concat(nameof(GetResourcesAsync), "\x1e", scope.Resources);
-
-            var resources = Cache.GetOrCreate(key, entry =>
+            var resources = Cache.GetOrCreate("b6148250-aede-4fb9-a621-07c9bcf238c3", entry =>
             {
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));

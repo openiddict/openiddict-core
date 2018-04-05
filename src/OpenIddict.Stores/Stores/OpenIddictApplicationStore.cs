@@ -392,9 +392,7 @@ namespace OpenIddict.Stores
 
             // Note: parsing the stringified permissions is an expensive operation.
             // To mitigate that, the resulting array is stored in the memory cache.
-            var key = string.Concat(nameof(GetPermissionsAsync), "\x1e", application.Permissions);
-
-            var permissions = Cache.GetOrCreate(key, entry =>
+            var permissions = Cache.GetOrCreate("0347e0aa-3a26-410a-97e8-a83bdeb21a1f", entry =>
             {
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
@@ -430,9 +428,7 @@ namespace OpenIddict.Stores
 
             // Note: parsing the stringified addresses is an expensive operation.
             // To mitigate that, the resulting array is stored in the memory cache.
-            var key = string.Concat(nameof(GetPostLogoutRedirectUrisAsync), "\x1e", application.PostLogoutRedirectUris);
-
-            var addresses = Cache.GetOrCreate(key, entry =>
+            var addresses = Cache.GetOrCreate("fb14dfb9-9216-4b77-bfa9-7e85f8201ff4", entry =>
             {
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
@@ -492,9 +488,7 @@ namespace OpenIddict.Stores
 
             // Note: parsing the stringified addresses is an expensive operation.
             // To mitigate that, the resulting array is stored in the memory cache.
-            var key = string.Concat(nameof(GetRedirectUrisAsync), "\x1e", application.RedirectUris);
-
-            var addresses = Cache.GetOrCreate(key, entry =>
+            var addresses = Cache.GetOrCreate("851d6f08-2ee0-4452-bbe5-ab864611ecaa", entry =>
             {
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));

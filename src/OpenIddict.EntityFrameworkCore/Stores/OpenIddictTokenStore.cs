@@ -178,23 +178,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            const string key = nameof(FindByApplicationIdAsync) + "\x1e" + nameof(identifier);
-
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("9c2e8fed-053a-477c-be42-ec4037109be6", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
-                return EF.CompileAsyncQuery((TContext context, TKey id) =>
+                return EF.CompileAsyncQuery((TContext context, TKey key) =>
                     from token in context.Set<TToken>()
                         .Include(token => token.Application)
                         .Include(token => token.Authorization)
                         .AsTracking()
                     join application in context.Set<TApplication>().AsTracking() on token.Application.Id equals application.Id
-                    where application.Id.Equals(id)
+                    where application.Id.Equals(key)
                     select token);
             });
 
@@ -218,23 +216,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            const string key = nameof(FindByAuthorizationIdAsync) + "\x1e" + nameof(identifier);
-
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Authorization.Id.Equals(key). To work around this issue,
             // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("bfc92016-710f-492b-bcf0-48452a832950", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
-                return EF.CompileAsyncQuery<TContext, TKey, TToken>((TContext context, TKey id) =>
+                return EF.CompileAsyncQuery((TContext context, TKey key) =>
                     from token in context.Set<TToken>()
                         .Include(token => token.Application)
                         .Include(token => token.Authorization)
                         .AsTracking()
                     join authorization in context.Set<TAuthorization>().AsTracking() on token.Authorization.Id equals authorization.Id
-                    where authorization.Id.Equals(id)
+                    where authorization.Id.Equals(key)
                     select token);
             });
 
@@ -258,18 +254,16 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            const string key = nameof(FindByIdAsync) + "\x1e" + nameof(identifier);
-
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("a311088f-3b26-4ca7-bbe5-6194d3375777", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
-                return EF.CompileAsyncQuery((TContext context, TKey id) =>
+                return EF.CompileAsyncQuery((TContext context, TKey key) =>
                     (from token in context.Set<TToken>()
                         .Include(token => token.Application)
                         .Include(token => token.Authorization)
                         .AsTracking()
-                     where token.Id.Equals(id)
+                     where token.Id.Equals(key)
                      select token).FirstOrDefault());
             });
 
@@ -293,9 +287,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            const string key = nameof(FindByReferenceIdAsync) + "\x1e" + nameof(identifier);
-
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("26fd749d-9198-466a-b78e-afbc1b4d89d3", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
@@ -327,9 +319,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            const string key = nameof(FindBySubjectAsync) + "\x1e" + nameof(subject);
-
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("61a80b05-d069-4e05-b2e2-66d4bc89b492", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 

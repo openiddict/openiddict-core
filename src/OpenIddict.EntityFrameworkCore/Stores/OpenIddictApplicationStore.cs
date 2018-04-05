@@ -250,9 +250,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            const string key = nameof(FindByClientIdAsync) + "\x1e" + nameof(identifier);
-
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("b7c5b6ad-572f-4106-9a32-4f1dc1981b73", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
@@ -281,15 +279,13 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            const string key = nameof(FindByIdAsync) + "\x1e" + nameof(identifier);
-
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("91082918-b9b9-4701-b969-54e33999a1b9", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
-                return EF.CompileAsyncQuery((TContext context, TKey id) =>
+                return EF.CompileAsyncQuery((TContext context, TKey key) =>
                     (from application in context.Set<TApplication>().AsTracking()
-                     where application.Id.Equals(id)
+                     where application.Id.Equals(key)
                      select application).FirstOrDefault());
             });
 
@@ -312,14 +308,12 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            const string key = nameof(FindByPostLogoutRedirectUriAsync) + "\x1e" + nameof(address);
-
             // To optimize the efficiency of the query a bit, only applications whose stringified
             // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
             // are retrieved, a second pass is made to ensure only valid elements are returned.
             // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("a805ce67-2c5b-4617-a772-56413dccac45", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
@@ -367,14 +361,12 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            const string key = nameof(FindByRedirectUriAsync) + "\x1e" + nameof(address);
-
             // To optimize the efficiency of the query a bit, only applications whose stringified
             // RedirectUris property contains the specified URL are returned. Once the applications
             // are retrieved, a second pass is made to ensure only valid elements are returned.
             // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            var query = Cache.GetOrCreate(key, entry =>
+            var query = Cache.GetOrCreate("b3883c99-646f-4027-9855-dad8370b977a", entry =>
             {
                 entry.SetPriority(CacheItemPriority.NeverRemove);
 
