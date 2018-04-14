@@ -510,10 +510,9 @@ namespace OpenIddict.Server.Tests
         [Theory]
         [InlineData("code id_token token")]
         [InlineData("code token")]
-        [InlineData("id_token")]
         [InlineData("id_token token")]
         [InlineData("token")]
-        public async Task ValidateAuthorizationRequest_ImplicitOrHybridRequestIsRejectedWhenClientIsConfidential(string type)
+        public async Task ValidateAuthorizationRequest_AnAccessTokenCannotBeReturnedWhenClientIsConfidential(string type)
         {
             // Arrange
             var application = new OpenIddictApplication();
@@ -545,7 +544,7 @@ namespace OpenIddict.Server.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedResponseType, response.Error);
+            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal("The specified 'response_type' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());

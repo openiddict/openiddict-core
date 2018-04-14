@@ -287,16 +287,15 @@ namespace OpenIddict.Server
             // from the other provider methods without having to call the store twice.
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
-            // To prevent downgrade attacks, ensure that authorization requests returning a token directly from
-            // the authorization endpoint are rejected if the client_id corresponds to a confidential application.
+            // To prevent downgrade attacks, ensure that authorization requests returning an access token directly
+            // from the authorization endpoint are rejected if the client_id corresponds to a confidential application.
             // Note: when using the authorization code grant, ValidateTokenRequest is responsible of rejecting
             // the token request if the client_id corresponds to an unauthenticated confidential client.
             if (await Applications.IsConfidentialAsync(application) &&
-               (context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.IdToken) ||
-                context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token)))
+                context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
+                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
                     description: "The specified 'response_type' parameter is not valid for this client application.");
 
                 return;
