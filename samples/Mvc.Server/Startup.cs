@@ -64,9 +64,7 @@ namespace Mvc.Server
                 {
                     options.ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g";
                     options.ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI";
-                })
-
-                .AddOAuthValidation();
+                });
 
             services.AddOpenIddict()
 
@@ -127,7 +125,13 @@ namespace Mvc.Server
                     //
                     // options.UseJsonWebTokens();
                     // options.AddEphemeralSigningKey();
-                });
+                })
+
+                // Register the OpenIddict validation handler.
+                // Note: the OpenIddict validation handler is only compatible with the
+                // default token format or with reference tokens and cannot be used with
+                // JWT tokens. For JWT tokens, use the Microsoft JWT bearer handler.
+                .AddValidation();
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();

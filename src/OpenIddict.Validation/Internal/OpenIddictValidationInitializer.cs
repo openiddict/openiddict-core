@@ -1,0 +1,83 @@
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+ * See https://github.com/openiddict/openiddict-core for more information concerning
+ * the license and the contributors participating to this project.
+ */
+
+using System;
+using System.ComponentModel;
+using AspNet.Security.OAuth.Validation;
+using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Options;
+using OpenIddict.Core;
+
+namespace OpenIddict.Validation
+{
+    /// <summary>
+    /// Contains the methods required to ensure that the configuration used by
+    /// the OpenIddict validation handler is in a consistent and valid state.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public class OpenIddictValidationInitializer : IPostConfigureOptions<OpenIddictValidationOptions>
+    {
+        private readonly IDataProtectionProvider _dataProtectionProvider;
+        private readonly IOptionsMonitor<OpenIddictCoreOptions> _options;
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="OpenIddictValidationInitializer"/> class.
+        /// </summary>
+        public OpenIddictValidationInitializer(
+            [NotNull] IDataProtectionProvider dataProtectionProvider,
+            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+        {
+            _dataProtectionProvider = dataProtectionProvider;
+            _options = options;
+        }
+
+        /// <summary>
+        /// Populates the default OpenIddict validation options and ensure
+        /// that the configuration is in a consistent and valid state.
+        /// </summary>
+        /// <param name="name">The authentication scheme associated with the handler instance.</param>
+        /// <param name="options">The options instance to initialize.</param>
+        public void PostConfigure([NotNull] string name, [NotNull] OpenIddictValidationOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("The options instance name cannot be null or empty.", nameof(name));
+            }
+
+            if (options.Events == null)
+            {
+                options.Events = new OAuthValidationEvents();
+            }
+
+            if (options.DataProtectionProvider == null)
+            {
+                options.DataProtectionProvider = _dataProtectionProvider;
+            }
+
+            if (options.UseReferenceTokens && options.AccessTokenFormat == null)
+            {
+                var protector = options.DataProtectionProvider.CreateProtector(
+                    "OpenIdConnectServerHandler",
+                    nameof(options.AccessTokenFormat),
+                    nameof(options.UseReferenceTokens), "ASOS");
+
+                options.AccessTokenFormat = new TicketDataFormat(protector);
+            }
+
+            if (options.TokenType == null)
+            {
+                options.TokenType = _options.CurrentValue.DefaultTokenType;
+            }
+        }
+    }
+}

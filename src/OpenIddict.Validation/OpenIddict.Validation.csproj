@@ -7,19 +7,19 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Easy-to-use OpenID Connect server for ASP.NET Core.</Description>
-    <Authors>Kévin Chalet</Authors>
+    <Description>OpenIddict token validation middleware for ASP.NET Core.</Description>
+    <Authors>Kévin Chalet;Chino Chang</Authors>
     <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OpenIddict.Models\OpenIddict.Models.csproj" />
-    <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
-    <ProjectReference Include="..\OpenIddict.Validation\OpenIddict.Validation.csproj" />
+    <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.Validation" Version="$(AspNetContribOpenIdExtensionsVersion)" />
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
