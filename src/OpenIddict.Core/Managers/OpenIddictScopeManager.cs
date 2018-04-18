@@ -13,6 +13,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Core
 {
@@ -23,17 +25,24 @@ namespace OpenIddict.Core
     public class OpenIddictScopeManager<TScope> where TScope : class
     {
         public OpenIddictScopeManager(
-            [NotNull] IOpenIddictScopeStore<TScope> store,
-            [NotNull] ILogger<OpenIddictScopeManager<TScope>> logger)
+            [NotNull] IOpenIddictScopeStoreResolver resolver,
+            [NotNull] ILogger<OpenIddictScopeManager<TScope>> logger,
+            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
         {
+            Store = resolver.Get<TScope>();
             Logger = logger;
-            Store = store;
+            Options = options;
         }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
         /// </summary>
         protected ILogger Logger { get; }
+
+        /// <summary>
+        /// Gets the options associated with the current manager.
+        /// </summary>
+        protected IOptionsMonitor<OpenIddictCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the store associated with the current manager.

@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -14,6 +13,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Core
 {
@@ -24,17 +25,24 @@ namespace OpenIddict.Core
     public class OpenIddictAuthorizationManager<TAuthorization> where TAuthorization : class
     {
         public OpenIddictAuthorizationManager(
-            [NotNull] IOpenIddictAuthorizationStore<TAuthorization> store,
-            [NotNull] ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger)
+            [NotNull] IOpenIddictAuthorizationStoreResolver resolver,
+            [NotNull] ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
+            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
         {
+            Store = resolver.Get<TAuthorization>();
             Logger = logger;
-            Store = store;
+            Options = options;
         }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
         /// </summary>
         protected ILogger Logger { get; }
+
+        /// <summary>
+        /// Gets the options associated with the current manager.
+        /// </summary>
+        protected IOptionsMonitor<OpenIddictCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the store associated with the current manager.

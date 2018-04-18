@@ -6,6 +6,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using Xunit;
@@ -14,38 +15,39 @@ namespace OpenIddict.Tests
 {
     public class OpenIddictExtensionsTests
     {
-        [Theory]
-        [InlineData(typeof(OpenIddictApplicationManager<OpenIddictApplication>))]
-        [InlineData(typeof(OpenIddictAuthorizationManager<OpenIddictAuthorization>))]
-        [InlineData(typeof(OpenIddictScopeManager<OpenIddictScope>))]
-        [InlineData(typeof(OpenIddictTokenManager<OpenIddictToken>))]
-        public void AddOpenIddict_KeyTypeDefaultsToString(Type type)
+        public void UseDefaultModels_KeyTypeDefaultsToString()
         {
             // Arrange
             var services = new ServiceCollection();
+            var builder = services.AddOpenIddict().AddCore();
 
             // Act
-            services.AddOpenIddict();
+            builder.UseDefaultModels();
 
             // Assert
-            Assert.Contains(services, service => service.ImplementationType == type);
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
+            Assert.Equal(typeof(OpenIddictApplication), options.DefaultApplicationType);
+            Assert.Equal(typeof(OpenIddictAuthorization), options.DefaultAuthorizationType);
+            Assert.Equal(typeof(OpenIddictScope), options.DefaultScopeType);
+            Assert.Equal(typeof(OpenIddictToken), options.DefaultTokenType);
         }
 
-        [Theory]
-        [InlineData(typeof(OpenIddictApplicationManager<OpenIddictApplication<Guid>>))]
-        [InlineData(typeof(OpenIddictAuthorizationManager<OpenIddictAuthorization<Guid>>))]
-        [InlineData(typeof(OpenIddictScopeManager<OpenIddictScope<Guid>>))]
-        [InlineData(typeof(OpenIddictTokenManager<OpenIddictToken<Guid>>))]
-        public void AddOpenIddict_KeyTypeCanBeOverriden(Type type)
+        public void UseDefaultModels_KeyTypeCanBeOverriden()
         {
             // Arrange
             var services = new ServiceCollection();
+            var builder = services.AddOpenIddict().AddCore();
 
             // Act
-            services.AddOpenIddict<Guid>();
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
 
-            // Assert
-            Assert.Contains(services, service => service.ImplementationType == type);
+            Assert.Equal(typeof(OpenIddictApplication<Guid>), options.DefaultApplicationType);
+            Assert.Equal(typeof(OpenIddictAuthorization<Guid>), options.DefaultAuthorizationType);
+            Assert.Equal(typeof(OpenIddictScope<Guid>), options.DefaultScopeType);
+            Assert.Equal(typeof(OpenIddictToken<Guid>), options.DefaultTokenType);
         }
     }
 }

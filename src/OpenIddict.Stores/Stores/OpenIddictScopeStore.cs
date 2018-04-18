@@ -14,7 +14,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using OpenIddict.Core;
+using OpenIddict.Abstractions;
 using OpenIddict.Models;
 
 namespace OpenIddict.Stores

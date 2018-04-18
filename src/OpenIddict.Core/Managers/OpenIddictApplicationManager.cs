@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using CryptoHelper;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Core
 {
@@ -23,17 +25,24 @@ namespace OpenIddict.Core
     public class OpenIddictApplicationManager<TApplication> where TApplication : class
     {
         public OpenIddictApplicationManager(
-            [NotNull] IOpenIddictApplicationStore<TApplication> store,
-            [NotNull] ILogger<OpenIddictApplicationManager<TApplication>> logger)
+            [NotNull] IOpenIddictApplicationStoreResolver resolver,
+            [NotNull] ILogger<OpenIddictApplicationManager<TApplication>> logger,
+            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
         {
-            Store = store;
+            Store = resolver.Get<TApplication>();
             Logger = logger;
+            Options = options;
         }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
         /// </summary>
         protected ILogger Logger { get; }
+
+        /// <summary>
+        /// Gets the options associated with the current manager.
+        /// </summary>
+        protected IOptionsMonitor<OpenIddictCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the store associated with the current manager.

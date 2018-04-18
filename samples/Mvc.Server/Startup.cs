@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
+using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
@@ -67,57 +68,66 @@ namespace Mvc.Server
 
                 .AddOAuthValidation();
 
-            // Register the OpenIddict services.
-            services.AddOpenIddict(options =>
-            {
-                // Register the Entity Framework stores.
-                options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
+            services.AddOpenIddict()
 
-                // Register the ASP.NET Core MVC binder used by OpenIddict.
-                // Note: if you don't call this method, you won't be able to
-                // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
-                options.AddMvcBinders();
+                // Register the OpenIddict core services.
+                .AddCore(options =>
+                {
+                    // Configure OpenIddict to use the default models.
+                    options.UseDefaultModels();
 
-                // Enable the authorization, logout, token and userinfo endpoints.
-                options.EnableAuthorizationEndpoint("/connect/authorize")
-                       .EnableLogoutEndpoint("/connect/logout")
-                       .EnableTokenEndpoint("/connect/token")
-                       .EnableUserinfoEndpoint("/api/userinfo");
+                    // Register the Entity Framework stores.
+                    options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
+                })
 
-                // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
-                // can enable the other flows if you need to support implicit or client credentials.
-                options.AllowAuthorizationCodeFlow()
-                       .AllowPasswordFlow()
-                       .AllowRefreshTokenFlow();
+                // Register the OpenIddict server handler.
+                .AddServer(options =>
+                {
+                    // Register the ASP.NET Core MVC binder used by OpenIddict.
+                    // Note: if you don't call this method, you won't be able to
+                    // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
+                    options.AddMvcBinders();
 
-                // Mark the "email", "profile" and "roles" scopes as supported scopes.
-                options.RegisterScopes(OpenIdConnectConstants.Scopes.Email,
-                                       OpenIdConnectConstants.Scopes.Profile,
-                                       OpenIddictConstants.Scopes.Roles);
+                    // Enable the authorization, logout, token and userinfo endpoints.
+                    options.EnableAuthorizationEndpoint("/connect/authorize")
+                           .EnableLogoutEndpoint("/connect/logout")
+                           .EnableTokenEndpoint("/connect/token")
+                           .EnableUserinfoEndpoint("/api/userinfo");
 
-                // Make the "client_id" parameter mandatory when sending a token request.
-                options.RequireClientIdentification();
+                    // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
+                    // can enable the other flows if you need to support implicit or client credentials.
+                    options.AllowAuthorizationCodeFlow()
+                           .AllowPasswordFlow()
+                           .AllowRefreshTokenFlow();
 
-                // When request caching is enabled, authorization and logout requests
-                // are stored in the distributed cache by OpenIddict and the user agent
-                // is redirected to the same page with a single parameter (request_id).
-                // This allows flowing large OpenID Connect requests even when using
-                // an external authentication provider like Google, Facebook or Twitter.
-                options.EnableRequestCaching();
+                    // Mark the "email", "profile" and "roles" scopes as supported scopes.
+                    options.RegisterScopes(OpenIdConnectConstants.Scopes.Email,
+                                           OpenIdConnectConstants.Scopes.Profile,
+                                           OpenIddictConstants.Scopes.Roles);
 
-                // Enable scope validation, so that authorization and token requests
-                // that specify unregistered scopes are automatically rejected.
-                options.EnableScopeValidation();
+                    // Make the "client_id" parameter mandatory when sending a token request.
+                    options.RequireClientIdentification();
 
-                // During development, you can disable the HTTPS requirement.
-                options.DisableHttpsRequirement();
+                    // When request caching is enabled, authorization and logout requests
+                    // are stored in the distributed cache by OpenIddict and the user agent
+                    // is redirected to the same page with a single parameter (request_id).
+                    // This allows flowing large OpenID Connect requests even when using
+                    // an external authentication provider like Google, Facebook or Twitter.
+                    options.EnableRequestCaching();
 
-                // Note: to use JWT access tokens instead of the default
-                // encrypted format, the following lines are required:
-                //
-                // options.UseJsonWebTokens();
-                // options.AddEphemeralSigningKey();
-            });
+                    // Enable scope validation, so that authorization and token requests
+                    // that specify unregistered scopes are automatically rejected.
+                    options.EnableScopeValidation();
+
+                    // During development, you can disable the HTTPS requirement.
+                    options.DisableHttpsRequirement();
+
+                    // Note: to use JWT access tokens instead of the default
+                    // encrypted format, the following lines are required:
+                    //
+                    // options.UseJsonWebTokens();
+                    // options.AddEphemeralSigningKey();
+                });
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();

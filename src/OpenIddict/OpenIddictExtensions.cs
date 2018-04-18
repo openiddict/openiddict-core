@@ -13,69 +13,45 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class OpenIddictExtensions
     {
         /// <summary>
-        /// Registers the default OpenIddict services in the DI container,
-        /// using the default entities and the default entity key type.
+        /// Configures OpenIddict to use the default entities, with the default entity key type (string).
+        /// The default entities are <see cref="OpenIddictApplication"/>, <see cref="OpenIddictAuthorization"/>,
+        /// <see cref="OpenIddictScope"/> and <see cref="OpenIddictToken"/>.
         /// </summary>
-        /// <param name="services">The services collection.</param>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddOpenIddict([NotNull] this IServiceCollection services)
+        /// <param name="builder">The services builder used by OpenIddict to register new services</param>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public static OpenIddictCoreBuilder UseDefaultModels([NotNull] this OpenIddictCoreBuilder builder)
         {
-            return services.AddOpenIddict<OpenIddictApplication,
-                                          OpenIddictAuthorization,
-                                          OpenIddictScope,
-                                          OpenIddictToken>();
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.UseCustomModels<OpenIddictApplication,
+                                           OpenIddictAuthorization,
+                                           OpenIddictScope,
+                                           OpenIddictToken>();
         }
 
         /// <summary>
-        /// Registers the default OpenIddict services in the DI container,
-        /// using the default entities and the specified entity key type.
+        /// Configures OpenIddict to use the default entities, with the specified entity key type.
+        /// The default entities are <see cref="OpenIddictApplication{TKey}"/>, <see cref="OpenIddictAuthorization{TKey}"/>,
+        /// <see cref="OpenIddictScope{TKey}"/> and <see cref="OpenIddictToken{TKey}"/>.
         /// </summary>
         /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-        /// <param name="services">The services collection.</param>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddOpenIddict<TKey>([NotNull] this IServiceCollection services)
+        /// <param name="builder">The services builder used by OpenIddict to register new services</param>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public static OpenIddictCoreBuilder UseDefaultModels<TKey>([NotNull] this OpenIddictCoreBuilder builder)
             where TKey : IEquatable<TKey>
         {
-            return services.AddOpenIddict<OpenIddictApplication<TKey>,
-                                          OpenIddictAuthorization<TKey>,
-                                          OpenIddictScope<TKey>,
-                                          OpenIddictToken<TKey>>();
-        }
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
 
-        /// <summary>
-        /// Registers the default OpenIddict services in the DI container,
-        /// using the default entities and the default entity key type.
-        /// </summary>
-        /// <param name="services">The services collection.</param>
-        /// <param name="configuration">The configuration delegate used to register new services.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddOpenIddict(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<OpenIddictBuilder> configuration)
-        {
-            return services.AddOpenIddict<OpenIddictApplication,
-                                          OpenIddictAuthorization,
-                                          OpenIddictScope,
-                                          OpenIddictToken>(configuration);
-        }
-
-        /// <summary>
-        /// Registers the default OpenIddict services in the DI container,
-        /// using the default entities and the specified entity key type.
-        /// </summary>
-        /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-        /// <param name="services">The services collection.</param>
-        /// <param name="configuration">The configuration delegate used to register new services.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddOpenIddict<TKey>(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<OpenIddictBuilder> configuration)
-            where TKey : IEquatable<TKey>
-        {
-            return services.AddOpenIddict<OpenIddictApplication<TKey>,
-                                          OpenIddictAuthorization<TKey>,
-                                          OpenIddictScope<TKey>,
-                                          OpenIddictToken<TKey>>(configuration);
+            return builder.UseCustomModels<OpenIddictApplication<TKey>,
+                                           OpenIddictAuthorization<TKey>,
+                                           OpenIddictScope<TKey>,
+                                           OpenIddictToken<TKey>>();
         }
     }
 }
