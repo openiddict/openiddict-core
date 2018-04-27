@@ -20,7 +20,7 @@ namespace OpenIddict.Mvc.Tests
             var services = new ServiceCollection();
             services.AddOptions();
 
-            var builder = new OpenIddictBuilder(services);
+            var builder = services.AddOpenIddict().AddServer();
 
             // Act
             builder.AddMvcBinders();

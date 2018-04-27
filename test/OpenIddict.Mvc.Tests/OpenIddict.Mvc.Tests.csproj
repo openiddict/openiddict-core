@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenIddict\OpenIddict.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Mvc\OpenIddict.Mvc.csproj" />
   </ItemGroup>
 

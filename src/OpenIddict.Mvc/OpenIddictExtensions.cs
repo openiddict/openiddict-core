@@ -17,8 +17,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Registers the ASP.NET Core MVC model binders used by OpenIddict.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddMvcBinders([NotNull] this OpenIddictBuilder builder)
+        /// <remarks>This extension can be safely called multiple times.</remarks>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public static OpenIddictServerBuilder AddMvcBinders([NotNull] this OpenIddictServerBuilder builder)
         {
             if (builder == null)
             {

@@ -5,15 +5,12 @@
  */
 
 using System;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Annotations;
-using System.Diagnostics;
-using System.Reflection;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using OpenIddict.Core;
 using OpenIddict.EntityFramework;
 using OpenIddict.Models;
 
@@ -27,8 +24,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// the entities MUST be derived from the models contained in the OpenIddict.Models package.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
-        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
-        public static OpenIddictBuilder AddEntityFrameworkStores<TContext>([NotNull] this OpenIddictBuilder builder)
+        /// <remarks>This extension can be safely called multiple times.</remarks>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public static OpenIddictCoreBuilder AddEntityFrameworkStores<TContext>([NotNull] this OpenIddictCoreBuilder builder)
             where TContext : DbContext
         {
             if (builder == null)
@@ -36,85 +34,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            Debug.Assert(builder.ApplicationType != null &&
-                         builder.AuthorizationType != null &&
-                         builder.ScopeType != null &&
-                         builder.TokenType != null, "The entity types exposed by OpenIddictBuilder shouldn't be null.");
+            builder.Services.TryAddScoped(typeof(OpenIddictApplicationStore<,,,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationStore<,,,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictScopeStore<,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictTokenStore<,,,,>));
 
-            var application = FindGenericBaseType(builder.ApplicationType, typeof(OpenIddictApplication<,,>));
-            if (application == null)
-            {
-                throw new InvalidOperationException("The Entity Framework stores can only be used " +
-                                                    "with the built-in OpenIddictApplication entity.");
-            }
-
-            var authorization = FindGenericBaseType(builder.AuthorizationType, typeof(OpenIddictAuthorization<,,>));
-            if (authorization == null)
-            {
-                throw new InvalidOperationException("The Entity Framework stores can only be used " +
-                                                    "with the built-in OpenIddictAuthorization entity.");
-            }
-
-            var scope = FindGenericBaseType(builder.ScopeType, typeof(OpenIddictScope<>));
-            if (scope == null)
-            {
-                throw new InvalidOperationException("The Entity Framework stores can only be used " +
-                                                    "with the built-in OpenIddictScope entity.");
-            }
-
-            var token = FindGenericBaseType(builder.TokenType, typeof(OpenIddictToken<,,>));
-            if (token == null)
-            {
-                throw new InvalidOperationException("The Entity Framework stores can only be used " +
-                                                    "with the built-in OpenIddictToken entity.");
-            }
-
-            var converter = TypeDescriptor.GetConverter(application.GenericTypeArguments[0]);
-            if (converter == null || !converter.CanConvertFrom(typeof(string)) ||
-                                     !converter.CanConvertTo(typeof(string)))
-            {
-                throw new InvalidOperationException("The specified entity key type is not supported.");
-            }
-
-            // Register the application store in the DI container.
-            builder.Services.TryAddScoped(
-                typeof(IOpenIddictApplicationStore<>).MakeGenericType(builder.ApplicationType),
-                typeof(OpenIddictApplicationStore<,,,,>).MakeGenericType(
-                    /* TApplication: */ builder.ApplicationType,
-                    /* TAuthorization: */ builder.AuthorizationType,
-                    /* TToken: */ builder.TokenType,
-                    /* TContext: */ typeof(TContext),
-                    /* TKey: */ application.GenericTypeArguments[0]));
-
-            // Register the authorization store in the DI container.
-            builder.Services.TryAddScoped(
-                typeof(IOpenIddictAuthorizationStore<>).MakeGenericType(builder.AuthorizationType),
-                typeof(OpenIddictAuthorizationStore<,,,,>).MakeGenericType(
-                    /* TAuthorization: */ builder.AuthorizationType,
-                    /* TApplication: */ builder.ApplicationType,
-                    /* TToken: */ builder.TokenType,
-                    /* TContext: */ typeof(TContext),
-                    /* TKey: */ authorization.GenericTypeArguments[0]));
-
-            // Register the scope store in the DI container.
-            builder.Services.TryAddScoped(
-                typeof(IOpenIddictScopeStore<>).MakeGenericType(builder.ScopeType),
-                typeof(OpenIddictScopeStore<,,>).MakeGenericType(
-                    /* TScope: */ builder.ScopeType,
-                    /* TContext: */ typeof(TContext),
-                    /* TKey: */ scope.GenericTypeArguments[0]));
-
-            // Register the token store in the DI container.
-            builder.Services.TryAddScoped(
-                typeof(IOpenIddictTokenStore<>).MakeGenericType(builder.TokenType),
-                typeof(OpenIddictTokenStore<,,,,>).MakeGenericType(
-                    /* TToken: */ builder.TokenType,
-                    /* TApplication: */ builder.ApplicationType,
-                    /* TAuthorization: */ builder.AuthorizationType,
-                    /* TContext: */ typeof(TContext),
-                    /* TKey: */ token.GenericTypeArguments[0]));
-
-            return builder;
+            return builder.ReplaceApplicationStoreResolver<OpenIddictApplicationStoreResolver<TContext>>()
+                          .ReplaceAuthorizationStoreResolver<OpenIddictAuthorizationStoreResolver<TContext>>()
+                          .ReplaceScopeStoreResolver<OpenIddictScopeStoreResolver<TContext>>()
+                          .ReplaceTokenStoreResolver<OpenIddictTokenStoreResolver<TContext>>();
         }
 
         /// <summary>
@@ -124,12 +52,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
         public static DbModelBuilder UseOpenIddict([NotNull] this DbModelBuilder builder)
-        {
-            return builder.UseOpenIddict<OpenIddictApplication,
-                                         OpenIddictAuthorization,
-                                         OpenIddictScope,
-                                         OpenIddictToken, string>();
-        }
+            => builder.UseOpenIddict<OpenIddictApplication,
+                                     OpenIddictAuthorization,
+                                     OpenIddictScope,
+                                     OpenIddictToken, string>();
 
         /// <summary>
         /// Registers the OpenIddict entity sets in the Entity Framework context
@@ -154,28 +80,36 @@ namespace Microsoft.Extensions.DependencyInjection
             // Note: unlike Entity Framework Core 1.x/2.x, Entity Framework 6.x
             // always throws an exception when using generic types as entity types.
             // To ensure a better exception is thrown, a manual check is made here.
-            if (typeof(TApplication).GetTypeInfo().IsGenericType)
+            if (typeof(TApplication).IsGenericType)
             {
-                throw new InvalidOperationException("The application entity cannot be a generic type. " +
-                                                    "Consider creating a non-generic derived class.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The application entity cannot be a generic type.")
+                    .Append("Consider creating a non-generic derived class.")
+                    .ToString());
             }
 
-            if (typeof(TAuthorization).GetTypeInfo().IsGenericType)
+            if (typeof(TAuthorization).IsGenericType)
             {
-                throw new InvalidOperationException("The authorization entity cannot be a generic type. " +
-                                                    "Consider creating a non-generic derived class.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The authorization entity cannot be a generic type.")
+                    .Append("Consider creating a non-generic derived class.")
+                    .ToString());
             }
 
-            if (typeof(TScope).GetTypeInfo().IsGenericType)
+            if (typeof(TScope).IsGenericType)
             {
-                throw new InvalidOperationException("The scope entity cannot be a generic type. " +
-                                                    "Consider creating a non-generic derived class.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The scope entity cannot be a generic type.")
+                    .Append("Consider creating a non-generic derived class.")
+                    .ToString());
             }
 
-            if (typeof(TToken).GetTypeInfo().IsGenericType)
+            if (typeof(TToken).IsGenericType)
             {
-                throw new InvalidOperationException("The scope entity cannot be a generic type. " +
-                                                    "Consider creating a non-generic derived class.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The token entity cannot be a generic type.")
+                    .Append("Consider creating a non-generic derived class.")
+                    .ToString());
             }
 
             // Warning: optional foreign keys MUST NOT be added as CLR properties because
@@ -284,29 +218,6 @@ namespace Microsoft.Extensions.DependencyInjection
                    .ToTable("OpenIddictTokens");
 
             return builder;
-        }
-
-        private static TypeInfo FindGenericBaseType(Type type, Type definition)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            if (definition == null)
-            {
-                throw new ArgumentNullException(nameof(definition));
-            }
-
-            for (var candidate = type.GetTypeInfo(); candidate != null; candidate = candidate.BaseType?.GetTypeInfo())
-            {
-                if (candidate.IsGenericType && candidate.GetGenericTypeDefinition() == definition)
-                {
-                    return candidate;
-                }
-            }
-
-            return null;
         }
     }
 }

@@ -13,12 +13,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
+    <ProjectReference Include="..\OpenIddict.Abstractions\OpenIddict.Abstractions.csproj" />
     <ProjectReference Include="..\OpenIddict.Models\OpenIddict.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.ComponentModel.TypeConverter" Version="$(TypeConverterVersion)" />
+    <PackageReference Include="System.Linq.Queryable" Version="$(QueryableVersion)" />
   </ItemGroup>
 
 </Project>

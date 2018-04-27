@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
+using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using OpenIddict.Stores;

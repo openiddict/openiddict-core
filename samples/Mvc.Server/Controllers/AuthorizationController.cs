@@ -20,6 +20,7 @@ using Mvc.Server.Helpers;
 using Mvc.Server.Models;
 using Mvc.Server.ViewModels.Authorization;
 using Mvc.Server.ViewModels.Shared;
+using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.Models;
 
@@ -67,7 +68,7 @@ namespace Mvc.Server
             // the original authorization request from the cache.
             return View(new AuthorizeViewModel
             {
-                ApplicationName = application.DisplayName,
+                ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
                 RequestId = request.RequestId,
                 Scope = request.Scope
             });
