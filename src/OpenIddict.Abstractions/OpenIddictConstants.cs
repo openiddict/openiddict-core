@@ -79,6 +79,7 @@ namespace OpenIddict.Abstractions
             public const string AuthorizationId = ".authorization_id";
             public const string ReferenceToken = ".reference_token";
             public const string Token = ".token";
+            public const string TokenId = ".token_id";
         }
 
         public static class PropertyTypes

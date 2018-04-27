@@ -65,7 +65,7 @@ namespace Mvc.Server
                     options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
                 })
 
-                // Register the OpenIddict server handler.
+                // Register the OpenIddict server services.
                 .AddServer(options =>
                 {
                     // Register the ASP.NET Core MVC binder used by OpenIddict.
@@ -112,7 +112,10 @@ namespace Mvc.Server
                     //
                     // options.UseJsonWebTokens();
                     // options.AddEphemeralSigningKey();
-                });
+                })
+
+                // Register the OpenIddict validation services.
+                .AddValidation();
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
@@ -126,9 +129,10 @@ namespace Mvc.Server
 
             app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"), branch =>
             {
-                // Add a middleware used to validate access
-                // tokens and protect the API endpoints.
-                branch.UseOAuthValidation();
+                // Note: the OpenIddict validation handler is only compatible with the
+                // default token format or with reference tokens and cannot be used with
+                // JWT tokens. For JWT tokens, use the Microsoft JWT bearer handler.
+                branch.UseOpenIddictValidation();
 
                 // If you prefer using JWT, don't forget to disable the automatic
                 // JWT -> WS-Federation claims mapping used by the JWT middleware:
