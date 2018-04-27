@@ -15,6 +15,7 @@ namespace OpenIddict.Tests
 {
     public class OpenIddictExtensionsTests
     {
+        [Fact]
         public void UseDefaultModels_KeyTypeDefaultsToString()
         {
             // Arrange
@@ -34,6 +35,7 @@ namespace OpenIddict.Tests
             Assert.Equal(typeof(OpenIddictToken), options.DefaultTokenType);
         }
 
+        [Fact]
         public void UseDefaultModels_KeyTypeCanBeOverriden()
         {
             // Arrange
@@ -41,6 +43,9 @@ namespace OpenIddict.Tests
             var builder = services.AddOpenIddict().AddCore();
 
             // Act
+            builder.UseDefaultModels<Guid>();
+
+            // Assert
             var provider = services.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
 
