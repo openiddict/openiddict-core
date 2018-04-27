@@ -28,7 +28,7 @@ namespace OpenIddict.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(OpenIddictApplication), options.DefaultApplicationType);
             Assert.Equal(typeof(OpenIddictAuthorization), options.DefaultAuthorizationType);
@@ -48,7 +48,7 @@ namespace OpenIddict.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(OpenIddictApplication<Guid>), options.DefaultApplicationType);
             Assert.Equal(typeof(OpenIddictAuthorization<Guid>), options.DefaultAuthorizationType);
