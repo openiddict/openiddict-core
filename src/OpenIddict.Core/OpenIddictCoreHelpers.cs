@@ -34,31 +34,34 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The second parameter must be a generic type definition.", nameof(definition));
             }
 
-            for (var candidate = type.GetTypeInfo(); candidate != null; candidate = candidate.BaseType?.GetTypeInfo())
+            if (definition.GetTypeInfo().IsInterface)
             {
-                if (!candidate.IsGenericType && !candidate.AsType().IsConstructedGenericType)
+                foreach (var contract in type.GetInterfaces())
                 {
-                    continue;
-                }
-
-                if (candidate.GetGenericTypeDefinition() == definition)
-                {
-                    return candidate.AsType();
-                }
-
-                if (definition.GetTypeInfo().IsInterface)
-                {
-                    foreach (var contract in candidate.AsType().GetInterfaces().Select(contract => contract.GetTypeInfo()))
+                    if (!contract.GetTypeInfo().IsGenericType && !contract.IsConstructedGenericType)
                     {
-                        if (!contract.IsGenericType && !contract.AsType().IsConstructedGenericType)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        if (contract.GetGenericTypeDefinition() == definition)
-                        {
-                            return contract.AsType();
-                        }
+                    if (contract.GetGenericTypeDefinition() == definition)
+                    {
+                        return contract;
+                    }
+                }
+            }
+
+            else
+            {
+                for (var candidate = type; candidate != null; candidate = candidate.GetTypeInfo().BaseType)
+                {
+                    if (!candidate.GetTypeInfo().IsGenericType && !candidate.IsConstructedGenericType)
+                    {
+                        continue;
+                    }
+
+                    if (candidate.GetGenericTypeDefinition() == definition)
+                    {
+                        return candidate;
                     }
                 }
             }
