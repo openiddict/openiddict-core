@@ -32,31 +32,34 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The second parameter must be a generic type definition.", nameof(definition));
             }
 
-            for (var candidate = type; candidate != null; candidate = candidate.BaseType)
+            if (definition.IsInterface)
             {
-                if (!candidate.IsGenericType && !candidate.IsConstructedGenericType)
+                foreach (var contract in type.GetInterfaces())
                 {
-                    continue;
-                }
-
-                if (candidate.GetGenericTypeDefinition() == definition)
-                {
-                    return candidate;
-                }
-
-                if (definition.IsInterface)
-                {
-                    foreach (var contract in candidate.GetInterfaces())
+                    if (!contract.IsGenericType && !contract.IsConstructedGenericType)
                     {
-                        if (!contract.IsGenericType && !contract.IsConstructedGenericType)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        if (contract.GetGenericTypeDefinition() == definition)
-                        {
-                            return contract;
-                        }
+                    if (contract.GetGenericTypeDefinition() == definition)
+                    {
+                        return contract;
+                    }
+                }
+            }
+
+            else
+            {
+                for (var candidate = type; candidate != null; candidate = candidate.BaseType)
+                {
+                    if (!candidate.IsGenericType && !candidate.IsConstructedGenericType)
+                    {
+                        continue;
+                    }
+
+                    if (candidate.GetGenericTypeDefinition() == definition)
+                    {
+                        return candidate;
                     }
                 }
             }
