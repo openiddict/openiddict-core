@@ -694,6 +694,73 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Populates the token using the specified descriptor.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PopulateAsync([NotNull] TToken token,
+            [NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            await Store.SetApplicationIdAsync(token, descriptor.ApplicationId, cancellationToken);
+            await Store.SetAuthorizationIdAsync(token, descriptor.AuthorizationId, cancellationToken);
+            await Store.SetCreationDateAsync(token, descriptor.CreationDate, cancellationToken);
+            await Store.SetExpirationDateAsync(token, descriptor.ExpirationDate, cancellationToken);
+            await Store.SetPayloadAsync(token, descriptor.Payload, cancellationToken);
+            await Store.SetReferenceIdAsync(token, descriptor.ReferenceId, cancellationToken);
+            await Store.SetStatusAsync(token, descriptor.Status, cancellationToken);
+            await Store.SetSubjectAsync(token, descriptor.Subject, cancellationToken);
+            await Store.SetTokenTypeAsync(token, descriptor.Type, cancellationToken);
+        }
+
+        /// <summary>
+        /// Populates the specified descriptor using the properties exposed by the token.
+        /// </summary>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="token">The token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PopulateAsync(
+            [NotNull] OpenIddictTokenDescriptor descriptor,
+            [NotNull] TToken token, CancellationToken cancellationToken = default)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            descriptor.ApplicationId = await Store.GetApplicationIdAsync(token, cancellationToken);
+            descriptor.AuthorizationId = await Store.GetAuthorizationIdAsync(token, cancellationToken);
+            descriptor.CreationDate = await Store.GetCreationDateAsync(token, cancellationToken);
+            descriptor.ExpirationDate = await Store.GetExpirationDateAsync(token, cancellationToken);
+            descriptor.Payload = await Store.GetPayloadAsync(token, cancellationToken);
+            descriptor.ReferenceId = await Store.GetReferenceIdAsync(token, cancellationToken);
+            descriptor.Status = await Store.GetStatusAsync(token, cancellationToken);
+            descriptor.Subject = await Store.GetSubjectAsync(token, cancellationToken);
+            descriptor.Type = await Store.GetTokenTypeAsync(token, cancellationToken);
+        }
+
+        /// <summary>
         /// Removes the tokens that are marked as expired or invalid.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -815,33 +882,24 @@ namespace OpenIddict.Core
         /// Updates an existing token.
         /// </summary>
         /// <param name="token">The token to update.</param>
-        /// <param name="operation">The delegate used to update the token based on the given descriptor.</param>
+        /// <param name="descriptor">The descriptor used to update the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual async Task UpdateAsync([NotNull] TToken token,
-            [NotNull] Func<OpenIddictTokenDescriptor, Task> operation, CancellationToken cancellationToken = default)
+            [NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (operation == null)
+            if (token == null)
             {
-                throw new ArgumentNullException(nameof(operation));
+                throw new ArgumentNullException(nameof(token));
             }
 
-            var descriptor = new OpenIddictTokenDescriptor
+            if (descriptor == null)
             {
-                ApplicationId = await Store.GetApplicationIdAsync(token, cancellationToken),
-                AuthorizationId = await Store.GetAuthorizationIdAsync(token, cancellationToken),
-                CreationDate = await Store.GetCreationDateAsync(token, cancellationToken),
-                ExpirationDate = await Store.GetExpirationDateAsync(token, cancellationToken),
-                Payload = await Store.GetPayloadAsync(token, cancellationToken),
-                ReferenceId = await Store.GetReferenceIdAsync(token, cancellationToken),
-                Status = await Store.GetStatusAsync(token, cancellationToken),
-                Subject = await Store.GetSubjectAsync(token, cancellationToken),
-                Type = await Store.GetTokenTypeAsync(token, cancellationToken)
-            };
+                throw new ArgumentNullException(nameof(descriptor));
+            }
 
-            await operation(descriptor);
             await PopulateAsync(token, descriptor, cancellationToken);
             await UpdateAsync(token, cancellationToken);
         }
@@ -909,39 +967,6 @@ namespace OpenIddict.Core
             return builder.Count == builder.Capacity ?
                 builder.MoveToImmutable() :
                 builder.ToImmutable();
-        }
-
-        /// <summary>
-        /// Populates the token using the specified descriptor.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="descriptor">The descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task PopulateAsync([NotNull] TToken token,
-            [NotNull] OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken = default)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            await Store.SetApplicationIdAsync(token, descriptor.ApplicationId, cancellationToken);
-            await Store.SetAuthorizationIdAsync(token, descriptor.AuthorizationId, cancellationToken);
-            await Store.SetCreationDateAsync(token, descriptor.CreationDate, cancellationToken);
-            await Store.SetExpirationDateAsync(token, descriptor.ExpirationDate, cancellationToken);
-            await Store.SetPayloadAsync(token, descriptor.Payload, cancellationToken);
-            await Store.SetReferenceIdAsync(token, descriptor.ReferenceId, cancellationToken);
-            await Store.SetStatusAsync(token, descriptor.Status, cancellationToken);
-            await Store.SetSubjectAsync(token, descriptor.Subject, cancellationToken);
-            await Store.SetTokenTypeAsync(token, descriptor.Type, cancellationToken);
         }
     }
 }

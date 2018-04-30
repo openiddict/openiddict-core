@@ -804,6 +804,66 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Populates the authorization using the specified descriptor.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PopulateAsync([NotNull] TAuthorization authorization,
+            [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            await Store.SetApplicationIdAsync(authorization, descriptor.ApplicationId, cancellationToken);
+            await Store.SetScopesAsync(authorization, ImmutableArray.CreateRange(descriptor.Scopes), cancellationToken);
+            await Store.SetStatusAsync(authorization, descriptor.Status, cancellationToken);
+            await Store.SetSubjectAsync(authorization, descriptor.Subject, cancellationToken);
+            await Store.SetTypeAsync(authorization, descriptor.Type, cancellationToken);
+        }
+
+        /// <summary>
+        /// Populates the specified descriptor using the properties exposed by the authorization.
+        /// </summary>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PopulateAsync(
+            [NotNull] OpenIddictAuthorizationDescriptor descriptor,
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            descriptor.ApplicationId = await Store.GetApplicationIdAsync(authorization, cancellationToken);
+            descriptor.Scopes.Clear();
+            descriptor.Scopes.UnionWith(await Store.GetScopesAsync(authorization, cancellationToken));
+            descriptor.Status = await Store.GetStatusAsync(authorization, cancellationToken);
+            descriptor.Subject = await Store.GetSubjectAsync(authorization, cancellationToken);
+            descriptor.Type = await Store.GetTypeAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
         /// Removes the ad-hoc authorizations that are marked as invalid or have no valid token attached.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -890,33 +950,24 @@ namespace OpenIddict.Core
         /// Updates an existing authorization.
         /// </summary>
         /// <param name="authorization">The authorization to update.</param>
-        /// <param name="operation">The delegate used to update the authorization based on the given descriptor.</param>
+        /// <param name="descriptor">The descriptor used to update the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual async Task UpdateAsync([NotNull] TAuthorization authorization,
-            [NotNull] Func<OpenIddictAuthorizationDescriptor, Task> operation, CancellationToken cancellationToken = default)
+            [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (operation == null)
+            if (authorization == null)
             {
-                throw new ArgumentNullException(nameof(operation));
+                throw new ArgumentNullException(nameof(authorization));
             }
 
-            var descriptor = new OpenIddictAuthorizationDescriptor
+            if (descriptor == null)
             {
-                ApplicationId = await Store.GetApplicationIdAsync(authorization, cancellationToken),
-                Status = await Store.GetStatusAsync(authorization, cancellationToken),
-                Subject = await Store.GetSubjectAsync(authorization, cancellationToken),
-                Type = await Store.GetTypeAsync(authorization, cancellationToken)
-            };
-
-            foreach (var scope in await Store.GetScopesAsync(authorization, cancellationToken))
-            {
-                descriptor.Scopes.Add(scope);
+                throw new ArgumentNullException(nameof(descriptor));
             }
 
-            await operation(descriptor);
             await PopulateAsync(authorization, descriptor, cancellationToken);
             await UpdateAsync(authorization, cancellationToken);
         }
@@ -983,35 +1034,6 @@ namespace OpenIddict.Core
             return builder.Count == builder.Capacity ?
                 builder.MoveToImmutable() :
                 builder.ToImmutable();
-        }
-
-        /// <summary>
-        /// Populates the authorization using the specified descriptor.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="descriptor">The descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task PopulateAsync([NotNull] TAuthorization authorization,
-            [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
-        {
-            if (authorization == null)
-            {
-                throw new ArgumentNullException(nameof(authorization));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            await Store.SetApplicationIdAsync(authorization, descriptor.ApplicationId, cancellationToken);
-            await Store.SetScopesAsync(authorization, ImmutableArray.CreateRange(descriptor.Scopes), cancellationToken);
-            await Store.SetStatusAsync(authorization, descriptor.Status, cancellationToken);
-            await Store.SetSubjectAsync(authorization, descriptor.Subject, cancellationToken);
-            await Store.SetTypeAsync(authorization, descriptor.Type, cancellationToken);
         }
     }
 }
