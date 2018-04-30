@@ -469,6 +469,64 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Populates the scope using the specified descriptor.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PopulateAsync([NotNull] TScope scope,
+            [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            await Store.SetDescriptionAsync(scope, descriptor.Description, cancellationToken);
+            await Store.SetDisplayNameAsync(scope, descriptor.DisplayName, cancellationToken);
+            await Store.SetNameAsync(scope, descriptor.Name, cancellationToken);
+            await Store.SetResourcesAsync(scope, descriptor.Resources.ToImmutableArray(), cancellationToken);
+        }
+
+        /// <summary>
+        /// Populates the specified descriptor using the properties exposed by the scope.
+        /// </summary>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PopulateAsync(
+            [NotNull] OpenIddictScopeDescriptor descriptor,
+            [NotNull] TScope scope, CancellationToken cancellationToken = default)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            descriptor.Description = await Store.GetDescriptionAsync(scope, cancellationToken);
+            descriptor.DisplayName = await Store.GetDisplayNameAsync(scope, cancellationToken);
+            descriptor.Name = await Store.GetNameAsync(scope, cancellationToken);
+            descriptor.Resources.Clear();
+            descriptor.Resources.UnionWith(await Store.GetResourcesAsync(scope, cancellationToken));
+        }
+
+        /// <summary>
         /// Updates an existing scope.
         /// </summary>
         /// <param name="scope">The scope to update.</param>
@@ -496,29 +554,24 @@ namespace OpenIddict.Core
         /// Updates an existing scope.
         /// </summary>
         /// <param name="scope">The scope to update.</param>
-        /// <param name="operation">The delegate used to update the scope based on the given descriptor.</param>
+        /// <param name="descriptor">The descriptor used to update the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual async Task UpdateAsync([NotNull] TScope scope,
-            [NotNull] Func<OpenIddictScopeDescriptor, Task> operation, CancellationToken cancellationToken = default)
+            [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (operation == null)
+            if (scope == null)
             {
-                throw new ArgumentNullException(nameof(operation));
+                throw new ArgumentNullException(nameof(scope));
             }
 
-            var descriptor = new OpenIddictScopeDescriptor
+            if (descriptor == null)
             {
-                Description = await Store.GetDescriptionAsync(scope, cancellationToken),
-                DisplayName = await Store.GetDisplayNameAsync(scope, cancellationToken),
-                Name = await Store.GetNameAsync(scope, cancellationToken)
-            };
+                throw new ArgumentNullException(nameof(descriptor));
+            }
 
-            descriptor.Resources.UnionWith(await Store.GetResourcesAsync(scope, cancellationToken));
-
-            await operation(descriptor);
             await PopulateAsync(scope, descriptor, cancellationToken);
             await UpdateAsync(scope, cancellationToken);
         }
@@ -573,34 +626,6 @@ namespace OpenIddict.Core
             return builder.Count == builder.Capacity ?
                 builder.MoveToImmutable() :
                 builder.ToImmutable();
-        }
-
-        /// <summary>
-        /// Populates the scope using the specified descriptor.
-        /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <param name="descriptor">The descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task PopulateAsync([NotNull] TScope scope,
-            [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default)
-        {
-            if (scope == null)
-            {
-                throw new ArgumentNullException(nameof(scope));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            await Store.SetDescriptionAsync(scope, descriptor.Description, cancellationToken);
-            await Store.SetDisplayNameAsync(scope, descriptor.DisplayName, cancellationToken);
-            await Store.SetNameAsync(scope, descriptor.Name, cancellationToken);
-            await Store.SetResourcesAsync(scope, descriptor.Resources.ToImmutableArray(), cancellationToken);
         }
     }
 }

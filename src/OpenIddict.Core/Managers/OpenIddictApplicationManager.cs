@@ -812,6 +812,108 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Populates the application using the specified descriptor.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PopulateAsync([NotNull] TApplication application,
+            [NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            await Store.SetClientIdAsync(application, descriptor.ClientId, cancellationToken);
+            await Store.SetClientSecretAsync(application, descriptor.ClientSecret, cancellationToken);
+            await Store.SetClientTypeAsync(application, descriptor.Type, cancellationToken);
+            await Store.SetConsentTypeAsync(application, descriptor.ConsentType, cancellationToken);
+            await Store.SetDisplayNameAsync(application, descriptor.DisplayName, cancellationToken);
+            await Store.SetPermissionsAsync(application, ImmutableArray.CreateRange(descriptor.Permissions), cancellationToken);
+            await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
+                descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
+            await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
+                descriptor.RedirectUris.Select(address => address.OriginalString)), cancellationToken);
+        }
+
+        /// <summary>
+        /// Populates the specified descriptor using the properties exposed by the application.
+        /// </summary>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual async Task PopulateAsync(
+            [NotNull] OpenIddictApplicationDescriptor descriptor,
+            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            descriptor.ClientId = await Store.GetClientIdAsync(application, cancellationToken);
+            descriptor.ClientSecret = await Store.GetClientSecretAsync(application, cancellationToken);
+            descriptor.ConsentType = await Store.GetConsentTypeAsync(application, cancellationToken);
+            descriptor.DisplayName = await Store.GetDisplayNameAsync(application, cancellationToken);
+            descriptor.Type = await Store.GetClientTypeAsync(application, cancellationToken);
+            descriptor.Permissions.Clear();
+            descriptor.Permissions.UnionWith(await Store.GetPermissionsAsync(application, cancellationToken));
+            descriptor.PostLogoutRedirectUris.Clear();
+            descriptor.RedirectUris.Clear();
+
+            foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+            {
+                // Ensure the address is not null or empty.
+                if (string.IsNullOrEmpty(address))
+                {
+                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                }
+
+                // Ensure the address is a valid absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                {
+                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                }
+
+                descriptor.PostLogoutRedirectUris.Add(uri);
+            }
+
+            foreach (var address in await Store.GetRedirectUrisAsync(application, cancellationToken))
+            {
+                // Ensure the address is not null or empty.
+                if (string.IsNullOrEmpty(address))
+                {
+                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                }
+
+                // Ensure the address is a valid absolute URL.
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+                {
+                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                }
+
+                descriptor.RedirectUris.Add(uri);
+            }
+        }
+
+        /// <summary>
         /// Updates an existing application.
         /// </summary>
         /// <param name="application">The application to update.</param>
@@ -878,75 +980,33 @@ namespace OpenIddict.Core
         /// Updates an existing application.
         /// </summary>
         /// <param name="application">The application to update.</param>
-        /// <param name="operation">The delegate used to update the application based on the given descriptor.</param>
+        /// <param name="descriptor">The descriptor used to update the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual async Task UpdateAsync([NotNull] TApplication application,
-            [NotNull] Func<OpenIddictApplicationDescriptor, Task> operation, CancellationToken cancellationToken = default)
+            [NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
-            if (operation == null)
+            if (application == null)
             {
-                throw new ArgumentNullException(nameof(operation));
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
             }
 
             // Store the original client secret for later comparison.
-            var secret = await Store.GetClientSecretAsync(application, cancellationToken);
-
-            var descriptor = new OpenIddictApplicationDescriptor
-            {
-                ClientId = await Store.GetClientIdAsync(application, cancellationToken),
-                ClientSecret = secret,
-                ConsentType = await Store.GetConsentTypeAsync(application, cancellationToken),
-                DisplayName = await Store.GetDisplayNameAsync(application, cancellationToken),
-                Type = await Store.GetClientTypeAsync(application, cancellationToken)
-            };
-
-            descriptor.Permissions.UnionWith(await Store.GetPermissionsAsync(application, cancellationToken));
-
-            foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
-            {
-                // Ensure the address is not null or empty.
-                if (string.IsNullOrEmpty(address))
-                {
-                    throw new ArgumentException("Callback URLs cannot be null or empty.");
-                }
-
-                // Ensure the address is a valid absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
-                {
-                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
-                }
-
-                descriptor.PostLogoutRedirectUris.Add(uri);
-            }
-
-            foreach (var address in await Store.GetRedirectUrisAsync(application, cancellationToken))
-            {
-                // Ensure the address is not null or empty.
-                if (string.IsNullOrEmpty(address))
-                {
-                    throw new ArgumentException("Callback URLs cannot be null or empty.");
-                }
-
-                // Ensure the address is a valid absolute URL.
-                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
-                {
-                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
-                }
-
-                descriptor.RedirectUris.Add(uri);
-            }
-
-            await operation(descriptor);
+            var comparand = await Store.GetClientSecretAsync(application, cancellationToken);
             await PopulateAsync(application, descriptor, cancellationToken);
 
             // If the client secret was updated, re-obfuscate it before persisting the changes.
-            var comparand = await Store.GetClientSecretAsync(application, cancellationToken);
+            var secret = await Store.GetClientSecretAsync(application, cancellationToken);
             if (!string.Equals(secret, comparand, StringComparison.Ordinal))
             {
-                await UpdateAsync(application, comparand, cancellationToken);
+                await UpdateAsync(application, secret, cancellationToken);
 
                 return;
             }
@@ -1231,40 +1291,6 @@ namespace OpenIddict.Core
                               "for {Client}.", address, await GetClientIdAsync(application, cancellationToken));
 
             return false;
-        }
-
-        /// <summary>
-        /// Populates the application using the specified descriptor.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="descriptor">The descriptor.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        protected virtual async Task PopulateAsync([NotNull] TApplication application,
-            [NotNull] OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken = default)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            await Store.SetClientIdAsync(application, descriptor.ClientId, cancellationToken);
-            await Store.SetClientSecretAsync(application, descriptor.ClientSecret, cancellationToken);
-            await Store.SetClientTypeAsync(application, descriptor.Type, cancellationToken);
-            await Store.SetConsentTypeAsync(application, descriptor.ConsentType, cancellationToken);
-            await Store.SetDisplayNameAsync(application, descriptor.DisplayName, cancellationToken);
-            await Store.SetPermissionsAsync(application, ImmutableArray.CreateRange(descriptor.Permissions), cancellationToken);
-            await Store.SetPostLogoutRedirectUrisAsync(application, ImmutableArray.CreateRange(
-                descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
-            await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
-                descriptor.RedirectUris.Select(address => address.OriginalString)), cancellationToken);
         }
 
         /// <summary>
