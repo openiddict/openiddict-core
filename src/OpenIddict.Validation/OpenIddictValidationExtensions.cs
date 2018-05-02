@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddScoped(provider =>
             {
                 var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>()
-                    .Get(OAuthValidationDefaults.AuthenticationScheme);
+                    .Get(OpenIddictValidationDefaults.AuthenticationScheme);
 
                 if (options == null)
                 {
@@ -86,12 +86,12 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 // Note: this method is guaranteed to be idempotent. To prevent multiple schemes from being
                 // registered (which would result in an exception being thrown), a manual check is made here.
-                if (options.SchemeMap.ContainsKey(OAuthValidationDefaults.AuthenticationScheme))
+                if (options.SchemeMap.ContainsKey(OpenIddictValidationDefaults.AuthenticationScheme))
                 {
                     return;
                 }
 
-                options.AddScheme(OAuthValidationDefaults.AuthenticationScheme, scheme =>
+                options.AddScheme(OpenIddictValidationDefaults.AuthenticationScheme, scheme =>
                 {
                     scheme.HandlerType = typeof(OpenIddictValidationHandler);
                 });

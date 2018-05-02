@@ -7,7 +7,6 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using OpenIddict.Validation;
@@ -52,7 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            Services.Configure(OAuthValidationDefaults.AuthenticationScheme, configuration);
+            Services.Configure(OpenIddictValidationDefaults.AuthenticationScheme, configuration);
 
             return this;
         }

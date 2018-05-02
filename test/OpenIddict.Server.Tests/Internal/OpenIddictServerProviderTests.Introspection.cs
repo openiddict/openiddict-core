@@ -237,13 +237,13 @@ namespace OpenIddict.Server.Tests
         public async Task HandleIntrospectionRequest_RequestIsRejectedWhenTokenIsNotAnAccessToken(string type)
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(type);
@@ -295,13 +295,13 @@ namespace OpenIddict.Server.Tests
         public async Task HandleIntrospectionRequest_RequestIsRejectedWhenAudienceIsMissing()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
@@ -353,13 +353,13 @@ namespace OpenIddict.Server.Tests
         public async Task HandleIntrospectionRequest_RequestIsRejectedWhenClientIsNotAValidAudience()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Contoso");
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -412,7 +412,7 @@ namespace OpenIddict.Server.Tests
         public async Task HandleIntrospectionRequest_RequestIsRejectedWhenReferenceTokenIsUnknown()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var manager = CreateTokenManager(instance =>
@@ -468,13 +468,13 @@ namespace OpenIddict.Server.Tests
         public async Task HandleIntrospectionRequest_RequestIsRejectedWhenReferenceTokenIsInvalid()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Fabrikam");
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");

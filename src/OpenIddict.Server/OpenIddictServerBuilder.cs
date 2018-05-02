@@ -14,7 +14,6 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -62,7 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            Services.Configure(OpenIdConnectServerDefaults.AuthenticationScheme, configuration);
+            Services.Configure(OpenIddictServerDefaults.AuthenticationScheme, configuration);
 
             return this;
         }

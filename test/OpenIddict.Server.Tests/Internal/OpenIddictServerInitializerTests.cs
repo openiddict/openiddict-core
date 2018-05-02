@@ -282,7 +282,7 @@ namespace OpenIddict.Server.Tests
             {
                 app.UseAuthentication();
 
-                app.Run(context => context.ChallengeAsync(OpenIdConnectServerDefaults.AuthenticationScheme));
+                app.Run(context => context.ChallengeAsync(OpenIddictServerDefaults.AuthenticationScheme));
             });
 
             return new TestServer(builder);

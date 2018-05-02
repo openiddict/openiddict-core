@@ -330,7 +330,7 @@ namespace OpenIddict.Server.Tests
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
@@ -368,7 +368,7 @@ namespace OpenIddict.Server.Tests
                 mock.ValidFrom == DateTime.UtcNow.AddDays(-1) &&
                 mock.ValidTo == DateTime.UtcNow.AddDays(1));
 
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.TokenUsage, OpenIdConnectConstants.TokenUsages.IdToken);
 
             var handler = new Mock<JwtSecurityTokenHandler>();
@@ -411,7 +411,7 @@ namespace OpenIddict.Server.Tests
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 
@@ -455,7 +455,7 @@ namespace OpenIddict.Server.Tests
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 
@@ -504,7 +504,7 @@ namespace OpenIddict.Server.Tests
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 

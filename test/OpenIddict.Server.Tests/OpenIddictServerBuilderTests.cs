@@ -693,7 +693,7 @@ namespace OpenIddict.Server.Tests
             var provider = services.BuildServiceProvider();
 
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>();
-            return options.Get(OpenIdConnectServerDefaults.AuthenticationScheme);
+            return options.Get(OpenIddictServerDefaults.AuthenticationScheme);
         }
     }
 }
