@@ -130,13 +130,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_AuthenticationPropertiesAreAutomaticallyRestored()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -201,13 +201,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_RefreshTokenIsIssuedForAuthorizationCodeRequestsWhenRollingTokensAreEnabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetPresenters("Fabrikam");
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -283,13 +283,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_RefreshTokenIsAlwaysIssuedWhenRollingTokensAreEnabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -346,13 +346,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_RefreshTokenIsNotIssuedWhenRollingTokensAreDisabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -404,13 +404,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_AuthorizationCodeIsAutomaticallyRedeemed()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetPresenters("Fabrikam");
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -481,13 +481,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_ReturnsErrorResponseWhenRedeemingAuthorizationCodeFails()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetPresenters("Fabrikam");
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -564,13 +564,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_RefreshTokenIsAutomaticallyRedeemedWhenRollingTokensAreEnabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -630,13 +630,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_ReturnsErrorResponseWhenRedeemingRefreshTokenFails()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -700,13 +700,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_RefreshTokenIsNotRedeemedWhenRollingTokensAreDisabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -758,13 +758,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_PreviousTokensAreAutomaticallyRevokedWhenRollingTokensAreEnabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -842,13 +842,13 @@ namespace OpenIddict.Server.Tests
         public async Task ProcessSigninResponse_PreviousTokensAreNotRevokedWhenRollingTokensAreDisabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -921,7 +921,7 @@ namespace OpenIddict.Server.Tests
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -989,7 +989,7 @@ namespace OpenIddict.Server.Tests
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -1056,7 +1056,7 @@ namespace OpenIddict.Server.Tests
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
@@ -1447,13 +1447,13 @@ namespace OpenIddict.Server.Tests
                         return Task.FromResult(0);
                     }
 
-                    var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+                    var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
                     identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Magnifique");
 
                     var ticket = new AuthenticationTicket(
                         new ClaimsPrincipal(identity),
                         new AuthenticationProperties(),
-                        OpenIdConnectServerDefaults.AuthenticationScheme);
+                        OpenIddictServerDefaults.AuthenticationScheme);
 
                     ticket.SetScopes(request.GetScopes());
 
@@ -1479,7 +1479,7 @@ namespace OpenIddict.Server.Tests
                     {
                         if (request.HasParameter("deny-authorization"))
                         {
-                            return context.Authentication.ForbidAsync(OpenIdConnectServerDefaults.AuthenticationScheme, ticket.Properties);
+                            return context.Authentication.ForbidAsync(OpenIddictServerDefaults.AuthenticationScheme, ticket.Properties);
                         }
 
                         if (request.HasParameter("do-not-flow-original-properties"))
@@ -1495,7 +1495,7 @@ namespace OpenIddict.Server.Tests
 
                     else if (request.IsLogoutRequest())
                     {
-                        return context.Authentication.SignOutAsync(OpenIdConnectServerDefaults.AuthenticationScheme, ticket.Properties);
+                        return context.Authentication.SignOutAsync(OpenIddictServerDefaults.AuthenticationScheme, ticket.Properties);
                     }
 
                     else if (request.IsUserinfoRequest())

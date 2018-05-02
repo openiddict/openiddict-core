@@ -84,13 +84,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeAccessToken_AccessTokenIsNotRetrievedFromDatabaseWhenReferenceTokensAreDisabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Fabrikam");
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -350,13 +350,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeAccessToken_ReturnsExpectedReferenceToken()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Fabrikam");
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -509,13 +509,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeAuthorizationCode_AuthorizationCodeIsNotRetrievedUsingHashWhenReferenceTokensAreDisabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetPresenters("Fabrikam");
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -797,13 +797,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeAuthorizationCode_ReturnsExpectedReferenceToken()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetPresenters("Fabrikam");
 
@@ -899,13 +899,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeAuthorizationCode_ReturnsNullForMissingTokenIdentifier()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -1015,13 +1015,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeAuthorizationCode_ReturnsExpectedToken()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetPresenters("Fabrikam");
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -1160,13 +1160,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeRefreshToken_RefreshTokenIsNotRetrievedUsingHashWhenReferenceTokensAreDisabled()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 
@@ -1347,13 +1347,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeRefreshToken_ReturnsExpectedReferenceToken()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -1422,13 +1422,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeRefreshToken_ReturnsNullForMissingTokenIdentifier()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
 
@@ -1488,13 +1488,13 @@ namespace OpenIddict.Server.Tests
         public async Task DeserializeRefreshToken_ReturnsExpectedToken()
         {
             // Arrange
-            var identity = new ClaimsIdentity(OpenIdConnectServerDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
             identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 
@@ -2134,7 +2134,7 @@ namespace OpenIddict.Server.Tests
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(),
                 new AuthenticationProperties(),
-                OpenIdConnectServerDefaults.AuthenticationScheme);
+                OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetScopes(OpenIdConnectConstants.Scopes.OpenId, OpenIdConnectConstants.Scopes.OfflineAccess);

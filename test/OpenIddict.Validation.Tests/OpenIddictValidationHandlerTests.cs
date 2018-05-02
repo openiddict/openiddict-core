@@ -683,19 +683,19 @@ namespace OpenIddict.Validation.Tests
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token")))
                   .Returns(delegate
                   {
-                      var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
+                      var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       var properties = new AuthenticationProperties();
 
                       return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                          properties, OpenIddictValidationDefaults.AuthenticationScheme);
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-scopes")))
                   .Returns(delegate
                   {
-                      var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
+                      var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       var properties = new AuthenticationProperties();
@@ -703,13 +703,13 @@ namespace OpenIddict.Validation.Tests
                         @"[""C54A8F5E-0387-43F4-BA43-FD4B50DC190D"",""5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7""]";
 
                       return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                          properties, OpenIddictValidationDefaults.AuthenticationScheme);
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-single-audience")))
                   .Returns(delegate
                   {
-                      var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
+                      var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       var properties = new AuthenticationProperties(new Dictionary<string, string>
@@ -718,13 +718,13 @@ namespace OpenIddict.Validation.Tests
                       });
 
                       return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                          properties, OpenIddictValidationDefaults.AuthenticationScheme);
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-multiple-audiences")))
                   .Returns(delegate
                   {
-                      var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
+                      var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       var properties = new AuthenticationProperties(new Dictionary<string, string>
@@ -733,20 +733,20 @@ namespace OpenIddict.Validation.Tests
                       });
 
                       return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                          properties, OpenIddictValidationDefaults.AuthenticationScheme);
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "expired-token")))
                   .Returns(delegate
                   {
-                      var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
+                      var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       var properties = new AuthenticationProperties();
                       properties.ExpiresUtc = DateTimeOffset.UtcNow - TimeSpan.FromDays(1);
 
                       return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                          properties, OpenIddictValidationDefaults.AuthenticationScheme);
                   });
 
             var builder = new WebHostBuilder();
@@ -789,7 +789,7 @@ namespace OpenIddict.Validation.Tests
 
                 app.Map("/ticket", map => map.Run(async context =>
                 {
-                    var ticket = new AuthenticateContext(OAuthValidationDefaults.AuthenticationScheme);
+                    var ticket = new AuthenticateContext(OpenIddictValidationDefaults.AuthenticationScheme);
                     await context.Authentication.AuthenticateAsync(ticket);
 
                     if (!ticket.Accepted || ticket.Principal == null || ticket.Properties == null)
@@ -823,7 +823,7 @@ namespace OpenIddict.Validation.Tests
                         [OAuthValidationConstants.Properties.Scope] = "custom_scope",
                     });
 
-                    return context.Authentication.ChallengeAsync(OAuthValidationDefaults.AuthenticationScheme, properties);
+                    return context.Authentication.ChallengeAsync(OpenIddictValidationDefaults.AuthenticationScheme, properties);
                 }));
 
                 app.Run(context =>
