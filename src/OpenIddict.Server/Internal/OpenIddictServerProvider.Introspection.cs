@@ -16,8 +16,7 @@ using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
-    public partial class OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task ExtractIntrospectionRequest([NotNull] ExtractIntrospectionRequestContext context)
         {
@@ -51,11 +50,11 @@ namespace OpenIddict.Server
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await Applications.FindByClientIdAsync(context.ClientId);
+            var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
             if (application == null)
             {
-                Logger.LogError("The introspection request was rejected because the client " +
-                                "application was not found: '{ClientId}'.", context.ClientId);
+                _logger.LogError("The introspection request was rejected because the client " +
+                                 "application was not found: '{ClientId}'.", context.ClientId);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -69,10 +68,10 @@ namespace OpenIddict.Server
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the introspection endpoint.
-            if (!await Applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Introspection))
+            if (!await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Introspection))
             {
-                Logger.LogError("The introspection request was rejected because the application '{ClientId}' " +
-                                "was not allowed to use the introspection endpoint.", context.ClientId);
+                _logger.LogError("The introspection request was rejected because the application '{ClientId}' " +
+                                 "was not allowed to use the introspection endpoint.", context.ClientId);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnauthorizedClient,
@@ -82,10 +81,10 @@ namespace OpenIddict.Server
             }
 
             // Reject introspection requests sent by public applications.
-            if (await Applications.IsPublicAsync(application))
+            if (await _applicationManager.IsPublicAsync(application))
             {
-                Logger.LogError("The introspection request was rejected because the public application " +
-                                "'{ClientId}' was not allowed to use this endpoint.", context.ClientId);
+                _logger.LogError("The introspection request was rejected because the public application " +
+                                 "'{ClientId}' was not allowed to use this endpoint.", context.ClientId);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -95,10 +94,10 @@ namespace OpenIddict.Server
             }
 
             // Validate the client credentials.
-            if (!await Applications.ValidateClientSecretAsync(application, context.ClientSecret))
+            if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
             {
-                Logger.LogError("The introspection request was rejected because the confidential or hybrid application " +
-                                "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
+                _logger.LogError("The introspection request was rejected because the confidential or hybrid application " +
+                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -122,7 +121,7 @@ namespace OpenIddict.Server
 
             if (!context.Ticket.IsAccessToken())
             {
-                Logger.LogError("The token '{Identifier}' is not an access token and thus cannot be introspected.", identifier);
+                _logger.LogError("The token '{Identifier}' is not an access token and thus cannot be introspected.", identifier);
 
                 context.Active = false;
 
@@ -134,9 +133,9 @@ namespace OpenIddict.Server
             // For that, an error is automatically returned if no explicit audience is attached to the authentication ticket.
             if (!context.Ticket.HasAudience())
             {
-                Logger.LogError("The token '{Identifier}' doesn't have any audience attached " +
-                                "and cannot be introspected. To add an audience, use the " +
-                                "'ticket.SetResources(...)' extension when creating the ticket.", identifier);
+                _logger.LogError("The token '{Identifier}' doesn't have any audience attached " +
+                                 "and cannot be introspected. To add an audience, use the " +
+                                 "'ticket.SetResources(...)' extension when creating the ticket.", identifier);
 
                 context.Active = false;
 
@@ -145,9 +144,9 @@ namespace OpenIddict.Server
 
             if (!context.Ticket.HasAudience(context.Request.ClientId))
             {
-                Logger.LogError("The client application '{ClientId}' is not allowed to introspect the access " +
-                                "token '{Identifier}' because it's not listed as a valid audience.",
-                                context.Request.ClientId, identifier);
+                _logger.LogError("The client application '{ClientId}' is not allowed to introspect the access " +
+                                 "token '{Identifier}' because it's not listed as a valid audience.",
+                                 context.Request.ClientId, identifier);
 
                 context.Active = false;
 
@@ -162,12 +161,12 @@ namespace OpenIddict.Server
             }
 
             // Retrieve the token from the request properties. If it's marked as invalid, return active = false.
-            var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
+            var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
             Debug.Assert(token != null, "The token shouldn't be null.");
 
-            if (!await Tokens.IsValidAsync(token))
+            if (!await _tokenManager.IsValidAsync(token))
             {
-                Logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
+                _logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
 
                 context.Active = false;
 

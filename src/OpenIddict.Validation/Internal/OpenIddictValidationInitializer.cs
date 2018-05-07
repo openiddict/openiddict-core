@@ -11,7 +11,6 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
-using OpenIddict.Core;
 
 namespace OpenIddict.Validation
 {
@@ -23,17 +22,13 @@ namespace OpenIddict.Validation
     public class OpenIddictValidationInitializer : IPostConfigureOptions<OpenIddictValidationOptions>
     {
         private readonly IDataProtectionProvider _dataProtectionProvider;
-        private readonly IOptionsMonitor<OpenIddictCoreOptions> _options;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictValidationInitializer"/> class.
         /// </summary>
-        public OpenIddictValidationInitializer(
-            [NotNull] IDataProtectionProvider dataProtectionProvider,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+        public OpenIddictValidationInitializer([NotNull] IDataProtectionProvider dataProtectionProvider)
         {
             _dataProtectionProvider = dataProtectionProvider;
-            _options = options;
         }
 
         /// <summary>
@@ -72,11 +67,6 @@ namespace OpenIddict.Validation
                     nameof(options.UseReferenceTokens), "ASOS");
 
                 options.AccessTokenFormat = new TicketDataFormat(protector);
-            }
-
-            if (options.TokenType == null)
-            {
-                options.TokenType = _options.CurrentValue.DefaultTokenType;
             }
         }
     }

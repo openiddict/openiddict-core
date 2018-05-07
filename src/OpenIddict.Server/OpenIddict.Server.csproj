@@ -13,13 +13,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
+    <ProjectReference Include="..\OpenIddict.Abstractions\OpenIddict.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OpenIdConnect.Server" Version="$(AspNetContribOpenIdServerVersion)" />
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="$(JsonNetBsonVersion)" />
   </ItemGroup>
 

@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
     <PackageReference Include="System.Collections.Immutable" Version="$(ImmutableCollectionsVersion)" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(DataAnnotationsVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(TasksExtensionsVersion)" />
   </ItemGroup>
 

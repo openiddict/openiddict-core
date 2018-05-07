@@ -22,7 +22,7 @@ namespace OpenIddict.Core
     /// Provides methods allowing to manage the authorizations stored in the store.
     /// </summary>
     /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
-    public class OpenIddictAuthorizationManager<TAuthorization> where TAuthorization : class
+    public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthorizationManager where TAuthorization : class
     {
         public OpenIddictAuthorizationManager(
             [NotNull] IOpenIddictAuthorizationStoreResolver resolver,
@@ -58,9 +58,7 @@ namespace OpenIddict.Core
         /// whose result returns the number of authorizations in the database.
         /// </returns>
         public virtual Task<long> CountAsync(CancellationToken cancellationToken = default)
-        {
-            return Store.CountAsync(cancellationToken);
-        }
+            => Store.CountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of authorizations that match the specified query.
@@ -1035,5 +1033,113 @@ namespace OpenIddict.Core
                 builder.MoveToImmutable() :
                 builder.ToImmutable();
         }
+
+        Task<long> IOpenIddictAuthorizationManager.CountAsync(CancellationToken cancellationToken)
+            => CountAsync(cancellationToken);
+
+        Task<long> IOpenIddictAuthorizationManager.CountAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => CountAsync(query, cancellationToken);
+
+        async Task<object> IOpenIddictAuthorizationManager.CreateAsync(ClaimsPrincipal principal, string subject, string client, string type, ImmutableArray<string> scopes, ImmutableDictionary<string, string> properties, CancellationToken cancellationToken)
+            => await CreateAsync(principal, subject, client, type, scopes, properties, cancellationToken);
+
+        async Task<object> IOpenIddictAuthorizationManager.CreateAsync(OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
+            => await CreateAsync(descriptor, cancellationToken);
+
+        Task IOpenIddictAuthorizationManager.CreateAsync(object authorization, CancellationToken cancellationToken)
+            => CreateAsync((TAuthorization) authorization, cancellationToken);
+
+        Task IOpenIddictAuthorizationManager.DeleteAsync(object authorization, CancellationToken cancellationToken)
+            => DeleteAsync((TAuthorization) authorization, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, CancellationToken cancellationToken)
+            => (await FindAsync(subject, client, cancellationToken)).CastArray<object>();
+
+        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, CancellationToken cancellationToken)
+            => (await FindAsync(subject, client, status, cancellationToken)).CastArray<object>();
+
+        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
+            => (await FindAsync(subject, client, status, type, cancellationToken)).CastArray<object>();
+
+        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, string type, ImmutableArray<string> scopes, CancellationToken cancellationToken)
+            => (await FindAsync(subject, client, status, type, scopes, cancellationToken)).CastArray<object>();
+
+        async Task<object> IOpenIddictAuthorizationManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
+            => await FindByIdAsync(identifier, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindBySubjectAsync(string subject, CancellationToken cancellationToken)
+            => (await FindBySubjectAsync(subject, cancellationToken)).CastArray<object>();
+
+        ValueTask<string> IOpenIddictAuthorizationManager.GetApplicationIdAsync(object authorization, CancellationToken cancellationToken)
+            => GetApplicationIdAsync((TAuthorization) authorization, cancellationToken);
+
+        Task<TResult> IOpenIddictAuthorizationManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => GetAsync(query, cancellationToken);
+
+        Task<TResult> IOpenIddictAuthorizationManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+            => GetAsync(query, state, cancellationToken);
+
+        ValueTask<string> IOpenIddictAuthorizationManager.GetIdAsync(object authorization, CancellationToken cancellationToken)
+            => GetIdAsync((TAuthorization) authorization, cancellationToken);
+
+        ValueTask<ImmutableArray<string>> IOpenIddictAuthorizationManager.GetScopesAsync(object authorization, CancellationToken cancellationToken)
+            => GetScopesAsync((TAuthorization) authorization, cancellationToken);
+
+        ValueTask<string> IOpenIddictAuthorizationManager.GetStatusAsync(object authorization, CancellationToken cancellationToken)
+            => GetStatusAsync((TAuthorization) authorization, cancellationToken);
+
+        ValueTask<string> IOpenIddictAuthorizationManager.GetSubjectAsync(object authorization, CancellationToken cancellationToken)
+            => GetSubjectAsync((TAuthorization) authorization, cancellationToken);
+
+        ValueTask<string> IOpenIddictAuthorizationManager.GetTypeAsync(object authorization, CancellationToken cancellationToken)
+            => GetTypeAsync((TAuthorization) authorization, cancellationToken);
+
+        Task<bool> IOpenIddictAuthorizationManager.HasScopesAsync(object authorization, ImmutableArray<string> scopes, CancellationToken cancellationToken)
+            => HasScopesAsync((TAuthorization) authorization, scopes, cancellationToken);
+
+        Task<bool> IOpenIddictAuthorizationManager.IsAdHocAsync(object authorization, CancellationToken cancellationToken)
+            => IsAdHocAsync((TAuthorization) authorization, cancellationToken);
+
+        Task<bool> IOpenIddictAuthorizationManager.IsPermanentAsync(object authorization, CancellationToken cancellationToken)
+            => IsPermanentAsync((TAuthorization) authorization, cancellationToken);
+
+        Task<bool> IOpenIddictAuthorizationManager.IsRevokedAsync(object authorization, CancellationToken cancellationToken)
+            => IsRevokedAsync((TAuthorization) authorization, cancellationToken);
+
+        Task<bool> IOpenIddictAuthorizationManager.IsValidAsync(object authorization, CancellationToken cancellationToken)
+            => IsValidAsync((TAuthorization) authorization, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
+            => (await ListAsync(count, offset, cancellationToken)).CastArray<object>();
+
+        Task<ImmutableArray<TResult>> IOpenIddictAuthorizationManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => ListAsync(query, cancellationToken);
+
+        Task<ImmutableArray<TResult>> IOpenIddictAuthorizationManager.ListAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+            => ListAsync(query, state, cancellationToken);
+
+        Task IOpenIddictAuthorizationManager.PopulateAsync(OpenIddictAuthorizationDescriptor descriptor, object authorization, CancellationToken cancellationToken)
+            => PopulateAsync(descriptor, (TAuthorization) authorization, cancellationToken);
+
+        Task IOpenIddictAuthorizationManager.PopulateAsync(object authorization, OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
+            => PopulateAsync((TAuthorization) authorization, descriptor, cancellationToken);
+
+        Task IOpenIddictAuthorizationManager.PruneAsync(CancellationToken cancellationToken)
+            => PruneAsync(cancellationToken);
+
+        Task IOpenIddictAuthorizationManager.RevokeAsync(object authorization, CancellationToken cancellationToken)
+            => RevokeAsync((TAuthorization) authorization, cancellationToken);
+
+        Task IOpenIddictAuthorizationManager.SetApplicationIdAsync(object authorization, string identifier, CancellationToken cancellationToken)
+            => SetApplicationIdAsync((TAuthorization) authorization, identifier, cancellationToken);
+
+        Task IOpenIddictAuthorizationManager.UpdateAsync(object authorization, CancellationToken cancellationToken)
+            => UpdateAsync((TAuthorization) authorization, cancellationToken);
+
+        Task IOpenIddictAuthorizationManager.UpdateAsync(object authorization, OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
+            => UpdateAsync((TAuthorization) authorization, cancellationToken);
+
+        Task<ImmutableArray<ValidationResult>> IOpenIddictAuthorizationManager.ValidateAsync(object authorization, CancellationToken cancellationToken)
+            => ValidateAsync((TAuthorization) authorization, cancellationToken);
     }
 }

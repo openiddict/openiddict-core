@@ -22,8 +22,7 @@ using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
-    public partial class OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override async Task ExtractLogoutRequest([NotNull] ExtractLogoutRequestContext context)
         {
@@ -36,8 +35,7 @@ namespace OpenIddict.Server
                 // Return an error if request caching support was not enabled.
                 if (!options.EnableRequestCaching)
                 {
-                    Logger.LogError("The logout request was rejected because " +
-                                    "request caching support was not enabled.");
+                    _logger.LogError("The logout request was rejected because request caching support was not enabled.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -53,8 +51,8 @@ namespace OpenIddict.Server
                 var payload = await options.Cache.GetAsync(key);
                 if (payload == null)
                 {
-                    Logger.LogError("The logout request was rejected because an unknown " +
-                                    "or invalid request_id parameter was specified.");
+                    _logger.LogError("The logout request was rejected because an unknown " +
+                                     "or invalid request_id parameter was specified.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -87,8 +85,8 @@ namespace OpenIddict.Server
             {
                 if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
                 {
-                    Logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri was not " +
-                                    "a valid absolute URL: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                    _logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri was not " +
+                                     "a valid absolute URL: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -99,8 +97,8 @@ namespace OpenIddict.Server
 
                 if (!string.IsNullOrEmpty(uri.Fragment))
                 {
-                    Logger.LogError("The logout request was rejected because the 'post_logout_redirect_uri' contained " +
-                                    "a URL fragment: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                    _logger.LogError("The logout request was rejected because the 'post_logout_redirect_uri' contained " +
+                                     "a URL fragment: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -109,10 +107,10 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                if (!await Applications.ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
+                if (!await _applicationManager.ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                 {
-                    Logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
-                                    "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                    _logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
+                                     "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,

@@ -11,22 +11,26 @@ namespace OpenIddict.Core
     public class OpenIddictCoreOptions
     {
         /// <summary>
-        /// Gets or sets the type corresponding to the Application entity.
+        /// Gets or sets the type corresponding to the default Application entity,
+        /// used by the non-generic application manager and the server/validation services.
         /// </summary>
         public Type DefaultApplicationType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type corresponding to the Authorization entity.
+        /// Gets or sets the type corresponding to the default Authorization entity,
+        /// used by the non-generic authorization manager and the server/validation services.
         /// </summary>
         public Type DefaultAuthorizationType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type corresponding to the Scope entity.
+        /// Gets or sets the type corresponding to the default Scope entity,
+        /// used by the non-generic scope manager and the server/validation services.
         /// </summary>
         public Type DefaultScopeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type corresponding to the Token entity.
+        /// Gets or sets the type corresponding to the default Token entity,
+        /// used by the non-generic token manager and the server/validation services.
         /// </summary>
         public Type DefaultTokenType { get; set; }
     }

@@ -12,13 +12,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Core;
 using OpenIddict.Server;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -453,8 +451,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Rejects authorization and token requests that specify scopes that have not been
-        /// registered using <see cref="RegisterScopes(string[])"/> or
-        /// <see cref="OpenIddictScopeManager{TScope}.CreateAsync(TScope, CancellationToken)"/>.
+        /// registered using <see cref="RegisterScopes(string[])"/> or the scope manager.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder EnableScopeValidation()

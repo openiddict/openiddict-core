@@ -22,7 +22,7 @@ namespace OpenIddict.Core
     /// Provides methods allowing to manage the applications stored in the store.
     /// </summary>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
-    public class OpenIddictApplicationManager<TApplication> where TApplication : class
+    public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplicationManager where TApplication : class
     {
         public OpenIddictApplicationManager(
             [NotNull] IOpenIddictApplicationStoreResolver resolver,
@@ -58,9 +58,7 @@ namespace OpenIddict.Core
         /// whose result returns the number of applications in the database.
         /// </returns>
         public virtual Task<long> CountAsync(CancellationToken cancellationToken = default)
-        {
-            return Store.CountAsync(cancellationToken);
-        }
+            => Store.CountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of applications that match the specified query.
@@ -1349,5 +1347,113 @@ namespace OpenIddict.Core
                 return Task.FromResult(false);
             }
         }
+
+        Task<long> IOpenIddictApplicationManager.CountAsync(CancellationToken cancellationToken)
+            => CountAsync(cancellationToken);
+
+        Task<long> IOpenIddictApplicationManager.CountAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => CountAsync(query, cancellationToken);
+
+        async Task<object> IOpenIddictApplicationManager.CreateAsync(OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
+            => await CreateAsync(descriptor, cancellationToken);
+
+        Task IOpenIddictApplicationManager.CreateAsync(object application, CancellationToken cancellationToken)
+            => CreateAsync((TApplication) application, cancellationToken);
+
+        Task IOpenIddictApplicationManager.CreateAsync(object application, string secret, CancellationToken cancellationToken)
+            => CreateAsync((TApplication) application, secret, cancellationToken);
+
+        Task IOpenIddictApplicationManager.DeleteAsync(object application, CancellationToken cancellationToken)
+            => DeleteAsync((TApplication) application, cancellationToken);
+
+        async Task<object> IOpenIddictApplicationManager.FindByClientIdAsync(string identifier, CancellationToken cancellationToken)
+            => await FindByClientIdAsync(identifier, cancellationToken);
+
+        async Task<object> IOpenIddictApplicationManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
+            => await FindByIdAsync(identifier, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictApplicationManager.FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
+            => (await FindByPostLogoutRedirectUriAsync(address, cancellationToken)).CastArray<object>();
+
+        async Task<ImmutableArray<object>> IOpenIddictApplicationManager.FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
+            => (await FindByRedirectUriAsync(address, cancellationToken)).CastArray<object>();
+
+        Task<TResult> IOpenIddictApplicationManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => GetAsync(query, cancellationToken);
+
+        Task<TResult> IOpenIddictApplicationManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+            => GetAsync(query, state, cancellationToken);
+
+        ValueTask<string> IOpenIddictApplicationManager.GetClientIdAsync(object application, CancellationToken cancellationToken)
+            => GetClientIdAsync((TApplication) application, cancellationToken);
+
+        ValueTask<string> IOpenIddictApplicationManager.GetClientTypeAsync(object application, CancellationToken cancellationToken)
+            => GetClientTypeAsync((TApplication) application, cancellationToken);
+
+        ValueTask<string> IOpenIddictApplicationManager.GetConsentTypeAsync(object application, CancellationToken cancellationToken)
+            => GetConsentTypeAsync((TApplication) application, cancellationToken);
+
+        ValueTask<string> IOpenIddictApplicationManager.GetDisplayNameAsync(object application, CancellationToken cancellationToken)
+            => GetDisplayNameAsync((TApplication) application, cancellationToken);
+
+        ValueTask<string> IOpenIddictApplicationManager.GetIdAsync(object application, CancellationToken cancellationToken)
+            => GetIdAsync((TApplication) application, cancellationToken);
+
+        ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetPermissionsAsync(object application, CancellationToken cancellationToken)
+            => GetPermissionsAsync((TApplication) application, cancellationToken);
+
+        ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetPostLogoutRedirectUrisAsync(object application, CancellationToken cancellationToken)
+            => GetPostLogoutRedirectUrisAsync((TApplication) application, cancellationToken);
+
+        ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRedirectUrisAsync(object application, CancellationToken cancellationToken)
+            => GetRedirectUrisAsync((TApplication) application, cancellationToken);
+
+        Task<bool> IOpenIddictApplicationManager.HasPermissionAsync(object application, string permission, CancellationToken cancellationToken)
+            => HasPermissionAsync((TApplication) application, permission, cancellationToken);
+
+        Task<bool> IOpenIddictApplicationManager.IsConfidentialAsync(object application, CancellationToken cancellationToken)
+            => IsConfidentialAsync((TApplication) application, cancellationToken);
+
+        Task<bool> IOpenIddictApplicationManager.IsHybridAsync(object application, CancellationToken cancellationToken)
+            => IsHybridAsync((TApplication) application, cancellationToken);
+
+        Task<bool> IOpenIddictApplicationManager.IsPublicAsync(object application, CancellationToken cancellationToken)
+            => IsPublicAsync((TApplication) application, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictApplicationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
+            => (await ListAsync(count, offset, cancellationToken)).CastArray<object>();
+
+        Task<ImmutableArray<TResult>> IOpenIddictApplicationManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => ListAsync(query, cancellationToken);
+
+        Task<ImmutableArray<TResult>> IOpenIddictApplicationManager.ListAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+            => ListAsync(query, state, cancellationToken);
+
+        Task IOpenIddictApplicationManager.PopulateAsync(OpenIddictApplicationDescriptor descriptor, object application, CancellationToken cancellationToken)
+            => PopulateAsync(descriptor, (TApplication) application, cancellationToken);
+
+        Task IOpenIddictApplicationManager.PopulateAsync(object application, OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
+            => PopulateAsync((TApplication) application, descriptor, cancellationToken);
+
+        Task IOpenIddictApplicationManager.UpdateAsync(object application, CancellationToken cancellationToken)
+            => UpdateAsync((TApplication) application, cancellationToken);
+
+        Task IOpenIddictApplicationManager.UpdateAsync(object application, OpenIddictApplicationDescriptor descriptor, CancellationToken cancellationToken)
+            => UpdateAsync((TApplication) application, descriptor, cancellationToken);
+
+        Task IOpenIddictApplicationManager.UpdateAsync(object application, string secret, CancellationToken cancellationToken)
+            => UpdateAsync((TApplication) application, secret, cancellationToken);
+
+        Task<ImmutableArray<ValidationResult>> IOpenIddictApplicationManager.ValidateAsync(object application, CancellationToken cancellationToken)
+            => ValidateAsync((TApplication) application, cancellationToken);
+
+        Task<bool> IOpenIddictApplicationManager.ValidateClientSecretAsync(object application, string secret, CancellationToken cancellationToken)
+            => ValidateClientSecretAsync((TApplication) application, secret, cancellationToken);
+
+        Task<bool> IOpenIddictApplicationManager.ValidatePostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
+            => ValidatePostLogoutRedirectUriAsync(address, cancellationToken);
+
+        Task<bool> IOpenIddictApplicationManager.ValidateRedirectUriAsync(object application, string address, CancellationToken cancellationToken)
+            => ValidateRedirectUriAsync((TApplication) application, address, cancellationToken);
     }
 }

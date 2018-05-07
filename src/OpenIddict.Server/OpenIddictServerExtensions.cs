@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Text;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
@@ -32,46 +31,15 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.AddAuthentication();
 
+            builder.Services.TryAddScoped<OpenIddictServerHandler>();
+            builder.Services.TryAddScoped<OpenIddictServerProvider>();
+
             // Register the options initializers used by the OpenID Connect server handler and OpenIddict.
             // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
             builder.Services.TryAddEnumerable(new[]
             {
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOptions>,
-                                            OpenIddictServerInitializer>(),
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOptions>,
-                                            OpenIdConnectServerInitializer>()
-            });
-
-            // Register the OpenIddict handler/provider.
-            builder.Services.TryAddScoped(typeof(OpenIddictServerProvider<,,,>));
-            builder.Services.TryAddScoped<OpenIddictServerHandler>();
-            builder.Services.TryAddScoped(provider =>
-            {
-                var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>()
-                    .Get(OpenIddictServerDefaults.AuthenticationScheme);
-
-                if (options == null)
-                {
-                    throw new InvalidOperationException("The OpenIddict validation options cannot be resolved.");
-                }
-
-                if (options.ApplicationType == null || options.AuthorizationType == null ||
-                    options.ScopeType == null || options.TokenType == null)
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The entity types must be configured for the token server services to work correctly.")
-                        .Append("To configure the entities, use either 'services.AddOpenIddict().AddCore().UseDefaultModels()' ")
-                        .Append("or 'services.AddOpenIddict().AddCore().UseCustomModels()'.")
-                        .ToString());
-                }
-
-                var type = typeof(OpenIddictServerProvider<,,,>).MakeGenericType(
-                    /* TApplication: */ options.ApplicationType,
-                    /* TAuthorization: */ options.AuthorizationType,
-                    /* TScope: */ options.ScopeType,
-                    /* TToken: */ options.TokenType);
-
-                return (OpenIdConnectServerProvider) provider.GetRequiredService(type);
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOptions>, OpenIddictServerInitializer>(),
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOptions>, OpenIdConnectServerInitializer>()
             });
 
             // Register the OpenID Connect server handler in the authentication options,

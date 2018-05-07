@@ -14,7 +14,7 @@ using Microsoft.Extensions.Caching.Distributed;
 namespace OpenIddict.Server
 {
     /// <summary>
-    /// Provides various settings needed to configure OpenIddict.
+    /// Provides various settings needed to configure the OpenIddict server handler.
     /// </summary>
     public class OpenIddictServerOptions : OpenIdConnectServerOptions
     {
@@ -23,21 +23,9 @@ namespace OpenIddict.Server
         /// </summary>
         public OpenIddictServerOptions()
         {
-            // Note: OpenIdConnectServerProvider is automatically mapped
-            // to the generic OpenIddictProvider class by the DI container.
             Provider = null;
-            ProviderType = typeof(OpenIdConnectServerProvider);
+            ProviderType = typeof(OpenIddictServerProvider);
         }
-
-        /// <summary>
-        /// Gets or sets the type corresponding to the Application entity.
-        /// </summary>
-        public Type ApplicationType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type corresponding to the Authorization entity.
-        /// </summary>
-        public Type AuthorizationType { get; set; }
 
         /// <summary>
         /// Gets or sets the distributed cache used by OpenIddict. If no cache is explicitly
@@ -102,16 +90,6 @@ namespace OpenIddict.Server
         {
             OpenIdConnectConstants.Scopes.OpenId
         };
-
-        /// <summary>
-        /// Gets or sets the type corresponding to the Scope entity.
-        /// </summary>
-        public Type ScopeType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type corresponding to the Token entity.
-        /// </summary>
-        public Type TokenType { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether reference tokens should be used.

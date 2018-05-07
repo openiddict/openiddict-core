@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Core;
 
 namespace OpenIddict.Server
 {
@@ -28,19 +27,16 @@ namespace OpenIddict.Server
     {
         private readonly IDistributedCache _cache;
         private readonly IDataProtectionProvider _dataProtectionProvider;
-        private readonly IOptionsMonitor<OpenIddictCoreOptions> _options;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictServerInitializer"/> class.
         /// </summary>
         public OpenIddictServerInitializer(
             [NotNull] IDistributedCache cache,
-            [NotNull] IDataProtectionProvider dataProtectionProvider,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+            [NotNull] IDataProtectionProvider dataProtectionProvider)
         {
             _cache = cache;
             _dataProtectionProvider = dataProtectionProvider;
-            _options = options;
         }
 
         /// <summary>
@@ -192,26 +188,6 @@ namespace OpenIddict.Server
             if (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
             {
                 options.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
-            }
-
-            if (options.ApplicationType == null)
-            {
-                options.ApplicationType = _options.CurrentValue.DefaultApplicationType;
-            }
-
-            if (options.AuthorizationType == null)
-            {
-                options.AuthorizationType = _options.CurrentValue.DefaultAuthorizationType;
-            }
-
-            if (options.ScopeType == null)
-            {
-                options.ScopeType = _options.CurrentValue.DefaultScopeType;
-            }
-
-            if (options.TokenType == null)
-            {
-                options.TokenType = _options.CurrentValue.DefaultTokenType;
             }
         }
     }

@@ -16,8 +16,7 @@ using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
-    public partial class OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context)
         {
@@ -26,8 +25,8 @@ namespace OpenIddict.Server
             // Reject token requests that don't specify a supported grant type.
             if (!options.GrantTypes.Contains(context.Request.GrantType))
             {
-                Logger.LogError("The token request was rejected because the '{GrantType}' " +
-                                "grant type is not supported.", context.Request.GrantType);
+                _logger.LogError("The token request was rejected because the '{GrantType}' " +
+                                 "grant type is not supported.", context.Request.GrantType);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
@@ -80,10 +79,10 @@ namespace OpenIddict.Server
             foreach (var scope in context.Request.GetScopes())
             {
                 if (options.EnableScopeValidation && !options.Scopes.Contains(scope) &&
-                    await Scopes.FindByNameAsync(scope) == null)
+                    await _scopeManager.FindByNameAsync(scope) == null)
                 {
-                    Logger.LogError("The token request was rejected because an " +
-                                    "unregistered scope was specified: {Scope}.", scope);
+                    _logger.LogError("The token request was rejected because an " +
+                                     "unregistered scope was specified: {Scope}.", scope);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -117,8 +116,8 @@ namespace OpenIddict.Server
                 // Reject the request if client identification is mandatory.
                 if (options.RequireClientIdentification)
                 {
-                    Logger.LogError("The token request was rejected becaused the " +
-                                    "mandatory client_id parameter was missing or empty.");
+                    _logger.LogError("The token request was rejected becaused the " +
+                                     "mandatory client_id parameter was missing or empty.");
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -127,8 +126,8 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                Logger.LogDebug("The token request validation process was partially skipped " +
-                                "because the 'client_id' parameter was missing or empty.");
+                _logger.LogDebug("The token request validation process was partially skipped " +
+                                 "because the 'client_id' parameter was missing or empty.");
 
                 context.Skip();
 
@@ -136,11 +135,11 @@ namespace OpenIddict.Server
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await Applications.FindByClientIdAsync(context.ClientId);
+            var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
             if (application == null)
             {
-                Logger.LogError("The token request was rejected because the client " +
-                                "application was not found: '{ClientId}'.", context.ClientId);
+                _logger.LogError("The token request was rejected because the client " +
+                                 "application was not found: '{ClientId}'.", context.ClientId);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -154,10 +153,10 @@ namespace OpenIddict.Server
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the token endpoint.
-            if (!await Applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Token))
+            if (!await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Token))
             {
-                Logger.LogError("The token request was rejected because the application '{ClientId}' " +
-                                "was not allowed to use the token endpoint.", context.ClientId);
+                _logger.LogError("The token request was rejected because the application '{ClientId}' " +
+                                 "was not allowed to use the token endpoint.", context.ClientId);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnauthorizedClient,
@@ -167,11 +166,11 @@ namespace OpenIddict.Server
             }
 
             // Reject the request if the application is not allowed to use the specified grant type.
-            if (!await Applications.HasPermissionAsync(application,
+            if (!await _applicationManager.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.GrantType + context.Request.GrantType))
             {
-                Logger.LogError("The token request was rejected because the application '{ClientId}' was not allowed to " +
-                                "use the specified grant type: {GrantType}.", context.ClientId, context.Request.GrantType);
+                _logger.LogError("The token request was rejected because the application '{ClientId}' was not allowed to " +
+                                 "use the specified grant type: {GrantType}.", context.ClientId, context.Request.GrantType);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.UnauthorizedClient,
@@ -180,13 +179,13 @@ namespace OpenIddict.Server
                 return;
             }
 
-            if (await Applications.IsPublicAsync(application))
+            if (await _applicationManager.IsPublicAsync(application))
             {
                 // Note: public applications are not allowed to use the client credentials grant.
                 if (context.Request.IsClientCredentialsGrantType())
                 {
-                    Logger.LogError("The token request was rejected because the public client application '{ClientId}' " +
-                                    "was not allowed to use the client credentials grant.", context.Request.ClientId);
+                    _logger.LogError("The token request was rejected because the public client application '{ClientId}' " +
+                                     "was not allowed to use the client credentials grant.", context.Request.ClientId);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.UnauthorizedClient,
@@ -198,8 +197,8 @@ namespace OpenIddict.Server
                 // Reject token requests containing a client_secret when the client is a public application.
                 if (!string.IsNullOrEmpty(context.ClientSecret))
                 {
-                    Logger.LogError("The token request was rejected because the public application '{ClientId}' " +
-                                    "was not allowed to send a client secret.", context.ClientId);
+                    _logger.LogError("The token request was rejected because the public application '{ClientId}' " +
+                                     "was not allowed to send a client secret.", context.ClientId);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -208,8 +207,8 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                Logger.LogDebug("The token request validation process was not fully validated because " +
-                                "the client '{ClientId}' was a public application.", context.ClientId);
+                _logger.LogDebug("The token request validation process was not fully validated because " +
+                                 "the client '{ClientId}' was a public application.", context.ClientId);
 
                 // If client authentication cannot be enforced, call context.Skip() to inform
                 // the OpenID Connect server middleware that the caller cannot be fully trusted.
@@ -222,8 +221,8 @@ namespace OpenIddict.Server
             // to protect them from impersonation attacks.
             if (string.IsNullOrEmpty(context.ClientSecret))
             {
-                Logger.LogError("The token request was rejected because the confidential or hybrid application " +
-                                "'{ClientId}' didn't specify a client secret.", context.ClientId);
+                _logger.LogError("The token request was rejected because the confidential or hybrid application " +
+                                 "'{ClientId}' didn't specify a client secret.", context.ClientId);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -232,10 +231,10 @@ namespace OpenIddict.Server
                 return;
             }
 
-            if (!await Applications.ValidateClientSecretAsync(application, context.ClientSecret))
+            if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
             {
-                Logger.LogError("The token request was rejected because the confidential or hybrid application " +
-                                "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
+                _logger.LogError("The token request was rejected because the confidential or hybrid application " +
+                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidClient,
@@ -254,11 +253,11 @@ namespace OpenIddict.Server
                 }
 
                 // Reject the request if the application is not allowed to use the iterated scope.
-                if (!await Applications.HasPermissionAsync(application,
+                if (!await _applicationManager.HasPermissionAsync(application,
                     OpenIddictConstants.Permissions.Prefixes.Scope + scope))
                 {
-                    Logger.LogError("The token request was rejected because the application '{ClientId}' " +
-                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+                    _logger.LogError("The token request was rejected because the application '{ClientId}' " +
+                                     "was not allowed to use the scope {Scope}.", context.ClientId, scope);
 
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,
@@ -298,13 +297,13 @@ namespace OpenIddict.Server
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
             // Retrieve the authorization code/refresh token from the request properties.
-            var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
+            var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
             Debug.Assert(token != null, "The token shouldn't be null.");
 
             // If the authorization code/refresh token is already marked as redeemed, this may indicate that
             // it was compromised. In this case, revoke the authorization and all the associated tokens. 
             // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
-            if (await Tokens.IsRedeemedAsync(token))
+            if (await _tokenManager.IsRedeemedAsync(token))
             {
                 // Try to revoke the authorization and the associated tokens.
                 // If the operation fails, the helpers will automatically log
@@ -314,8 +313,8 @@ namespace OpenIddict.Server
                 await TryRevokeTokensAsync(context.Ticket);
                 await TryRevokeTokenAsync(token);
 
-                Logger.LogError("The token request was rejected because the authorization code " +
-                                "or refresh token '{Identifier}' has already been redeemed.", identifier);
+                _logger.LogError("The token request was rejected because the authorization code " +
+                                 "or refresh token '{Identifier}' has already been redeemed.", identifier);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,
@@ -326,10 +325,10 @@ namespace OpenIddict.Server
                 return;
             }
 
-            else if (!await Tokens.IsValidAsync(token))
+            else if (!await _tokenManager.IsValidAsync(token))
             {
-                Logger.LogError("The token request was rejected because the authorization code " +
-                                "or refresh token '{Identifier}' was no longer valid.", identifier);
+                _logger.LogError("The token request was rejected because the authorization code " +
+                                 "or refresh token '{Identifier}' was no longer valid.", identifier);
 
                 context.Reject(
                     error: OpenIdConnectConstants.Errors.InvalidGrant,

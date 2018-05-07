@@ -22,7 +22,7 @@ namespace OpenIddict.Core
     /// Provides methods allowing to manage the scopes stored in the store.
     /// </summary>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
-    public class OpenIddictScopeManager<TScope> where TScope : class
+    public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TScope : class
     {
         public OpenIddictScopeManager(
             [NotNull] IOpenIddictScopeStoreResolver resolver,
@@ -58,9 +58,7 @@ namespace OpenIddict.Core
         /// whose result returns the number of scopes in the database.
         /// </returns>
         public virtual Task<long> CountAsync(CancellationToken cancellationToken = default)
-        {
-            return Store.CountAsync(cancellationToken);
-        }
+            => Store.CountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of scopes that match the specified query.
@@ -627,5 +625,77 @@ namespace OpenIddict.Core
                 builder.MoveToImmutable() :
                 builder.ToImmutable();
         }
+
+        Task<long> IOpenIddictScopeManager.CountAsync(CancellationToken cancellationToken)
+            => CountAsync(cancellationToken);
+
+        Task<long> IOpenIddictScopeManager.CountAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => CountAsync(query, cancellationToken);
+
+        async Task<object> IOpenIddictScopeManager.CreateAsync(OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
+            => await CreateAsync(descriptor, cancellationToken);
+
+        Task IOpenIddictScopeManager.CreateAsync(object scope, CancellationToken cancellationToken)
+            => CreateAsync((TScope) scope, cancellationToken);
+
+        Task IOpenIddictScopeManager.DeleteAsync(object scope, CancellationToken cancellationToken)
+            => DeleteAsync((TScope) scope, cancellationToken);
+
+        async Task<object> IOpenIddictScopeManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
+            => await FindByIdAsync(identifier, cancellationToken);
+
+        async Task<object> IOpenIddictScopeManager.FindByNameAsync(string name, CancellationToken cancellationToken)
+            => await FindByNameAsync(name, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictScopeManager.FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken)
+            => (await FindByNamesAsync(names, cancellationToken)).CastArray<object>();
+
+        Task<TResult> IOpenIddictScopeManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => GetAsync(query, cancellationToken);
+
+        Task<TResult> IOpenIddictScopeManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+            => GetAsync(query, state, cancellationToken);
+
+        ValueTask<string> IOpenIddictScopeManager.GetDescriptionAsync(object scope, CancellationToken cancellationToken)
+            => GetDescriptionAsync((TScope) scope, cancellationToken);
+
+        ValueTask<string> IOpenIddictScopeManager.GetDisplayNameAsync(object scope, CancellationToken cancellationToken)
+            => GetDisplayNameAsync((TScope) scope, cancellationToken);
+
+        ValueTask<string> IOpenIddictScopeManager.GetIdAsync(object scope, CancellationToken cancellationToken)
+            => GetIdAsync((TScope) scope, cancellationToken);
+
+        ValueTask<string> IOpenIddictScopeManager.GetNameAsync(object scope, CancellationToken cancellationToken)
+            => GetNameAsync((TScope) scope, cancellationToken);
+
+        ValueTask<ImmutableArray<string>> IOpenIddictScopeManager.GetResourcesAsync(object scope, CancellationToken cancellationToken)
+            => GetResourcesAsync((TScope) scope, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictScopeManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
+            => (await ListAsync(count, offset, cancellationToken)).CastArray<object>();
+
+        Task<ImmutableArray<TResult>> IOpenIddictScopeManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => ListAsync(query, cancellationToken);
+
+        Task<ImmutableArray<TResult>> IOpenIddictScopeManager.ListAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+            => ListAsync(query, state, cancellationToken);
+
+        Task<ImmutableArray<string>> IOpenIddictScopeManager.ListResourcesAsync(ImmutableArray<string> scopes, CancellationToken cancellationToken)
+            => ListResourcesAsync(scopes, cancellationToken);
+
+        Task IOpenIddictScopeManager.PopulateAsync(OpenIddictScopeDescriptor descriptor, object scope, CancellationToken cancellationToken)
+            => PopulateAsync(descriptor, (TScope) scope, cancellationToken);
+
+        Task IOpenIddictScopeManager.PopulateAsync(object scope, OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
+            => PopulateAsync((TScope) scope, descriptor, cancellationToken);
+
+        Task IOpenIddictScopeManager.UpdateAsync(object scope, CancellationToken cancellationToken)
+            => UpdateAsync((TScope) scope, cancellationToken);
+
+        Task IOpenIddictScopeManager.UpdateAsync(object scope, OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken)
+            => UpdateAsync((TScope) scope, descriptor, cancellationToken);
+
+        Task<ImmutableArray<ValidationResult>> IOpenIddictScopeManager.ValidateAsync(object scope, CancellationToken cancellationToken)
+            => ValidateAsync((TScope) scope, cancellationToken);
     }
 }

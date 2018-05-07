@@ -23,7 +23,7 @@ namespace OpenIddict.Core
     /// Provides methods allowing to manage the tokens stored in the store.
     /// </summary>
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
-    public class OpenIddictTokenManager<TToken> where TToken : class
+    public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TToken : class
     {
         public OpenIddictTokenManager(
             [NotNull] IOpenIddictTokenStoreResolver resolver,
@@ -59,9 +59,7 @@ namespace OpenIddict.Core
         /// whose result returns the number of tokens in the database.
         /// </returns>
         public virtual Task<long> CountAsync(CancellationToken cancellationToken = default)
-        {
-            return Store.CountAsync(cancellationToken);
-        }
+            => Store.CountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of tokens that match the specified query.
@@ -968,5 +966,125 @@ namespace OpenIddict.Core
                 builder.MoveToImmutable() :
                 builder.ToImmutable();
         }
+
+        Task<long> IOpenIddictTokenManager.CountAsync(CancellationToken cancellationToken)
+            => CountAsync(cancellationToken);
+
+        Task<long> IOpenIddictTokenManager.CountAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => CountAsync(query, cancellationToken);
+
+        async Task<object> IOpenIddictTokenManager.CreateAsync(OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
+            => await CreateAsync(descriptor, cancellationToken);
+
+        Task IOpenIddictTokenManager.CreateAsync(object token, CancellationToken cancellationToken)
+            => CreateAsync((TToken) token, cancellationToken);
+
+        Task IOpenIddictTokenManager.DeleteAsync(object token, CancellationToken cancellationToken)
+            => DeleteAsync((TToken) token, cancellationToken);
+
+        Task IOpenIddictTokenManager.ExtendAsync(object token, DateTimeOffset? date, CancellationToken cancellationToken)
+            => ExtendAsync((TToken) token, date, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictTokenManager.FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
+            => (await FindByApplicationIdAsync(identifier, cancellationToken)).CastArray<object>();
+
+        async Task<ImmutableArray<object>> IOpenIddictTokenManager.FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
+            => (await FindByAuthorizationIdAsync(identifier, cancellationToken)).CastArray<object>();
+
+        async Task<object> IOpenIddictTokenManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
+            => await FindByIdAsync(identifier, cancellationToken);
+
+        async Task<object> IOpenIddictTokenManager.FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken)
+            => await FindByReferenceIdAsync(identifier, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictTokenManager.FindBySubjectAsync(string subject, CancellationToken cancellationToken)
+            => (await FindBySubjectAsync(subject, cancellationToken)).CastArray<object>();
+
+        ValueTask<string> IOpenIddictTokenManager.GetApplicationIdAsync(object token, CancellationToken cancellationToken)
+            => GetApplicationIdAsync((TToken) token, cancellationToken);
+
+        Task<TResult> IOpenIddictTokenManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => GetAsync(query, cancellationToken);
+
+        Task<TResult> IOpenIddictTokenManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+            => GetAsync(query, state, cancellationToken);
+
+        ValueTask<string> IOpenIddictTokenManager.GetAuthorizationIdAsync(object token, CancellationToken cancellationToken)
+            => GetAuthorizationIdAsync((TToken) token, cancellationToken);
+
+        ValueTask<DateTimeOffset?> IOpenIddictTokenManager.GetCreationDateAsync(object token, CancellationToken cancellationToken)
+            => GetCreationDateAsync((TToken) token, cancellationToken);
+
+        ValueTask<DateTimeOffset?> IOpenIddictTokenManager.GetExpirationDateAsync(object token, CancellationToken cancellationToken)
+            => GetExpirationDateAsync((TToken) token, cancellationToken);
+
+        ValueTask<string> IOpenIddictTokenManager.GetIdAsync(object token, CancellationToken cancellationToken)
+            => GetIdAsync((TToken) token, cancellationToken);
+
+        ValueTask<string> IOpenIddictTokenManager.GetPayloadAsync(object token, CancellationToken cancellationToken)
+            => GetPayloadAsync((TToken) token, cancellationToken);
+
+        ValueTask<string> IOpenIddictTokenManager.GetReferenceIdAsync(object token, CancellationToken cancellationToken)
+            => GetReferenceIdAsync((TToken) token, cancellationToken);
+
+        ValueTask<string> IOpenIddictTokenManager.GetStatusAsync(object token, CancellationToken cancellationToken)
+            => GetStatusAsync((TToken) token, cancellationToken);
+
+        ValueTask<string> IOpenIddictTokenManager.GetSubjectAsync(object token, CancellationToken cancellationToken)
+            => GetSubjectAsync((TToken) token, cancellationToken);
+
+        ValueTask<string> IOpenIddictTokenManager.GetTokenTypeAsync(object token, CancellationToken cancellationToken)
+            => GetTokenTypeAsync((TToken) token, cancellationToken);
+
+        Task<bool> IOpenIddictTokenManager.IsRedeemedAsync(object token, CancellationToken cancellationToken)
+            => IsRedeemedAsync((TToken) token, cancellationToken);
+
+        Task<bool> IOpenIddictTokenManager.IsRevokedAsync(object token, CancellationToken cancellationToken)
+            => IsRevokedAsync((TToken) token, cancellationToken);
+
+        Task<bool> IOpenIddictTokenManager.IsValidAsync(object token, CancellationToken cancellationToken)
+            => IsValidAsync((TToken) token, cancellationToken);
+
+        async Task<ImmutableArray<object>> IOpenIddictTokenManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
+            => (await ListAsync(count, offset, cancellationToken)).CastArray<object>();
+
+        Task<ImmutableArray<TResult>> IOpenIddictTokenManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+            => ListAsync(query, cancellationToken);
+
+        Task<ImmutableArray<TResult>> IOpenIddictTokenManager.ListAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+            => ListAsync(query, state, cancellationToken);
+
+        Task<string> IOpenIddictTokenManager.ObfuscateReferenceIdAsync(string identifier, CancellationToken cancellationToken)
+            => ObfuscateReferenceIdAsync(identifier, cancellationToken);
+
+        Task IOpenIddictTokenManager.PopulateAsync(OpenIddictTokenDescriptor descriptor, object token, CancellationToken cancellationToken)
+            => PopulateAsync(descriptor, (TToken) token, cancellationToken);
+
+        Task IOpenIddictTokenManager.PopulateAsync(object token, OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
+            => PopulateAsync((TToken) token, descriptor, cancellationToken);
+
+        Task IOpenIddictTokenManager.PruneAsync(CancellationToken cancellationToken)
+            => PruneAsync(cancellationToken);
+
+        Task IOpenIddictTokenManager.RedeemAsync(object token, CancellationToken cancellationToken)
+            => RedeemAsync((TToken) token, cancellationToken);
+
+        Task IOpenIddictTokenManager.RevokeAsync(object token, CancellationToken cancellationToken)
+            => RevokeAsync((TToken) token, cancellationToken);
+
+        Task IOpenIddictTokenManager.SetApplicationIdAsync(object token, string identifier, CancellationToken cancellationToken)
+            => SetApplicationIdAsync((TToken) token, identifier, cancellationToken);
+
+        Task IOpenIddictTokenManager.SetAuthorizationIdAsync(object token, string identifier, CancellationToken cancellationToken)
+            => SetAuthorizationIdAsync((TToken) token, identifier, cancellationToken);
+
+        Task IOpenIddictTokenManager.UpdateAsync(object token, CancellationToken cancellationToken)
+            => UpdateAsync((TToken) token, cancellationToken);
+
+        Task IOpenIddictTokenManager.UpdateAsync(object token, OpenIddictTokenDescriptor descriptor, CancellationToken cancellationToken)
+            => UpdateAsync((TToken) token, descriptor, cancellationToken);
+
+        Task<ImmutableArray<ValidationResult>> IOpenIddictTokenManager.ValidateAsync(object token, CancellationToken cancellationToken)
+            => ValidateAsync((TToken) token, cancellationToken);
     }
 }

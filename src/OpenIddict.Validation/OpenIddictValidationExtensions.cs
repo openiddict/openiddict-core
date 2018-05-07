@@ -5,13 +5,10 @@
  */
 
 using System;
-using System.Text;
-using System.Text.Encodings.Web;
 using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Validation;
 
@@ -34,51 +31,14 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.AddAuthentication();
 
+            builder.Services.TryAddScoped<OpenIddictValidationHandler>();
+
             // Note: TryAddEnumerable() is used here to ensure the initializer is only registered once.
             builder.Services.TryAddEnumerable(new[]
             {
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>,
-                                            OpenIddictValidationInitializer>(),
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>,
-                                            OAuthValidationInitializer>()
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationInitializer>(),
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OAuthValidationInitializer>()
             });
-
-            builder.Services.TryAddScoped(typeof(OpenIddictValidationHandler<>));
-            builder.Services.TryAddScoped(provider =>
-            {
-                var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>()
-                    .Get(OpenIddictValidationDefaults.AuthenticationScheme);
-
-                if (options == null)
-                {
-                    throw new InvalidOperationException("The OpenIddict validation options cannot be resolved.");
-                }
-
-                if (options.UseReferenceTokens)
-                {
-                    if (options.TokenType == null)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .AppendLine("The entity types must be configured for the token validation services to work correctly.")
-                            .Append("To configure the entities, use either 'services.AddOpenIddict().AddCore().UseDefaultModels()' ")
-                            .Append("or 'services.AddOpenIddict().AddCore().UseCustomModels()'.")
-                            .ToString());
-                    }
-
-                    var type = typeof(OpenIddictValidationHandler<>).MakeGenericType(options.TokenType);
-                    return (OpenIddictValidationHandler) provider.GetService(type);
-                }
-
-                return new OpenIddictValidationHandler(
-                    provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>(),
-                    provider.GetRequiredService<ILoggerFactory>(),
-                    provider.GetRequiredService<UrlEncoder>(),
-                    provider.GetRequiredService<ISystemClock>());
-            });
-
-            builder.Services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>,
-                                            OAuthValidationInitializer>());
 
             // Register the OpenIddict validation handler in the authentication options,
             // so it can be discovered by the default authentication handler provider.

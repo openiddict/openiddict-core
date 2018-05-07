@@ -16,8 +16,7 @@ using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
-    public partial class OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override async Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context)
         {

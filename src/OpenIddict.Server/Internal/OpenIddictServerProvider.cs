@@ -15,7 +15,6 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 
 namespace OpenIddict.Server
 {
@@ -23,50 +22,27 @@ namespace OpenIddict.Server
     /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public partial class OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
-        /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictServerProvider{TApplication, TAuthorization, TScope, TToken}"/> class.
-        /// </summary>
+        public readonly ILogger _logger;
+        public readonly IOpenIddictApplicationManager _applicationManager;
+        public readonly IOpenIddictAuthorizationManager _authorizationManager;
+        public readonly IOpenIddictScopeManager _scopeManager;
+        public readonly IOpenIddictTokenManager _tokenManager;
+
         public OpenIddictServerProvider(
-            [NotNull] ILogger<OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken>> logger,
-            [NotNull] OpenIddictApplicationManager<TApplication> applications,
-            [NotNull] OpenIddictAuthorizationManager<TAuthorization> authorizations,
-            [NotNull] OpenIddictScopeManager<TScope> scopes,
-            [NotNull] OpenIddictTokenManager<TToken> tokens)
+            [NotNull] ILogger<OpenIddictServerProvider> logger,
+            [NotNull] IOpenIddictApplicationManager applicationManager,
+            [NotNull] IOpenIddictAuthorizationManager authorizationManager,
+            [NotNull] IOpenIddictScopeManager scopeManager,
+            [NotNull] IOpenIddictTokenManager tokenManager)
         {
-            Applications = applications;
-            Authorizations = authorizations;
-            Logger = logger;
-            Scopes = scopes;
-            Tokens = tokens;
+            _logger = logger;
+            _applicationManager = applicationManager;
+            _authorizationManager = authorizationManager;
+            _scopeManager = scopeManager;
+            _tokenManager = tokenManager;
         }
-
-        /// <summary>
-        /// Gets the applications manager.
-        /// </summary>
-        public OpenIddictApplicationManager<TApplication> Applications { get; }
-
-        /// <summary>
-        /// Gets the authorizations manager.
-        /// </summary>
-        public OpenIddictAuthorizationManager<TAuthorization> Authorizations { get; }
-
-        /// <summary>
-        /// Gets the logger associated with the current class.
-        /// </summary>
-        public ILogger Logger { get; }
-
-        /// <summary>
-        /// Gets the scopes manager.
-        /// </summary>
-        public OpenIddictScopeManager<TScope> Scopes { get; }
-
-        /// <summary>
-        /// Gets the tokens manager.
-        /// </summary>
-        public OpenIddictTokenManager<TToken> Tokens { get; }
 
         public override Task ProcessChallengeResponse([NotNull] ProcessChallengeResponseContext context)
         {
@@ -148,7 +124,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{context.Ticket.GetTokenId()}");
+                var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{context.Ticket.GetTokenId()}");
                 Debug.Assert(token != null, "The token shouldn't be null.");
 
                 // If rolling tokens are enabled or if the request is a grant_type=authorization_code request,
