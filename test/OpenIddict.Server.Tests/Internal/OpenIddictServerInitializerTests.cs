@@ -44,13 +44,56 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public async Task PostConfigure_ThrowsAnExceptionWhenNoFlowIsEnabled()
+        public async Task PostConfigure_ThrowsAnExceptionWhenApplicationProviderTypeAndInstanceAreProvided()
         {
             // Arrange
             var server = CreateAuthorizationServer(builder =>
             {
-                builder.Configure(options => { });
+                builder.Configure(options =>
+                {
+                    options.ApplicationProvider = new OpenIdConnectServerProvider();
+                    options.ApplicationProviderType = typeof(OpenIdConnectServerProvider);
+                });
             });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            // Assert
+            Assert.Equal("An application provider cannot be registered when a type is specified.", exception.Message);
+        }
+
+        [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionForInvalidApplicationProviderType()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options => options.ApplicationProviderType = typeof(object));
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            // Assert
+            Assert.Equal("Application providers must inherit from OpenIdConnectServerProvider.", exception.Message);
+        }
+
+        [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenNoFlowIsEnabled()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 

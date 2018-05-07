@@ -10,13 +10,10 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 using OpenIddict.Models;
 using Xunit;
 
@@ -24,25 +21,6 @@ namespace OpenIddict.Server.Tests
 {
     public partial class OpenIddictServerProviderTests
     {
-        [Fact]
-        public async Task ExtractIntrospectionRequest_GetRequestsAreRejected()
-        {
-            // Arrange
-            var server = CreateAuthorizationServer();
-
-            var client = new OpenIdConnectClient(server.CreateClient());
-
-            // Act
-            var response = await client.GetAsync(IntrospectionEndpoint, new OpenIdConnectRequest
-            {
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            });
-
-            // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
-        }
-
         [Theory]
         [InlineData("client_id", "")]
         [InlineData("", "client_secret")]

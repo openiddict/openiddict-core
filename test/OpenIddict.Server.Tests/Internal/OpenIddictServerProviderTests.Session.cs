@@ -13,7 +13,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 using Xunit;
 
 namespace OpenIddict.Server.Tests

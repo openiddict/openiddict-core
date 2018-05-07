@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>

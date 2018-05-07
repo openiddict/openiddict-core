@@ -158,6 +158,8 @@ namespace OpenIddict.Server
             }
 
             context.Validate();
+
+            await base.ValidateRevocationRequest(context);
         }
 
         public override async Task HandleRevocationRequest([NotNull] HandleRevocationRequestContext context)
@@ -228,6 +230,8 @@ namespace OpenIddict.Server
             _logger.LogInformation("The token '{Identifier}' was successfully revoked.", identifier);
 
             context.Revoked = true;
+
+            await base.HandleRevocationRequest(context);
         }
     }
 }

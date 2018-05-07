@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;

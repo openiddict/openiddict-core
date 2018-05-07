@@ -55,6 +55,8 @@ namespace OpenIddict.Server
                 from provider in await schemes.GetAllSchemesAsync()
                 where !string.IsNullOrEmpty(provider.DisplayName)
                 select provider.Name);
+
+            await base.HandleConfigurationRequest(context);
         }
     }
 }

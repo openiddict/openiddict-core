@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -18,22 +17,6 @@ namespace OpenIddict.Server
 {
     public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
-        public override Task ExtractIntrospectionRequest([NotNull] ExtractIntrospectionRequestContext context)
-        {
-            // Note: the OpenID Connect server middleware supports both GET and POST
-            // introspection requests but OpenIddict only accepts POST requests.
-            if (!string.Equals(context.HttpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
-            {
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The specified HTTP method is not valid.");
-
-                return Task.CompletedTask;
-            }
-
-            return Task.CompletedTask;
-        }
-
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context)
         {
             // Note: the OpenID Connect server middleware supports unauthenticated introspection requests
@@ -107,6 +90,8 @@ namespace OpenIddict.Server
             }
 
             context.Validate();
+
+            await base.ValidateIntrospectionRequest(context);
         }
 
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context)
@@ -172,6 +157,8 @@ namespace OpenIddict.Server
 
                 return;
             }
+
+            await base.HandleIntrospectionRequest(context);
         }
     }
 }

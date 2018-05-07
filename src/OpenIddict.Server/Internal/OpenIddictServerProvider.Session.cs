@@ -76,6 +76,8 @@ namespace OpenIddict.Server
                     }
                 }
             }
+
+            await base.ExtractLogoutRequest(context);
         }
 
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context)
@@ -121,6 +123,8 @@ namespace OpenIddict.Server
             }
 
             context.Validate();
+
+            await base.ValidateLogoutRequest(context);
         }
 
         public override async Task HandleLogoutRequest([NotNull] HandleLogoutRequestContext context)
@@ -171,6 +175,8 @@ namespace OpenIddict.Server
 
                 return;
             }
+
+            await base.HandleLogoutRequest(context);
         }
 
         public override async Task ApplyLogoutResponse([NotNull] ApplyLogoutResponseContext context)
@@ -206,8 +212,12 @@ namespace OpenIddict.Server
                     // from displaying the default error page and to allow the status code pages middleware
                     // to rewrite the response using the logic defined by the developer when registering it.
                     context.HandleResponse();
+
+                    return;
                 }
             }
+
+            await base.ApplyLogoutResponse(context);
         }
     }
 }
