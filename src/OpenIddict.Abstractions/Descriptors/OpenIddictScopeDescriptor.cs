@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace OpenIddict.Core
+namespace OpenIddict.Abstractions
 {
     /// <summary>
     /// Represents an OpenIddict scope descriptor.

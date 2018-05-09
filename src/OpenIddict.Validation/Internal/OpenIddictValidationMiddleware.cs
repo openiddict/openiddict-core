@@ -32,21 +32,4 @@ namespace OpenIddict.Validation
         protected override AuthenticationHandler<OAuthValidationOptions> CreateHandler()
             => new OpenIddictValidationHandler();
     }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public class OpenIddictValidationMiddleware<TToken> : OpenIddictValidationMiddleware where TToken : class
-    {
-        public OpenIddictValidationMiddleware(
-            [NotNull] RequestDelegate next,
-            [NotNull] IOptions<OpenIddictValidationOptions> options,
-            [NotNull] ILoggerFactory loggerFactory,
-            [NotNull] UrlEncoder encoder,
-            [NotNull] IDataProtectionProvider dataProtectionProvider)
-            : base(next, options, loggerFactory, encoder, dataProtectionProvider)
-        {
-        }
-
-        protected override AuthenticationHandler<OAuthValidationOptions> CreateHandler()
-            => new OpenIddictValidationHandler<TToken>();
-    }
 }

@@ -20,18 +20,16 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 
 namespace OpenIddict.Server
 {
-    public partial class OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override async Task ExtractLogoutRequest([NotNull] ExtractLogoutRequestContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
 
             // If a request_id parameter can be found in the logout request,
             // restore the complete logout request from the distributed cache.
@@ -86,8 +84,8 @@ namespace OpenIddict.Server
 
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context)
         {
-            var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+            var applicationManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationManager>();
 
             // If an optional post_logout_redirect_uri was provided, validate it.
             if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))
@@ -116,7 +114,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                if (!await applications.ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
+                if (!await applicationManager.ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                 {
                     logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
                                     "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);

@@ -5,14 +5,11 @@
  */
 
 using System;
-using System.Text;
-using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
-using OpenIddict.Core;
 using OpenIddict.Validation;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -75,14 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(app));
             }
 
-            var configuration = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
-
             var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictValidationOptions>>().Value;
-            if (options.Events == null)
-            {
-                options.Events = new OAuthValidationEvents();
-            }
-
             if (options.DataProtectionProvider == null)
             {
                 options.DataProtectionProvider = app.ApplicationServices.GetDataProtectionProvider();
@@ -96,26 +86,6 @@ namespace Microsoft.Extensions.DependencyInjection
                     nameof(options.UseReferenceTokens), "ASOS");
 
                 options.AccessTokenFormat = new TicketDataFormat(protector);
-            }
-
-            if (options.TokenType == null)
-            {
-                options.TokenType = configuration.DefaultTokenType;
-            }
-
-            if (options.UseReferenceTokens)
-            {
-                if (options.TokenType == null)
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The entity types must be configured for the token validation services to work correctly.")
-                        .Append("To configure the entities, use either 'services.AddOpenIddict().AddCore().UseDefaultModels()' ")
-                        .Append("or 'services.AddOpenIddict().AddCore().UseCustomModels()'.")
-                        .ToString());
-                }
-
-                return app.UseMiddleware(typeof(OpenIddictValidationMiddleware<>)
-                    .MakeGenericType(options.TokenType), new OptionsWrapper<OpenIddictValidationOptions>(options));
             }
 
             return app.UseMiddleware<OpenIddictValidationMiddleware>(new OptionsWrapper<OpenIddictValidationOptions>(options));

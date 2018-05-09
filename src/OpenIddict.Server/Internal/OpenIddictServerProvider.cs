@@ -18,8 +18,7 @@ using OpenIddict.Abstractions;
 namespace OpenIddict.Server
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public partial class OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task ProcessChallengeResponse([NotNull] ProcessChallengeResponseContext context)
         {
@@ -101,7 +100,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{context.Ticket.GetTokenId()}");
+                var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{context.Ticket.GetTokenId()}");
                 Debug.Assert(token != null, "The token shouldn't be null.");
 
                 // If rolling tokens are enabled or if the request is a grant_type=authorization_code request,

@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using System.Text;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
@@ -16,7 +15,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Core;
 using OpenIddict.Server;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -79,54 +77,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(app));
             }
 
-            var configuration = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
-
-            // Resolve the OpenIddict options from the DI container.
-            var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictServerOptions>>().Value;
-            if (options.ApplicationType == null)
-            {
-                options.ApplicationType = configuration.DefaultApplicationType;
-            }
-
-            if (options.AuthorizationType == null)
-            {
-                options.AuthorizationType = configuration.DefaultAuthorizationType;
-            }
-
-            if (options.ScopeType == null)
-            {
-                options.ScopeType = configuration.DefaultScopeType;
-            }
-
-            if (options.TokenType == null)
-            {
-                options.TokenType = configuration.DefaultTokenType;
-            }
-
-            if (options.ApplicationType == null || options.AuthorizationType == null ||
-                options.ScopeType == null || options.TokenType == null)
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The entity types must be configured for the token server services to work correctly.")
-                    .Append("To configure the entities, use either 'services.AddOpenIddict().AddCore().UseDefaultModels()' ")
-                    .Append("or 'services.AddOpenIddict().AddCore().UseCustomModels()'.")
-                    .ToString());
-            }
-
-            // When no authorization provider has been registered in the options,
-            // create a new OpenIddictProvider instance using the specified entities.
-            if (options.Provider == null)
-            {
-                options.Provider = (OpenIdConnectServerProvider) Activator.CreateInstance(
-                    typeof(OpenIddictServerProvider<,,,>).MakeGenericType(
-                        /* TApplication: */ options.ApplicationType,
-                        /* TAuthorization: */ options.AuthorizationType,
-                        /* TScope: */ options.ScopeType,
-                        /* TToken: */ options.TokenType));
-            }
-
             // When no distributed cache has been registered in the options, use the
             // global instance registered in the dependency injection container.
+            var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictServerOptions>>().Value;
             if (options.Cache == null)
             {
                 options.Cache = app.ApplicationServices.GetRequiredService<IDistributedCache>();

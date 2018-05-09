@@ -7,6 +7,7 @@
 using System;
 using System.ComponentModel;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using AspNet.Security.OAuth.Validation;
 using Microsoft.AspNetCore.Authentication;
@@ -15,18 +16,19 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 
 namespace OpenIddict.Validation
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class OpenIddictValidationHandler : OAuthValidationHandler { }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public class OpenIddictValidationHandler<TToken> : OpenIddictValidationHandler where TToken : class
+    public class OpenIddictValidationHandler : OAuthValidationHandler
     {
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            if (!Options.UseReferenceTokens)
+            {
+                return await base.HandleAuthenticateAsync();
+            }
+
             var context = new RetrieveTokenContext(Context, Options);
             await Options.Events.RetrieveToken(context);
 
@@ -199,10 +201,15 @@ namespace OpenIddict.Validation
 
         private async Task<AuthenticateResult> CreateTicketAsync(string payload)
         {
-            var manager = Context.RequestServices.GetService<OpenIddictTokenManager<TToken>>();
+            // Note: the token manager is deliberately not injected using constructor injection
+            // to allow using the validation handler without having to register the core services.
+            var manager = Context.RequestServices.GetService<IOpenIddictTokenManager>();
             if (manager == null)
             {
-                throw new InvalidOperationException("The token manager was not correctly registered.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling reference tokens support.")
+                    .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                    .ToString());
             }
 
             // Retrieve the token entry from the database. If it
@@ -283,5 +290,7 @@ namespace OpenIddict.Validation
 
             return AuthenticateResult.Success(notification.Ticket);
         }
+
+        private new OpenIddictValidationOptions Options => (OpenIddictValidationOptions) base.Options;
     }
 }

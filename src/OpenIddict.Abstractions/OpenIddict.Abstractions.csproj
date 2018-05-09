@@ -3,7 +3,7 @@
   <Import Project="..\..\build\packages.props" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -17,7 +17,12 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
     <PackageReference Include="System.Collections.Immutable" Version="$(ImmutableCollectionsVersion)" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(DataAnnotationsVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(TasksExtensionsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Security.Claims" Version="$(ClaimsVersion)" />
   </ItemGroup>
 
 </Project>

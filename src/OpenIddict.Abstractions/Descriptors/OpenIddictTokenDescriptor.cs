@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace OpenIddict.Core
+namespace OpenIddict.Abstractions
 {
     /// <summary>
     /// Represents an OpenIddict token descriptor.

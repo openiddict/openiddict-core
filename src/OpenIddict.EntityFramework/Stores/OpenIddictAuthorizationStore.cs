@@ -291,7 +291,7 @@ namespace OpenIddict.EntityFramework
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override async Task PruneAsync(CancellationToken cancellationToken = default)
+        public override async Task PruneAsync(CancellationToken cancellationToken)
         {
             // Note: Entity Framework 6.x doesn't support set-based deletes, which prevents removing
             // entities in a single command without having to retrieve and materialize them first.

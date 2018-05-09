@@ -14,19 +14,17 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 
 namespace OpenIddict.Server
 {
-    public partial class OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken> : OpenIdConnectServerProvider
-        where TApplication : class where TAuthorization : class where TScope : class where TToken : class
+    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override async Task ValidateRevocationRequest([NotNull] ValidateRevocationRequestContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var applications = context.HttpContext.RequestServices.GetRequiredService<OpenIddictApplicationManager<TApplication>>();
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken>>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+            var applicationManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationManager>();
 
             Debug.Assert(!options.DisableTokenRevocation, "Token revocation support shouldn't be disabled at this stage.");
 
@@ -82,7 +80,7 @@ namespace OpenIddict.Server
             }
 
             // Retrieve the application details corresponding to the requested client_id.
-            var application = await applications.FindByClientIdAsync(context.ClientId);
+            var application = await applicationManager.FindByClientIdAsync(context.ClientId);
             if (application == null)
             {
                 logger.LogError("The revocation request was rejected because the client " +
@@ -100,7 +98,7 @@ namespace OpenIddict.Server
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the revocation endpoint.
-            if (!await applications.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Revocation))
+            if (!await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Revocation))
             {
                 logger.LogError("The revocation request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the revocation endpoint.", context.ClientId);
@@ -113,7 +111,7 @@ namespace OpenIddict.Server
             }
 
             // Reject revocation requests containing a client_secret if the application is a public client.
-            if (await applications.IsPublicAsync(application))
+            if (await applicationManager.IsPublicAsync(application))
             {
                 if (!string.IsNullOrEmpty(context.ClientSecret))
                 {
@@ -151,7 +149,7 @@ namespace OpenIddict.Server
                 return;
             }
 
-            if (!await applications.ValidateClientSecretAsync(application, context.ClientSecret))
+            if (!await applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
             {
                 logger.LogError("The revocation request was rejected because the confidential or hybrid application " +
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
@@ -170,8 +168,8 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider<TApplication, TAuthorization, TScope, TToken>>>();
-            var tokens = context.HttpContext.RequestServices.GetRequiredService<OpenIddictTokenManager<TToken>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+            var tokenManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictTokenManager>();
 
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
@@ -205,10 +203,10 @@ namespace OpenIddict.Server
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
             // Retrieve the token from the request properties. If it's already marked as revoked, directly return a 200 response.
-            var token = context.Request.GetProperty<TToken>($"{OpenIddictConstants.Properties.Token}:{identifier}");
+            var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
             Debug.Assert(token != null, "The token shouldn't be null.");
 
-            if (await tokens.IsRevokedAsync(token))
+            if (await tokenManager.IsRevokedAsync(token))
             {
                 logger.LogInformation("The token '{Identifier}' was not revoked because " +
                                       "it was already marked as invalid.", identifier);
@@ -223,7 +221,7 @@ namespace OpenIddict.Server
             // will be returned to the client application.
             try
             {
-                await tokens.RevokeAsync(token);
+                await tokenManager.RevokeAsync(token);
             }
 
             catch (Exception exception)
