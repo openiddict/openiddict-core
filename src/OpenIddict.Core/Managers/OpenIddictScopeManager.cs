@@ -242,6 +242,51 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves all the scopes that contain the specified resource.
+        /// </summary>
+        /// <param name="resource">The resource associated with the scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scopes associated with the specified resource.
+        /// </returns>
+        public virtual async Task<ImmutableArray<TScope>> FindByResourceAsync(
+            [NotNull] string resource, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var scopes = await Store.FindByResourceAsync(resource, cancellationToken);
+            if (scopes.IsEmpty)
+            {
+                return ImmutableArray.Create<TScope>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<TScope>(scopes.Length);
+
+            foreach (var scope in scopes)
+            {
+                foreach (var value in await Store.GetResourcesAsync(scope, cancellationToken))
+                {
+                    if (string.Equals(value, resource, StringComparison.Ordinal))
+                    {
+                        builder.Add(scope);
+                    }
+                }
+            }
+
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
+        }
+
+        /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
@@ -649,6 +694,9 @@ namespace OpenIddict.Core
 
         async Task<ImmutableArray<object>> IOpenIddictScopeManager.FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken)
             => (await FindByNamesAsync(names, cancellationToken)).CastArray<object>();
+
+        async Task<ImmutableArray<object>> IOpenIddictScopeManager.FindByResourceAsync(string resource, CancellationToken cancellationToken)
+            => (await FindByResourceAsync(resource, cancellationToken)).CastArray<object>();
 
         Task<TResult> IOpenIddictScopeManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => GetAsync(query, cancellationToken);

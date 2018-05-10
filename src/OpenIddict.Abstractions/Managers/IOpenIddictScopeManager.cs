@@ -104,6 +104,17 @@ namespace OpenIddict.Abstractions
         Task<ImmutableArray<object>> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Retrieves all the scopes that contain the specified resource.
+        /// </summary>
+        /// <param name="resource">The resource associated with the scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scopes associated with the specified resource.
+        /// </returns>
+        Task<ImmutableArray<object>> FindByResourceAsync([NotNull] string resource, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TResult">The result type.</typeparam>
