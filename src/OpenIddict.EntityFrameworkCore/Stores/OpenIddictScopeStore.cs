@@ -228,6 +228,52 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Retrieves all the scopes that contain the specified resource.
+        /// </summary>
+        /// <param name="resource">The resource associated with the scopes.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the scopes associated with the specified resource.
+        /// </returns>
+        public override async Task<ImmutableArray<TScope>> FindByResourceAsync(
+            [NotNull] string resource, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+            }
+
+            // To optimize the efficiency of the query a bit, only scopes whose stringified
+            // Resources column contains the specified resource are returned. Once the scopes
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this method in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
+            var query = Cache.GetOrCreate("45bae754-72fc-422c-b3a2-90867600a029", entry =>
+            {
+                entry.SetPriority(CacheItemPriority.NeverRemove);
+
+                return EF.CompileAsyncQuery((TContext context, string value) =>
+                    from scope in context.Set<TScope>().AsTracking()
+                    where scope.Resources.Contains(value)
+                    select scope);
+            });
+
+            var builder = ImmutableArray.CreateBuilder<TScope>();
+
+            foreach (var scope in await query(Context, resource).ToListAsync(cancellationToken))
+            {
+                var resources = await GetResourcesAsync(scope, cancellationToken);
+                if (resources.Contains(resource, StringComparer.Ordinal))
+                {
+                    builder.Add(scope);
+                }
+            }
+
+            return builder.ToImmutable();
+        }
+
+        /// <summary>
         /// Executes the specified query and returns the first element.
         /// </summary>
         /// <typeparam name="TState">The state type.</typeparam>
