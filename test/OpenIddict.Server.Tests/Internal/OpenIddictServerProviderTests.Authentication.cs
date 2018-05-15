@@ -16,7 +16,6 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using OpenIddict.Abstractions;
-using OpenIddict.Models;
 using Xunit;
 
 namespace OpenIddict.Server.Tests

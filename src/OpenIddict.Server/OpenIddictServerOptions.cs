@@ -60,11 +60,6 @@ namespace OpenIddict.Server
         };
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether scope validation is enabled.
-        /// </summary>
-        public bool EnableScopeValidation { get; set; }
-
-        /// <summary>
         /// Gets or sets a boolean indicating whether token revocation should be disabled.
         /// When disabled, authorization code and refresh tokens are not stored
         /// and cannot be revoked. Using this option is generally not recommended.
@@ -79,6 +74,11 @@ namespace OpenIddict.Server
         /// or when large GET or POST OpenID Connect authorization requests support is required.
         /// </summary>
         public bool EnableRequestCaching { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether scope validation is enabled.
+        /// </summary>
+        public bool EnableScopeValidation { get; set; }
 
         /// <summary>
         /// Gets the OAuth2/OpenID Connect flows enabled for this application.

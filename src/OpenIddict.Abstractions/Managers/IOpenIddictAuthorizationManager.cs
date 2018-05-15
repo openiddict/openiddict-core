@@ -306,7 +306,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        Task<ImmutableArray<object>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken = default);
+        Task<ImmutableArray<object>> ListAsync([CanBeNull] int? count = null, [CanBeNull] int? offset = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

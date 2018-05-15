@@ -8,22 +8,40 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Core;
-using OpenIddict.Models;
+using OpenIddict.EntityFrameworkCore.Models;
 using Xunit;
 
-namespace OpenIddict.Tests
+namespace OpenIddict.EntityFrameworkCore.Tests
 {
-    public class OpenIddictExtensionsTests
+    public class OpenIddictEntityFrameworkCoreExtensionsTests
     {
-        [Fact]
-        public void UseDefaultModels_KeyTypeDefaultsToString()
+        [Theory]
+        [InlineData(typeof(OpenIddictApplicationStoreResolver))]
+        [InlineData(typeof(OpenIddictAuthorizationStoreResolver))]
+        [InlineData(typeof(OpenIddictScopeStoreResolver))]
+        [InlineData(typeof(OpenIddictTokenStoreResolver))]
+        public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreFactories(Type type)
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = services.AddOpenIddict().AddCore();
 
             // Act
-            builder.UseDefaultModels();
+            builder.UseEntityFrameworkCore();
+
+            // Assert
+            Assert.Contains(services, service => service.ImplementationType == type);
+        }
+
+        [Fact]
+        public void UseEntityFrameworkCore_KeyTypeDefaultsToString()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = services.AddOpenIddict().AddCore();
+
+            // Act
+            builder.UseEntityFrameworkCore();
 
             // Assert
             var provider = services.BuildServiceProvider();
@@ -36,14 +54,14 @@ namespace OpenIddict.Tests
         }
 
         [Fact]
-        public void UseDefaultModels_KeyTypeCanBeOverriden()
+        public void UseEntityFrameworkCore_KeyTypeCanBeOverriden()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = services.AddOpenIddict().AddCore();
 
             // Act
-            builder.UseDefaultModels<Guid>();
+            builder.UseEntityFrameworkCore().ReplaceDefaultEntities<Guid>();
 
             // Assert
             var provider = services.BuildServiceProvider();

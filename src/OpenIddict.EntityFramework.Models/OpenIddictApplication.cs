@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace OpenIddict.Models
+namespace OpenIddict.EntityFramework.Models
 {
     /// <summary>
     /// Represents an OpenIddict application.
@@ -20,13 +20,6 @@ namespace OpenIddict.Models
             Id = Guid.NewGuid().ToString();
         }
     }
-
-    /// <summary>
-    /// Represents an OpenIddict application.
-    /// </summary>
-    public class OpenIddictApplication<TKey> : OpenIddictApplication<TKey, OpenIddictAuthorization<TKey>, OpenIddictToken<TKey>>
-        where TKey : IEquatable<TKey>
-    { }
 
     /// <summary>
     /// Represents an OpenIddict application.

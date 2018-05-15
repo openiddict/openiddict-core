@@ -10,36 +10,69 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.EntityFrameworkCore;
-using OpenIddict.Models;
+using OpenIddict.EntityFrameworkCore.Models;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class OpenIddictExtensions
+    public static class OpenIddictEntityFrameworkCoreExtensions
     {
         /// <summary>
-        /// Registers the Entity Framework Core stores. Note: when using the Entity Framework Core stores,
-        /// the entities MUST be derived from the models contained in the OpenIddict.Models package.
+        /// Registers the Entity Framework Core stores services in the DI container and
+        /// configures OpenIddict to use the Entity Framework Core entities by default.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public static OpenIddictCoreBuilder AddEntityFrameworkCoreStores<TContext>([NotNull] this OpenIddictCoreBuilder builder)
-            where TContext : DbContext
+        /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
+        public static OpenIddictEntityFrameworkCoreBuilder UseEntityFrameworkCore([NotNull] this OpenIddictCoreBuilder builder)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            builder.SetDefaultApplicationEntity<OpenIddictApplication>()
+                   .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                   .SetDefaultScopeEntity<OpenIddictScope>()
+                   .SetDefaultTokenEntity<OpenIddictToken>();
+
+            builder.ReplaceApplicationStoreResolver<OpenIddictApplicationStoreResolver>()
+                   .ReplaceAuthorizationStoreResolver<OpenIddictAuthorizationStoreResolver>()
+                   .ReplaceScopeStoreResolver<OpenIddictScopeStoreResolver>()
+                   .ReplaceTokenStoreResolver<OpenIddictTokenStoreResolver>();
+
             builder.Services.TryAddScoped(typeof(OpenIddictApplicationStore<,,,,>));
             builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationStore<,,,,>));
             builder.Services.TryAddScoped(typeof(OpenIddictScopeStore<,,>));
             builder.Services.TryAddScoped(typeof(OpenIddictTokenStore<,,,,>));
 
-            return builder.ReplaceApplicationStoreResolver<OpenIddictApplicationStoreResolver<TContext>>()
-                          .ReplaceAuthorizationStoreResolver<OpenIddictAuthorizationStoreResolver<TContext>>()
-                          .ReplaceScopeStoreResolver<OpenIddictScopeStoreResolver<TContext>>()
-                          .ReplaceTokenStoreResolver<OpenIddictTokenStoreResolver<TContext>>();
+            return new OpenIddictEntityFrameworkCoreBuilder(builder.Services);
+        }
+
+        /// <summary>
+        /// Registers the Entity Framework Core stores services in the DI container and
+        /// configures OpenIddict to use the Entity Framework Core entities by default.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <param name="configuration">The configuration delegate used to configure the Entity Framework Core services.</param>
+        /// <remarks>This extension can be safely called multiple times.</remarks>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public static OpenIddictCoreBuilder UseEntityFrameworkCore(
+            [NotNull] this OpenIddictCoreBuilder builder,
+            [NotNull] Action<OpenIddictEntityFrameworkCoreBuilder> configuration)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            configuration(builder.UseEntityFrameworkCore());
+
+            return builder;
         }
 
         /// <summary>
@@ -85,7 +118,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.ReplaceService<IModelCustomizer, OpenIddictCustomizer<TApplication, TAuthorization, TScope, TToken, TKey>>();
+            return builder.ReplaceService<IModelCustomizer, OpenIddictEntityFrameworkCoreCustomizer<
+                TApplication, TAuthorization, TScope, TToken, TKey>>();
         }
 
         /// <summary>
@@ -184,8 +218,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 entity.HasMany(authorization => authorization.Tokens)
                       .WithOne(token => token.Authorization)
                       .HasForeignKey("AuthorizationId")
-                      .IsRequired(required: false)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .IsRequired(required: false);
 
                 entity.ToTable("OpenIddictAuthorizations");
             });

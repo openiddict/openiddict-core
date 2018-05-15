@@ -317,7 +317,14 @@ namespace OpenIddict.Server.Tests
                 services.AddDistributedMemoryCache();
 
                 services.AddOpenIddict()
-                    .AddCore(options => options.UseDefaultModels())
+                    .AddCore(options =>
+                    {
+                        options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                               .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                               .SetDefaultScopeEntity<OpenIddictScope>()
+                               .SetDefaultTokenEntity<OpenIddictToken>();
+                    })
+
                     .AddServer(options => configuration?.Invoke(options));
             });
 
@@ -330,5 +337,10 @@ namespace OpenIddict.Server.Tests
 
             return new TestServer(builder);
         }
+
+        public class OpenIddictApplication { }
+        public class OpenIddictAuthorization { }
+        public class OpenIddictScope { }
+        public class OpenIddictToken { }
     }
 }

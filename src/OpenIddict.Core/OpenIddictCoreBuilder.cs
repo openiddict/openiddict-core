@@ -63,9 +63,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// must be either a non-generic or closed generic service.
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddApplicationStore<TStore>() where TStore : class
-            => AddApplicationStore(typeof(TStore));
+        public OpenIddictCoreBuilder AddApplicationStore<TStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TStore : class
+            => AddApplicationStore(typeof(TStore), lifetime);
 
         /// <summary>
         /// Adds a custom application store by a custom implementation derived
@@ -74,8 +76,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// either a non-generic, a closed or an open generic service.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddApplicationStore([NotNull] Type type)
+        public OpenIddictCoreBuilder AddApplicationStore(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -97,13 +101,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
-                Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictApplicationStore<>), type));
+                Services.Replace(new ServiceDescriptor(typeof(IOpenIddictApplicationStore<>), type, lifetime));
             }
 
             else
             {
-                Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictApplicationStore<>)
-                    .MakeGenericType(root.GenericTypeArguments[0]), type));
+                Services.Replace(new ServiceDescriptor(typeof(IOpenIddictApplicationStore<>)
+                    .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
 
             return this;
@@ -116,9 +120,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// must be either a non-generic or closed generic service.
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddAuthorizationStore<TStore>() where TStore : class
-            => AddAuthorizationStore(typeof(TStore));
+        public OpenIddictCoreBuilder AddAuthorizationStore<TStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TStore : class
+            => AddAuthorizationStore(typeof(TStore), lifetime);
 
         /// <summary>
         /// Adds a custom authorization store by a custom implementation derived
@@ -127,8 +133,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// either a non-generic, a closed or an open generic service.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddAuthorizationStore([NotNull] Type type)
+        public OpenIddictCoreBuilder AddAuthorizationStore(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -150,13 +158,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
-                Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictAuthorizationStore<>), type));
+                Services.Replace(new ServiceDescriptor(typeof(IOpenIddictAuthorizationStore<>), type, lifetime));
             }
 
             else
             {
-                Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictAuthorizationStore<>)
-                    .MakeGenericType(root.GenericTypeArguments[0]), type));
+                Services.Replace(new ServiceDescriptor(typeof(IOpenIddictAuthorizationStore<>)
+                    .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
 
             return this;
@@ -169,9 +177,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// must be either a non-generic or closed generic service.
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddScopeStore<TStore>() where TStore : class
-            => AddScopeStore(typeof(TStore));
+        public OpenIddictCoreBuilder AddScopeStore<TStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TStore : class
+            => AddScopeStore(typeof(TStore), lifetime);
 
         /// <summary>
         /// Adds a custom scope store by a custom implementation derived
@@ -180,8 +190,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// either a non-generic, a closed or an open generic service.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddScopeStore([NotNull] Type type)
+        public OpenIddictCoreBuilder AddScopeStore(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -203,13 +215,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
-                Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictScopeStore<>), type));
+                Services.Replace(new ServiceDescriptor(typeof(IOpenIddictScopeStore<>), type, lifetime));
             }
 
             else
             {
-                Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictScopeStore<>)
-                    .MakeGenericType(root.GenericTypeArguments[0]), type));
+                Services.Replace(new ServiceDescriptor(typeof(IOpenIddictScopeStore<>)
+                    .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
 
             return this;
@@ -222,9 +234,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// must be either a non-generic or closed generic service.
         /// </summary>
         /// <typeparam name="TStore">The type of the custom store.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddTokenStore<TStore>() where TStore : class
-            => AddTokenStore(typeof(TStore));
+        public OpenIddictCoreBuilder AddTokenStore<TStore>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TStore : class
+            => AddTokenStore(typeof(TStore), lifetime);
 
         /// <summary>
         /// Adds a custom token store by a custom implementation derived
@@ -233,8 +247,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// either a non-generic, a closed or an open generic service.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder AddTokenStore([NotNull] Type type)
+        public OpenIddictCoreBuilder AddTokenStore(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -256,13 +272,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
-                Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictTokenStore<>), type));
+                Services.Replace(new ServiceDescriptor(typeof(IOpenIddictTokenStore<>), type, lifetime));
             }
 
             else
             {
-                Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictTokenStore<>)
-                    .MakeGenericType(root.GenericTypeArguments[0]), type));
+                Services.Replace(new ServiceDescriptor(typeof(IOpenIddictTokenStore<>)
+                    .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
 
             return this;
@@ -271,12 +287,27 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Replace the default application manager by a custom manager derived
         /// from <see cref="OpenIddictApplicationManager{TApplication}"/>.
+        /// Note: when using this overload, the application manager
+        /// must be either a non-generic or closed generic service.
+        /// </summary>
+        /// <typeparam name="TManager">The type of the custom manager.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder ReplaceApplicationManager<TManager>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TManager : class
+            => ReplaceApplicationManager(typeof(TManager), lifetime);
+
+        /// <summary>
+        /// Replace the default application manager by a custom manager derived
+        /// from <see cref="OpenIddictApplicationManager{TApplication}"/>.
         /// Note: when using this overload, the application manager can be
         /// either a non-generic, a closed or an open generic service.
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceApplicationManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceApplicationManager(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -298,13 +329,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
-                Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictApplicationManager<>), type));
+                Services.Replace(new ServiceDescriptor(typeof(OpenIddictApplicationManager<>), type, lifetime));
             }
 
             else
             {
-                Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictApplicationManager<>)
-                    .MakeGenericType(root.GenericTypeArguments[0]), type));
+                Services.Replace(new ServiceDescriptor(typeof(OpenIddictApplicationManager<>)
+                    .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
 
             return this;
@@ -314,17 +345,20 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Replaces the default application store resolver by a custom implementation.
         /// </summary>
         /// <typeparam name="TResolver">The type of the custom store.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceApplicationStoreResolver<TResolver>()
+        public OpenIddictCoreBuilder ReplaceApplicationStoreResolver<TResolver>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TResolver : IOpenIddictApplicationStoreResolver
-            => ReplaceApplicationStoreResolver(typeof(TResolver));
+            => ReplaceApplicationStoreResolver(typeof(TResolver), lifetime);
 
         /// <summary>
         /// Replaces the default application store resolver by a custom implementation.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceApplicationStoreResolver([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceApplicationStoreResolver(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -336,21 +370,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
 
-            Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictApplicationStoreResolver), type));
+            Services.Replace(new ServiceDescriptor(typeof(IOpenIddictApplicationStoreResolver), type, lifetime));
 
             return this;
         }
-
-        /// <summary>
-        /// Replace the default application manager by a custom manager derived
-        /// from <see cref="OpenIddictApplicationManager{TApplication}"/>.
-        /// Note: when using this overload, the application manager
-        /// must be either a non-generic or closed generic service.
-        /// </summary>
-        /// <typeparam name="TManager">The type of the custom manager.</typeparam>
-        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceApplicationManager<TManager>() where TManager : class
-            => ReplaceApplicationManager(typeof(TManager));
 
         /// <summary>
         /// Replace the default authorization manager by a custom manager derived
@@ -359,9 +382,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// must be either a non-generic or closed generic service.
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceAuthorizationManager<TManager>() where TManager : class
-            => ReplaceAuthorizationManager(typeof(TManager));
+        public OpenIddictCoreBuilder ReplaceAuthorizationManager<TManager>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TManager : class
+            => ReplaceAuthorizationManager(typeof(TManager), lifetime);
 
         /// <summary>
         /// Replace the default authorization manager by a custom manager derived
@@ -370,8 +395,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// either a non-generic, a closed or an open generic service.
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceAuthorizationManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceAuthorizationManager(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -393,13 +420,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
-                Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictAuthorizationManager<>), type));
+                Services.Replace(new ServiceDescriptor(typeof(OpenIddictAuthorizationManager<>), type, lifetime));
             }
 
             else
             {
-                Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictAuthorizationManager<>)
-                    .MakeGenericType(root.GenericTypeArguments[0]), type));
+                Services.Replace(new ServiceDescriptor(typeof(OpenIddictAuthorizationManager<>)
+                    .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
 
             return this;
@@ -409,17 +436,20 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Replaces the default authorization store resolver by a custom implementation.
         /// </summary>
         /// <typeparam name="TResolver">The type of the custom store.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver<TResolver>()
+        public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver<TResolver>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TResolver : IOpenIddictAuthorizationStoreResolver
-            => ReplaceAuthorizationStoreResolver(typeof(TResolver));
+            => ReplaceAuthorizationStoreResolver(typeof(TResolver), lifetime);
 
         /// <summary>
         /// Replaces the default authorization store resolver by a custom implementation.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceAuthorizationStoreResolver(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -431,7 +461,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
 
-            Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictAuthorizationStoreResolver), type));
+            Services.Replace(new ServiceDescriptor(typeof(IOpenIddictAuthorizationStoreResolver), type, lifetime));
 
             return this;
         }
@@ -444,8 +474,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceScopeManager<TManager>() where TManager : class
-            => ReplaceScopeManager(typeof(TManager));
+        public OpenIddictCoreBuilder ReplaceScopeManager<TManager>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TManager : class
+            => ReplaceScopeManager(typeof(TManager), lifetime);
 
         /// <summary>
         /// Replace the default scope manager by a custom manager
@@ -454,8 +485,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// either a non-generic, a closed or an open generic service.
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceScopeManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceScopeManager(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -477,13 +510,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
-                Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictScopeManager<>), type));
+                Services.Replace(new ServiceDescriptor(typeof(OpenIddictScopeManager<>), type, lifetime));
             }
 
             else
             {
-                Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictScopeManager<>)
-                    .MakeGenericType(root.GenericTypeArguments[0]), type));
+                Services.Replace(new ServiceDescriptor(typeof(OpenIddictScopeManager<>)
+                    .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
 
             return this;
@@ -493,17 +526,20 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Replaces the default scope store resolver by a custom implementation.
         /// </summary>
         /// <typeparam name="TResolver">The type of the custom store.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceScopeStoreResolver<TResolver>()
+        public OpenIddictCoreBuilder ReplaceScopeStoreResolver<TResolver>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TResolver : IOpenIddictScopeStoreResolver
-            => ReplaceScopeStoreResolver(typeof(TResolver));
+            => ReplaceScopeStoreResolver(typeof(TResolver), lifetime);
 
         /// <summary>
         /// Replaces the default scope store resolver by a custom implementation.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceScopeStoreResolver([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceScopeStoreResolver(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -515,7 +551,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
 
-            Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictScopeStoreResolver), type));
+            Services.Replace(new ServiceDescriptor(typeof(IOpenIddictScopeStoreResolver), type, lifetime));
 
             return this;
         }
@@ -527,9 +563,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// must be either a non-generic or closed generic service.
         /// </summary>
         /// <typeparam name="TManager">The type of the custom manager.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceTokenManager<TManager>() where TManager : class
-            => ReplaceTokenManager(typeof(TManager));
+        public OpenIddictCoreBuilder ReplaceTokenManager<TManager>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TManager : class
+            => ReplaceTokenManager(typeof(TManager), lifetime);
 
         /// <summary>
         /// Replace the default token manager by a custom manager
@@ -538,8 +576,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// either a non-generic, a closed or an open generic service.
         /// </summary>
         /// <param name="type">The type of the custom manager.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceTokenManager([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceTokenManager(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -561,13 +601,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
-                Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictTokenManager<>), type));
+                Services.Replace(new ServiceDescriptor(typeof(OpenIddictTokenManager<>), type, lifetime));
             }
 
             else
             {
-                Services.Replace(ServiceDescriptor.Scoped(typeof(OpenIddictTokenManager<>)
-                    .MakeGenericType(root.GenericTypeArguments[0]), type));
+                Services.Replace(new ServiceDescriptor(typeof(OpenIddictTokenManager<>)
+                    .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
 
             return this;
@@ -577,17 +617,20 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Replaces the default token store resolver by a custom implementation.
         /// </summary>
         /// <typeparam name="TResolver">The type of the custom store.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceTokenStoreResolver<TResolver>()
+        public OpenIddictCoreBuilder ReplaceTokenStoreResolver<TResolver>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TResolver : IOpenIddictTokenStoreResolver
-            => ReplaceTokenStoreResolver(typeof(TResolver));
+            => ReplaceTokenStoreResolver(typeof(TResolver), lifetime);
 
         /// <summary>
         /// Replaces the default token store resolver by a custom implementation.
         /// </summary>
         /// <param name="type">The type of the custom store.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder ReplaceTokenStoreResolver([NotNull] Type type)
+        public OpenIddictCoreBuilder ReplaceTokenStoreResolver(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -599,30 +642,41 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
 
-            Services.Replace(ServiceDescriptor.Scoped(typeof(IOpenIddictTokenStoreResolver), type));
+            Services.Replace(new ServiceDescriptor(typeof(IOpenIddictTokenStoreResolver), type, lifetime));
 
             return this;
         }
 
         /// <summary>
-        /// Configures OpenIddict to use the specified entities.
+        /// Configures OpenIddict to use the specified entity as the default application entity.
         /// </summary>
-        /// <typeparam name="TApplication">The type corresponding to the Application entity.</typeparam>
-        /// <typeparam name="TAuthorization">The type corresponding to the Authorization entity.</typeparam>
-        /// <typeparam name="TScope">The type corresponding to the Scope entity.</typeparam>
-        /// <typeparam name="TToken">The type corresponding to the Token entity.</typeparam>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder UseCustomModels<TApplication, TAuthorization, TScope, TToken>()
-            where TApplication : class
-            where TAuthorization : class
-            where TScope : class
-            where TToken : class
-            => Configure(options =>
-            {
-                options.DefaultApplicationType = typeof(TApplication);
-                options.DefaultAuthorizationType = typeof(TAuthorization);
-                options.DefaultScopeType = typeof(TScope);
-                options.DefaultTokenType = typeof(TToken);
-            });
+        public OpenIddictCoreBuilder SetDefaultApplicationEntity<TApplication>()
+            where TApplication : class, new()
+            => Configure(options => options.DefaultApplicationType = typeof(TApplication));
+
+        /// <summary>
+        /// Configures OpenIddict to use the specified entity as the default authorization entity.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder SetDefaultAuthorizationEntity<TAuthorization>()
+            where TAuthorization : class, new()
+            => Configure(options => options.DefaultAuthorizationType = typeof(TAuthorization));
+
+        /// <summary>
+        /// Configures OpenIddict to use the specified entity as the default scope entity.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder SetDefaultScopeEntity<TScope>()
+            where TScope : class, new()
+            => Configure(options => options.DefaultScopeType = typeof(TScope));
+
+        /// <summary>
+        /// Configures OpenIddict to use the specified entity as the default token entity.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder SetDefaultTokenEntity<TToken>()
+            where TToken : class, new()
+            => Configure(options => options.DefaultTokenType = typeof(TToken));
     }
 }

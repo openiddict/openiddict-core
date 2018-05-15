@@ -6,33 +6,36 @@
 
 using System;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using OpenIddict.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using OpenIddict.Abstractions;
+using OpenIddict.EntityFrameworkCore.Models;
 
 namespace OpenIddict.EntityFrameworkCore
 {
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in a database.
-    /// Note: this class can only be used with the default OpenIddict entities.
     /// </summary>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     public class OpenIddictScopeStore<TContext> : OpenIddictScopeStore<OpenIddictScope, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictScopeStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
-            : base(context, cache)
+        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
+            : base(cache, context)
         {
         }
     }
 
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in a database.
-    /// Note: this class can only be used with the default OpenIddict entities.
     /// </summary>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
@@ -40,44 +43,54 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
-            : base(context, cache)
+        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
+            : base(cache, context)
         {
         }
     }
 
     /// <summary>
     /// Provides methods allowing to manage the scopes stored in a database.
-    /// Note: this class can only be used with the default OpenIddict entities.
     /// </summary>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
-    public class OpenIddictScopeStore<TScope, TContext, TKey> : Stores.OpenIddictScopeStore<TScope, TKey>
+    public class OpenIddictScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
         where TScope : OpenIddictScope<TKey>, new()
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore([NotNull] TContext context, [NotNull] IMemoryCache cache)
-            : base(cache)
+        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
+            Cache = cache;
             Context = context;
         }
 
         /// <summary>
+        /// Gets the memory cached associated with the current store.
+        /// </summary>
+        protected IMemoryCache Cache { get; }
+
+        /// <summary>
         /// Gets the database context associated with the current store.
         /// </summary>
-        protected virtual TContext Context { get; }
+        protected TContext Context { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TScope"/> entity.
         /// </summary>
-        protected DbSet<TScope> Scopes => Context.Set<TScope>();
+        private DbSet<TScope> Scopes => Context.Set<TScope>();
+
+        /// <summary>
+        /// Determines the number of scopes that exist in the database.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the number of scopes in the database.
+        /// </returns>
+        public virtual Task<long> CountAsync(CancellationToken cancellationToken)
+            => Scopes.LongCountAsync();
 
         /// <summary>
         /// Determines the number of scopes that match the specified query.
@@ -89,7 +102,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes that match the specified query.
         /// </returns>
-        public override Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -107,7 +120,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override Task CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual Task CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -127,7 +140,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual async Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -136,7 +149,18 @@ namespace OpenIddict.EntityFrameworkCore
 
             Context.Remove(scope);
 
-            return Context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (DbUpdateConcurrencyException exception)
+            {
+                throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                    .AppendLine("The scope was concurrently updated and cannot be persisted in its current state.")
+                    .Append("Reload the scope from the database and retry the operation.")
+                    .ToString(), exception);
+            }
         }
 
         /// <summary>
@@ -148,7 +172,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the identifier.
         /// </returns>
-        public override Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -177,7 +201,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the specified name.
         /// </returns>
-        public override Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
+        public virtual Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -206,7 +230,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scopes corresponding to the specified names.
         /// </returns>
-        public override async Task<ImmutableArray<TScope>> FindByNamesAsync(
+        public virtual async Task<ImmutableArray<TScope>> FindByNamesAsync(
             ImmutableArray<string> names, CancellationToken cancellationToken)
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
@@ -236,7 +260,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scopes associated with the specified resource.
         /// </returns>
-        public override async Task<ImmutableArray<TScope>> FindByResourceAsync(
+        public virtual async Task<ImmutableArray<TScope>> FindByResourceAsync(
             [NotNull] string resource, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(resource))
@@ -285,7 +309,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public override Task<TResult> GetAsync<TState, TResult>(
+        public virtual Task<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -295,6 +319,182 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return query(Scopes.AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieves the description associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the description associated with the specified scope.
+        /// </returns>
+        public virtual ValueTask<string> GetDescriptionAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return new ValueTask<string>(scope.Description);
+        }
+
+        /// <summary>
+        /// Retrieves the display name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the display name associated with the scope.
+        /// </returns>
+        public virtual ValueTask<string> GetDisplayNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return new ValueTask<string>(scope.DisplayName);
+        }
+
+        /// <summary>
+        /// Retrieves the unique identifier associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the unique identifier associated with the scope.
+        /// </returns>
+        public virtual ValueTask<string> GetIdAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return new ValueTask<string>(ConvertIdentifierToString(scope.Id));
+        }
+
+        /// <summary>
+        /// Retrieves the name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the name associated with the specified scope.
+        /// </returns>
+        public virtual ValueTask<string> GetNameAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            return new ValueTask<string>(scope.Name);
+        }
+
+        /// <summary>
+        /// Retrieves the additional properties associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the additional properties associated with the scope.
+        /// </returns>
+        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (string.IsNullOrEmpty(scope.Properties))
+            {
+                return new ValueTask<JObject>(new JObject());
+            }
+
+            return new ValueTask<JObject>(JObject.Parse(scope.Properties));
+        }
+
+        /// <summary>
+        /// Retrieves the resources associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the resources associated with the scope.
+        /// </returns>
+        public virtual ValueTask<ImmutableArray<string>> GetResourcesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (string.IsNullOrEmpty(scope.Resources))
+            {
+                return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
+            }
+
+            // Note: parsing the stringified resources is an expensive operation.
+            // To mitigate that, the resulting array is stored in the memory cache.
+            var key = string.Concat("b6148250-aede-4fb9-a621-07c9bcf238c3", "\x1e", scope.Resources);
+            var resources = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JArray.Parse(scope.Resources)
+                    .Select(element => (string) element)
+                    .ToImmutableArray();
+            });
+
+            return new ValueTask<ImmutableArray<string>>(resources);
+        }
+
+        /// <summary>
+        /// Instantiates a new scope.
+        /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the instantiated scope, that can be persisted in the database.
+        /// </returns>
+        public virtual ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken)
+            => new ValueTask<TScope>(new TScope());
+
+        /// <summary>
+        /// Executes the specified query and returns all the corresponding elements.
+        /// </summary>
+        /// <param name="count">The number of results to return.</param>
+        /// <param name="offset">The number of results to skip.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the elements returned when executing the specified query.
+        /// </returns>
+        public virtual async Task<ImmutableArray<TScope>> ListAsync(
+            [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        {
+            var query = Scopes.OrderBy(scope => scope.Id).AsQueryable();
+
+            if (offset.HasValue)
+            {
+                query = query.Skip(offset.Value);
+            }
+
+            if (count.HasValue)
+            {
+                query = query.Take(count.Value);
+            }
+
+            return ImmutableArray.CreateRange(await query.ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -309,7 +509,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        public override async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        public virtual async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -322,6 +522,125 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Sets the description associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="description">The description associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetDescriptionAsync([NotNull] TScope scope, [CanBeNull] string description, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            scope.Description = description;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the display name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="name">The display name associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetDisplayNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            scope.DisplayName = name;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the name associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="name">The name associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            scope.Name = name;
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the additional properties associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="properties">The additional properties associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetPropertiesAsync([NotNull] TScope scope, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (properties == null)
+            {
+                scope.Properties = null;
+
+                return Task.CompletedTask;
+            }
+
+            scope.Properties = properties.ToString(Formatting.None);
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets the resources associated with a scope.
+        /// </summary>
+        /// <param name="scope">The scope.</param>
+        /// <param name="resources">The resources associated with the scope.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public virtual Task SetResourcesAsync([NotNull] TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            if (resources.IsDefaultOrEmpty)
+            {
+                scope.Resources = null;
+
+                return Task.CompletedTask;
+            }
+
+            scope.Resources = new JArray(resources.ToArray()).ToString(Formatting.None);
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// Updates an existing scope.
         /// </summary>
         /// <param name="scope">The scope to update.</param>
@@ -329,7 +648,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public override Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual async Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -344,7 +663,48 @@ namespace OpenIddict.EntityFrameworkCore
 
             Context.Update(scope);
 
-            return Context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (DbUpdateConcurrencyException exception)
+            {
+                throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                    .AppendLine("The scope was concurrently updated and cannot be persisted in its current state.")
+                    .Append("Reload the scope from the database and retry the operation.")
+                    .ToString(), exception);
+            }
+        }
+
+        /// <summary>
+        /// Converts the provided identifier to a strongly typed key object.
+        /// </summary>
+        /// <param name="identifier">The identifier to convert.</param>
+        /// <returns>An instance of <typeparamref name="TKey"/> representing the provided identifier.</returns>
+        public virtual TKey ConvertIdentifierFromString([CanBeNull] string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                return default;
+            }
+
+            return (TKey) TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(identifier);
+        }
+
+        /// <summary>
+        /// Converts the provided identifier to its string representation.
+        /// </summary>
+        /// <param name="identifier">The identifier to convert.</param>
+        /// <returns>A <see cref="string"/> representation of the provided identifier.</returns>
+        public virtual string ConvertIdentifierToString([CanBeNull] TKey identifier)
+        {
+            if (Equals(identifier, default(TKey)))
+            {
+                return null;
+            }
+
+            return TypeDescriptor.GetConverter(typeof(TKey)).ConvertToInvariantString(identifier);
         }
     }
 }

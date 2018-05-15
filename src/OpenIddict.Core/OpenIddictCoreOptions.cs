@@ -8,6 +8,9 @@ using System;
 
 namespace OpenIddict.Core
 {
+    /// <summary>
+    /// Provides various settings needed to configure the OpenIddict core services.
+    /// </summary>
     public class OpenIddictCoreOptions
     {
         /// <summary>

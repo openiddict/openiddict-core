@@ -756,7 +756,7 @@ namespace OpenIddict.Core
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
         public virtual Task<ImmutableArray<TAuthorization>> ListAsync(
-            [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken = default)
+            [CanBeNull] int? count = null, [CanBeNull] int? offset = null, CancellationToken cancellationToken = default)
         {
             return Store.ListAsync(count, offset, cancellationToken);
         }

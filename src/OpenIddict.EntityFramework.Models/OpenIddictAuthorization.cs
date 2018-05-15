@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace OpenIddict.Models
+namespace OpenIddict.EntityFramework.Models
 {
     /// <summary>
     /// Represents an OpenIddict authorization.
@@ -20,13 +20,6 @@ namespace OpenIddict.Models
             Id = Guid.NewGuid().ToString();
         }
     }
-
-    /// <summary>
-    /// Represents an OpenIddict authorization.
-    /// </summary>
-    public class OpenIddictAuthorization<TKey> : OpenIddictAuthorization<TKey, OpenIddictApplication<TKey>, OpenIddictToken<TKey>>
-        where TKey : IEquatable<TKey>
-    { }
 
     /// <summary>
     /// Represents an OpenIddict authorization.
@@ -72,8 +65,7 @@ namespace OpenIddict.Models
         public virtual string Subject { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of tokens
-        /// associated with the current authorization.
+        /// Gets the list of tokens associated with the current authorization.
         /// </summary>
         public virtual IList<TToken> Tokens { get; } = new List<TToken>();
 

@@ -671,7 +671,14 @@ namespace OpenIddict.Server.Tests
 
         private static OpenIddictServerBuilder CreateBuilder(IServiceCollection services)
             => services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels())
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
                 .AddServer();
 
         private static IServiceCollection CreateServices()
@@ -695,5 +702,10 @@ namespace OpenIddict.Server.Tests
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>();
             return options.Get(OpenIddictServerDefaults.AuthenticationScheme);
         }
+
+        public class OpenIddictApplication { }
+        public class OpenIddictAuthorization { }
+        public class OpenIddictScope { }
+        public class OpenIddictToken { }
     }
 }

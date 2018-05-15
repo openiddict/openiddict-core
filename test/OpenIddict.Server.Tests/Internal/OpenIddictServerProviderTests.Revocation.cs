@@ -17,7 +17,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using OpenIddict.Abstractions;
-using OpenIddict.Models;
 using Xunit;
 
 namespace OpenIddict.Server.Tests

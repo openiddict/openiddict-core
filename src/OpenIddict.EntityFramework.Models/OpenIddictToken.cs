@@ -6,7 +6,7 @@
 
 using System;
 
-namespace OpenIddict.Models
+namespace OpenIddict.EntityFramework.Models
 {
     /// <summary>
     /// Represents an OpenIddict token.
@@ -18,14 +18,6 @@ namespace OpenIddict.Models
             // Generate a new string identifier.
             Id = Guid.NewGuid().ToString();
         }
-    }
-
-    /// <summary>
-    /// Represents an OpenIddict token.
-    /// </summary>
-    public class OpenIddictToken<TKey> : OpenIddictToken<TKey, OpenIddictApplication<TKey>, OpenIddictAuthorization<TKey>>
-        where TKey : IEquatable<TKey>
-    {
     }
 
     /// <summary>

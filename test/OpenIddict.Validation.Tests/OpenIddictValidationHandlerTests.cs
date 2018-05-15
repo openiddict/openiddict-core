@@ -27,7 +27,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
-using OpenIddict.Models;
 using Xunit;
 
 namespace OpenIddict.Validation.Tests
@@ -687,6 +686,11 @@ namespace OpenIddict.Validation.Tests
                 services.AddOpenIddict()
                     .AddCore(options =>
                     {
+                        options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                               .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                               .SetDefaultScopeEntity<OpenIddictScope>()
+                               .SetDefaultTokenEntity<OpenIddictToken>();
+
                         // Replace the default OpenIddict managers.
                         options.Services.AddSingleton(CreateApplicationManager());
                         options.Services.AddSingleton(CreateAuthorizationManager());
@@ -824,5 +828,10 @@ namespace OpenIddict.Validation.Tests
 
             return manager.Object;
         }
+
+        public class OpenIddictApplication { }
+        public class OpenIddictAuthorization { }
+        public class OpenIddictScope { }
+        public class OpenIddictToken { }
     }
 }

@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OpenIddict.Abstractions;
-using OpenIddict.Models;
 using Xunit;
 
 namespace OpenIddict.Server.Tests
@@ -1584,11 +1583,7 @@ namespace OpenIddict.Server.Tests
         public async Task SerializeAccessToken_ReferenceAccessTokenIsCorrectlyPersisted()
         {
             // Arrange
-            var token = new OpenIddictToken
-            {
-                CreationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero),
-                ExpirationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero)
-            };
+            var token = new OpenIddictToken();
 
             var manager = CreateTokenManager(instance =>
             {
@@ -1610,8 +1605,9 @@ namespace OpenIddict.Server.Tests
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
-                    options.AccessTokenLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero));
+                    options.AccessTokenLifetime = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero) -
+                                                  new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero);
                 });
             });
 
@@ -1634,8 +1630,8 @@ namespace OpenIddict.Server.Tests
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.ExpirationDate == token.ExpirationDate &&
-                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.ExpirationDate == new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero) &&
+                    descriptor.CreationDate == new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero) &&
                     descriptor.Payload != null &&
                     descriptor.ReferenceId != null &&
                     descriptor.Subject == "Bob le Magnifique" &&
@@ -1821,11 +1817,7 @@ namespace OpenIddict.Server.Tests
         public async Task SerializeAuthorizationCode_AuthorizationCodeIsCorrectlyPersisted()
         {
             // Arrange
-            var token = new OpenIddictToken
-            {
-                CreationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
-                ExpirationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero)
-            };
+            var token = new OpenIddictToken();
 
             var manager = CreateTokenManager(instance =>
             {
@@ -1867,8 +1859,9 @@ namespace OpenIddict.Server.Tests
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
-                    options.AuthorizationCodeLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero));
+                    options.AuthorizationCodeLifetime = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero) -
+                                                        new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero);
                 });
             });
 
@@ -1887,8 +1880,8 @@ namespace OpenIddict.Server.Tests
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.ExpirationDate == token.ExpirationDate &&
-                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.ExpirationDate == new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero) &&
+                    descriptor.CreationDate == new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero) &&
                     descriptor.Payload == null &&
                     descriptor.ReferenceId == null &&
                     descriptor.Subject == "Bob le Magnifique" &&
@@ -1900,11 +1893,7 @@ namespace OpenIddict.Server.Tests
         public async Task SerializeAuthorizationCode_ReferenceAuthorizationCodeIsCorrectlyPersisted()
         {
             // Arrange
-            var token = new OpenIddictToken
-            {
-                CreationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
-                ExpirationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero)
-            };
+            var token = new OpenIddictToken();
 
             var manager = CreateTokenManager(instance =>
             {
@@ -1951,8 +1940,9 @@ namespace OpenIddict.Server.Tests
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
-                    options.AuthorizationCodeLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero));
+                    options.AuthorizationCodeLifetime = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero) -
+                                                        new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero);
                 });
             });
 
@@ -1974,8 +1964,8 @@ namespace OpenIddict.Server.Tests
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.ExpirationDate == token.ExpirationDate &&
-                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.ExpirationDate == new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero) &&
+                    descriptor.CreationDate == new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero) &&
                     descriptor.Payload != null &&
                     descriptor.ReferenceId != null &&
                     descriptor.Subject == "Bob le Magnifique" &&
@@ -2232,11 +2222,7 @@ namespace OpenIddict.Server.Tests
         public async Task SerializeRefreshToken_RefreshTokenIsCorrectlyPersisted()
         {
             // Arrange
-            var token = new OpenIddictToken
-            {
-                CreationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
-                ExpirationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero)
-            };
+            var token = new OpenIddictToken();
 
             var manager = CreateTokenManager(instance =>
             {
@@ -2253,8 +2239,9 @@ namespace OpenIddict.Server.Tests
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
-                    options.RefreshTokenLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero));
+                    options.RefreshTokenLifetime = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero) -
+                                                   new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero);
                 });
             });
 
@@ -2274,8 +2261,8 @@ namespace OpenIddict.Server.Tests
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.ExpirationDate == token.ExpirationDate &&
-                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.ExpirationDate == new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero) &&
+                    descriptor.CreationDate == new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero) &&
                     descriptor.Payload == null &&
                     descriptor.ReferenceId == null &&
                     descriptor.Subject == "Bob le Magnifique" &&
@@ -2287,11 +2274,7 @@ namespace OpenIddict.Server.Tests
         public async Task SerializeRefreshToken_ReferenceRefreshTokenIsCorrectlyPersisted()
         {
             // Arrange
-            var token = new OpenIddictToken
-            {
-                CreationDate = new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero),
-                ExpirationDate = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero)
-            };
+            var token = new OpenIddictToken();
 
             var manager = CreateTokenManager(instance =>
             {
@@ -2313,8 +2296,9 @@ namespace OpenIddict.Server.Tests
 
                 builder.Configure(options =>
                 {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == token.CreationDate.Value);
-                    options.RefreshTokenLifetime = token.ExpirationDate.Value - token.CreationDate.Value;
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow == new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero));
+                    options.RefreshTokenLifetime = new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero) -
+                                                   new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero);
                 });
             });
 
@@ -2337,8 +2321,8 @@ namespace OpenIddict.Server.Tests
 
             Mock.Get(manager).Verify(mock => mock.CreateAsync(
                 It.Is<OpenIddictTokenDescriptor>(descriptor =>
-                    descriptor.ExpirationDate == token.ExpirationDate &&
-                    descriptor.CreationDate == token.CreationDate &&
+                    descriptor.ExpirationDate == new DateTimeOffset(2017, 01, 02, 00, 00, 00, TimeSpan.Zero) &&
+                    descriptor.CreationDate == new DateTimeOffset(2017, 01, 01, 00, 00, 00, TimeSpan.Zero) &&
                     descriptor.Payload != null &&
                     descriptor.ReferenceId == "B1F0D503-55A4-4B03-B05B-EF07713C18E1" &&
                     descriptor.Subject == "Bob le Magnifique" &&

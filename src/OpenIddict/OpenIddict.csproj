@@ -14,13 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
-    <ProjectReference Include="..\OpenIddict.Models\OpenIddict.Models.csproj" />
     <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
     <ProjectReference Include="..\OpenIddict.Validation\OpenIddict.Validation.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

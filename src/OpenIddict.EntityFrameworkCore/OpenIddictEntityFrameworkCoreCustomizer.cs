@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using OpenIddict.Models;
+using OpenIddict.EntityFrameworkCore.Models;
 
 namespace OpenIddict.EntityFrameworkCore
 {
@@ -17,14 +17,14 @@ namespace OpenIddict.EntityFrameworkCore
     /// Represents a model customizer able to register the entity sets
     /// required by the OpenIddict stack in an Entity Framework context.
     /// </summary>
-    public class OpenIddictCustomizer<TApplication, TAuthorization, TScope, TToken, TKey> : RelationalModelCustomizer
+    public class OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorization, TScope, TToken, TKey> : RelationalModelCustomizer
         where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
         where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
         where TScope : OpenIddictScope<TKey>, new()
         where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictCustomizer([NotNull] ModelCustomizerDependencies dependencies)
+        public OpenIddictEntityFrameworkCoreCustomizer([NotNull] ModelCustomizerDependencies dependencies)
             : base(dependencies)
         {
         }
