@@ -7,11 +7,7 @@
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Facebook;
-using Microsoft.AspNetCore.Authentication.Google;
 using Newtonsoft.Json.Linq;
-using OpenIddict.Abstractions;
 using Xunit;
 
 namespace OpenIddict.Server.Tests
@@ -235,24 +231,6 @@ namespace OpenIddict.Server.Tests
             Assert.False((bool) response[OpenIdConnectConstants.Metadata.ClaimsParameterSupported]);
             Assert.False((bool) response[OpenIdConnectConstants.Metadata.RequestParameterSupported]);
             Assert.False((bool) response[OpenIdConnectConstants.Metadata.RequestUriParameterSupported]);
-        }
-
-        [Fact]
-        public async Task HandleConfigurationRequest_ExternalProvidersAreCorrectlyReturned()
-        {
-            // Arrange
-            var server = CreateAuthorizationServer();
-
-            var client = new OpenIdConnectClient(server.CreateClient());
-
-            // Act
-            var response = await client.GetAsync(ConfigurationEndpoint);
-            var providers = ((JArray) response[OpenIddictConstants.Metadata.ExternalProvidersSupported]).Values<string>();
-
-            // Assert
-            Assert.DoesNotContain(CookieAuthenticationDefaults.AuthenticationScheme, providers);
-            Assert.Contains(FacebookDefaults.AuthenticationScheme, providers);
-            Assert.Contains(GoogleDefaults.AuthenticationScheme, providers);
         }
     }
 }

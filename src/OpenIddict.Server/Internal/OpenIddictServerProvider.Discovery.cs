@@ -4,21 +4,17 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Linq;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
-using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
     public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
-        public override async Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context)
+        public override Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
 
@@ -49,14 +45,7 @@ namespace OpenIddict.Server
             context.Metadata[OpenIdConnectConstants.Metadata.RequestParameterSupported] = false;
             context.Metadata[OpenIdConnectConstants.Metadata.RequestUriParameterSupported] = false;
 
-            var schemes = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-
-            context.Metadata[OpenIddictConstants.Metadata.ExternalProvidersSupported] = new JArray(
-                from provider in await schemes.GetAllSchemesAsync()
-                where !string.IsNullOrEmpty(provider.DisplayName)
-                select provider.Name);
-
-            await base.HandleConfigurationRequest(context);
+            return base.HandleConfigurationRequest(context);
         }
     }
 }

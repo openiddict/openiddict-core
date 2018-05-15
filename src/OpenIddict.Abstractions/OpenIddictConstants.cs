@@ -39,11 +39,6 @@ namespace OpenIddict.Abstractions
             public const string LogoutRequest = "openiddict-logout-request:";
         }
 
-        public static class Metadata
-        {
-            public const string ExternalProvidersSupported = "external_providers_supported";
-        }
-
         public static class Permissions
         {
             public static class Endpoints
