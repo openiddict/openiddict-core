@@ -4,13 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Linq;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Newtonsoft.Json.Linq;
-using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
 {
@@ -46,11 +44,6 @@ namespace OpenIddict.Server
             context.Metadata[OpenIdConnectConstants.Metadata.ClaimsParameterSupported] = false;
             context.Metadata[OpenIdConnectConstants.Metadata.RequestParameterSupported] = false;
             context.Metadata[OpenIdConnectConstants.Metadata.RequestUriParameterSupported] = false;
-
-            context.Metadata[OpenIddictConstants.Metadata.ExternalProvidersSupported] = new JArray(
-                from provider in context.HttpContext.Authentication.GetAuthenticationSchemes()
-                where !string.IsNullOrEmpty(provider.DisplayName)
-                select provider.AuthenticationScheme);
 
             return base.HandleConfigurationRequest(context);
         }

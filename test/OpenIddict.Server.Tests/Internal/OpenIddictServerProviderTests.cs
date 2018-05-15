@@ -15,7 +15,6 @@ using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics;
@@ -1416,24 +1415,6 @@ namespace OpenIddict.Server.Tests
                     }
 
                     return next(context);
-                });
-
-                app.UseCookieAuthentication();
-
-                // Note: the following client_id/client_secret are fake and are only
-                // used to test the metadata returned by the discovery endpoint.
-                app.UseFacebookAuthentication(new FacebookOptions
-                {
-                    ClientId = "16018790-E88E-4553-8036-BB342579FF19",
-                    ClientSecret = "3D6499AF-5607-489B-815A-F3ACF1617296",
-                    SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme
-                });
-
-                app.UseGoogleAuthentication(new GoogleOptions
-                {
-                    ClientId = "BAF437A5-87FA-4D06-8EFD-F9BA96CCEDC4",
-                    ClientSecret = "27DF07D3-6B03-4EE0-95CD-3AC16782216B",
-                    SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme
                 });
 
                 app.UseOpenIddictServer();
