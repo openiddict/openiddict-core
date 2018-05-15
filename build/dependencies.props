@@ -12,6 +12,7 @@
     <JsonNetVersion>10.0.2</JsonNetVersion>
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
     <ImmutableCollectionsVersion>1.4.0</ImmutableCollectionsVersion>
+    <MongoDbVersion>2.6.1</MongoDbVersion>
     <MoqVersion>4.7.63</MoqVersion>
     <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
     <NetStandardLibraryNetFrameworkVersion>2.0.0</NetStandardLibraryNetFrameworkVersion>
