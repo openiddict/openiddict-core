@@ -198,6 +198,18 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
             }
 
+            // If an application provider was registered, import the events into the main provider.
+            if (options.ApplicationProvider != null)
+            {
+                var provider = options.Provider as OpenIddictServerProvider;
+                if (provider == null)
+                {
+                    throw new InvalidOperationException("The specified OpenID Connect server provider is not compatible.");
+                }
+
+                provider.Import(options.ApplicationProvider);
+            }
+
             return app.UseOpenIdConnectServer(options);
         }
     }

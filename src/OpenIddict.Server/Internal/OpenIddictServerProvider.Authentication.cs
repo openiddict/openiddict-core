@@ -107,6 +107,8 @@ namespace OpenIddict.Server
                     }
                 }
             }
+
+            await base.ExtractAuthorizationRequest(context);
         }
 
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context)
@@ -416,6 +418,8 @@ namespace OpenIddict.Server
             }
 
             context.Validate();
+
+            await base.ValidateAuthorizationRequest(context);
         }
 
         public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context)
@@ -467,7 +471,7 @@ namespace OpenIddict.Server
                 return;
             }
 
-            context.SkipToNextMiddleware();
+            await base.HandleAuthorizationRequest(context);
         }
 
         public override async Task ApplyAuthorizationResponse([NotNull] ApplyAuthorizationResponseContext context)
@@ -503,8 +507,12 @@ namespace OpenIddict.Server
                     // from displaying the default error page and to allow the status code pages middleware
                     // to rewrite the response using the logic defined by the developer when registering it.
                     context.HandleResponse();
+
+                    return;
                 }
             }
+
+            await base.ApplyAuthorizationResponse(context);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace OpenIddict.Server
             // the user code to handle the userinfo request.
             context.SkipToNextMiddleware();
 
-            return Task.FromResult(0);
+            return base.ExtractUserinfoRequest(context);
         }
     }
 }

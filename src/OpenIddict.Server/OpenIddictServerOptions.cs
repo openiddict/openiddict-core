@@ -27,6 +27,12 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Gets or sets the user-provided <see cref="OpenIdConnectServerProvider"/> that the OpenIddict server
+        /// invokes to enable developer control over the entire authentication/authorization process.
+        /// </summary>
+        public OpenIdConnectServerProvider ApplicationProvider { get; set; }
+
+        /// <summary>
         /// Gets or sets the distributed cache used by OpenIddict. If no cache is explicitly
         /// provided, the cache registered in the dependency injection container is used.
         /// </summary>

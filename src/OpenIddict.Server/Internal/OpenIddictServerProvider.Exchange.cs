@@ -273,6 +273,8 @@ namespace OpenIddict.Server
             }
 
             context.Validate();
+
+            await base.ValidateTokenRequest(context);
         }
 
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context)
@@ -294,6 +296,8 @@ namespace OpenIddict.Server
                 // Invoke the rest of the pipeline to allow
                 // the user code to handle the token request.
                 context.SkipToNextMiddleware();
+
+                await base.HandleTokenRequest(context);
 
                 return;
             }
@@ -350,6 +354,8 @@ namespace OpenIddict.Server
             // Invoke the rest of the pipeline to allow
             // the user code to handle the token request.
             context.SkipToNextMiddleware();
+
+            await base.HandleTokenRequest(context);
         }
     }
 }

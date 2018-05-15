@@ -34,7 +34,7 @@ namespace OpenIddict.Server
                 context.Response.AddParameter(parameter.Item2, parameter.Item3);
             }
 
-            return Task.FromResult(0);
+            return base.ProcessChallengeResponse(context);
         }
 
         public override async Task ProcessSigninResponse([NotNull] ProcessSigninResponseContext context)
@@ -97,6 +97,8 @@ namespace OpenIddict.Server
                 // none of the following security routines apply.
                 if (options.DisableTokenRevocation)
                 {
+                    await base.ProcessSigninResponse(context);
+
                     return;
                 }
 
@@ -165,6 +167,8 @@ namespace OpenIddict.Server
                 context.Response.AddParameter(parameter.Item2, parameter.Item3);
                 context.Ticket.RemoveProperty(parameter.Item1);
             }
+
+            await base.ProcessSigninResponse(context);
         }
 
         public override Task ProcessSignoutResponse([NotNull] ProcessSignoutResponseContext context)
@@ -178,7 +182,61 @@ namespace OpenIddict.Server
                 context.Response.AddParameter(parameter.Item2, parameter.Item3);
             }
 
-            return Task.FromResult(0);
+            return base.ProcessSignoutResponse(context);
+        }
+
+        public void Import([NotNull] OpenIdConnectServerProvider provider)
+        {
+            OnMatchEndpoint = provider.MatchEndpoint;
+
+            OnExtractAuthorizationRequest = provider.ExtractAuthorizationRequest;
+            OnExtractConfigurationRequest = provider.ExtractConfigurationRequest;
+            OnExtractCryptographyRequest = provider.ExtractCryptographyRequest;
+            OnExtractIntrospectionRequest = provider.ExtractIntrospectionRequest;
+            OnExtractLogoutRequest = provider.ExtractLogoutRequest;
+            OnExtractRevocationRequest = provider.ExtractRevocationRequest;
+            OnExtractTokenRequest = provider.ExtractTokenRequest;
+            OnExtractUserinfoRequest = provider.ExtractUserinfoRequest;
+            OnValidateAuthorizationRequest = provider.ValidateAuthorizationRequest;
+            OnValidateConfigurationRequest = provider.ValidateConfigurationRequest;
+            OnValidateCryptographyRequest = provider.ValidateCryptographyRequest;
+            OnValidateIntrospectionRequest = provider.ValidateIntrospectionRequest;
+            OnValidateLogoutRequest = provider.ValidateLogoutRequest;
+            OnValidateRevocationRequest = provider.ValidateRevocationRequest;
+            OnValidateTokenRequest = provider.ValidateTokenRequest;
+            OnValidateUserinfoRequest = provider.ValidateUserinfoRequest;
+
+            OnHandleAuthorizationRequest = provider.HandleAuthorizationRequest;
+            OnHandleConfigurationRequest = provider.HandleConfigurationRequest;
+            OnHandleCryptographyRequest = provider.HandleCryptographyRequest;
+            OnHandleIntrospectionRequest = provider.HandleIntrospectionRequest;
+            OnHandleLogoutRequest = provider.HandleLogoutRequest;
+            OnHandleRevocationRequest = provider.HandleRevocationRequest;
+            OnHandleTokenRequest = provider.HandleTokenRequest;
+            OnHandleUserinfoRequest = provider.HandleUserinfoRequest;
+
+            OnApplyAuthorizationResponse = provider.ApplyAuthorizationResponse;
+            OnApplyConfigurationResponse = provider.ApplyConfigurationResponse;
+            OnApplyCryptographyResponse = provider.ApplyCryptographyResponse;
+            OnApplyIntrospectionResponse = provider.ApplyIntrospectionResponse;
+            OnApplyLogoutResponse = provider.ApplyLogoutResponse;
+            OnApplyRevocationResponse = provider.ApplyRevocationResponse;
+            OnApplyTokenResponse = provider.ApplyTokenResponse;
+            OnApplyUserinfoResponse = provider.ApplyUserinfoResponse;
+
+            OnProcessChallengeResponse = provider.ProcessChallengeResponse;
+            OnProcessSigninResponse = provider.ProcessSigninResponse;
+            OnProcessSignoutResponse = provider.ProcessSignoutResponse;
+
+            OnDeserializeAccessToken = provider.DeserializeAccessToken;
+            OnDeserializeAuthorizationCode = provider.DeserializeAuthorizationCode;
+            OnDeserializeIdentityToken = provider.DeserializeIdentityToken;
+            OnDeserializeRefreshToken = provider.DeserializeRefreshToken;
+
+            OnSerializeAccessToken = provider.SerializeAccessToken;
+            OnSerializeAuthorizationCode = provider.SerializeAuthorizationCode;
+            OnSerializeIdentityToken = provider.SerializeIdentityToken;
+            OnSerializeRefreshToken = provider.SerializeRefreshToken;
         }
     }
 }

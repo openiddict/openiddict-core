@@ -52,7 +52,7 @@ namespace OpenIddict.Server
                 where !string.IsNullOrEmpty(provider.DisplayName)
                 select provider.AuthenticationScheme);
 
-            return Task.FromResult(0);
+            return base.HandleConfigurationRequest(context);
         }
     }
 }

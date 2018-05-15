@@ -33,6 +33,8 @@ namespace OpenIddict.Server
             {
                 context.HandleResponse();
             }
+
+            await base.DeserializeAccessToken(context);
         }
 
         public override async Task DeserializeAuthorizationCode([NotNull] DeserializeAuthorizationCodeContext context)
@@ -50,6 +52,8 @@ namespace OpenIddict.Server
 
             // Prevent the OpenID Connect server middleware from using its default logic.
             context.HandleResponse();
+
+            await base.DeserializeAuthorizationCode(context);
         }
 
         public override async Task DeserializeRefreshToken([NotNull] DeserializeRefreshTokenContext context)
@@ -67,6 +71,8 @@ namespace OpenIddict.Server
 
             // Prevent the OpenID Connect server middleware from using its default logic.
             context.HandleResponse();
+
+            await base.DeserializeRefreshToken(context);
         }
 
         public override async Task SerializeAccessToken([NotNull] SerializeAccessTokenContext context)
@@ -92,6 +98,8 @@ namespace OpenIddict.Server
 
             // Otherwise, let the OpenID Connect server middleware
             // serialize the token using its default internal logic.
+
+            await base.SerializeAccessToken(context);
         }
 
         public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context)
@@ -119,6 +127,8 @@ namespace OpenIddict.Server
 
             // Otherwise, let the OpenID Connect server middleware
             // serialize the token using its default internal logic.
+
+            await base.SerializeAuthorizationCode(context);
         }
 
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context)
@@ -146,6 +156,8 @@ namespace OpenIddict.Server
 
             // Otherwise, let the OpenID Connect server middleware
             // serialize the token using its default internal logic.
+
+            await base.SerializeRefreshToken(context);
         }
     }
 }

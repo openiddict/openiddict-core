@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using AspNet.Security.OpenIdConnect.Primitives;
+using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -535,6 +536,24 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return Configure(options => options.Claims.UnionWith(claims));
+        }
+
+        /// <summary>
+        /// Registers an application-specific OpenID Connect server provider whose events
+        /// are automatically invoked for each request handled by the OpenIddict server handler.
+        /// Using this method is NOT recommended if you're not familiar with the OIDC events model.
+        /// </summary>
+        /// <param name="provider">The custom <see cref="OpenIdConnectServerProvider"/> service.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictServerBuilder RegisterProvider([NotNull] OpenIdConnectServerProvider provider)
+        {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            return Configure(options => options.ApplicationProvider = provider);
         }
 
         /// <summary>
