@@ -16,6 +16,7 @@
     <MoqVersion>4.7.63</MoqVersion>
     <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
     <NetStandardLibraryNetFrameworkVersion>2.0.0</NetStandardLibraryNetFrameworkVersion>
+    <NHibernateVersion>5.2.2</NHibernateVersion>
     <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
     <TasksExtensionsVersion>4.4.0</TasksExtensionsVersion>
     <TestSdkVersion>15.3.0</TestSdkVersion>
