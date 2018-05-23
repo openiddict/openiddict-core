@@ -8,7 +8,6 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Core;
-using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
 
@@ -24,8 +23,8 @@ namespace OpenIddict.EntityFramework.Tests
         public void AddEntityFrameworkStores_RegistersEntityFrameworkStoreFactories(Type type)
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddOpenIddict().AddCore();
+            var services = new ServiceCollection().AddOptions();
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseEntityFramework();
@@ -38,8 +37,8 @@ namespace OpenIddict.EntityFramework.Tests
         public void UseEntityFrameworkModels_KeyTypeDefaultsToString()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddOpenIddict().AddCore();
+            var services = new ServiceCollection().AddOptions();
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseEntityFramework();

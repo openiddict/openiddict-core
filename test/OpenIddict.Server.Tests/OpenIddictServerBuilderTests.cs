@@ -8,13 +8,9 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -669,36 +665,15 @@ namespace OpenIddict.Server.Tests
             Assert.True(options.UseReferenceTokens);
         }
 
-        private static OpenIddictServerBuilder CreateBuilder(IServiceCollection services)
-            => services.AddOpenIddict()
-                .AddCore(options =>
-                {
-                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
-                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
-                           .SetDefaultScopeEntity<OpenIddictScope>()
-                           .SetDefaultTokenEntity<OpenIddictToken>();
-                })
-
-                .AddServer();
-
         private static IServiceCollection CreateServices()
-        {
-            var services = new ServiceCollection();
-            services.AddAuthentication();
-            services.AddDistributedMemoryCache();
-            services.AddLogging();
-            services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
+            => new ServiceCollection().AddOptions();
 
-            return services;
-        }
+        private static OpenIddictServerBuilder CreateBuilder(IServiceCollection services)
+            => new OpenIddictServerBuilder(services);
 
         private static OpenIddictServerOptions GetOptions(IServiceCollection services)
         {
-            services.RemoveAll<IPostConfigureOptions<OpenIdConnectServerOptions>>();
-            services.RemoveAll<IPostConfigureOptions<OpenIddictServerOptions>>();
-
             var provider = services.BuildServiceProvider();
-
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>();
             return options.Get(OpenIddictServerDefaults.AuthenticationScheme);
         }

@@ -23,8 +23,8 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreFactories(Type type)
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddOpenIddict().AddCore();
+            var services = new ServiceCollection().AddOptions();
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseEntityFrameworkCore();
@@ -37,8 +37,8 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void UseEntityFrameworkCore_KeyTypeDefaultsToString()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddOpenIddict().AddCore();
+            var services = new ServiceCollection().AddOptions();
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseEntityFrameworkCore();
@@ -57,8 +57,8 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void UseEntityFrameworkCore_KeyTypeCanBeOverriden()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddOpenIddict().AddCore();
+            var services = new ServiceCollection().AddOptions();
+            var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseEntityFrameworkCore().ReplaceDefaultEntities<Guid>();
