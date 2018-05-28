@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
-    <ProjectReference Include="..\OpenIddict.Stores\OpenIddict.Stores.csproj" />
+    <ProjectReference Include="..\OpenIddict.EntityFrameworkCore.Models\OpenIddict.EntityFrameworkCore.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>

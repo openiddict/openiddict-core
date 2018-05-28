@@ -24,7 +24,13 @@ namespace OpenIddict.Server.Tests
             // Arrange
             var services = new ServiceCollection();
             services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels());
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                });
 
             var builder = new ApplicationBuilder(services.BuildServiceProvider());
 
@@ -43,7 +49,14 @@ namespace OpenIddict.Server.Tests
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels())
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
                 .AddServer()
                     .Configure(options => options.GrantTypes.Add(flow))
                     .Configure(options => options.AuthorizationEndpointPath = PathString.Empty);
@@ -68,7 +81,14 @@ namespace OpenIddict.Server.Tests
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels())
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
                 .AddServer()
                     .EnableAuthorizationEndpoint("/connect/authorize")
                     .Configure(options => options.GrantTypes.Add(flow))
@@ -90,7 +110,14 @@ namespace OpenIddict.Server.Tests
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels())
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
                 .AddServer()
                     .EnableAuthorizationEndpoint("/connect/authorize")
                     .EnableRevocationEndpoint("/connect/revocation")
@@ -113,7 +140,14 @@ namespace OpenIddict.Server.Tests
             services.AddDataProtection();
 
             services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels())
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
                 .AddServer()
                     .EnableAuthorizationEndpoint("/connect/authorize")
                     .AllowImplicitFlow()
@@ -136,7 +170,14 @@ namespace OpenIddict.Server.Tests
             services.AddDataProtection();
 
             services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels())
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
                 .AddServer()
                     .EnableAuthorizationEndpoint("/connect/authorize")
                     .AllowImplicitFlow()
@@ -159,7 +200,14 @@ namespace OpenIddict.Server.Tests
             services.AddDataProtection();
 
             services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels())
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
                 .AddServer()
                     .EnableAuthorizationEndpoint("/connect/authorize")
                     .AllowImplicitFlow()
@@ -181,7 +229,14 @@ namespace OpenIddict.Server.Tests
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels())
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
                 .AddServer()
                     .EnableAuthorizationEndpoint("/connect/authorize")
                     .AllowImplicitFlow();
@@ -203,7 +258,14 @@ namespace OpenIddict.Server.Tests
             var services = new ServiceCollection();
 
             services.AddOpenIddict()
-                .AddCore(options => options.UseDefaultModels())
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
                 .AddServer()
                     .AddSigningCertificate(
                         assembly: typeof(OpenIddictServerProviderTests).GetTypeInfo().Assembly,
@@ -222,5 +284,10 @@ namespace OpenIddict.Server.Tests
             // Assert
             builder.Verify(mock => mock.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()), Times.Once());
         }
+
+        public class OpenIddictApplication { }
+        public class OpenIddictAuthorization { }
+        public class OpenIddictScope { }
+        public class OpenIddictToken { }
     }
 }

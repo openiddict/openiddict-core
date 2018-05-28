@@ -11,7 +11,7 @@ using Mvc.Server.Models;
 using Mvc.Server.Services;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
-using OpenIddict.Models;
+using OpenIddict.EntityFrameworkCore.Models;
 
 namespace Mvc.Server
 {
@@ -58,11 +58,9 @@ namespace Mvc.Server
                 // Register the OpenIddict core services.
                 .AddCore(options =>
                 {
-                    // Configure OpenIddict to use the default models.
-                    options.UseDefaultModels();
-
-                    // Register the Entity Framework stores.
-                    options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
+                    // Configure OpenIddict to use the Entity Framework Core stores and models.
+                    options.UseEntityFrameworkCore()
+                           .UseDbContext<ApplicationDbContext>();
                 })
 
                 // Register the OpenIddict server services.

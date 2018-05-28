@@ -12,37 +12,69 @@ using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.EntityFramework;
-using OpenIddict.Models;
+using OpenIddict.EntityFramework.Models;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class OpenIddictExtensions
+    public static class OpenIddictEntityFrameworkExtensions
     {
         /// <summary>
-        /// Registers the Entity Framework 6.x stores. Note: when using the Entity Framework stores,
-        /// the application <see cref="DbContext"/> MUST be manually registered in the DI container and
-        /// the entities MUST be derived from the models contained in the OpenIddict.Models package.
+        /// Registers the Entity Framework 6.x stores services in the DI container and
+        /// configures OpenIddict to use the Entity Framework 6.x entities by default.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public static OpenIddictCoreBuilder AddEntityFrameworkStores<TContext>([NotNull] this OpenIddictCoreBuilder builder)
-            where TContext : DbContext
+        /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
+        public static OpenIddictEntityFrameworkBuilder UseEntityFramework([NotNull] this OpenIddictCoreBuilder builder)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            builder.SetDefaultApplicationEntity<OpenIddictApplication>()
+                   .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                   .SetDefaultScopeEntity<OpenIddictScope>()
+                   .SetDefaultTokenEntity<OpenIddictToken>();
+
+            builder.ReplaceApplicationStoreResolver<OpenIddictApplicationStoreResolver>()
+                   .ReplaceAuthorizationStoreResolver<OpenIddictAuthorizationStoreResolver>()
+                   .ReplaceScopeStoreResolver<OpenIddictScopeStoreResolver>()
+                   .ReplaceTokenStoreResolver<OpenIddictTokenStoreResolver>();
+
             builder.Services.TryAddScoped(typeof(OpenIddictApplicationStore<,,,,>));
             builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationStore<,,,,>));
             builder.Services.TryAddScoped(typeof(OpenIddictScopeStore<,,>));
             builder.Services.TryAddScoped(typeof(OpenIddictTokenStore<,,,,>));
 
-            return builder.ReplaceApplicationStoreResolver<OpenIddictApplicationStoreResolver<TContext>>()
-                          .ReplaceAuthorizationStoreResolver<OpenIddictAuthorizationStoreResolver<TContext>>()
-                          .ReplaceScopeStoreResolver<OpenIddictScopeStoreResolver<TContext>>()
-                          .ReplaceTokenStoreResolver<OpenIddictTokenStoreResolver<TContext>>();
+            return new OpenIddictEntityFrameworkBuilder(builder.Services);
+        }
+
+        /// <summary>
+        /// Registers the Entity Framework 6.x stores services in the DI container and
+        /// configures OpenIddict to use the Entity Framework 6.x entities by default.
+        /// </summary>
+        /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
+        /// <param name="configuration">The configuration delegate used to configure the Entity Framework 6.x services.</param>
+        /// <remarks>This extension can be safely called multiple times.</remarks>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public static OpenIddictCoreBuilder UseEntityFramework(
+            [NotNull] this OpenIddictCoreBuilder builder,
+            [NotNull] Action<OpenIddictEntityFrameworkBuilder> configuration)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            configuration(builder.UseEntityFramework());
+
+            return builder;
         }
 
         /// <summary>
@@ -77,7 +109,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            // Note: unlike Entity Framework Core 1.x/2.x, Entity Framework 6.x
+            // Note: unlike Entity Framework 6.x 1.x/2.x, Entity Framework 6.x
             // always throws an exception when using generic types as entity types.
             // To ensure a better exception is thrown, a manual check is made here.
             if (typeof(TApplication).IsGenericType)

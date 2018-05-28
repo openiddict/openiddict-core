@@ -21,7 +21,7 @@ using Mvc.Server.ViewModels.Authorization;
 using Mvc.Server.ViewModels.Shared;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
-using OpenIddict.Models;
+using OpenIddict.EntityFrameworkCore.Models;
 using OpenIddict.Server;
 
 namespace Mvc.Server

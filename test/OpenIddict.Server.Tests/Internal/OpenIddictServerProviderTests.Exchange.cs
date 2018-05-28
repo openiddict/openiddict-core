@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OpenIddict.Abstractions;
-using OpenIddict.Models;
 using Xunit;
 
 namespace OpenIddict.Server.Tests

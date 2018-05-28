@@ -8,11 +8,11 @@ using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using OpenIddict.Models;
+using OpenIddict.EntityFrameworkCore.Models;
 
 namespace OpenIddict.EntityFrameworkCore
 {
-    public class OpenIddictExtension<TApplication, TAuthorization, TScope, TToken, TKey> : IDbContextOptionsExtension
+    public class OpenIddictEntityFrameworkCore<TApplication, TAuthorization, TScope, TToken, TKey> : IDbContextOptionsExtension
         where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
         where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
         where TScope : OpenIddictScope<TKey>, new()
@@ -26,7 +26,8 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddSingleton<IModelCustomizer, OpenIddictCustomizer<TApplication, TAuthorization, TScope, TToken, TKey>>();
+            services.AddSingleton<IModelCustomizer, OpenIddictEntityFrameworkCoreCustomizer<
+                TApplication, TAuthorization, TScope, TToken, TKey>>();
         }
     }
 }

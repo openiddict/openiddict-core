@@ -356,15 +356,19 @@ namespace OpenIddict.Core.Tests
         }
 
         [Fact]
-        public void UseCustomModels_CustomEntitiesAreCorrectlySet()
+        public void RegisterDefaultModels_CustomEntitiesAreCorrectlySet()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            services.AddOpenIddict().AddCore()
-                .UseCustomModels<CustomApplication, CustomAuthorization, CustomScope, CustomToken>();
+            services.AddOpenIddict()
+                .AddCore()
+                    .SetDefaultApplicationEntity<CustomApplication>()
+                    .SetDefaultAuthorizationEntity<CustomAuthorization>()
+                    .SetDefaultScopeEntity<CustomScope>()
+                    .SetDefaultTokenEntity<CustomToken>();
 
             // Assert
             var provider = services.BuildServiceProvider();

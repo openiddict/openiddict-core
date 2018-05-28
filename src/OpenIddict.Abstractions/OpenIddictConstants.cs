@@ -39,6 +39,11 @@ namespace OpenIddict.Abstractions
             public const string LogoutRequest = "openiddict-logout-request:";
         }
 
+        public static class Exceptions
+        {
+            public const string ConcurrencyError = "concurrency_error";
+        }
+
         public static class Permissions
         {
             public static class Endpoints
