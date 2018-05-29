@@ -591,6 +591,7 @@ namespace OpenIddict.MongoDb
 
             // Generate a new concurrency token and attach it
             // to the scope before persisting the changes.
+            var timestamp = scope.ConcurrencyToken;
             scope.ConcurrencyToken = Guid.NewGuid().ToString();
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -598,7 +599,7 @@ namespace OpenIddict.MongoDb
 
             if ((await collection.ReplaceOneAsync(entity =>
                 entity.Id == scope.Id &&
-                entity.ConcurrencyToken == scope.ConcurrencyToken, scope, null, cancellationToken)).MatchedCount == 0)
+                entity.ConcurrencyToken == timestamp, scope, null, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
                     .AppendLine("The scope was concurrently updated and cannot be persisted in its current state.")

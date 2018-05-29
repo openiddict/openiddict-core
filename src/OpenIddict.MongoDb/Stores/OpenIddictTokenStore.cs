@@ -855,6 +855,7 @@ namespace OpenIddict.MongoDb
 
             // Generate a new concurrency token and attach it
             // to the token before persisting the changes.
+            var timestamp = token.ConcurrencyToken;
             token.ConcurrencyToken = Guid.NewGuid().ToString();
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -862,7 +863,7 @@ namespace OpenIddict.MongoDb
 
             if ((await collection.ReplaceOneAsync(entity =>
                 entity.Id == token.Id &&
-                entity.ConcurrencyToken == token.ConcurrencyToken, token, null, cancellationToken)).MatchedCount == 0)
+                entity.ConcurrencyToken == timestamp, token, null, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
                     .AppendLine("The token was concurrently updated and cannot be persisted in its current state.")
