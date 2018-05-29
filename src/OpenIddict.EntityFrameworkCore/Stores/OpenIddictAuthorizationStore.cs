@@ -16,8 +16,10 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
@@ -34,8 +36,11 @@ namespace OpenIddict.EntityFrameworkCore
                                                                                        OpenIddictToken, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictAuthorizationStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
-            : base(cache, context)
+        public OpenIddictAuthorizationStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            : base(cache, context, options)
         {
         }
     }
@@ -51,8 +56,11 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictAuthorizationStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
-            : base(cache, context)
+        public OpenIddictAuthorizationStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            : base(cache, context, options)
         {
         }
     }
@@ -72,10 +80,14 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictAuthorizationStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
+        public OpenIddictAuthorizationStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
         {
             Cache = cache;
             Context = context;
+            Options = options;
         }
 
         /// <summary>
@@ -87,6 +99,11 @@ namespace OpenIddict.EntityFrameworkCore
         /// Gets the database context associated with the current store.
         /// </summary>
         protected TContext Context { get; }
+
+        /// <summary>
+        /// Gets the options associated with the current store.
+        /// </summary>
+        protected IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TApplication"/> entity.
@@ -233,6 +250,24 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Exposes a compiled query allowing to retrieve the authorizations corresponding
+        /// to the specified subject and associated with the application identifier.
+        /// </summary>
+        private static Func<TContext, TKey, string, AsyncEnumerable<TAuthorization>> FindBySubjectAndClient =
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
+            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
+            // this compiled query uses an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+            EF.CompileAsyncQuery((TContext context, TKey identifier, string subject) =>
+                from authorization in context.Set<TAuthorization>()
+                    .Include(authorization => authorization.Application)
+                    .AsTracking()
+                where authorization.Subject == subject
+                join application in context.Set<TApplication>().AsTracking() on authorization.Application.Id equals application.Id
+                where application.Id.Equals(identifier)
+                select authorization);
+
+        /// <summary>
         /// Retrieves the authorizations corresponding to the specified
         /// subject and associated with the application identifier.
         /// </summary>
@@ -256,27 +291,26 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
-            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-            // this method is overriden to use an explicit join before applying the equality check.
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            var query = Cache.GetOrCreate("a3235f5b-2be5-452e-a43e-b10f5d6a01ff", entry =>
-            {
-                entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                return EF.CompileAsyncQuery((TContext context, TKey key, string principal) =>
-                    from authorization in context.Set<TAuthorization>()
-                        .Include(authorization => authorization.Application)
-                        .AsTracking()
-                    where authorization.Subject == principal
-                    join application in context.Set<TApplication>().AsTracking() on authorization.Application.Id equals application.Id
-                    where application.Id.Equals(key)
-                    select authorization);
-            });
-
-            return ImmutableArray.CreateRange(await query(Context,
+            return ImmutableArray.CreateRange(await FindBySubjectAndClient(Context,
                 ConvertIdentifierFromString(client), subject).ToListAsync(cancellationToken));
         }
+
+        /// <summary>
+        /// Exposes a compiled query allowing to retrieve the authorizations matching the specified parameters.
+        /// </summary>
+        private static Func<TContext, TKey, string, string, AsyncEnumerable<TAuthorization>> FindBySubjectClientAndStatus =
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
+            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
+            // this compiled query uses an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+            EF.CompileAsyncQuery((TContext context, TKey identifier, string subject, string status) =>
+                from authorization in context.Set<TAuthorization>()
+                    .Include(authorization => authorization.Application)
+                    .AsTracking()
+                where authorization.Subject == subject && authorization.Status == status
+                join application in context.Set<TApplication>().AsTracking() on authorization.Application.Id equals application.Id
+                where application.Id.Equals(identifier)
+                select authorization);
 
         /// <summary>
         /// Retrieves the authorizations matching the specified parameters.
@@ -308,27 +342,28 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
-            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-            // this method is overriden to use an explicit join before applying the equality check.
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            var query = Cache.GetOrCreate("bdf6b8aa-cd27-4b23-9961-fdd896a6660e", entry =>
-            {
-                entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                return EF.CompileAsyncQuery((TContext context, TKey key, string principal, string state) =>
-                    from authorization in context.Set<TAuthorization>()
-                        .Include(authorization => authorization.Application)
-                        .AsTracking()
-                    where authorization.Subject == principal && authorization.Status == state
-                    join application in context.Set<TApplication>().AsTracking() on authorization.Application.Id equals application.Id
-                    where application.Id.Equals(key)
-                    select authorization);
-            });
-
-            return ImmutableArray.CreateRange(await query(Context,
+            return ImmutableArray.CreateRange(await FindBySubjectClientAndStatus(Context,
                 ConvertIdentifierFromString(client), subject, status).ToListAsync(cancellationToken));
         }
+
+        /// <summary>
+        /// Exposes a compiled query allowing to retrieve the authorizations matching the specified parameters.
+        /// </summary>
+        private static Func<TContext, TKey, string, string, string, AsyncEnumerable<TAuthorization>> FindBySubjectClientStatusAndType =
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
+            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
+            // this compiled query uses an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+            EF.CompileAsyncQuery((TContext context, TKey identifier, string subject, string status, string type) =>
+                from authorization in context.Set<TAuthorization>()
+                    .Include(authorization => authorization.Application)
+                    .AsTracking()
+                where authorization.Subject == subject &&
+                      authorization.Status == status &&
+                      authorization.Type == type
+                join application in context.Set<TApplication>().AsTracking() on authorization.Application.Id equals application.Id
+                where application.Id.Equals(identifier)
+                select authorization);
 
         /// <summary>
         /// Retrieves the authorizations matching the specified parameters.
@@ -366,29 +401,20 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
-            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
-            // this method is overriden to use an explicit join before applying the equality check.
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            var query = Cache.GetOrCreate("5d06e679-70cd-4f4b-94f7-19ffe9d5d8ab", entry =>
-            {
-                entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                return EF.CompileAsyncQuery((TContext context, TKey key, string principal, string state, string kind) =>
-                    from authorization in context.Set<TAuthorization>()
-                        .Include(authorization => authorization.Application)
-                        .AsTracking()
-                    where authorization.Subject == principal &&
-                          authorization.Status == state &&
-                          authorization.Type == kind
-                    join application in context.Set<TApplication>().AsTracking() on authorization.Application.Id equals application.Id
-                    where application.Id.Equals(key)
-                    select authorization);
-            });
-
-            return ImmutableArray.CreateRange(await query(Context,
+            return ImmutableArray.CreateRange(await FindBySubjectClientStatusAndType(Context,
                 ConvertIdentifierFromString(client), subject, status, type).ToListAsync(cancellationToken));
         }
+
+        /// <summary>
+        /// Exposes a compiled query allowing to retrieve an authorization using its unique identifier.
+        /// </summary>
+        private static Func<TContext, TKey, Task<TAuthorization>> FindById =
+            EF.CompileAsyncQuery((TContext context, TKey identifier) =>
+                (from authorization in context.Set<TAuthorization>()
+                    .Include(authorization => authorization.Application)
+                    .AsTracking()
+                 where authorization.Id.Equals(identifier)
+                 select authorization).FirstOrDefault());
 
         /// <summary>
         /// Retrieves an authorization using its unique identifier.
@@ -406,23 +432,23 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var query = Cache.GetOrCreate("0f00e136-9277-484a-8ee4-12bf1d889c43", entry =>
-            {
-                entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                return EF.CompileAsyncQuery((TContext context, TKey key) =>
-                    (from authorization in context.Set<TAuthorization>()
-                        .Include(authorization => authorization.Application)
-                        .AsTracking()
-                     where authorization.Id.Equals(key)
-                     select authorization).FirstOrDefault());
-            });
-
-            return query(Context, ConvertIdentifierFromString(identifier));
+            return FindById(Context, ConvertIdentifierFromString(identifier));
         }
 
         /// <summary>
-        /// Retrieves all the authorizations corresponding to the specified subject.
+        /// Exposes a compiled query allowing to retrieve all the
+        /// authorizations corresponding to the specified subject.
+        /// </summary>
+        private static Func<TContext, string, AsyncEnumerable<TAuthorization>> FindBySubject =
+            EF.CompileAsyncQuery((TContext context, string subject) =>
+                from authorization in context.Set<TAuthorization>()
+                    .Include(authorization => authorization.Application)
+                    .AsTracking()
+                where authorization.Subject == subject
+                select authorization);
+
+        /// <summary>
+        /// Retrieves .
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -438,19 +464,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            var query = Cache.GetOrCreate("31e53867-fa49-4d1b-b846-acce353acd0b", entry =>
-            {
-                entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                return EF.CompileAsyncQuery((TContext context, string principal) =>
-                    from authorization in context.Set<TAuthorization>()
-                        .Include(authorization => authorization.Application)
-                        .AsTracking()
-                    where authorization.Subject == principal
-                    select authorization);
-            });
-
-            return ImmutableArray.CreateRange(await query(Context, subject).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await FindBySubject(Context, subject).ToListAsync(cancellationToken));
         }
 
         /// <summary>

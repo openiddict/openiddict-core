@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
@@ -29,8 +30,11 @@ namespace OpenIddict.EntityFramework
     public class OpenIddictScopeStore<TContext> : OpenIddictScopeStore<OpenIddictScope, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
-            : base(cache, context)
+        public OpenIddictScopeStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
+            : base(cache, context, options)
         {
         }
     }
@@ -46,10 +50,14 @@ namespace OpenIddict.EntityFramework
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
+        public OpenIddictScopeStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
         {
             Cache = cache;
             Context = context;
+            Options = options;
         }
 
         /// <summary>
@@ -61,6 +69,11 @@ namespace OpenIddict.EntityFramework
         /// Gets the database context associated with the current store.
         /// </summary>
         protected TContext Context { get; }
+
+        /// <summary>
+        /// Gets the options associated with the current store.
+        /// </summary>
+        protected IOptionsMonitor<OpenIddictEntityFrameworkOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TScope"/> entity.

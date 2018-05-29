@@ -13,7 +13,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
@@ -28,8 +30,11 @@ namespace OpenIddict.EntityFrameworkCore
     public class OpenIddictScopeStore<TContext> : OpenIddictScopeStore<OpenIddictScope, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
-            : base(cache, context)
+        public OpenIddictScopeStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            : base(cache, context, options)
         {
         }
     }
@@ -43,8 +48,11 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
-            : base(cache, context)
+        public OpenIddictScopeStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            : base(cache, context, options)
         {
         }
     }
@@ -60,10 +68,14 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
+        public OpenIddictScopeStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
         {
             Cache = cache;
             Context = context;
+            Options = options;
         }
 
         /// <summary>
@@ -75,6 +87,11 @@ namespace OpenIddict.EntityFrameworkCore
         /// Gets the database context associated with the current store.
         /// </summary>
         protected TContext Context { get; }
+
+        /// <summary>
+        /// Gets the options associated with the current store.
+        /// </summary>
+        protected IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TScope"/> entity.
@@ -164,6 +181,15 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Exposes a compiled query allowing to retrieve a scope using its unique identifier.
+        /// </summary>
+        private static Func<TContext, TKey, Task<TScope>> FindById =
+            EF.CompileAsyncQuery((TContext context, TKey identifier) =>
+                (from scope in context.Set<TScope>().AsTracking()
+                 where scope.Id.Equals(identifier)
+                 select scope).FirstOrDefault());
+
+        /// <summary>
         /// Retrieves a scope using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the scope.</param>
@@ -179,18 +205,17 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var query = Cache.GetOrCreate("485f3372-2d38-4418-8d1e-acd8aa0c3555", entry =>
-            {
-                entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                return EF.CompileAsyncQuery((TContext context, TKey key) =>
-                    (from scope in context.Set<TScope>().AsTracking()
-                     where scope.Id.Equals(key)
-                     select scope).FirstOrDefault());
-            });
-
-            return query(Context, ConvertIdentifierFromString(identifier));
+            return FindById(Context, ConvertIdentifierFromString(identifier));
         }
+
+        /// <summary>
+        /// Exposes a compiled query allowing to retrieve a scope using its name.
+        /// </summary>
+        private static Func<TContext, string, Task<TScope>> FindByName =
+            EF.CompileAsyncQuery((TContext context, string name) =>
+                (from scope in context.Set<TScope>().AsTracking()
+                 where scope.Name == name
+                 select scope).FirstOrDefault());
 
         /// <summary>
         /// Retrieves a scope using its name.
@@ -208,18 +233,17 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
             }
 
-            var query = Cache.GetOrCreate("71cb2f7a-7adb-4b3e-8833-772e254f9b03", entry =>
-            {
-                entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                return EF.CompileAsyncQuery((TContext context, string id) =>
-                    (from scope in context.Set<TScope>().AsTracking()
-                     where scope.Name == id
-                     select scope).FirstOrDefault());
-            });
-
-            return query(Context, name);
+            return FindByName(Context, name);
         }
+
+        /// <summary>
+        /// Exposes a compiled query allowing to retrieve a list of scopes using their name.
+        /// </summary>
+        private static Func<TContext, ImmutableArray<string>, AsyncEnumerable<TScope>> FindByNames =
+            EF.CompileAsyncQuery((TContext context, ImmutableArray<string> names) =>
+                from scope in context.Set<TScope>().AsTracking()
+                where names.Contains(scope.Name)
+                select scope);
 
         /// <summary>
         /// Retrieves a list of scopes using their name.
@@ -238,18 +262,22 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
-            var query = Cache.GetOrCreate("e19404af-8586-4693-9b9c-8185b653ee2d", entry =>
-            {
-                entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                return EF.CompileAsyncQuery((TContext context, ImmutableArray<string> ids) =>
-                    from scope in context.Set<TScope>().AsTracking()
-                    where ids.Contains(scope.Name)
-                    select scope);
-            });
-
-            return ImmutableArray.CreateRange(await query(Context, names).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await FindByNames(Context, names).ToListAsync(cancellationToken));
         }
+
+        /// <summary>
+        /// Exposes a compiled query allowing to retrieve all the scopes that contain the specified resource.
+        /// </summary>
+        private static Func<TContext, string, AsyncEnumerable<TScope>> FindByResource =
+            // To optimize the efficiency of the query a bit, only scopes whose stringified
+            // Resources column contains the specified resource are returned. Once the scopes
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this query in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
+            EF.CompileAsyncQuery((TContext context, string resource) =>
+                from scope in context.Set<TScope>().AsTracking()
+                where scope.Resources.Contains(resource)
+                select scope);
 
         /// <summary>
         /// Retrieves all the scopes that contain the specified resource.
@@ -268,24 +296,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
             }
 
-            // To optimize the efficiency of the query a bit, only scopes whose stringified
-            // Resources column contains the specified resource are returned. Once the scopes
-            // are retrieved, a second pass is made to ensure only valid elements are returned.
-            // Implementers that use this method in a hot path may want to override this method
-            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            var query = Cache.GetOrCreate("45bae754-72fc-422c-b3a2-90867600a029", entry =>
-            {
-                entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                return EF.CompileAsyncQuery((TContext context, string value) =>
-                    from scope in context.Set<TScope>().AsTracking()
-                    where scope.Resources.Contains(value)
-                    select scope);
-            });
-
             var builder = ImmutableArray.CreateBuilder<TScope>();
 
-            foreach (var scope in await query(Context, resource).ToListAsync(cancellationToken))
+            foreach (var scope in await FindByResource(Context, resource).ToListAsync(cancellationToken))
             {
                 var resources = await GetResourcesAsync(scope, cancellationToken);
                 if (resources.Contains(resource, StringComparer.Ordinal))
