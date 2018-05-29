@@ -11,6 +11,7 @@
     <ImmutableCollectionsVersion>1.2.0</ImmutableCollectionsVersion>
     <JetBrainsVersion>10.3.0</JetBrainsVersion>
     <JsonNetVersion>9.0.1</JsonNetVersion>
+    <MongoDbVersion>2.6.1</MongoDbVersion>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <MoqVersion>4.7.63</MoqVersion>
     <QueryableVersion>4.0.1</QueryableVersion>
