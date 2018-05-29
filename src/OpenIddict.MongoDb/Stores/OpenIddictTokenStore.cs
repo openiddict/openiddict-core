@@ -33,7 +33,7 @@ namespace OpenIddict.MongoDb
         public OpenIddictTokenStore(
             [NotNull] IMemoryCache cache,
             [NotNull] IOpenIddictMongoDbContext context,
-            [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options)
+            [NotNull] IOptions<OpenIddictMongoDbOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -53,7 +53,7 @@ namespace OpenIddict.MongoDb
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictMongoDbOptions> Options { get; }
+        protected IOptions<OpenIddictMongoDbOptions> Options { get; }
 
         /// <summary>
         /// Determines the number of tokens that exist in the database.
@@ -66,7 +66,7 @@ namespace OpenIddict.MongoDb
         public virtual async Task<long> CountAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             return await collection.CountAsync(FilterDefinition<TToken>.Empty);
         }
@@ -89,7 +89,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             return await ((IMongoQueryable<TToken>) query(collection.AsQueryable())).LongCountAsync();
         }
@@ -110,7 +110,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             await collection.InsertOneAsync(token, null, cancellationToken);
         }
@@ -131,7 +131,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             if ((await collection.DeleteOneAsync(entity =>
                 entity.Id == token.Id &&
@@ -161,7 +161,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(token => token.ApplicationId == ObjectId.Parse(identifier)).ToListAsync(cancellationToken));
         }
@@ -183,7 +183,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(token => token.AuthorizationId == ObjectId.Parse(identifier)).ToListAsync(cancellationToken));
         }
@@ -205,7 +205,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             return await collection.Find(token => token.Id == ObjectId.Parse(identifier)).FirstOrDefaultAsync(cancellationToken);
         }
@@ -228,7 +228,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             return await collection.Find(token => token.ReferenceId == identifier).FirstOrDefaultAsync(cancellationToken);
         }
@@ -250,7 +250,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(token => token.Subject == subject).ToListAsync(cancellationToken));
         }
@@ -296,7 +296,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             return await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).FirstOrDefaultAsync(cancellationToken);
         }
@@ -523,7 +523,7 @@ namespace OpenIddict.MongoDb
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             var query = (IMongoQueryable<TToken>) collection.AsQueryable().OrderBy(token => token.Id);
 
@@ -562,7 +562,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             return ImmutableArray.CreateRange(
                 await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).ToListAsync(cancellationToken));
@@ -578,7 +578,7 @@ namespace OpenIddict.MongoDb
         public virtual async Task PruneAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             await collection.DeleteManyAsync(token => token.ExpirationDate < DateTimeOffset.UtcNow ||
                                                       token.Status != OpenIddictConstants.Statuses.Valid, cancellationToken);
@@ -855,14 +855,15 @@ namespace OpenIddict.MongoDb
 
             // Generate a new concurrency token and attach it
             // to the token before persisting the changes.
+            var timestamp = token.ConcurrencyToken;
             token.ConcurrencyToken = Guid.NewGuid().ToString();
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+            var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
             if ((await collection.ReplaceOneAsync(entity =>
                 entity.Id == token.Id &&
-                entity.ConcurrencyToken == token.ConcurrencyToken, token, null, cancellationToken)).MatchedCount == 0)
+                entity.ConcurrencyToken == timestamp, token, null, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
                     .AppendLine("The token was concurrently updated and cannot be persisted in its current state.")

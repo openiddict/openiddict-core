@@ -21,12 +21,12 @@ namespace OpenIddict.MongoDb
     /// </summary>
     public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
     {
-        private readonly IOptionsMonitor<OpenIddictMongoDbOptions> _options;
+        private readonly IOptions<OpenIddictMongoDbOptions> _options;
         private readonly IServiceProvider _provider;
         private IMongoDatabase _database;
 
         public OpenIddictMongoDbContext(
-            [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options,
+            [NotNull] IOptions<OpenIddictMongoDbOptions> options,
             [NotNull] IServiceProvider provider)
         {
             _options = options;
@@ -47,14 +47,14 @@ namespace OpenIddict.MongoDb
                 return new ValueTask<IMongoDatabase>(_database);
             }
 
-            var options = _options.CurrentValue;
-            if (options == null)
-            {
-                throw new InvalidOperationException("The OpenIddict MongoDB options cannot be retrieved.");
-            }
-
             async Task<IMongoDatabase> ExecuteAsync()
             {
+                var options = _options.Value;
+                if (options == null)
+                {
+                    throw new InvalidOperationException("The OpenIddict MongoDB options cannot be retrieved.");
+                }
+
                 var database = options.Database;
                 if (database == null)
                 {

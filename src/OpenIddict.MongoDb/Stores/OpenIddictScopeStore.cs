@@ -33,7 +33,7 @@ namespace OpenIddict.MongoDb
         public OpenIddictScopeStore(
             [NotNull] IMemoryCache cache,
             [NotNull] IOpenIddictMongoDbContext context,
-            [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options)
+            [NotNull] IOptions<OpenIddictMongoDbOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -53,7 +53,7 @@ namespace OpenIddict.MongoDb
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictMongoDbOptions> Options { get; }
+        protected IOptions<OpenIddictMongoDbOptions> Options { get; }
 
         /// <summary>
         /// Determines the number of scopes that exist in the database.
@@ -66,7 +66,7 @@ namespace OpenIddict.MongoDb
         public virtual async Task<long> CountAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             return await collection.CountAsync(FilterDefinition<TScope>.Empty);
         }
@@ -89,7 +89,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             return await ((IMongoQueryable<TScope>) query(collection.AsQueryable())).LongCountAsync();
         }
@@ -110,7 +110,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             await collection.InsertOneAsync(scope, null, cancellationToken);
         }
@@ -131,7 +131,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             if ((await collection.DeleteOneAsync(entity =>
                 entity.Id == scope.Id &&
@@ -161,7 +161,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             return await collection.Find(scope => scope.Id == ObjectId.Parse(identifier)).FirstOrDefaultAsync(cancellationToken);
         }
@@ -183,7 +183,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             return await collection.Find(scope => scope.Name == name).FirstOrDefaultAsync(cancellationToken);
         }
@@ -206,7 +206,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(scope => names.Contains(scope.Name)).ToListAsync(cancellationToken));
         }
@@ -229,7 +229,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(scope => scope.Resources.Contains(resource)).ToListAsync(cancellationToken));
         }
@@ -256,7 +256,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             return await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).FirstOrDefaultAsync(cancellationToken);
         }
@@ -410,7 +410,7 @@ namespace OpenIddict.MongoDb
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             var query = (IMongoQueryable<TScope>) collection.AsQueryable().OrderBy(scope => scope.Id);
 
@@ -449,7 +449,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             return ImmutableArray.CreateRange(
                 await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).ToListAsync(cancellationToken));
@@ -591,14 +591,15 @@ namespace OpenIddict.MongoDb
 
             // Generate a new concurrency token and attach it
             // to the scope before persisting the changes.
+            var timestamp = scope.ConcurrencyToken;
             scope.ConcurrencyToken = Guid.NewGuid().ToString();
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
+            var collection = database.GetCollection<TScope>(Options.Value.ScopesCollectionName);
 
             if ((await collection.ReplaceOneAsync(entity =>
                 entity.Id == scope.Id &&
-                entity.ConcurrencyToken == scope.ConcurrencyToken, scope, null, cancellationToken)).MatchedCount == 0)
+                entity.ConcurrencyToken == timestamp, scope, null, cancellationToken)).MatchedCount == 0)
             {
                 throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
                     .AppendLine("The scope was concurrently updated and cannot be persisted in its current state.")
