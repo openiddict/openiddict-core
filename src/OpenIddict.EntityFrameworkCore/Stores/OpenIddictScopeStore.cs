@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
@@ -28,8 +29,11 @@ namespace OpenIddict.EntityFrameworkCore
     public class OpenIddictScopeStore<TContext> : OpenIddictScopeStore<OpenIddictScope, TContext, string>
         where TContext : DbContext
     {
-        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
-            : base(cache, context)
+        public OpenIddictScopeStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options)
+            : base(cache, context, options)
         {
         }
     }
@@ -43,8 +47,11 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
-            : base(cache, context)
+        public OpenIddictScopeStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options)
+            : base(cache, context, options)
         {
         }
     }
@@ -60,10 +67,14 @@ namespace OpenIddict.EntityFrameworkCore
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public OpenIddictScopeStore([NotNull] IMemoryCache cache, [NotNull] TContext context)
+        public OpenIddictScopeStore(
+            [NotNull] IMemoryCache cache,
+            [NotNull] TContext context,
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options)
         {
             Cache = cache;
             Context = context;
+            Options = options;
         }
 
         /// <summary>
@@ -75,6 +86,11 @@ namespace OpenIddict.EntityFrameworkCore
         /// Gets the database context associated with the current store.
         /// </summary>
         protected TContext Context { get; }
+
+        /// <summary>
+        /// Gets the options associated with the current store.
+        /// </summary>
+        protected IOptions<OpenIddictEntityFrameworkCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TScope"/> entity.
