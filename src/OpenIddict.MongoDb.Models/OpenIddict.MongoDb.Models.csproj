@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
     <SignAssembly>false</SignAssembly>
+    <PublicSign>false</PublicSign>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
   </PropertyGroup>
 
