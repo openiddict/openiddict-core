@@ -490,73 +490,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Makes client identification mandatory so that token and revocation
-        /// requests that don't specify a client_id are automatically rejected.
-        /// Note: enabling this option doesn't prevent public clients from using
-        /// the token and revocation endpoints, but specifying a client_id is required.
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder RequireClientIdentification()
-            => Configure(options => options.RequireClientIdentification = true);
-
-        /// <summary>
-        /// Sets the access token lifetime, after which client applications must retrieve
-        /// a new access token by making a grant_type=refresh_token token request
-        /// or a prompt=none authorization request, depending on the selected flow.
-        /// Using long-lived access tokens or tokens that never expire is not recommended.
-        /// </summary>
-        /// <param name="lifetime">The access token lifetime.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAccessTokenLifetime(TimeSpan lifetime)
-            => Configure(options => options.AccessTokenLifetime = lifetime);
-
-        /// <summary>
-        /// Sets the authorization code lifetime, after which client applications
-        /// are unable to send a grant_type=authorization_code token request.
-        /// Using short-lived authorization codes is strongly recommended.
-        /// </summary>
-        /// <param name="lifetime">The authorization code lifetime.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAuthorizationCodeLifetime(TimeSpan lifetime)
-            => Configure(options => options.AuthorizationCodeLifetime = lifetime);
-
-        /// <summary>
-        /// Sets the identity token lifetime, after which client
-        /// applications should refuse processing identity tokens.
-        /// </summary>
-        /// <param name="lifetime">The identity token lifetime.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetIdentityTokenLifetime(TimeSpan lifetime)
-            => Configure(options => options.IdentityTokenLifetime = lifetime);
-
-        /// <summary>
-        /// Sets the refresh token lifetime, after which client applications must get
-        /// a new authorization from the user. When sliding expiration is enabled,
-        /// a new refresh token is always issued to the client application,
-        /// which prolongs the validity period of the refresh token.
-        /// </summary>
-        /// <param name="lifetime">The refresh token lifetime.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetRefreshTokenLifetime(TimeSpan lifetime)
-            => Configure(options => options.RefreshTokenLifetime = lifetime);
-
-        /// <summary>
-        /// Sets the issuer address, which is used as the base address
-        /// for the endpoint URIs returned from the discovery endpoint.
-        /// </summary>
-        /// <param name="address">The issuer address.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetIssuer([NotNull] Uri address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            return Configure(options => options.Issuer = address);
-        }
-
-        /// <summary>
         /// Registers the specified claims as supported claims so
         /// they can be returned as part of the discovery document.
         /// </summary>
@@ -652,6 +585,73 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return Configure(options => options.Scopes.UnionWith(scopes));
+        }
+
+        /// <summary>
+        /// Makes client identification mandatory so that token and revocation
+        /// requests that don't specify a client_id are automatically rejected.
+        /// Note: enabling this option doesn't prevent public clients from using
+        /// the token and revocation endpoints, but specifying a client_id is required.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder RequireClientIdentification()
+            => Configure(options => options.RequireClientIdentification = true);
+
+        /// <summary>
+        /// Sets the access token lifetime, after which client applications must retrieve
+        /// a new access token by making a grant_type=refresh_token token request
+        /// or a prompt=none authorization request, depending on the selected flow.
+        /// Using long-lived access tokens or tokens that never expire is not recommended.
+        /// </summary>
+        /// <param name="lifetime">The access token lifetime.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetAccessTokenLifetime(TimeSpan lifetime)
+            => Configure(options => options.AccessTokenLifetime = lifetime);
+
+        /// <summary>
+        /// Sets the authorization code lifetime, after which client applications
+        /// are unable to send a grant_type=authorization_code token request.
+        /// Using short-lived authorization codes is strongly recommended.
+        /// </summary>
+        /// <param name="lifetime">The authorization code lifetime.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetAuthorizationCodeLifetime(TimeSpan lifetime)
+            => Configure(options => options.AuthorizationCodeLifetime = lifetime);
+
+        /// <summary>
+        /// Sets the identity token lifetime, after which client
+        /// applications should refuse processing identity tokens.
+        /// </summary>
+        /// <param name="lifetime">The identity token lifetime.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetIdentityTokenLifetime(TimeSpan lifetime)
+            => Configure(options => options.IdentityTokenLifetime = lifetime);
+
+        /// <summary>
+        /// Sets the refresh token lifetime, after which client applications must get
+        /// a new authorization from the user. When sliding expiration is enabled,
+        /// a new refresh token is always issued to the client application,
+        /// which prolongs the validity period of the refresh token.
+        /// </summary>
+        /// <param name="lifetime">The refresh token lifetime.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetRefreshTokenLifetime(TimeSpan lifetime)
+            => Configure(options => options.RefreshTokenLifetime = lifetime);
+
+        /// <summary>
+        /// Sets the issuer address, which is used as the base address
+        /// for the endpoint URIs returned from the discovery endpoint.
+        /// </summary>
+        /// <param name="address">The issuer address.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetIssuer([NotNull] Uri address)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            return Configure(options => options.Issuer = address);
         }
 
         /// <summary>

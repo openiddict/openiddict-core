@@ -8,6 +8,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using AspNet.Security.OpenIdConnect.Primitives;
+using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -584,6 +585,69 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void RegisterProvider_ProviderIsAttached()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.RegisterProvider(new OpenIdConnectServerProvider());
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.NotNull(options.ApplicationProvider);
+        }
+
+        [Fact]
+        public void RegisterProvider_ThrowsAnExceptionForInvalidProviderType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.RegisterProvider(typeof(object));
+            });
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The specified type is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void RegisterProvider_ProviderTypeIsAttached()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.RegisterProvider(typeof(OpenIdConnectServerProvider));
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Equal(typeof(OpenIdConnectServerProvider), options.ApplicationProviderType);
+        }
+
+        [Fact]
+        public void RegisterProvider_ProviderIsRegistered()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.RegisterProvider(typeof(OpenIdConnectServerProvider));
+
+            // Assert
+            Assert.Contains(services, service => service.ServiceType == typeof(OpenIdConnectServerProvider));
+        }
+
+        [Fact]
         public void RegisterClaims_ClaimsAreAdded()
         {
             // Arrange
@@ -677,10 +741,5 @@ namespace OpenIddict.Server.Tests
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>();
             return options.Get(OpenIddictServerDefaults.AuthenticationScheme);
         }
-
-        public class OpenIddictApplication { }
-        public class OpenIddictAuthorization { }
-        public class OpenIddictScope { }
-        public class OpenIddictToken { }
     }
 }

@@ -7,8 +7,10 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Validation;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -78,6 +80,57 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Registers application-specific OAuth2 validation events that are automatically
+        /// invoked for each request handled by the OpenIddict validation handler.
+        /// </summary>
+        /// <param name="events">The custom <see cref="OAuthValidationEvents"/> service.</param>
+        /// <returns>The <see cref="OAuthValidationEvents"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictValidationBuilder RegisterEvents([NotNull] OAuthValidationEvents events)
+        {
+            if (events == null)
+            {
+                throw new ArgumentNullException(nameof(events));
+            }
+
+            return Configure(options => options.ApplicationEvents = events);
+        }
+
+        /// <summary>
+        /// Registers application-specific OAuth2 validation events that are automatically
+        /// invoked for each request handled by the OpenIddict validation handler.
+        /// </summary>
+        /// <typeparam name="TEvents">The type of the custom <see cref="OAuthValidationEvents"/> service.</typeparam>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictValidationBuilder RegisterEvents<TEvents>() where TEvents : OAuthValidationEvents
+            => RegisterEvents(typeof(TEvents));
+
+        /// <summary>
+        /// Registers application-specific OAuth2 validation events that are automatically
+        /// invoked for each request handled by the OpenIddict validation handler.
+        /// </summary>
+        /// <param name="type">The type of the custom <see cref="OAuthValidationEvents"/> service.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictValidationBuilder RegisterEvents([NotNull] Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (!typeof(OAuthValidationEvents).IsAssignableFrom(type))
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            Services.TryAddScoped(type);
+
+            return Configure(options => options.ApplicationEventsType = type);
+        }
+
+        /// <summary>
         /// Configures OpenIddict not to return the authentication error
         /// details as part of the standard WWW-Authenticate response header.
         /// </summary>
@@ -101,13 +154,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures the OpenIddict validation handler to use reference tokens.
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder UseReferenceTokens()
-            => Configure(options => options.UseReferenceTokens = true);
-
-        /// <summary>
         /// Configures OpenIddict to use a specific data protection provider
         /// instead of relying on the default instance provided by the DI container.
         /// </summary>
@@ -122,5 +168,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return Configure(options => options.DataProtectionProvider = provider);
         }
+
+        /// <summary>
+        /// Configures the OpenIddict validation handler to use reference tokens.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        public OpenIddictValidationBuilder UseReferenceTokens()
+            => Configure(options => options.UseReferenceTokens = true);
     }
 }

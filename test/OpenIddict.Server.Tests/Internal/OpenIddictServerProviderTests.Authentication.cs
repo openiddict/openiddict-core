@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
@@ -197,6 +198,14 @@ namespace OpenIddict.Server.Tests
             // Arrange
             var server = CreateAuthorizationServer(builder =>
             {
+                builder.Services.AddSingleton(CreateScopeManager(instance =>
+                {
+                    instance.Setup(mock => mock.FindByNamesAsync(
+                        It.Is<ImmutableArray<string>>(scopes => scopes.Length == 1 && scopes[0] == "unregistered_scope"),
+                        It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(ImmutableArray.Create<OpenIddictScope>());
+                }));
+
                 builder.EnableScopeValidation();
             });
 
@@ -212,7 +221,7 @@ namespace OpenIddict.Server.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidScope, response.Error);
             Assert.Equal("The specified 'scope' parameter is not valid.", response.ErrorDescription);
         }
 
@@ -275,10 +284,17 @@ namespace OpenIddict.Server.Tests
         public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenRegisteredScopeIsSpecified()
         {
             // Arrange
+            var scope = new OpenIddictScope();
+
             var manager = CreateScopeManager(instance =>
             {
-                instance.Setup(mock => mock.FindByNameAsync("registered_scope", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new OpenIddictScope());
+                instance.Setup(mock => mock.FindByNamesAsync(
+                    It.Is<ImmutableArray<string>>(scopes => scopes.Length == 1 && scopes[0] == "scope_registered_in_database"),
+                    It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableArray.Create(scope));
+
+                instance.Setup(mock => mock.GetNameAsync(scope, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>("scope_registered_in_database"));
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -305,9 +321,15 @@ namespace OpenIddict.Server.Tests
                         .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Prefixes.Scope + "registered_scope", It.IsAny<CancellationToken>()))
+                        OpenIddictConstants.Permissions.Prefixes.Scope + "scope_registered_in_database", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+
+                    instance.Setup(mock => mock.HasPermissionAsync(application,
+                        OpenIddictConstants.Permissions.Prefixes.Scope + "scope_registered_in_options", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
                 }));
+
+                builder.RegisterScopes("scope_registered_in_options");
 
                 builder.EnableScopeValidation();
                 builder.Services.AddSingleton(manager);
@@ -322,7 +344,7 @@ namespace OpenIddict.Server.Tests
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = OpenIdConnectConstants.ResponseTypes.Token,
-                Scope = "registered_scope"
+                Scope = "scope_registered_in_database scope_registered_in_options"
             });
 
             // Assert

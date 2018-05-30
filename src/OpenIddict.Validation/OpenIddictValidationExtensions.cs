@@ -31,6 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.AddAuthentication();
 
+            builder.Services.TryAddScoped<OpenIddictValidationEvents>();
             builder.Services.TryAddScoped<OpenIddictValidationHandler>();
 
             // Note: TryAddEnumerable() is used here to ensure the initializer is only registered once.
