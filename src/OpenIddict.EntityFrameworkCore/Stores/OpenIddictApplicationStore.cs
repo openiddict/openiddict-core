@@ -108,17 +108,17 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TApplication"/> entity.
         /// </summary>
-        protected virtual DbSet<TApplication> Applications => Context.Set<TApplication>();
+        protected virtual IQueryable<TApplication> Applications => Context.Set<TApplication>();
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TAuthorization"/> entity.
         /// </summary>
-        protected virtual DbSet<TAuthorization> Authorizations => Context.Set<TAuthorization>();
+        protected virtual IQueryable<TAuthorization> Authorizations => Context.Set<TAuthorization>();
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TToken"/> entity.
         /// </summary>
-        protected virtual DbSet<TToken> Tokens => Context.Set<TToken>();
+        protected virtual IQueryable<TToken> Tokens => Context.Set<TToken>();
 
         /// <summary>
         /// Determines the number of applications that exist in the database.
