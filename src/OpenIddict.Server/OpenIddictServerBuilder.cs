@@ -451,6 +451,66 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Registers the specified claims as supported claims so
+        /// they can be returned as part of the discovery document.
+        /// </summary>
+        /// <param name="claims">The supported claims.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder RegisterClaims([NotNull] params string[] claims)
+        {
+            if (claims == null)
+            {
+                throw new ArgumentNullException(nameof(claims));
+            }
+
+            if (claims.Any(claim => string.IsNullOrEmpty(claim)))
+            {
+                throw new ArgumentException("Claims cannot be null or empty.", nameof(claims));
+            }
+
+            return Configure(options => options.Claims.UnionWith(claims));
+        }
+
+        /// <summary>
+        /// Registers an application-specific OpenID Connect server provider whose events
+        /// are automatically invoked for each request handled by the OpenIddict server handler.
+        /// Using this method is NOT recommended if you're not familiar with the OIDC events model.
+        /// </summary>
+        /// <param name="provider">The custom <see cref="OpenIdConnectServerProvider"/> service.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictServerBuilder RegisterProvider([NotNull] OpenIdConnectServerProvider provider)
+        {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            return Configure(options => options.ApplicationProvider = provider);
+        }
+
+        /// <summary>
+        /// Registers the specified scopes as supported scopes so
+        /// they can be returned as part of the discovery document.
+        /// </summary>
+        /// <param name="scopes">The supported scopes.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder RegisterScopes([NotNull] params string[] scopes)
+        {
+            if (scopes == null)
+            {
+                throw new ArgumentNullException(nameof(scopes));
+            }
+
+            if (scopes.Any(scope => string.IsNullOrEmpty(scope)))
+            {
+                throw new ArgumentException("Scopes cannot be null or empty.", nameof(scopes));
+            }
+
+            return Configure(options => options.Scopes.UnionWith(scopes));
+        }
+
+        /// <summary>
         /// Makes client identification mandatory so that token and revocation
         /// requests that don't specify a client_id are automatically rejected.
         /// Note: enabling this option doesn't prevent public clients from using
@@ -515,66 +575,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return Configure(options => options.Issuer = address);
-        }
-
-        /// <summary>
-        /// Registers the specified claims as supported claims so
-        /// they can be returned as part of the discovery document.
-        /// </summary>
-        /// <param name="claims">The supported claims.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder RegisterClaims([NotNull] params string[] claims)
-        {
-            if (claims == null)
-            {
-                throw new ArgumentNullException(nameof(claims));
-            }
-
-            if (claims.Any(claim => string.IsNullOrEmpty(claim)))
-            {
-                throw new ArgumentException("Claims cannot be null or empty.", nameof(claims));
-            }
-
-            return Configure(options => options.Claims.UnionWith(claims));
-        }
-
-        /// <summary>
-        /// Registers an application-specific OpenID Connect server provider whose events
-        /// are automatically invoked for each request handled by the OpenIddict server handler.
-        /// Using this method is NOT recommended if you're not familiar with the OIDC events model.
-        /// </summary>
-        /// <param name="provider">The custom <see cref="OpenIdConnectServerProvider"/> service.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder RegisterProvider([NotNull] OpenIdConnectServerProvider provider)
-        {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            return Configure(options => options.ApplicationProvider = provider);
-        }
-
-        /// <summary>
-        /// Registers the specified scopes as supported scopes so
-        /// they can be returned as part of the discovery document.
-        /// </summary>
-        /// <param name="scopes">The supported scopes.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder RegisterScopes([NotNull] params string[] scopes)
-        {
-            if (scopes == null)
-            {
-                throw new ArgumentNullException(nameof(scopes));
-            }
-
-            if (scopes.Any(scope => string.IsNullOrEmpty(scope)))
-            {
-                throw new ArgumentException("Scopes cannot be null or empty.", nameof(scopes));
-            }
-
-            return Configure(options => options.Scopes.UnionWith(scopes));
         }
 
         /// <summary>

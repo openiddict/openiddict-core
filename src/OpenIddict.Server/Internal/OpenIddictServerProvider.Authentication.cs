@@ -5,6 +5,8 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
@@ -185,16 +187,27 @@ namespace OpenIddict.Server
             }
 
             // Validates scopes, unless scope validation was explicitly disabled.
-            foreach (var scope in context.Request.GetScopes())
+            if (options.EnableScopeValidation)
             {
-                if (options.EnableScopeValidation && !options.Scopes.Contains(scope) &&
-                    await scopeManager.FindByNameAsync(scope) == null)
+                var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
+                scopes.ExceptWith(options.Scopes);
+
+                // If all the specified scopes are registered in the options, avoid making a database lookup.
+                if (scopes.Count != 0)
                 {
-                    logger.LogError("The authorization request was rejected because an " +
-                                    "unregistered scope was specified: {Scope}.", scope);
+                    foreach (var scope in await scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
+                    {
+                        scopes.Remove(await scopeManager.GetNameAsync(scope));
+                    }
+                }
+
+                // If at least one scope was not recognized, return an error.
+                if (scopes.Count != 0)
+                {
+                    logger.LogError("The authentication request was rejected because invalid scopes were specified: {Scopes}.", scopes);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIdConnectConstants.Errors.InvalidScope,
                         description: "The specified 'scope' parameter is not valid.");
 
                     return;

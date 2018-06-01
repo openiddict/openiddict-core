@@ -8,6 +8,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using AspNet.Security.OpenIdConnect.Primitives;
+using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -596,6 +597,22 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void RegisterProvider_ProviderIsAttached()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.RegisterProvider(new OpenIdConnectServerProvider());
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.NotNull(options.ApplicationProvider);
+        }
+
+        [Fact]
         public void RegisterClaims_ClaimsAreAdded()
         {
             // Arrange
@@ -704,10 +721,5 @@ namespace OpenIddict.Server.Tests
             var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
             return options.Value;
         }
-
-        public class OpenIddictApplication { }
-        public class OpenIddictAuthorization { }
-        public class OpenIddictScope { }
-        public class OpenIddictToken { }
     }
 }

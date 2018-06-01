@@ -88,7 +88,19 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.AccessTokenFormat = new TicketDataFormat(protector);
             }
 
-            return app.UseMiddleware<OpenIddictValidationMiddleware>(new OptionsWrapper<OpenIddictValidationOptions>(options));
+            // If application events have been registered, import the events into the main provider.
+            if (options.ApplicationEvents != null)
+            {
+                var events = options.Events as OpenIddictValidationEvents;
+                if (events == null)
+                {
+                    throw new InvalidOperationException("The specified OAuth2 validation events are not compatible.");
+                }
+
+                events.Import(options.ApplicationEvents);
+            }
+
+            return app.UseOAuthValidation(options);
         }
     }
 }
