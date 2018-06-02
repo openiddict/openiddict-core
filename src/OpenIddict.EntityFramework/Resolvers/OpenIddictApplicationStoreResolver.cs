@@ -60,7 +60,7 @@ namespace OpenIddict.EntityFramework
                         .ToString());
                 }
 
-                var context = _options.CurrentValue.ContextType;
+                var context = _options.CurrentValue.DbContextType;
                 if (context == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()

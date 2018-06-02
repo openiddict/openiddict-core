@@ -559,8 +559,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
 
-            // Note: the OIDC server provider is resolved per-request and thus
-            // should be registered either as a scoped or transient service.
             Services.TryAddScoped(type);
 
             return Configure(options => options.ApplicationProviderType = type);
@@ -671,8 +669,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Sets JWT as the default token format for access tokens.
-        /// Note: this option cannot be used when using reference tokens.
+        /// Sets JSON Web Token (JWT) as the default token format for access tokens.
+        /// Note: JWT tokens cannot be used with the OpenIddict validation handler.
+        /// To validate JWT tokens, use the JWT handler shipping with ASP.NET Core.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder UseJsonWebTokens()

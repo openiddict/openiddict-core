@@ -18,6 +18,9 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Registers the OpenIddict token validation services in the DI container.
+        /// Note: the validation handler only works with the default token format
+        /// or reference tokens and cannot be used with JWT tokens. To validate
+        /// JWT tokens, use the JWT bearer handler shipping with ASP.NET Core.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
@@ -63,6 +66,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers the OpenIddict token validation services in the DI container.
+        /// Note: the validation handler only works with the default token format
+        /// or reference tokens and cannot be used with JWT tokens. To validate
+        /// JWT tokens, use the JWT bearer handler shipping with ASP.NET Core.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="configuration">The configuration delegate used to configure the validation services.</param>
