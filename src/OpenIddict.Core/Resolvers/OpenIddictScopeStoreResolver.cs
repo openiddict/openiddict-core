@@ -32,7 +32,7 @@ namespace OpenIddict.Core
                 throw new InvalidOperationException(new StringBuilder()
                     .AppendLine("No scope store has been registered in the dependency injection container.")
                     .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
-                    .AppendLine("package and call 'services.AddOpenIddict().AddCore().AddEntityFrameworkCoreStores()'.")
+                    .AppendLine("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
                     .Append("To register a custom store, create an implementation of 'IOpenIddictScopeStore' and ")
                     .Append("use 'services.AddOpenIddict().AddCore().AddScopeStore()' to add it to the DI container.")
                     .ToString());

@@ -594,8 +594,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Sets JWT as the default token format for access tokens.
-        /// Note: this option cannot be used when using reference tokens.
+        /// Sets JSON Web Token (JWT) as the default token format for access tokens.
+        /// Note: JWT tokens cannot be used with the OpenIddict validation handler.
+        /// To validate JWT tokens, use the JWT handler shipping with ASP.NET Core.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder UseJsonWebTokens()

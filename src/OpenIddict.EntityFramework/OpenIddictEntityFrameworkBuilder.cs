@@ -82,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
 
-            return Configure(options => options.ContextType = type);
+            return Configure(options => options.DbContextType = type);
         }
 
         /// <summary>
