@@ -25,9 +25,9 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var applicationManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationManager>();
-            var scopeManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictScopeManager>();
+            var logger = GetLogger(context.HttpContext.RequestServices);
+            var applicationManager = GetApplicationManager(context.HttpContext.RequestServices);
+            var scopeManager = GetScopeManager(context.HttpContext.RequestServices);
 
             // Reject token requests that don't specify a supported grant type.
             if (!options.GrantTypes.Contains(context.Request.GrantType))
@@ -294,8 +294,8 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var tokenManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictTokenManager>();
+            var logger = GetLogger(context.HttpContext.RequestServices);
+            var tokenManager = GetTokenManager(context.HttpContext.RequestServices);
 
             if (context.Ticket != null)
             {

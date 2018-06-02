@@ -23,8 +23,8 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var applicationManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationManager>();
+            var logger = GetLogger(context.HttpContext.RequestServices);
+            var applicationManager = GetApplicationManager(context.HttpContext.RequestServices);
 
             Debug.Assert(!options.DisableTokenRevocation, "Token revocation support shouldn't be disabled at this stage.");
 
@@ -170,8 +170,8 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var tokenManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictTokenManager>();
+            var logger = GetLogger(context.HttpContext.RequestServices);
+            var tokenManager = GetTokenManager(context.HttpContext.RequestServices);
 
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -30,9 +31,9 @@ namespace OpenIddict.Server
             [NotNull] AuthenticationTicket ticket, [NotNull] OpenIddictServerOptions options,
             [NotNull] HttpContext context, [NotNull] OpenIdConnectRequest request)
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var applicationManager = context.RequestServices.GetRequiredService<IOpenIddictApplicationManager>();
-            var authorizationManager = context.RequestServices.GetRequiredService<IOpenIddictAuthorizationManager>();
+            var logger = GetLogger(context.RequestServices);
+            var applicationManager = GetApplicationManager(context.RequestServices);
+            var authorizationManager = GetAuthorizationManager(context.RequestServices);
 
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
@@ -99,9 +100,9 @@ namespace OpenIddict.Server
                          type == OpenIdConnectConstants.TokenUsages.RefreshToken,
                 "Only authorization codes, access and refresh tokens should be created using this method.");
 
-            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var applicationManager = context.RequestServices.GetRequiredService<IOpenIddictApplicationManager>();
-            var tokenManager = context.RequestServices.GetRequiredService<IOpenIddictTokenManager>();
+            var logger = GetLogger(context.RequestServices);
+            var applicationManager = GetApplicationManager(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
 
             // When sliding expiration is disabled, the expiration date of generated refresh tokens is fixed
             // and must exactly match the expiration date of the refresh token used in the token request.
@@ -228,8 +229,8 @@ namespace OpenIddict.Server
             [NotNull] OpenIdConnectRequest request,
             [NotNull] ISecureDataFormat<AuthenticationTicket> format)
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var tokenManager = context.RequestServices.GetRequiredService<IOpenIddictTokenManager>();
+            var logger = GetLogger(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
 
             Debug.Assert(type == OpenIdConnectConstants.TokenUsages.AccessToken ||
                          type == OpenIdConnectConstants.TokenUsages.AuthorizationCode ||
@@ -377,8 +378,8 @@ namespace OpenIddict.Server
 
         private async Task<bool> TryRevokeAuthorizationAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var authorizationManager = context.RequestServices.GetRequiredService<IOpenIddictAuthorizationManager>();
+            var logger = GetLogger(context.RequestServices);
+            var authorizationManager = GetAuthorizationManager(context.RequestServices);
 
             // Note: if the authorization identifier or the authorization itself
             // cannot be found, return true as the authorization doesn't need
@@ -425,8 +426,8 @@ namespace OpenIddict.Server
 
         private async Task<bool> TryRevokeTokenAsync([NotNull] object token, [NotNull] HttpContext context)
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var tokenManager = context.RequestServices.GetRequiredService<IOpenIddictTokenManager>();
+            var logger = GetLogger(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
 
             var identifier = await tokenManager.GetIdAsync(token);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
@@ -459,7 +460,7 @@ namespace OpenIddict.Server
 
         private async Task<bool> TryRevokeTokensAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
         {
-            var tokenManager = context.RequestServices.GetRequiredService<IOpenIddictTokenManager>();
+            var tokenManager = GetTokenManager(context.RequestServices);
 
             // Note: if the authorization identifier is null, return true as no tokens need to be revoked.
             var identifier = ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
@@ -486,8 +487,8 @@ namespace OpenIddict.Server
 
         private async Task<bool> TryRedeemTokenAsync([NotNull] object token, [NotNull] HttpContext context)
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var tokenManager = context.RequestServices.GetRequiredService<IOpenIddictTokenManager>();
+            var logger = GetLogger(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
 
             var identifier = await tokenManager.GetIdAsync(token);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
@@ -522,8 +523,8 @@ namespace OpenIddict.Server
             [NotNull] object token, [NotNull] AuthenticationTicket ticket,
             [NotNull] HttpContext context, [NotNull] OpenIddictServerOptions options)
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var tokenManager = context.RequestServices.GetRequiredService<IOpenIddictTokenManager>();
+            var logger = GetLogger(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
 
             var identifier = ticket.GetTokenId();
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
@@ -565,7 +566,7 @@ namespace OpenIddict.Server
             [NotNull] HttpContext context, [NotNull] OpenIdConnectRequest request,
             [NotNull] AuthenticationProperties properties)
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+            var logger = GetLogger(context.RequestServices);
 
             Debug.Assert(properties != null, "The authentication properties shouldn't be null.");
 
@@ -677,5 +678,32 @@ namespace OpenIddict.Server
                 continue;
             }
         }
+
+        private static ILogger GetLogger(IServiceProvider provider) => provider.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+
+        private static IOpenIddictApplicationManager GetApplicationManager(IServiceProvider provider)
+            => provider.GetService<IOpenIddictApplicationManager>() ?? throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the server handler.")
+                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .ToString());
+
+        private static IOpenIddictAuthorizationManager GetAuthorizationManager(IServiceProvider provider)
+            => provider.GetService<IOpenIddictAuthorizationManager>() ?? throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the server handler.")
+                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .ToString());
+
+        private static IOpenIddictScopeManager GetScopeManager(IServiceProvider provider)
+            => provider.GetService<IOpenIddictScopeManager>() ?? throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the server handler.")
+                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .ToString());
+
+        private static IOpenIddictTokenManager GetTokenManager(IServiceProvider provider)
+            => provider.GetService<IOpenIddictTokenManager>() ?? throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the server handler.")
+                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .ToString());
+
     }
 }

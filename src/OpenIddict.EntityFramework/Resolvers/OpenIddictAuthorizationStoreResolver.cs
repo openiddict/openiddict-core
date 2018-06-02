@@ -66,7 +66,7 @@ namespace OpenIddict.EntityFramework
                     throw new InvalidOperationException(new StringBuilder()
                         .AppendLine("No Entity Framework 6.x context was specified in the OpenIddict options.")
                         .Append("To configure the OpenIddict Entity Framework 6.x stores to use a specific 'DbContext', ")
-                        .Append("use 'options.AddEntityFrameworkStores().UseContext<TContext>()'.")
+                        .Append("use 'options.UseEntityFramework().UseDbContext<TContext>()'.")
                         .ToString());
                 }
 

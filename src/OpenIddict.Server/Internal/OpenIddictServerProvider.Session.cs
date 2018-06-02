@@ -29,7 +29,7 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+            var logger = GetLogger(context.HttpContext.RequestServices);
 
             // If a request_id parameter can be found in the logout request,
             // restore the complete logout request from the distributed cache.
@@ -86,8 +86,8 @@ namespace OpenIddict.Server
 
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context)
         {
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var applicationManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationManager>();
+            var logger = GetLogger(context.HttpContext.RequestServices);
+            var applicationManager = GetApplicationManager(context.HttpContext.RequestServices);
 
             // If an optional post_logout_redirect_uri was provided, validate it.
             if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))

@@ -32,7 +32,7 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+            var logger = GetLogger(context.HttpContext.RequestServices);
 
             // Reject requests using the unsupported request parameter.
             if (!string.IsNullOrEmpty(context.Request.Request))
@@ -117,9 +117,9 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictServerProvider>>();
-            var applicationManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictApplicationManager>();
-            var scopeManager = context.HttpContext.RequestServices.GetRequiredService<IOpenIddictScopeManager>();
+            var logger = GetLogger(context.HttpContext.RequestServices);
+            var applicationManager = GetApplicationManager(context.HttpContext.RequestServices);
+            var scopeManager = GetScopeManager(context.HttpContext.RequestServices);
 
             // Note: the OpenID Connect server middleware supports authorization code, implicit, hybrid,
             // none and custom flows but OpenIddict uses a stricter policy rejecting none and custum flows.
