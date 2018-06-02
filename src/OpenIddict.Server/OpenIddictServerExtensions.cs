@@ -5,11 +5,14 @@
  */
 
 using System;
+using System.Text;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenIddict.Abstractions;
 using OpenIddict.Server;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -32,7 +35,21 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddAuthentication();
 
             builder.Services.TryAddScoped<OpenIddictServerHandler>();
-            builder.Services.TryAddScoped<OpenIddictServerProvider>();
+            builder.Services.TryAddScoped(provider =>
+            {
+                InvalidOperationException CreateException()
+                    => new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The core services must be registered when enabling the server handler.")
+                        .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                        .ToString());
+
+                return new OpenIddictServerProvider(
+                    provider.GetRequiredService<ILogger<OpenIddictServerProvider>>(),
+                    provider.GetService<IOpenIddictApplicationManager>() ?? throw CreateException(),
+                    provider.GetService<IOpenIddictAuthorizationManager>() ?? throw CreateException(),
+                    provider.GetService<IOpenIddictScopeManager>() ?? throw CreateException(),
+                    provider.GetService<IOpenIddictTokenManager>() ?? throw CreateException());
+            });
 
             // Register the options initializers used by the OpenID Connect server handler and OpenIddict.
             // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
