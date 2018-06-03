@@ -26,7 +26,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return RegisterMvcServices(builder.Services);
+            builder.Services.Configure<MvcOptions>(options =>
+            {
+                // Skip the binder registration if it was already added to the providers collection.
+                for (var index = 0; index < options.ModelBinderProviders.Count; index++)
+                {
+                    var provider = options.ModelBinderProviders[index];
+                    if (provider is OpenIddictMvcBinderProvider)
+                    {
+                        return;
+                    }
+                }
+
+                options.ModelBinderProviders.Insert(0, new OpenIddictMvcBinderProvider());
+            });
+
+            return new OpenIddictMvcBuilder(builder.Services);
         }
 
         /// <summary>
@@ -48,110 +63,6 @@ namespace Microsoft.Extensions.DependencyInjection
             configuration(builder.UseMvc());
 
             return builder;
-        }
-
-        /// <summary>
-        /// Registers the ASP.NET Core MVC services used by OpenIddict.
-        /// </summary>
-        /// <param name="builder">The services builder used by ASP.NET Core MVC to register new services.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictMvcBuilder"/>.</returns>
-        public static OpenIddictMvcBuilder UseOpenIddict([NotNull] this IMvcCoreBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            return RegisterMvcServices(builder.Services);
-        }
-
-        /// <summary>
-        /// Registers the ASP.NET Core MVC model binders used by OpenIddict.
-        /// </summary>
-        /// <param name="builder">The services builder used by ASP.NET Core MVC to register new services.</param>
-        /// <param name="configuration">The configuration delegate used to configure the MVC services.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
-        public static IMvcCoreBuilder UseOpenIddict(
-            [NotNull] this IMvcCoreBuilder builder,
-            [NotNull] Action<OpenIddictMvcBuilder> configuration)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            configuration(builder.UseOpenIddict());
-
-            return builder;
-        }
-
-        /// <summary>
-        /// Registers the ASP.NET Core MVC services used by OpenIddict.
-        /// </summary>
-        /// <param name="builder">The services builder used by ASP.NET Core MVC to register new services.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictMvcBuilder"/>.</returns>
-        public static OpenIddictMvcBuilder UseOpenIddict([NotNull] this IMvcBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            return RegisterMvcServices(builder.Services);
-        }
-
-        /// <summary>
-        /// Registers the ASP.NET Core MVC model binders used by OpenIddict.
-        /// </summary>
-        /// <param name="builder">The services builder used by ASP.NET Core MVC to register new services.</param>
-        /// <param name="configuration">The configuration delegate used to configure the MVC services.</param>
-        /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="IMvcBuilder"/>.</returns>
-        public static IMvcBuilder UseOpenIddict(
-            [NotNull] this IMvcBuilder builder,
-            [NotNull] Action<OpenIddictMvcBuilder> configuration)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            configuration(builder.UseOpenIddict());
-
-            return builder;
-        }
-
-        /// <summary>
-        /// Registers the ASP.NET Core MVC services used by OpenIddict.
-        /// </summary>
-        /// <param name="services">The services collection.</param>
-        /// <returns>The <see cref="OpenIddictMvcBuilder"/>.</returns>
-        private static OpenIddictMvcBuilder RegisterMvcServices([NotNull] IServiceCollection services)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            services.Configure<MvcOptions>(options =>
-            {
-                // Skip the binder registration if it was already added to the providers collection.
-                for (var index = 0; index < options.ModelBinderProviders.Count; index++)
-                {
-                    var provider = options.ModelBinderProviders[index];
-                    if (provider is OpenIddictMvcBinderProvider)
-                    {
-                        return;
-                    }
-                }
-
-                options.ModelBinderProviders.Insert(0, new OpenIddictMvcBinderProvider());
-            });
-
-            return new OpenIddictMvcBuilder(services);
         }
     }
 }
