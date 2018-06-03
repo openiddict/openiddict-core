@@ -42,6 +42,9 @@ namespace OpenIddict.Core.Tests
 
             // Assert
             Assert.Contains(services, service =>
+                service.ServiceType == typeof(OpenGenericApplicationManager<>) &&
+                service.ImplementationType == typeof(OpenGenericApplicationManager<>));
+            Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictApplicationManager<>) &&
                 service.ImplementationType == typeof(OpenGenericApplicationManager<>));
             Assert.DoesNotContain(services, service =>
@@ -60,6 +63,9 @@ namespace OpenIddict.Core.Tests
             builder.ReplaceApplicationManager(typeof(ClosedGenericApplicationManager));
 
             // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(ClosedGenericApplicationManager) &&
+                service.ImplementationFactory != null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictApplicationManager<CustomApplication>) &&
                 service.ImplementationType == typeof(ClosedGenericApplicationManager));
@@ -83,7 +89,7 @@ namespace OpenIddict.Core.Tests
         }
 
         [Fact]
-        public void ReplaceApplicationStoreResolver_OverridesDefaultManager()
+        public void ReplaceApplicationStoreResolver_OverridesDefaultResolver()
         {
             // Arrange
             var services = CreateServices();
@@ -127,6 +133,9 @@ namespace OpenIddict.Core.Tests
 
             // Assert
             Assert.Contains(services, service =>
+                service.ServiceType == typeof(OpenGenericAuthorizationManager<>) &&
+                service.ImplementationType == typeof(OpenGenericAuthorizationManager<>));
+            Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictAuthorizationManager<>) &&
                 service.ImplementationType == typeof(OpenGenericAuthorizationManager<>));
             Assert.DoesNotContain(services, service =>
@@ -145,6 +154,9 @@ namespace OpenIddict.Core.Tests
             builder.ReplaceAuthorizationManager(typeof(ClosedGenericAuthorizationManager));
 
             // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(ClosedGenericAuthorizationManager) &&
+                service.ImplementationFactory != null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictAuthorizationManager<CustomAuthorization>) &&
                 service.ImplementationType == typeof(ClosedGenericAuthorizationManager));
@@ -167,7 +179,7 @@ namespace OpenIddict.Core.Tests
         }
 
         [Fact]
-        public void ReplaceAuthorizationStoreResolver_OverridesDefaultManager()
+        public void ReplaceAuthorizationStoreResolver_OverridesDefaultResolver()
         {
             // Arrange
             var services = CreateServices();
@@ -211,6 +223,9 @@ namespace OpenIddict.Core.Tests
 
             // Assert
             Assert.Contains(services, service =>
+                service.ServiceType == typeof(OpenGenericScopeManager<>) &&
+                service.ImplementationType == typeof(OpenGenericScopeManager<>));
+            Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictScopeManager<>) &&
                 service.ImplementationType == typeof(OpenGenericScopeManager<>));
             Assert.DoesNotContain(services, service =>
@@ -229,6 +244,9 @@ namespace OpenIddict.Core.Tests
             builder.ReplaceScopeManager(typeof(ClosedGenericScopeManager));
 
             // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(ClosedGenericScopeManager) &&
+                service.ImplementationFactory != null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictScopeManager<CustomScope>) &&
                 service.ImplementationType == typeof(ClosedGenericScopeManager));
@@ -252,7 +270,7 @@ namespace OpenIddict.Core.Tests
         }
 
         [Fact]
-        public void ReplaceScopeStoreResolver_OverridesDefaultManager()
+        public void ReplaceScopeStoreResolver_OverridesDefaultResolver()
         {
             // Arrange
             var services = CreateServices();
@@ -296,6 +314,9 @@ namespace OpenIddict.Core.Tests
 
             // Assert
             Assert.Contains(services, service =>
+                service.ServiceType == typeof(OpenGenericTokenManager<>) &&
+                service.ImplementationType == typeof(OpenGenericTokenManager<>));
+            Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictTokenManager<>) &&
                 service.ImplementationType == typeof(OpenGenericTokenManager<>));
             Assert.DoesNotContain(services, service =>
@@ -314,6 +335,9 @@ namespace OpenIddict.Core.Tests
             builder.ReplaceTokenManager(typeof(ClosedGenericTokenManager));
 
             // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(ClosedGenericTokenManager) &&
+                service.ImplementationFactory != null);
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(OpenIddictTokenManager<CustomToken>) &&
                 service.ImplementationType == typeof(ClosedGenericTokenManager));
@@ -337,7 +361,7 @@ namespace OpenIddict.Core.Tests
         }
 
         [Fact]
-        public void ReplaceTokenStoreResolver_OverridesDefaultManager()
+        public void ReplaceTokenStoreResolver_OverridesDefaultResolver()
         {
             // Arrange
             var services = CreateServices();
