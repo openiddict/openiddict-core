@@ -3,7 +3,7 @@
   <PropertyGroup Label="Package Versions">
     <AspNetCoreVersion>1.0.0</AspNetCoreVersion>
     <AspNetContribOpenIdExtensionsVersion>1.1.0-preview-0310</AspNetContribOpenIdExtensionsVersion>
-    <AspNetContribOpenIdServerVersion>1.1.0-preview-1374</AspNetContribOpenIdServerVersion>
+    <AspNetContribOpenIdServerVersion>1.1.0-preview-1377</AspNetContribOpenIdServerVersion>
     <ClaimsVersion>4.0.1</ClaimsVersion>
     <CryptoHelperVersion>2.0.4</CryptoHelperVersion>
     <DataAnnotationsVersion>4.1.0</DataAnnotationsVersion>

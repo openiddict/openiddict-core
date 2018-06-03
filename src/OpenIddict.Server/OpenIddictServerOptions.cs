@@ -47,6 +47,7 @@ namespace OpenIddict.Server
             OpenIdConnectConstants.Claims.ExpiresAt,
             OpenIdConnectConstants.Claims.IssuedAt,
             OpenIdConnectConstants.Claims.Issuer,
+            OpenIdConnectConstants.Claims.JwtId,
             OpenIdConnectConstants.Claims.Subject
         };
 
