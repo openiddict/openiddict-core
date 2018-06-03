@@ -2,7 +2,7 @@
 
   <PropertyGroup Label="Package Versions">
     <AspNetContribOpenIdExtensionsVersion>2.0.0-rc3-0307</AspNetContribOpenIdExtensionsVersion>
-    <AspNetContribOpenIdServerVersion>2.0.0-rc3-1371</AspNetContribOpenIdServerVersion>
+    <AspNetContribOpenIdServerVersion>2.0.0-rc3-1376</AspNetContribOpenIdServerVersion>
     <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
     <CoreFxVersion>4.4.0</CoreFxVersion>
     <CryptoHelperVersion>3.0.2</CryptoHelperVersion>

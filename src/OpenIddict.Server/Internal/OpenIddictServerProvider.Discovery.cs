@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
-using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Server
 {
@@ -30,14 +29,11 @@ namespace OpenIddict.Server
             context.GrantTypes.Clear();
             context.GrantTypes.UnionWith(options.GrantTypes);
 
-            // Only return the scopes configured by the developer.
+            // Only return the scopes and the claims configured by the developer.
             context.Scopes.Clear();
             context.Scopes.UnionWith(options.Scopes);
-
-            // Note: claims_supported is a recommended parameter but is not strictly required.
-            // If no claim was registered, the claims_supported property will be automatically
-            // excluded from the response by the OpenID Connect server middleware.
-            context.Metadata[OpenIdConnectConstants.Metadata.ClaimsSupported] = new JArray(options.Claims);
+            context.Claims.Clear();
+            context.Claims.UnionWith(options.Claims);
 
             // Note: the optional claims/request/request_uri parameters are not supported
             // by OpenIddict, so "false" is returned to encourage clients not to use them.

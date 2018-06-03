@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Linq;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -178,13 +179,8 @@ namespace OpenIddict.Server.Tests
             Assert.False(response.HasParameter(OpenIdConnectConstants.Metadata.ClaimsSupported));
         }
 
-        [Theory]
-        [InlineData(OpenIdConnectConstants.Claims.Audience)]
-        [InlineData(OpenIdConnectConstants.Claims.ExpiresAt)]
-        [InlineData(OpenIdConnectConstants.Claims.IssuedAt)]
-        [InlineData(OpenIdConnectConstants.Claims.Issuer)]
-        [InlineData(OpenIdConnectConstants.Claims.Subject)]
-        public async Task HandleConfigurationRequest_DefaultClaimsAreReturned(string claim)
+        [Fact]
+        public async Task HandleConfigurationRequest_DefaultClaimsAreReturned()
         {
             // Arrange
             var server = CreateAuthorizationServer();
@@ -193,9 +189,16 @@ namespace OpenIddict.Server.Tests
 
             // Act
             var response = await client.GetAsync(ConfigurationEndpoint);
+            var claims = ((JArray) response[OpenIdConnectConstants.Metadata.ClaimsSupported]).Values<string>().ToArray();
 
             // Assert
-            Assert.Contains(claim, ((JArray) response[OpenIdConnectConstants.Metadata.ClaimsSupported]).Values<string>());
+            Assert.Equal(6, claims.Length);
+            Assert.Contains(OpenIdConnectConstants.Claims.Audience, claims);
+            Assert.Contains(OpenIdConnectConstants.Claims.ExpiresAt, claims);
+            Assert.Contains(OpenIdConnectConstants.Claims.IssuedAt, claims);
+            Assert.Contains(OpenIdConnectConstants.Claims.Issuer, claims);
+            Assert.Contains(OpenIdConnectConstants.Claims.JwtId, claims);
+            Assert.Contains(OpenIdConnectConstants.Claims.Subject, claims);
         }
 
         [Fact]
