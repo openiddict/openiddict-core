@@ -330,11 +330,17 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
+                Services.Replace(new ServiceDescriptor(type, type, lifetime));
                 Services.Replace(new ServiceDescriptor(typeof(OpenIddictApplicationManager<>), type, lifetime));
             }
 
             else
             {
+                object ResolveManager(IServiceProvider provider)
+                    => provider.GetRequiredService(typeof(OpenIddictApplicationManager<>)
+                        .MakeGenericType(root.GenericTypeArguments[0]));
+
+                Services.Replace(new ServiceDescriptor(type, ResolveManager, lifetime));
                 Services.Replace(new ServiceDescriptor(typeof(OpenIddictApplicationManager<>)
                     .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
@@ -421,11 +427,17 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
+                Services.Replace(new ServiceDescriptor(type, type, lifetime));
                 Services.Replace(new ServiceDescriptor(typeof(OpenIddictAuthorizationManager<>), type, lifetime));
             }
 
             else
             {
+                object ResolveManager(IServiceProvider provider)
+                    => provider.GetRequiredService(typeof(OpenIddictAuthorizationManager<>)
+                        .MakeGenericType(root.GenericTypeArguments[0]));
+
+                Services.Replace(new ServiceDescriptor(type, ResolveManager, lifetime));
                 Services.Replace(new ServiceDescriptor(typeof(OpenIddictAuthorizationManager<>)
                     .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
@@ -511,11 +523,17 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
+                Services.Replace(new ServiceDescriptor(type, type, lifetime));
                 Services.Replace(new ServiceDescriptor(typeof(OpenIddictScopeManager<>), type, lifetime));
             }
 
             else
             {
+                object ResolveManager(IServiceProvider provider)
+                    => provider.GetRequiredService(typeof(OpenIddictScopeManager<>)
+                        .MakeGenericType(root.GenericTypeArguments[0]));
+
+                Services.Replace(new ServiceDescriptor(type, ResolveManager, lifetime));
                 Services.Replace(new ServiceDescriptor(typeof(OpenIddictScopeManager<>)
                     .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
@@ -602,11 +620,17 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentException("The specified type is invalid.", nameof(type));
                 }
 
+                Services.Replace(new ServiceDescriptor(type, type, lifetime));
                 Services.Replace(new ServiceDescriptor(typeof(OpenIddictTokenManager<>), type, lifetime));
             }
 
             else
             {
+                object ResolveManager(IServiceProvider provider)
+                    => provider.GetRequiredService(typeof(OpenIddictTokenManager<>)
+                        .MakeGenericType(root.GenericTypeArguments[0]));
+
+                Services.Replace(new ServiceDescriptor(type, ResolveManager, lifetime));
                 Services.Replace(new ServiceDescriptor(typeof(OpenIddictTokenManager<>)
                     .MakeGenericType(root.GenericTypeArguments[0]), type, lifetime));
             }
