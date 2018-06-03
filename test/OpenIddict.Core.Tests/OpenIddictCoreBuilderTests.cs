@@ -356,27 +356,202 @@ namespace OpenIddict.Core.Tests
         }
 
         [Fact]
-        public void RegisterDefaultModels_CustomEntitiesAreCorrectlySet()
+        public void SetDefaultApplicationEntity_ThrowsAnExceptionForNullType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(delegate
+            {
+                return builder.SetDefaultApplicationEntity(type: null);
+            });
+
+            Assert.Equal("type", exception.ParamName);
+        }
+
+        [Fact]
+        public void SetDefaultApplicationEntity_ThrowsAnExceptionForInvalidType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.SetDefaultApplicationEntity(typeof(long));
+            });
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The specified type is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetDefaultApplicationEntity_EntityIsCorrectlySet()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            services.AddOpenIddict()
-                .AddCore()
-                    .SetDefaultApplicationEntity<CustomApplication>()
-                    .SetDefaultAuthorizationEntity<CustomAuthorization>()
-                    .SetDefaultScopeEntity<CustomScope>()
-                    .SetDefaultTokenEntity<CustomToken>();
+            builder.SetDefaultApplicationEntity<CustomApplication>();
 
             // Assert
             var provider = services.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
 
             Assert.Equal(typeof(CustomApplication), options.DefaultApplicationType);
+        }
+
+        [Fact]
+        public void SetDefaultAuthorizationEntity_ThrowsAnExceptionForNullType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(delegate
+            {
+                return builder.SetDefaultAuthorizationEntity(type: null);
+            });
+
+            Assert.Equal("type", exception.ParamName);
+        }
+
+        [Fact]
+        public void SetDefaultAuthorizationEntity_ThrowsAnExceptionForInvalidType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.SetDefaultAuthorizationEntity(typeof(long));
+            });
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The specified type is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetDefaultAuthorizationEntity_EntityIsCorrectlySet()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetDefaultAuthorizationEntity<CustomAuthorization>();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
             Assert.Equal(typeof(CustomAuthorization), options.DefaultAuthorizationType);
+        }
+
+        [Fact]
+        public void SetDefaultScopeEntity_ThrowsAnExceptionForNullType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(delegate
+            {
+                return builder.SetDefaultScopeEntity(type: null);
+            });
+
+            Assert.Equal("type", exception.ParamName);
+        }
+
+        [Fact]
+        public void SetDefaultScopeEntity_ThrowsAnExceptionForInvalidType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.SetDefaultScopeEntity(typeof(long));
+            });
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The specified type is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetDefaultScopeEntity_EntityIsCorrectlySet()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetDefaultScopeEntity<CustomScope>();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
             Assert.Equal(typeof(CustomScope), options.DefaultScopeType);
+        }
+
+        [Fact]
+        public void SetDefaultTokenEntity_ThrowsAnExceptionForNullType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(delegate
+            {
+                return builder.SetDefaultTokenEntity(type: null);
+            });
+
+            Assert.Equal("type", exception.ParamName);
+        }
+
+        [Fact]
+        public void SetDefaultTokenEntity_ThrowsAnExceptionForInvalidType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.SetDefaultTokenEntity(typeof(long));
+            });
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The specified type is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetDefaultTokenEntity_EntityIsCorrectlySet()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetDefaultTokenEntity<CustomToken>();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
             Assert.Equal(typeof(CustomToken), options.DefaultTokenType);
         }
 

@@ -651,32 +651,108 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Configures OpenIddict to use the specified entity as the default application entity.
         /// </summary>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultApplicationEntity<TApplication>()
-            where TApplication : class, new()
-            => Configure(options => options.DefaultApplicationType = typeof(TApplication));
+        public OpenIddictCoreBuilder SetDefaultApplicationEntity<TApplication>() where TApplication : class
+            => SetDefaultApplicationEntity(typeof(TApplication));
+
+        /// <summary>
+        /// Configures OpenIddict to use the specified entity as the default application entity.
+        /// </summary>
+        /// <param name="type">The application entity type.</param>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder SetDefaultApplicationEntity([NotNull] Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (type.IsValueType)
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            return Configure(options => options.DefaultApplicationType = type);
+        }
 
         /// <summary>
         /// Configures OpenIddict to use the specified entity as the default authorization entity.
         /// </summary>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultAuthorizationEntity<TAuthorization>()
-            where TAuthorization : class, new()
-            => Configure(options => options.DefaultAuthorizationType = typeof(TAuthorization));
+        public OpenIddictCoreBuilder SetDefaultAuthorizationEntity<TAuthorization>() where TAuthorization : class
+            => SetDefaultAuthorizationEntity(typeof(TAuthorization));
+
+        /// <summary>
+        /// Configures OpenIddict to use the specified entity as the default authorization entity.
+        /// </summary>
+        /// <param name="type">The authorization entity type.</param>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder SetDefaultAuthorizationEntity([NotNull] Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (type.IsValueType)
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            return Configure(options => options.DefaultAuthorizationType = type);
+        }
 
         /// <summary>
         /// Configures OpenIddict to use the specified entity as the default scope entity.
         /// </summary>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultScopeEntity<TScope>()
-            where TScope : class, new()
-            => Configure(options => options.DefaultScopeType = typeof(TScope));
+        public OpenIddictCoreBuilder SetDefaultScopeEntity<TScope>() where TScope : class
+            => SetDefaultScopeEntity(typeof(TScope));
+
+        /// <summary>
+        /// Configures OpenIddict to use the specified entity as the default scope entity.
+        /// </summary>
+        /// <param name="type">The scope entity type.</param>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder SetDefaultScopeEntity([NotNull] Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (type.IsValueType)
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            return Configure(options => options.DefaultScopeType = type);
+        }
 
         /// <summary>
         /// Configures OpenIddict to use the specified entity as the default token entity.
         /// </summary>
         /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
-        public OpenIddictCoreBuilder SetDefaultTokenEntity<TToken>()
-            where TToken : class, new()
-            => Configure(options => options.DefaultTokenType = typeof(TToken));
+        public OpenIddictCoreBuilder SetDefaultTokenEntity<TToken>() where TToken : class
+            => SetDefaultTokenEntity(typeof(TToken));
+
+        /// <summary>
+        /// Configures OpenIddict to use the specified entity as the default token entity.
+        /// </summary>
+        /// <param name="type">The token entity type.</param>
+        /// <returns>The <see cref="OpenIddictCoreBuilder"/>.</returns>
+        public OpenIddictCoreBuilder SetDefaultTokenEntity([NotNull] Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (type.IsValueType)
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            return Configure(options => options.DefaultTokenType = type);
+        }
     }
 }
