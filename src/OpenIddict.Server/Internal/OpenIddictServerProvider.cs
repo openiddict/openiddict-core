@@ -117,56 +117,51 @@ namespace OpenIddict.Server
                     context.IncludeRefreshToken &= options.UseRollingTokens;
                 }
 
-                // If token revocation was explicitly disabled,
-                // none of the following security routines apply.
-                if (options.DisableTokenRevocation)
+                // If token revocation was explicitly disabled, none of the following security routines apply.
+                if (!options.DisableTokenStorage)
                 {
-                    await base.ProcessSigninResponse(context);
+                    var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{context.Ticket.GetTokenId()}");
+                    Debug.Assert(token != null, "The token shouldn't be null.");
 
-                    return;
-                }
-
-                var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{context.Ticket.GetTokenId()}");
-                Debug.Assert(token != null, "The token shouldn't be null.");
-
-                // If rolling tokens are enabled or if the request is a grant_type=authorization_code request,
-                // mark the authorization code or the refresh token as redeemed to prevent future reuses.
-                // If the operation fails, return an error indicating the code/token is no longer valid.
-                // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
-                if (options.UseRollingTokens || context.Request.IsAuthorizationCodeGrantType())
-                {
-                    if (!await TryRedeemTokenAsync(token))
+                    // If rolling tokens are enabled or if the request is a grant_type=authorization_code request,
+                    // mark the authorization code or the refresh token as redeemed to prevent future reuses.
+                    // If the operation fails, return an error indicating the code/token is no longer valid.
+                    // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
+                    if (options.UseRollingTokens || context.Request.IsAuthorizationCodeGrantType())
                     {
-                        context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidGrant,
-                            description: context.Request.IsAuthorizationCodeGrantType() ?
-                                "The specified authorization code is no longer valid." :
-                                "The specified refresh token is no longer valid.");
+                        if (!await TryRedeemTokenAsync(token))
+                        {
+                            context.Reject(
+                                error: OpenIdConnectConstants.Errors.InvalidGrant,
+                                description: context.Request.IsAuthorizationCodeGrantType() ?
+                                    "The specified authorization code is no longer valid." :
+                                    "The specified refresh token is no longer valid.");
 
-                        return;
-                    }
-                }
-
-                if (context.Request.IsRefreshTokenGrantType())
-                {
-                    // When rolling tokens are enabled, try to revoke all the previously issued tokens
-                    // associated with the authorization if the request is a refresh_token request.
-                    // If the operation fails, silently ignore the error and keep processing the request:
-                    // this may indicate that one of the revoked tokens was modified by a concurrent request.
-                    if (options.UseRollingTokens)
-                    {
-                        await TryRevokeTokensAsync(context.Ticket);
+                            return;
+                        }
                     }
 
-                    // When rolling tokens are disabled, try to extend the expiration date
-                    // of the existing token instead of returning a new refresh token
-                    // with a new expiration date if sliding expiration was not disabled.
-                    // If the operation fails, silently ignore the error and keep processing
-                    // the request: this may indicate that a concurrent refresh token request
-                    // already updated the expiration date associated with the refresh token.
-                    if (!options.UseRollingTokens && options.UseSlidingExpiration)
+                    if (context.Request.IsRefreshTokenGrantType())
                     {
-                        await TryExtendTokenAsync(token, context.Ticket, options);
+                        // When rolling tokens are enabled, try to revoke all the previously issued tokens
+                        // associated with the authorization if the request is a refresh_token request.
+                        // If the operation fails, silently ignore the error and keep processing the request:
+                        // this may indicate that one of the revoked tokens was modified by a concurrent request.
+                        if (options.UseRollingTokens)
+                        {
+                            await TryRevokeTokensAsync(context.Ticket);
+                        }
+
+                        // When rolling tokens are disabled, try to extend the expiration date
+                        // of the existing token instead of returning a new refresh token
+                        // with a new expiration date if sliding expiration was not disabled.
+                        // If the operation fails, silently ignore the error and keep processing
+                        // the request: this may indicate that a concurrent refresh token request
+                        // already updated the expiration date associated with the refresh token.
+                        if (!options.UseRollingTokens && options.UseSlidingExpiration)
+                        {
+                            await TryExtendTokenAsync(token, context.Ticket, options);
+                        }
                     }
                 }
             }
@@ -174,7 +169,8 @@ namespace OpenIddict.Server
             // If no authorization was explicitly attached to the authentication ticket,
             // create an ad hoc authorization if an authorization code or a refresh token
             // is going to be returned to the client application as part of the response.
-            if (!context.Ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId) &&
+            if (!options.DisableAuthorizationStorage &&
+                !context.Ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId) &&
                 (context.IncludeAuthorizationCode || context.IncludeRefreshToken))
             {
                 await CreateAuthorizationAsync(context.Ticket, options, context.Request);

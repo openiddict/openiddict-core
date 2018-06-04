@@ -17,7 +17,7 @@ namespace OpenIddict.Server
         public override async Task DeserializeAccessToken([NotNull] DeserializeAccessTokenContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
-            if (options.DisableTokenRevocation)
+            if (options.DisableTokenStorage)
             {
                 return;
             }
@@ -40,7 +40,7 @@ namespace OpenIddict.Server
         public override async Task DeserializeAuthorizationCode([NotNull] DeserializeAuthorizationCodeContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
-            if (options.DisableTokenRevocation)
+            if (options.DisableTokenStorage)
             {
                 return;
             }
@@ -59,7 +59,7 @@ namespace OpenIddict.Server
         public override async Task DeserializeRefreshToken([NotNull] DeserializeRefreshTokenContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
-            if (options.DisableTokenRevocation)
+            if (options.DisableTokenStorage)
             {
                 return;
             }
@@ -78,7 +78,7 @@ namespace OpenIddict.Server
         public override async Task SerializeAccessToken([NotNull] SerializeAccessTokenContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
-            if (options.DisableTokenRevocation)
+            if (options.DisableTokenStorage)
             {
                 return;
             }
@@ -104,7 +104,7 @@ namespace OpenIddict.Server
         public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
-            if (options.DisableTokenRevocation)
+            if (options.DisableTokenStorage)
             {
                 return;
             }
@@ -132,7 +132,7 @@ namespace OpenIddict.Server
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
-            if (options.DisableTokenRevocation)
+            if (options.DisableTokenStorage)
             {
                 return;
             }

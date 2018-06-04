@@ -7,6 +7,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
@@ -139,8 +140,7 @@ namespace OpenIddict.Server
             if (!options.AuthorizationEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
                                                                 options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit)))
             {
-                throw new InvalidOperationException("The authorization endpoint must be enabled to use " +
-                                                    "the authorization code and implicit flows.");
+                throw new InvalidOperationException("The authorization endpoint must be enabled to use the authorization code and implicit flows.");
             }
 
             // Ensure the token endpoint has been enabled when the authorization code,
@@ -150,51 +150,51 @@ namespace OpenIddict.Server
                                                         options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password) ||
                                                         options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)))
             {
-                throw new InvalidOperationException("The token endpoint must be enabled to use the authorization code, " +
-                                                    "client credentials, password and refresh token flows.");
-            }
-
-            if (options.RevocationEndpointPath.HasValue && options.DisableTokenRevocation)
-            {
-                throw new InvalidOperationException("The revocation endpoint cannot be enabled when token revocation is disabled.");
-            }
-
-            if (options.UseReferenceTokens && options.DisableTokenRevocation)
-            {
                 throw new InvalidOperationException(
-                    "Reference tokens cannot be used when disabling token revocation.");
+                    "The token endpoint must be enabled to use the authorization code, client credentials, password and refresh token flows.");
+            }
+
+            if (options.RevocationEndpointPath.HasValue && options.DisableTokenStorage)
+            {
+                throw new InvalidOperationException("The revocation endpoint cannot be enabled when token storage is disabled.");
+            }
+
+            if (options.UseReferenceTokens && options.DisableTokenStorage)
+            {
+                throw new InvalidOperationException("Reference tokens cannot be used when disabling token storage.");
             }
 
             if (options.UseReferenceTokens && options.AccessTokenHandler != null)
             {
-                throw new InvalidOperationException(
-                    "Reference tokens cannot be used when configuring JWT as the access token format.");
+                throw new InvalidOperationException("Reference tokens cannot be used when configuring JWT as the access token format.");
             }
 
-            if (options.UseSlidingExpiration && options.DisableTokenRevocation && !options.UseRollingTokens)
+            if (options.UseSlidingExpiration && options.DisableTokenStorage && !options.UseRollingTokens)
             {
-                throw new InvalidOperationException("Sliding expiration must be disabled when turning off " +
-                                                    "token revocation if rolling tokens are not used.");
+                throw new InvalidOperationException(
+                    "Sliding expiration must be disabled when turning off token storage if rolling tokens are not used.");
             }
 
             if (options.AccessTokenHandler != null && options.SigningCredentials.Count == 0)
             {
-                throw new InvalidOperationException(
-                    "At least one signing key must be registered when using JWT as the access token format. " +
-                    "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
-                    "or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call " +
-                    "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("At least one signing key must be registered when using JWT as the access token format.")
+                    .Append("Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' ")
+                    .Append("or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call ")
+                    .Append("'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.")
+                    .ToString());
             }
 
             // Ensure at least one asymmetric signing certificate/key was registered if the implicit flow was enabled.
             if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey) &&
                  options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))
             {
-                throw new InvalidOperationException(
-                    "At least one asymmetric signing key must be registered when enabling the implicit flow. " +
-                    "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
-                    "or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call " +
-                    "'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("At least one asymmetric signing key must be registered when enabling the implicit flow.")
+                    .Append("Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' ")
+                    .Append("or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call ")
+                    .Append("'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.")
+                    .ToString());
             }
 
             // Automatically add the offline_access scope if the refresh token grant has been enabled.

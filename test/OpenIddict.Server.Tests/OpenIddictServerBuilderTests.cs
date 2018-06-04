@@ -297,6 +297,22 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void DisableAuthorizationStorage_AuthorizationStorageIsDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableAuthorizationStorage();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.DisableAuthorizationStorage);
+        }
+
+        [Fact]
         public void DisableConfigurationEndpoint_ConfigurationEndpointIsDisabled()
         {
             // Arrange
@@ -345,19 +361,19 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void DisableTokenRevocation_TokenRevocationIsDisabled()
+        public void DisableTokenStorage_TokenStorageIsDisabled()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            builder.DisableTokenRevocation();
+            builder.DisableTokenStorage();
 
             var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.DisableTokenRevocation);
+            Assert.True(options.DisableTokenStorage);
         }
 
         [Fact]

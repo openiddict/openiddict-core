@@ -22,7 +22,7 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
-            Debug.Assert(!options.DisableTokenRevocation, "Token revocation support shouldn't be disabled at this stage.");
+            Debug.Assert(!options.DisableTokenStorage, "Token storage support shouldn't be disabled at this stage.");
 
             // When token_type_hint is specified, reject the request if it doesn't correspond to a revocable token.
             if (!string.IsNullOrEmpty(context.Request.TokenTypeHint))

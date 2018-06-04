@@ -138,24 +138,40 @@ namespace OpenIddict.Server
                 return;
             }
 
-            // If the received token is not a reference access token,
-            // skip the additional reference token validation checks.
-            if (!options.UseReferenceTokens)
+            // If an authorization was attached to the access token, ensure it is still valid.
+            if (!options.DisableAuthorizationStorage &&
+                 context.Ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId))
             {
-                return;
+                var authorization = await _authorizationManager.FindByIdAsync(
+                    context.Ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId));
+
+                if (authorization == null || !await _authorizationManager.IsValidAsync(authorization))
+                {
+                    _logger.LogError("The token '{Identifier}' was declared as inactive because " +
+                                     "the associated authorization was no longer valid.", identifier);
+
+                    context.Active = false;
+
+                    return;
+                }
             }
 
-            // Retrieve the token from the request properties. If it's marked as invalid, return active = false.
-            var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
-            Debug.Assert(token != null, "The token shouldn't be null.");
-
-            if (!await _tokenManager.IsValidAsync(token))
+            // If the received token is a reference access token - i.e a token for
+            // which an entry exists in the database - ensure it is still valid.
+            if (options.UseReferenceTokens)
             {
-                _logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
+                // Retrieve the token from the request properties. If it's marked as invalid, return active = false.
+                var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
+                Debug.Assert(token != null, "The token shouldn't be null.");
 
-                context.Active = false;
+                if (!await _tokenManager.IsValidAsync(token))
+                {
+                    _logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
 
-                return;
+                    context.Active = false;
+
+                    return;
+                }
             }
 
             await base.HandleIntrospectionRequest(context);

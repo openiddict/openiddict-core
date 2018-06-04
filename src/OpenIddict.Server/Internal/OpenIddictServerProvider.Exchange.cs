@@ -295,8 +295,7 @@ namespace OpenIddict.Server
                 context.Request.SetProperty(OpenIddictConstants.Properties.AuthenticationTicket, context.Ticket);
             }
 
-            if (options.DisableTokenRevocation || (!context.Request.IsAuthorizationCodeGrantType() &&
-                                                   !context.Request.IsRefreshTokenGrantType()))
+            if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
             {
                 // Invoke the rest of the pipeline to allow
                 // the user code to handle the token request.
@@ -309,51 +308,85 @@ namespace OpenIddict.Server
 
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
 
-            // Extract the token identifier from the authentication ticket.
-            var identifier = context.Ticket.GetTokenId();
-            Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
-
-            // Retrieve the authorization code/refresh token from the request properties.
-            var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
-            Debug.Assert(token != null, "The token shouldn't be null.");
-
-            // If the authorization code/refresh token is already marked as redeemed, this may indicate that
-            // it was compromised. In this case, revoke the authorization and all the associated tokens. 
-            // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
-            if (await _tokenManager.IsRedeemedAsync(token))
+            // Unless token revocation was explicitly disabled, ensure
+            // the authorization code/refresh token is still valid.
+            if (!options.DisableTokenStorage)
             {
-                // Try to revoke the authorization and the associated tokens.
-                // If the operation fails, the helpers will automatically log
-                // and swallow the exception to ensure that a valid error
-                // response will be returned to the client application.
-                await TryRevokeAuthorizationAsync(context.Ticket);
-                await TryRevokeTokensAsync(context.Ticket);
-                await TryRevokeTokenAsync(token);
+                // Extract the token identifier from the authentication ticket.
+                var identifier = context.Ticket.GetTokenId();
+                Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
-                _logger.LogError("The token request was rejected because the authorization code " +
-                                 "or refresh token '{Identifier}' has already been redeemed.", identifier);
+                // Retrieve the authorization code/refresh token from the request properties.
+                var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
+                Debug.Assert(token != null, "The token shouldn't be null.");
 
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidGrant,
-                    description: context.Request.IsAuthorizationCodeGrantType() ?
-                        "The specified authorization code has already been redeemed." :
-                        "The specified refresh token has already been redeemed.");
+                // If the authorization code/refresh token is already marked as redeemed, this may indicate that
+                // it was compromised. In this case, revoke the authorization and all the associated tokens. 
+                // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
+                if (await _tokenManager.IsRedeemedAsync(token))
+                {
+                    await TryRevokeTokenAsync(token);
 
-                return;
+                    // Try to revoke the authorization and the associated tokens.
+                    // If the operation fails, the helpers will automatically log
+                    // and swallow the exception to ensure that a valid error
+                    // response will be returned to the client application.
+                    if (!options.DisableAuthorizationStorage)
+                    {
+                        await TryRevokeAuthorizationAsync(context.Ticket);
+                        await TryRevokeTokensAsync(context.Ticket);
+                    }
+
+                    _logger.LogError("The token request was rejected because the authorization code " +
+                                     "or refresh token '{Identifier}' has already been redeemed.", identifier);
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: context.Request.IsAuthorizationCodeGrantType() ?
+                            "The specified authorization code has already been redeemed." :
+                            "The specified refresh token has already been redeemed.");
+
+                    return;
+                }
+
+                else if (!await _tokenManager.IsValidAsync(token))
+                {
+                    _logger.LogError("The token request was rejected because the authorization code " +
+                                     "or refresh token '{Identifier}' was no longer valid.", identifier);
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        description: context.Request.IsAuthorizationCodeGrantType() ?
+                            "The specified authorization code is no longer valid." :
+                            "The specified refresh token is no longer valid.");
+
+                    return;
+                }
             }
 
-            else if (!await _tokenManager.IsValidAsync(token))
+            // Unless authorization revocation was explicitly disabled, ensure the
+            // authorization associated with the code/refresh token is still valid.
+            if (!options.DisableAuthorizationStorage)
             {
-                _logger.LogError("The token request was rejected because the authorization code " +
-                                 "or refresh token '{Identifier}' was no longer valid.", identifier);
+                // Extract the authorization identifier from the authentication ticket.
+                var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
+                if (!string.IsNullOrEmpty(identifier))
+                {
+                    var authorization = await _authorizationManager.FindByIdAsync(identifier);
+                    if (authorization == null || !await _authorizationManager.IsValidAsync(authorization))
+                    {
+                        _logger.LogError("The token '{Identifier}' was rejected because " +
+                                         "the associated authorization was no longer valid.");
 
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidGrant,
-                    description: context.Request.IsAuthorizationCodeGrantType() ?
-                        "The specified authorization code is no longer valid." :
-                        "The specified refresh token is no longer valid.");
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            description: context.Request.IsAuthorizationCodeGrantType() ?
+                                "The authorization associated with the authorization code is no longer valid." :
+                                "The authorization associated with the refresh token is no longer valid.");
 
-                return;
+                        return;
+                    }
+                }
             }
 
             // Invoke the rest of the pipeline to allow

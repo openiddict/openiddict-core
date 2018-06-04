@@ -61,11 +61,18 @@ namespace OpenIddict.Server
         };
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether token revocation should be disabled.
+        /// Gets or sets a boolean indicating whether authorization storage should be disabled.
+        /// When disabled, ad-hoc authorizations are not created when an authorization code or
+        /// refresh token is issued and can't be revoked to prevent associated tokens from being used.
+        /// </summary>
+        public bool DisableAuthorizationStorage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether token storage should be disabled.
         /// When disabled, authorization code and refresh tokens are not stored
         /// and cannot be revoked. Using this option is generally not recommended.
         /// </summary>
-        public bool DisableTokenRevocation { get; set; }
+        public bool DisableTokenStorage { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether request caching should be enabled.

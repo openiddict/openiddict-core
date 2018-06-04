@@ -37,11 +37,10 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddScoped<OpenIddictServerHandler>();
             builder.Services.TryAddScoped(provider =>
             {
-                InvalidOperationException CreateException()
-                    => new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The core services must be registered when enabling the server handler.")
-                        .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
-                        .ToString());
+                InvalidOperationException CreateException() => new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling the server handler.")
+                    .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                    .ToString());
 
                 return new OpenIddictServerProvider(
                     provider.GetRequiredService<ILogger<OpenIddictServerProvider>>(),

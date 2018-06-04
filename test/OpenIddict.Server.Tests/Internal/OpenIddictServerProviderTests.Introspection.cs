@@ -442,6 +442,295 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public async Task HandleIntrospectionRequest_AuthorizationIsIgnoredWhenAuthorizationStorageIsDisabled()
+        {
+            // Arrange
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
+            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(identity),
+                new AuthenticationProperties(),
+                OpenIddictServerDefaults.AuthenticationScheme);
+
+            ticket.SetAudiences("Fabrikam");
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"))
+                .Returns(ticket);
+
+            var manager = CreateAuthorizationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictAuthorization());
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
+                    var application = new OpenIddictApplication();
+
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(application);
+
+                    instance.Setup(mock => mock.HasPermissionAsync(application,
+                        OpenIddictConstants.Permissions.Endpoints.Introspection, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
+
+                    instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+                }));
+
+                builder.Services.AddSingleton(CreateTokenManager(instance =>
+                {
+                    var token = new OpenIddictToken();
+
+                    instance.Setup(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(token);
+
+                    instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
+
+                    instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>("2YotnFZFEjr1zCsicMWpAA"));
+
+                    instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(token);
+
+                    instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(false);
+
+                    instance.Setup(mock => mock.GetAuthorizationIdAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0"));
+                }));
+
+                builder.Services.AddSingleton(manager);
+
+                builder.DisableAuthorizationStorage();
+                builder.UseReferenceTokens();
+
+                builder.Configure(options => options.AccessTokenFormat = format.Object);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(IntrospectionEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                Token = "QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI"
+            });
+
+            // Assert
+            Assert.Single(response.GetParameters());
+            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task HandleIntrospectionRequest_RequestIsRejectedWhenAuthorizationCannotBeFound()
+        {
+            // Arrange
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
+            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(identity),
+                new AuthenticationProperties(),
+                OpenIddictServerDefaults.AuthenticationScheme);
+
+            ticket.SetAudiences("Fabrikam");
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"))
+                .Returns(ticket);
+
+            var manager = CreateAuthorizationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(value: null);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
+                    var application = new OpenIddictApplication();
+
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(application);
+
+                    instance.Setup(mock => mock.HasPermissionAsync(application,
+                        OpenIddictConstants.Permissions.Endpoints.Introspection, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
+
+                    instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+                }));
+
+                builder.Services.AddSingleton(CreateTokenManager(instance =>
+                {
+                    var token = new OpenIddictToken();
+
+                    instance.Setup(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(token);
+
+                    instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
+
+                    instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>("2YotnFZFEjr1zCsicMWpAA"));
+
+                    instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(token);
+
+                    instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(false);
+
+                    instance.Setup(mock => mock.GetAuthorizationIdAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0"));
+                }));
+
+                builder.Services.AddSingleton(manager);
+
+                builder.Configure(options => options.AccessTokenFormat = format.Object);
+
+                builder.UseReferenceTokens();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(IntrospectionEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                Token = "QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI"
+            });
+
+            // Assert
+            Assert.Single(response.GetParameters());
+            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task HandleIntrospectionRequest_RequestIsRejectedWhenAuthorizationIsInvalid()
+        {
+            // Arrange
+            var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
+            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(identity),
+                new AuthenticationProperties(),
+                OpenIddictServerDefaults.AuthenticationScheme);
+
+            ticket.SetAudiences("Fabrikam");
+            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Unprotect("2YotnFZFEjr1zCsicMWpAA"))
+                .Returns(ticket);
+
+            var authorization = new OpenIddictAuthorization();
+
+            var manager = CreateAuthorizationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(authorization);
+
+                instance.Setup(mock => mock.IsValidAsync(authorization, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(CreateApplicationManager(instance =>
+                {
+                    var application = new OpenIddictApplication();
+
+                    instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(application);
+
+                    instance.Setup(mock => mock.HasPermissionAsync(application,
+                        OpenIddictConstants.Permissions.Endpoints.Introspection, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+
+                    instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
+
+                    instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+                }));
+
+                builder.Services.AddSingleton(CreateTokenManager(instance =>
+                {
+                    var token = new OpenIddictToken();
+
+                    instance.Setup(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(token);
+
+                    instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
+
+                    instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>("2YotnFZFEjr1zCsicMWpAA"));
+
+                    instance.Setup(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(token);
+
+                    instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(false);
+
+                    instance.Setup(mock => mock.GetAuthorizationIdAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0"));
+                }));
+
+                builder.Services.AddSingleton(manager);
+
+                builder.Configure(options => options.AccessTokenFormat = format.Object);
+
+                builder.UseReferenceTokens();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(IntrospectionEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                Token = "QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI"
+            });
+
+            // Assert
+            Assert.Single(response.GetParameters());
+            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.IsValidAsync(authorization, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
         public async Task HandleIntrospectionRequest_RequestIsRejectedWhenReferenceTokenIsInvalid()
         {
             // Arrange

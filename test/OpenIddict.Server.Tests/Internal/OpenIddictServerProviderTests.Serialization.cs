@@ -1791,7 +1791,7 @@ namespace OpenIddict.Server.Tests
 
                 builder.Configure(options => options.RevocationEndpointPath = PathString.Empty);
 
-                builder.DisableTokenRevocation();
+                builder.DisableTokenStorage();
                 builder.DisableSlidingExpiration();
             });
 
@@ -2195,7 +2195,7 @@ namespace OpenIddict.Server.Tests
 
                 builder.Configure(options => options.RevocationEndpointPath = PathString.Empty);
 
-                builder.DisableTokenRevocation();
+                builder.DisableTokenStorage();
                 builder.DisableSlidingExpiration();
             });
 
