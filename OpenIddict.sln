@@ -10,7 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{19E887E7
 		build\key.snk = build\key.snk
 		build\packages.props = build\packages.props
 		build\repo.props = build\repo.props
-		build\tests.props = build\tests.props
 		build\version.props = build\version.props
 	EndProjectSection
 EndProject
@@ -56,9 +55,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Validation", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.EntityFrameworkCore.Models", "src\OpenIddict.EntityFrameworkCore.Models\OpenIddict.EntityFrameworkCore.Models.csproj", "{B5371534-4C33-41FA-B3D3-7D70D632DB15}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.MongoDb", "src\OpenIddict.MongoDb\OpenIddict.MongoDb.csproj", "{BACF1DD4-8390-48D4-BD9B-DA1EC00C1F98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.MongoDb", "src\OpenIddict.MongoDb\OpenIddict.MongoDb.csproj", "{BACF1DD4-8390-48D4-BD9B-DA1EC00C1F98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.MongoDb.Models", "src\OpenIddict.MongoDb.Models\OpenIddict.MongoDb.Models.csproj", "{14C55FB6-9626-4BDE-8961-3BE91DDD6418}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.MongoDb.Models", "src\OpenIddict.MongoDb.Models\OpenIddict.MongoDb.Models.csproj", "{14C55FB6-9626-4BDE-8961-3BE91DDD6418}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
