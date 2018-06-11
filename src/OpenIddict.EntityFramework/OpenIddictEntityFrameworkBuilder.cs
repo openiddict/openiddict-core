@@ -8,6 +8,7 @@ using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
@@ -81,6 +82,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
+
+            Services.TryAddScoped(type);
 
             return Configure(options => options.DbContextType = type);
         }

@@ -74,7 +74,7 @@ namespace OpenIddict.EntityFrameworkCore.Models
         /// <summary>
         /// Gets the list of tokens associated with the current authorization.
         /// </summary>
-        public virtual IList<TToken> Tokens { get; } = new List<TToken>();
+        public virtual ICollection<TToken> Tokens { get; } = new HashSet<TToken>();
 
         /// <summary>
         /// Gets or sets the type of the current authorization.
