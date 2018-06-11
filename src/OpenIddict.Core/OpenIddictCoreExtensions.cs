@@ -49,9 +49,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 if (options.DefaultApplicationType == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The default application type must be configured for the non-generic services to work correctly.")
-                        .Append("To configure the entities, use either 'services.AddOpenIddict().AddCore().UseDefaultModels()' ")
-                        .Append("or 'services.AddOpenIddict().AddCore().UseCustomModels()'.")
+                        .Append("No default application entity type was configured in the OpenIddict core options, ")
+                        .AppendLine("which generally indicates that no application store was registered in the DI container.")
+                        .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
+                        .Append("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
                         .ToString());
                 }
 
@@ -65,9 +66,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 if (options.DefaultAuthorizationType == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The default authorization type must be configured for the non-generic services to work correctly.")
-                        .Append("To configure the entities, use either 'services.AddOpenIddict().AddCore().UseDefaultModels()' ")
-                        .Append("or 'services.AddOpenIddict().AddCore().UseCustomModels()'.")
+                        .Append("No default authorization entity type was configured in the OpenIddict core options, ")
+                        .AppendLine("which generally indicates that no authorization store was registered in the DI container.")
+                        .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
+                        .Append("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
                         .ToString());
                 }
 
@@ -81,9 +83,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 if (options.DefaultScopeType == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The default scope type must be configured for the non-generic services to work correctly.")
-                        .Append("To configure the entities, use either 'services.AddOpenIddict().AddCore().UseDefaultModels()' ")
-                        .Append("or 'services.AddOpenIddict().AddCore().UseCustomModels()'.")
+                        .Append("No default scope entity type was configured in the OpenIddict core options, ")
+                        .AppendLine("which generally indicates that no scope store was registered in the DI container.")
+                        .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
+                        .Append("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
                         .ToString());
                 }
 
@@ -97,9 +100,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 if (options.DefaultTokenType == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The default token type must be configured for the non-generic services to work correctly.")
-                        .Append("To configure the entities, use either 'services.AddOpenIddict().AddCore().UseDefaultModels()' ")
-                        .Append("or 'services.AddOpenIddict().AddCore().UseCustomModels()'.")
+                        .Append("No default token entity type was configured in the OpenIddict core options, ")
+                        .AppendLine("which generally indicates that no token store was registered in the DI container.")
+                        .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
+                        .Append("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
                         .ToString());
                 }
 
