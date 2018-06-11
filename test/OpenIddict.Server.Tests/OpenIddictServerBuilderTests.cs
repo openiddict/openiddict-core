@@ -33,11 +33,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.Configure(configuration => configuration.Description.DisplayName = "OpenIddict");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal("OpenIddict", options.Value.Description.DisplayName);
+            Assert.Equal("OpenIddict", options.Description.DisplayName);
         }
 
         [Fact]
@@ -52,11 +51,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.AddEphemeralSigningKey();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(1, options.Value.SigningCredentials.Count);
+            Assert.Equal(1, options.SigningCredentials.Count);
         }
 
         [Theory]
@@ -79,9 +77,8 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.AddEphemeralSigningKey(algorithm);
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
-            var credentials = options.Value.SigningCredentials[0];
+            var options = GetOptions(services);
+            var credentials = options.SigningCredentials[0];
 
             // Assert
             Assert.Equal(algorithm, credentials.Algorithm);
@@ -111,11 +108,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.AddSigningKey(key);
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Same(key, options.Value.SigningCredentials[0].Key);
+            Assert.Same(key, options.SigningCredentials[0].Key);
         }
 
         [Fact]
@@ -133,11 +129,10 @@ namespace OpenIddict.Server.Tests
                 resource: "OpenIddict.Server.Tests.Certificate.pfx",
                 password: "OpenIddict");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.IsType(typeof(X509SecurityKey), options.Value.SigningCredentials[0].Key);
+            Assert.IsType(typeof(X509SecurityKey), options.SigningCredentials[0].Key);
         }
 
         [Fact]
@@ -152,11 +147,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.AllowAuthorizationCodeFlow();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode, options.Value.GrantTypes);
+            Assert.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode, options.GrantTypes);
         }
 
         [Fact]
@@ -171,11 +165,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.AllowClientCredentialsFlow();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials, options.Value.GrantTypes);
+            Assert.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials, options.GrantTypes);
         }
 
         [Fact]
@@ -190,11 +183,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.AllowCustomFlow("urn:ietf:params:oauth:grant-type:custom_grant");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Contains("urn:ietf:params:oauth:grant-type:custom_grant", options.Value.GrantTypes);
+            Assert.Contains("urn:ietf:params:oauth:grant-type:custom_grant", options.GrantTypes);
         }
 
         [Fact]
@@ -209,11 +201,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.AllowImplicitFlow();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.Implicit, options.Value.GrantTypes);
+            Assert.Contains(OpenIdConnectConstants.GrantTypes.Implicit, options.GrantTypes);
         }
 
         [Fact]
@@ -228,11 +219,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.AllowPasswordFlow();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.Password, options.Value.GrantTypes);
+            Assert.Contains(OpenIdConnectConstants.GrantTypes.Password, options.GrantTypes);
         }
 
         [Fact]
@@ -247,11 +237,26 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.AllowRefreshTokenFlow();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken, options.Value.GrantTypes);
+            Assert.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken, options.GrantTypes);
+        }
+
+        [Fact]
+        public void DisableAuthorizationStorage_AuthorizationStorageIsDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableAuthorizationStorage();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.DisableAuthorizationStorage);
         }
 
         [Fact]
@@ -266,11 +271,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.DisableConfigurationEndpoint();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(PathString.Empty, options.Value.ConfigurationEndpointPath);
+            Assert.Equal(PathString.Empty, options.ConfigurationEndpointPath);
         }
 
         [Fact]
@@ -285,11 +289,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.DisableCryptographyEndpoint();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(PathString.Empty, options.Value.CryptographyEndpointPath);
+            Assert.Equal(PathString.Empty, options.CryptographyEndpointPath);
         }
 
         [Fact]
@@ -304,15 +307,14 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.DisableSlidingExpiration();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.False(options.Value.UseSlidingExpiration);
+            Assert.False(options.UseSlidingExpiration);
         }
 
         [Fact]
-        public void DisableTokenRevocation_TokenRevocationIsDisabled()
+        public void DisableTokenStorage_TokenStorageIsDisabled()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -321,13 +323,12 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.DisableTokenRevocation();
+            builder.DisableTokenStorage();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.Value.DisableTokenRevocation);
+            Assert.True(options.DisableTokenStorage);
         }
 
         [Fact]
@@ -342,11 +343,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.EnableAuthorizationEndpoint("/endpoint-path");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal("/endpoint-path", options.Value.AuthorizationEndpointPath);
+            Assert.Equal("/endpoint-path", options.AuthorizationEndpointPath);
         }
 
         [Fact]
@@ -361,11 +361,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.EnableIntrospectionEndpoint("/endpoint-path");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal("/endpoint-path", options.Value.IntrospectionEndpointPath);
+            Assert.Equal("/endpoint-path", options.IntrospectionEndpointPath);
         }
 
         [Fact]
@@ -380,11 +379,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.EnableLogoutEndpoint("/endpoint-path");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal("/endpoint-path", options.Value.LogoutEndpointPath);
+            Assert.Equal("/endpoint-path", options.LogoutEndpointPath);
         }
 
         [Fact]
@@ -399,11 +397,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.EnableRequestCaching();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.Value.EnableRequestCaching);
+            Assert.True(options.EnableRequestCaching);
         }
 
         [Fact]
@@ -418,11 +415,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.EnableRevocationEndpoint("/endpoint-path");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal("/endpoint-path", options.Value.RevocationEndpointPath);
+            Assert.Equal("/endpoint-path", options.RevocationEndpointPath);
         }
 
         [Fact]
@@ -437,11 +433,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.EnableScopeValidation();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.Value.EnableScopeValidation);
+            Assert.True(options.EnableScopeValidation);
         }
 
         [Fact]
@@ -456,11 +451,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.EnableTokenEndpoint("/endpoint-path");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal("/endpoint-path", options.Value.TokenEndpointPath);
+            Assert.Equal("/endpoint-path", options.TokenEndpointPath);
         }
 
         [Fact]
@@ -475,11 +469,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.EnableUserinfoEndpoint("/endpoint-path");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal("/endpoint-path", options.Value.UserinfoEndpointPath);
+            Assert.Equal("/endpoint-path", options.UserinfoEndpointPath);
         }
 
         [Fact]
@@ -494,11 +487,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.RequireClientIdentification();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.Value.RequireClientIdentification);
+            Assert.True(options.RequireClientIdentification);
         }
 
         [Fact]
@@ -513,11 +505,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.SetAccessTokenLifetime(TimeSpan.FromMinutes(42));
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(TimeSpan.FromMinutes(42), options.Value.AccessTokenLifetime);
+            Assert.Equal(TimeSpan.FromMinutes(42), options.AccessTokenLifetime);
         }
 
         [Fact]
@@ -532,11 +523,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.SetAuthorizationCodeLifetime(TimeSpan.FromMinutes(42));
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(TimeSpan.FromMinutes(42), options.Value.AuthorizationCodeLifetime);
+            Assert.Equal(TimeSpan.FromMinutes(42), options.AuthorizationCodeLifetime);
         }
 
         [Fact]
@@ -551,11 +541,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.SetIdentityTokenLifetime(TimeSpan.FromMinutes(42));
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(TimeSpan.FromMinutes(42), options.Value.IdentityTokenLifetime);
+            Assert.Equal(TimeSpan.FromMinutes(42), options.IdentityTokenLifetime);
         }
 
         [Fact]
@@ -570,11 +559,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.SetRefreshTokenLifetime(TimeSpan.FromMinutes(42));
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(TimeSpan.FromMinutes(42), options.Value.RefreshTokenLifetime);
+            Assert.Equal(TimeSpan.FromMinutes(42), options.RefreshTokenLifetime);
         }
 
         [Fact]
@@ -589,11 +577,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.SetIssuer(new Uri("http://www.fabrikam.com/"));
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(new Uri("http://www.fabrikam.com/"), options.Value.Issuer);
+            Assert.Equal(new Uri("http://www.fabrikam.com/"), options.Issuer);
         }
 
         [Fact]
@@ -624,12 +611,11 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.RegisterClaims("custom_claim_1", "custom_claim_2");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Contains("custom_claim_1", options.Value.Claims);
-            Assert.Contains("custom_claim_2", options.Value.Claims);
+            Assert.Contains("custom_claim_1", options.Claims);
+            Assert.Contains("custom_claim_2", options.Claims);
         }
 
         [Fact]
@@ -644,12 +630,11 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.RegisterScopes("custom_scope_1", "custom_scope_2");
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.Contains("custom_scope_1", options.Value.Scopes);
-            Assert.Contains("custom_scope_2", options.Value.Scopes);
+            Assert.Contains("custom_scope_1", options.Scopes);
+            Assert.Contains("custom_scope_2", options.Scopes);
         }
 
         [Fact]
@@ -664,11 +649,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.UseDataProtectionProvider(new EphemeralDataProtectionProvider());
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.IsType(typeof(EphemeralDataProtectionProvider), options.Value.DataProtectionProvider);
+            Assert.IsType(typeof(EphemeralDataProtectionProvider), options.DataProtectionProvider);
         }
 
         [Fact]
@@ -683,11 +667,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.UseJsonWebTokens();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.IsType<JwtSecurityTokenHandler>(options.Value.AccessTokenHandler);
+            Assert.IsType<JwtSecurityTokenHandler>(options.AccessTokenHandler);
         }
 
         [Fact]
@@ -702,11 +685,10 @@ namespace OpenIddict.Server.Tests
             // Act
             builder.UseReferenceTokens();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.Value.UseReferenceTokens);
+            Assert.True(options.UseReferenceTokens);
         }
 
         private static IServiceCollection CreateServices()

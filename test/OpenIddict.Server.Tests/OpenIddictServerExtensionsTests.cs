@@ -6,6 +6,7 @@
 
 using System;
 using System.Reflection;
+using System.Text;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
@@ -104,7 +105,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void UseOpenIddictServer_ThrowsAnExceptionWhenTokenRevocationIsDisabled()
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenTokenStorageIsDisabled()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -122,18 +123,18 @@ namespace OpenIddict.Server.Tests
                     .EnableAuthorizationEndpoint("/connect/authorize")
                     .EnableRevocationEndpoint("/connect/revocation")
                     .AllowImplicitFlow()
-                    .DisableTokenRevocation();
+                    .DisableTokenStorage();
 
             var builder = new ApplicationBuilder(services.BuildServiceProvider());
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
 
-            Assert.Equal("The revocation endpoint cannot be enabled when token revocation is disabled.", exception.Message);
+            Assert.Equal("The revocation endpoint cannot be enabled when token storage is disabled.", exception.Message);
         }
 
         [Fact]
-        public void UseOpenIddictServer_ThrowsAnExceptionWhenUsingReferenceTokensWithTokenRevocationDisabled()
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenUsingReferenceTokensWithTokenStorageDisabled()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -151,7 +152,7 @@ namespace OpenIddict.Server.Tests
                 .AddServer()
                     .EnableAuthorizationEndpoint("/connect/authorize")
                     .AllowImplicitFlow()
-                    .DisableTokenRevocation()
+                    .DisableTokenStorage()
                     .UseReferenceTokens();
 
             var builder = new ApplicationBuilder(services.BuildServiceProvider());
@@ -159,7 +160,7 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
 
-            Assert.Equal("Reference tokens cannot be used when disabling token revocation.", exception.Message);
+            Assert.Equal("Reference tokens cannot be used when disabling token storage.", exception.Message);
         }
 
         [Fact]
@@ -193,7 +194,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void UseOpenIddictServer_ThrowsAnExceptionWhenUsingSlidingExpirationWithoutRollingTokensAndWithTokenRevocationDisabled()
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenUsingSlidingExpirationWithoutRollingTokensAndWithTokenStorageDisabled()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -211,7 +212,7 @@ namespace OpenIddict.Server.Tests
                 .AddServer()
                     .EnableAuthorizationEndpoint("/connect/authorize")
                     .AllowImplicitFlow()
-                    .DisableTokenRevocation();
+                    .DisableTokenStorage();
 
             var builder = new ApplicationBuilder(services.BuildServiceProvider());
 
@@ -219,7 +220,7 @@ namespace OpenIddict.Server.Tests
             var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
 
             Assert.Equal("Sliding expiration must be disabled when turning off " +
-                         "token revocation if rolling tokens are not used.", exception.Message);
+                         "token storage if rolling tokens are not used.", exception.Message);
         }
 
         [Fact]
@@ -246,9 +247,12 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
 
-            Assert.Equal("At least one asymmetric signing key must be registered when enabling the implicit flow. " +
-                         "Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' " +
-                         "or call 'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.", exception.Message);
+            Assert.Equal(new StringBuilder()
+                .AppendLine("At least one asymmetric signing key must be registered when enabling the implicit flow.")
+                .Append("Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' ")
+                .Append("or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call ")
+                .Append("'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.")
+                .ToString(), exception.Message);
         }
 
         [Fact]

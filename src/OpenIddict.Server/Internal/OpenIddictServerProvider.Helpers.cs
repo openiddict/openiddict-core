@@ -92,8 +92,8 @@ namespace OpenIddict.Server
             [NotNull] OpenIdConnectRequest request,
             [NotNull] ISecureDataFormat<AuthenticationTicket> format)
         {
-            Debug.Assert(!(options.DisableTokenRevocation && options.UseReferenceTokens),
-                "Token revocation cannot be disabled when using reference tokens.");
+            Debug.Assert(!(options.DisableTokenStorage && options.UseReferenceTokens),
+                "Token storage cannot be disabled when using reference tokens.");
 
             Debug.Assert(type == OpenIdConnectConstants.TokenUsages.AccessToken ||
                          type == OpenIdConnectConstants.TokenUsages.AuthorizationCode ||
@@ -116,7 +116,7 @@ namespace OpenIddict.Server
                 ticket.Properties.ExpiresUtc = properties.ExpiresUtc;
             }
 
-            if (options.DisableTokenRevocation)
+            if (options.DisableTokenStorage)
             {
                 return null;
             }
@@ -231,6 +231,9 @@ namespace OpenIddict.Server
         {
             var logger = GetLogger(context.RequestServices);
             var tokenManager = GetTokenManager(context.RequestServices);
+
+            Debug.Assert(!(options.DisableTokenStorage && options.UseReferenceTokens),
+                "Token revocation cannot be disabled when using reference tokens.");
 
             Debug.Assert(type == OpenIdConnectConstants.TokenUsages.AccessToken ||
                          type == OpenIdConnectConstants.TokenUsages.AuthorizationCode ||

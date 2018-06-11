@@ -303,6 +303,16 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.RefreshToken));
 
         /// <summary>
+        /// Disables authorization storage so that ad-hoc authorizations are
+        /// not created when an authorization code or refresh token is issued
+        /// and can't be revoked to prevent associated tokens from being used.
+        /// Using this option is generally NOT recommended.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder DisableAuthorizationStorage()
+            => Configure(options => options.DisableAuthorizationStorage = true);
+
+        /// <summary>
         /// Disables the configuration endpoint.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -325,7 +335,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Disables sliding expiration. When using this option, refresh tokens
-        /// are issued with a fixed expiration date: when it expires, a complete
+        /// are issued with a fixed expiration date: when they expire, a complete
         /// authorization flow must be started to retrieve a new refresh token.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
@@ -333,13 +343,13 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.UseSlidingExpiration = false);
 
         /// <summary>
-        /// Disables token revocation, so that authorization code and
+        /// Disables token storage, so that authorization code and
         /// refresh tokens are never stored and cannot be revoked.
-        /// Using this option is generally not recommended.
+        /// Using this option is generally NOT recommended.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder DisableTokenRevocation()
-            => Configure(options => options.DisableTokenRevocation = true);
+        public OpenIddictServerBuilder DisableTokenStorage()
+            => Configure(options => options.DisableTokenStorage = true);
 
         /// <summary>
         /// Enables the authorization endpoint.
