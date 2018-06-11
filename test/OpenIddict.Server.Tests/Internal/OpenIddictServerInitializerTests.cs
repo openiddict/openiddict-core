@@ -272,9 +272,9 @@ namespace OpenIddict.Server.Tests
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("At least one signing key must be registered when using JWT as the access token format.")
-                .Append("Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' ")
-                .Append("or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call ")
-                .Append("'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.")
+                .Append("Consider registering a certificate using 'services.AddOpenIddict().AddServer().AddSigningCertificate()' ")
+                .Append("or 'services.AddOpenIddict().AddServer().AddDevelopmentSigningCertificate()' or call ")
+                .Append("'services.AddOpenIddict().AddServer().AddEphemeralSigningKey()' to use an ephemeral key.")
                 .ToString(), exception.Message);
         }
 
@@ -298,9 +298,9 @@ namespace OpenIddict.Server.Tests
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("At least one asymmetric signing key must be registered when enabling the implicit flow.")
-                .Append("Consider registering a X.509 certificate using 'services.AddOpenIddict().AddSigningCertificate()' ")
-                .Append("or 'services.AddOpenIddict().AddDevelopmentSigningCertificate()' or call ")
-                .Append("'services.AddOpenIddict().AddEphemeralSigningKey()' to use an ephemeral key.")
+                .Append("Consider registering a certificate using 'services.AddOpenIddict().AddServer().AddSigningCertificate()' ")
+                .Append("or 'services.AddOpenIddict().AddServer().AddDevelopmentSigningCertificate()' or call ")
+                .Append("'services.AddOpenIddict().AddServer().AddEphemeralSigningKey()' to use an ephemeral key.")
                 .ToString(), exception.Message);
         }
 

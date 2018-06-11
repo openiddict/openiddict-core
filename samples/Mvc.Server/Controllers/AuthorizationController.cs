@@ -50,7 +50,7 @@ namespace Mvc.Server
         {
             Debug.Assert(request.IsAuthorizationRequest(),
                 "The OpenIddict binder for ASP.NET Core MVC is not registered. " +
-                "Make sure services.AddOpenIddict().AddMvcBinders() is correctly called.");
+                "Make sure services.AddOpenIddict().AddServer().UseMvc() is correctly called.");
 
             // Retrieve the application details from the database.
             var application = await _applicationManager.FindByClientIdAsync(request.ClientId);
@@ -79,7 +79,7 @@ namespace Mvc.Server
         {
             Debug.Assert(request.IsAuthorizationRequest(),
                 "The OpenIddict binder for ASP.NET Core MVC is not registered. " +
-                "Make sure services.AddOpenIddict().AddMvcBinders() is correctly called.");
+                "Make sure services.AddOpenIddict().AddServer().UseMvc() is correctly called.");
 
             // Retrieve the profile of the logged in user.
             var user = await _userManager.GetUserAsync(User);
@@ -116,7 +116,7 @@ namespace Mvc.Server
         {
             Debug.Assert(request.IsLogoutRequest(),
                 "The OpenIddict binder for ASP.NET Core MVC is not registered. " +
-                "Make sure services.AddOpenIddict().AddMvcBinders() is correctly called.");
+                "Make sure services.AddOpenIddict().AddServer().UseMvc() is correctly called.");
 
             // Flow the request_id to allow OpenIddict to restore
             // the original logout request from the distributed cache.
