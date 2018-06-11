@@ -29,7 +29,7 @@ namespace OpenIddict.EntityFramework.Models
         /// <summary>
         /// Gets the list of the authorizations associated with this application.
         /// </summary>
-        public virtual IList<TAuthorization> Authorizations { get; } = new List<TAuthorization>();
+        public virtual ICollection<TAuthorization> Authorizations { get; } = new HashSet<TAuthorization>();
 
         /// <summary>
         /// Gets or sets the client identifier
@@ -94,7 +94,7 @@ namespace OpenIddict.EntityFramework.Models
         /// <summary>
         /// Gets the list of the tokens associated with this application.
         /// </summary>
-        public virtual IList<TToken> Tokens { get; } = new List<TToken>();
+        public virtual ICollection<TToken> Tokens { get; } = new HashSet<TToken>();
 
         /// <summary>
         /// Gets or sets the application type
