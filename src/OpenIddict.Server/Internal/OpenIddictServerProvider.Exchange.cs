@@ -20,6 +20,9 @@ namespace OpenIddict.Server
 {
     public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
+        public override Task ExtractTokenRequest([NotNull] ExtractTokenRequestContext context)
+            => _eventService.PublishAsync(new OpenIddictServerEvents.ExtractTokenRequest(context));
+
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
@@ -289,7 +292,7 @@ namespace OpenIddict.Server
 
             context.Validate();
 
-            await base.ValidateTokenRequest(context);
+            await _eventService.PublishAsync(new OpenIddictServerEvents.ValidateTokenRequest(context));
         }
 
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context)
@@ -308,7 +311,7 @@ namespace OpenIddict.Server
                 // the user code to handle the token request.
                 context.SkipHandler();
 
-                await base.HandleTokenRequest(context);
+                await _eventService.PublishAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
 
                 return;
             }
@@ -400,7 +403,10 @@ namespace OpenIddict.Server
             // the user code to handle the token request.
             context.SkipHandler();
 
-            await base.HandleTokenRequest(context);
+            await _eventService.PublishAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
         }
+
+        public override Task ApplyTokenResponse([NotNull] ApplyTokenResponseContext context)
+            => _eventService.PublishAsync(new OpenIddictServerEvents.ApplyTokenResponse(context));
     }
 }

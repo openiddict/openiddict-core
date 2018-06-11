@@ -34,6 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.AddAuthentication();
 
+            builder.Services.TryAddScoped<IOpenIddictServerEventService, OpenIddictServerEventService>();
             builder.Services.TryAddScoped<OpenIddictServerHandler>();
             builder.Services.TryAddScoped(provider =>
             {
@@ -44,6 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 return new OpenIddictServerProvider(
                     provider.GetRequiredService<ILogger<OpenIddictServerProvider>>(),
+                    provider.GetRequiredService<IOpenIddictServerEventService>(),
                     provider.GetService<IOpenIddictApplicationManager>() ?? throw CreateException(),
                     provider.GetService<IOpenIddictAuthorizationManager>() ?? throw CreateException(),
                     provider.GetService<IOpenIddictScopeManager>() ?? throw CreateException(),

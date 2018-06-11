@@ -6,7 +6,6 @@
 
 using System;
 using System.ComponentModel;
-using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
@@ -47,19 +46,6 @@ namespace OpenIddict.Validation
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException("The options instance name cannot be null or empty.", nameof(name));
-            }
-
-            if (options.ApplicationEventsType != null)
-            {
-                if (options.ApplicationEvents != null)
-                {
-                    throw new InvalidOperationException("Application events cannot be registered when a type is specified.");
-                }
-
-                if (!typeof(OAuthValidationEvents).IsAssignableFrom(options.ApplicationEventsType))
-                {
-                    throw new InvalidOperationException("Application events must inherit from OAuthValidationEvents.");
-                }
             }
 
             if (options.DataProtectionProvider == null)

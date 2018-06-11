@@ -12,12 +12,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
 
@@ -47,6 +47,98 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public IServiceCollection Services { get; }
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <param name="handler">The handler added to the DI container.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictServerBuilder AddEventHandler<TEvent>(
+            [NotNull] IOpenIddictServerEventHandler<TEvent> handler)
+            where TEvent : class, IOpenIddictServerEvent
+        {
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            Services.AddSingleton(handler);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <param name="handler">The handler added to the DI container.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictServerBuilder AddEventHandler<TEvent>([NotNull] Func<TEvent, Task> handler)
+            where TEvent : class, IOpenIddictServerEvent
+            => AddEventHandler<TEvent>((notification, cancellationToken) => handler(notification));
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <param name="handler">The handler added to the DI container.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictServerBuilder AddEventHandler<TEvent>([NotNull] Func<TEvent, CancellationToken, Task> handler)
+            where TEvent : class, IOpenIddictServerEvent
+        {
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            return AddEventHandler(new OpenIddictServerEventHandler<TEvent>(handler));
+        }
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <typeparam name="TEvent">The type of the event.</typeparam>
+        /// <typeparam name="THandler">The type of the handler.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictServerBuilder AddEventHandler<TEvent, THandler>(
+            ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TEvent : class, IOpenIddictServerEvent
+            where THandler : IOpenIddictServerEventHandler<TEvent>
+            => AddEventHandler<TEvent>(typeof(THandler));
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <param name="type">The type of the handler.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictServerBuilder AddEventHandler<TEvent>(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TEvent : class, IOpenIddictServerEvent
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (lifetime == ServiceLifetime.Transient)
+            {
+                throw new ArgumentException("Handlers cannot be registered as transient services.", nameof(lifetime));
+            }
+
+            if (!typeof(IOpenIddictServerEventHandler<TEvent>).IsAssignableFrom(type))
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            Services.Add(new ServiceDescriptor(typeof(IOpenIddictServerEventHandler<TEvent>), type, lifetime));
+
+            return this;
+        }
 
         /// <summary>
         /// Amends the default OpenIddict server configuration.
@@ -184,7 +276,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentNullException(nameof(password));
+                throw new ArgumentException("The password cannot be null or empty.", nameof(password));
             }
 
             return Configure(options => options.SigningCredentials.AddCertificate(assembly, resource, password));
@@ -206,7 +298,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentNullException(nameof(password));
+                throw new ArgumentException("The password cannot be null or empty.", nameof(password));
             }
 
             return Configure(options => options.SigningCredentials.AddCertificate(stream, password));
@@ -233,7 +325,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentNullException(nameof(password));
+                throw new ArgumentException("The password cannot be null or empty.", nameof(password));
             }
 
             return Configure(options => options.SigningCredentials.AddCertificate(stream, password, flags));
@@ -550,60 +642,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return Configure(options => options.Claims.UnionWith(claims));
-        }
-
-        /// <summary>
-        /// Registers an application-specific OpenID Connect server provider whose events
-        /// are automatically invoked for each request handled by the OpenIddict server handler.
-        /// Using this method is NOT recommended if you're not familiar with the OIDC events model.
-        /// </summary>
-        /// <param name="provider">The custom <see cref="OpenIdConnectServerProvider"/> service.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder RegisterProvider([NotNull] OpenIdConnectServerProvider provider)
-        {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            return Configure(options => options.ApplicationProvider = provider);
-        }
-
-        /// <summary>
-        /// Registers an application-specific OpenID Connect server provider whose events
-        /// are automatically invoked for each request handled by the OpenIddict server handler.
-        /// Using this method is NOT recommended if you're not familiar with the OIDC events model.
-        /// </summary>
-        /// <typeparam name="TProvider">The type of the custom <see cref="OpenIdConnectServerProvider"/> service.</typeparam>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder RegisterProvider<TProvider>() where TProvider : OpenIdConnectServerProvider
-            => RegisterProvider(typeof(TProvider));
-
-        /// <summary>
-        /// Registers an application-specific OpenID Connect server provider whose events
-        /// are automatically invoked for each request handled by the OpenIddict server handler.
-        /// Using this method is NOT recommended if you're not familiar with the OIDC events model.
-        /// </summary>
-        /// <param name="type">The type of the custom <see cref="OpenIdConnectServerProvider"/> service.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder RegisterProvider([NotNull] Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            if (!typeof(OpenIdConnectServerProvider).IsAssignableFrom(type))
-            {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
-            }
-
-            Services.TryAddScoped(type);
-
-            return Configure(options => options.ApplicationProviderType = type);
         }
 
         /// <summary>

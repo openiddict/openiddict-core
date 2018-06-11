@@ -63,19 +63,6 @@ namespace OpenIddict.Server
                 throw new InvalidOperationException("A random number generator must be registered.");
             }
 
-            if (options.ApplicationProviderType != null)
-            {
-                if (options.ApplicationProvider != null)
-                {
-                    throw new InvalidOperationException("An application provider cannot be registered when a type is specified.");
-                }
-
-                if (!typeof(OpenIdConnectServerProvider).IsAssignableFrom(options.ApplicationProviderType))
-                {
-                    throw new InvalidOperationException("Application providers must inherit from OpenIdConnectServerProvider.");
-                }
-            }
-
             // When no distributed cache has been registered in the options,
             // try to resolve it from the dependency injection container.
             if (options.Cache == null)

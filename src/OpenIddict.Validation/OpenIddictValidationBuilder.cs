@@ -7,10 +7,11 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using AspNet.Security.OAuth.Validation;
+using System.Threading;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using OpenIddict.Abstractions;
 using OpenIddict.Validation;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -39,6 +40,98 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public IServiceCollection Services { get; }
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <param name="handler">The handler added to the DI container.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictValidationBuilder AddEventHandler<TEvent>(
+            [NotNull] IOpenIddictValidationEventHandler<TEvent> handler)
+            where TEvent : class, IOpenIddictValidationEvent
+        {
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            Services.AddSingleton(handler);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <param name="handler">The handler added to the DI container.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictValidationBuilder AddEventHandler<TEvent>([NotNull] Func<TEvent, Task> handler)
+            where TEvent : class, IOpenIddictValidationEvent
+            => AddEventHandler<TEvent>((notification, cancellationToken) => handler(notification));
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <param name="handler">The handler added to the DI container.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictValidationBuilder AddEventHandler<TEvent>([NotNull] Func<TEvent, CancellationToken, Task> handler)
+            where TEvent : class, IOpenIddictValidationEvent
+        {
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            return AddEventHandler(new OpenIddictValidationEventHandler<TEvent>(handler));
+        }
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <typeparam name="TEvent">The type of the event.</typeparam>
+        /// <typeparam name="THandler">The type of the handler.</typeparam>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictValidationBuilder AddEventHandler<TEvent, THandler>(
+            ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TEvent : class, IOpenIddictValidationEvent
+            where THandler : IOpenIddictValidationEventHandler<TEvent>
+            => AddEventHandler<TEvent>(typeof(THandler));
+
+        /// <summary>
+        /// Registers an event handler for the specified event type.
+        /// </summary>
+        /// <param name="type">The type of the handler.</param>
+        /// <param name="lifetime">The lifetime of the registered service.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public OpenIddictValidationBuilder AddEventHandler<TEvent>(
+            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TEvent : class, IOpenIddictValidationEvent
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (lifetime == ServiceLifetime.Transient)
+            {
+                throw new ArgumentException("Handlers cannot be registered as transient services.", nameof(lifetime));
+            }
+
+            if (!typeof(IOpenIddictValidationEventHandler<TEvent>).IsAssignableFrom(type))
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            Services.Add(new ServiceDescriptor(typeof(IOpenIddictValidationEventHandler<TEvent>), type, lifetime));
+
+            return this;
+        }
 
         /// <summary>
         /// Amends the default OpenIddict validation configuration.
@@ -77,57 +170,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return Configure(options => options.Audiences.UnionWith(audiences));
-        }
-
-        /// <summary>
-        /// Registers application-specific OAuth2 validation events that are automatically
-        /// invoked for each request handled by the OpenIddict validation handler.
-        /// </summary>
-        /// <param name="events">The custom <see cref="OAuthValidationEvents"/> service.</param>
-        /// <returns>The <see cref="OAuthValidationEvents"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictValidationBuilder RegisterEvents([NotNull] OAuthValidationEvents events)
-        {
-            if (events == null)
-            {
-                throw new ArgumentNullException(nameof(events));
-            }
-
-            return Configure(options => options.ApplicationEvents = events);
-        }
-
-        /// <summary>
-        /// Registers application-specific OAuth2 validation events that are automatically
-        /// invoked for each request handled by the OpenIddict validation handler.
-        /// </summary>
-        /// <typeparam name="TEvents">The type of the custom <see cref="OAuthValidationEvents"/> service.</typeparam>
-        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictValidationBuilder RegisterEvents<TEvents>() where TEvents : OAuthValidationEvents
-            => RegisterEvents(typeof(TEvents));
-
-        /// <summary>
-        /// Registers application-specific OAuth2 validation events that are automatically
-        /// invoked for each request handled by the OpenIddict validation handler.
-        /// </summary>
-        /// <param name="type">The type of the custom <see cref="OAuthValidationEvents"/> service.</param>
-        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictValidationBuilder RegisterEvents([NotNull] Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            if (!typeof(OAuthValidationEvents).IsAssignableFrom(type))
-            {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
-            }
-
-            Services.TryAddScoped(type);
-
-            return Configure(options => options.ApplicationEventsType = type);
         }
 
         /// <summary>

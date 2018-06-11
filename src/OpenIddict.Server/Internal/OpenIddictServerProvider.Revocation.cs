@@ -18,6 +18,9 @@ namespace OpenIddict.Server
 {
     public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
+        public override Task ExtractRevocationRequest([NotNull] ExtractRevocationRequestContext context)
+            => _eventService.PublishAsync(new OpenIddictServerEvents.ExtractRevocationRequest(context));
+
         public override async Task ValidateRevocationRequest([NotNull] ValidateRevocationRequestContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
@@ -160,7 +163,7 @@ namespace OpenIddict.Server
 
             context.Validate();
 
-            await base.ValidateRevocationRequest(context);
+            await _eventService.PublishAsync(new OpenIddictServerEvents.ValidateRevocationRequest(context));
         }
 
         public override async Task HandleRevocationRequest([NotNull] HandleRevocationRequestContext context)
@@ -232,7 +235,10 @@ namespace OpenIddict.Server
 
             context.Revoked = true;
 
-            await base.HandleRevocationRequest(context);
+            await _eventService.PublishAsync(new OpenIddictServerEvents.HandleRevocationRequest(context));
         }
+
+        public override Task ApplyRevocationResponse([NotNull] ApplyRevocationResponseContext context)
+            => _eventService.PublishAsync(new OpenIddictServerEvents.ApplyRevocationResponse(context));
     }
 }

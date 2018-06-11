@@ -35,20 +35,6 @@ namespace OpenIddict.Server
         public bool AcceptAnonymousClients { get; set; }
 
         /// <summary>
-        /// Gets or sets the user-provided <see cref="OpenIdConnectServerProvider"/> that the OpenIddict server
-        /// invokes to enable developer control over the entire authentication/authorization process.
-        /// </summary>
-        public OpenIdConnectServerProvider ApplicationProvider { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user-provided provider type that the OpenIddict server handler instantiates
-        /// to enable developer control over the entire authentication/authorization process. When this
-        /// property is set, the provider is resolved from the services container. If the provider is not
-        /// guaranteed to be thread-safe, registering it as a scoped dependency is strongly recommended.
-        /// </summary>
-        public Type ApplicationProviderType { get; set; }
-
-        /// <summary>
         /// Gets or sets the distributed cache used by OpenIddict. If no cache is explicitly
         /// provided, the cache registered in the dependency injection container is used.
         /// </summary>

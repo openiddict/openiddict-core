@@ -19,8 +19,19 @@ namespace OpenIddict.Validation
     /// Provides the logic necessary to extract, validate and handle OAuth2 requests.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class OpenIddictValidationEvents : OAuthValidationEvents
+    public class OpenIddictValidationProvider : OAuthValidationEvents
     {
+        private readonly IOpenIddictValidationEventService _eventService;
+
+        public OpenIddictValidationProvider([NotNull] IOpenIddictValidationEventService eventService)
+            => _eventService = eventService;
+
+        public override Task ApplyChallenge([NotNull] ApplyChallengeContext context)
+            => _eventService.PublishAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
+
+        public override Task CreateTicket([NotNull] CreateTicketContext context)
+            => _eventService.PublishAsync(new OpenIddictValidationEvents.CreateTicket(context));
+
         public override async Task DecryptToken([NotNull] DecryptTokenContext context)
         {
             var options = (OpenIddictValidationOptions) context.Options;
@@ -80,16 +91,13 @@ namespace OpenIddict.Validation
                 context.Success();
             }
 
-            await base.DecryptToken(context);
+            await _eventService.PublishAsync(new OpenIddictValidationEvents.DecryptToken(context));
         }
 
-        public void Import([NotNull] OAuthValidationEvents events)
-        {
-            OnApplyChallenge = events.ApplyChallenge;
-            OnCreateTicket = events.CreateTicket;
-            OnDecryptToken = events.DecryptToken;
-            OnRetrieveToken = events.RetrieveToken;
-            OnValidateToken = events.ValidateToken;
-        }
+        public override Task RetrieveToken([NotNull] RetrieveTokenContext context)
+            => _eventService.PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
+
+        public override Task ValidateToken([NotNull] ValidateTokenContext context)
+            => _eventService.PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
     }
 }

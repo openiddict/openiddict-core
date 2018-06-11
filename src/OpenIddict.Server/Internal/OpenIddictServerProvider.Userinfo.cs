@@ -24,7 +24,16 @@ namespace OpenIddict.Server
             // the user code to handle the userinfo request.
             context.SkipHandler();
 
-            return base.ExtractUserinfoRequest(context);
+            return _eventService.PublishAsync(new OpenIddictServerEvents.ExtractUserinfoRequest(context));
         }
+
+        public override Task ValidateUserinfoRequest([NotNull] ValidateUserinfoRequestContext context)
+            => _eventService.PublishAsync(new OpenIddictServerEvents.ValidateUserinfoRequest(context));
+
+        public override Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context)
+            => _eventService.PublishAsync(new OpenIddictServerEvents.HandleUserinfoRequest(context));
+
+        public override Task ApplyUserinfoResponse([NotNull] ApplyUserinfoResponseContext context)
+            => _eventService.PublishAsync(new OpenIddictServerEvents.ApplyUserinfoResponse(context));
     }
 }

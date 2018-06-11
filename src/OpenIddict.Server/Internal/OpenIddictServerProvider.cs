@@ -24,25 +24,31 @@ namespace OpenIddict.Server
     [EditorBrowsable(EditorBrowsableState.Never)]
     public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
-        public readonly ILogger _logger;
-        public readonly IOpenIddictApplicationManager _applicationManager;
-        public readonly IOpenIddictAuthorizationManager _authorizationManager;
-        public readonly IOpenIddictScopeManager _scopeManager;
-        public readonly IOpenIddictTokenManager _tokenManager;
+        private readonly ILogger _logger;
+        private readonly IOpenIddictServerEventService _eventService;
+        private readonly IOpenIddictApplicationManager _applicationManager;
+        private readonly IOpenIddictAuthorizationManager _authorizationManager;
+        private readonly IOpenIddictScopeManager _scopeManager;
+        private readonly IOpenIddictTokenManager _tokenManager;
 
         public OpenIddictServerProvider(
             [NotNull] ILogger<OpenIddictServerProvider> logger,
+            [NotNull] IOpenIddictServerEventService eventService,
             [NotNull] IOpenIddictApplicationManager applicationManager,
             [NotNull] IOpenIddictAuthorizationManager authorizationManager,
             [NotNull] IOpenIddictScopeManager scopeManager,
             [NotNull] IOpenIddictTokenManager tokenManager)
         {
             _logger = logger;
+            _eventService = eventService;
             _applicationManager = applicationManager;
             _authorizationManager = authorizationManager;
             _scopeManager = scopeManager;
             _tokenManager = tokenManager;
         }
+
+        public override Task MatchEndpoint([NotNull] MatchEndpointContext context)
+            => _eventService.PublishAsync(new OpenIddictServerEvents.MatchEndpoint(context));
 
         public override Task ProcessChallengeResponse([NotNull] ProcessChallengeResponseContext context)
         {
@@ -58,7 +64,7 @@ namespace OpenIddict.Server
                 context.Response.AddParameter(parameter, value);
             }
 
-            return base.ProcessChallengeResponse(context);
+            return _eventService.PublishAsync(new OpenIddictServerEvents.ProcessChallengeResponse(context));
         }
 
         public override async Task ProcessSigninResponse([NotNull] ProcessSigninResponseContext context)
@@ -188,7 +194,7 @@ namespace OpenIddict.Server
                 context.Ticket.RemoveProperty(property);
             }
 
-            await base.ProcessSigninResponse(context);
+            await _eventService.PublishAsync(new OpenIddictServerEvents.ProcessSigninResponse(context));
         }
 
         public override Task ProcessSignoutResponse([NotNull] ProcessSignoutResponseContext context)
@@ -202,61 +208,7 @@ namespace OpenIddict.Server
                 context.Response.AddParameter(parameter, value);
             }
 
-            return base.ProcessSignoutResponse(context);
-        }
-
-        public void Import([NotNull] OpenIdConnectServerProvider provider)
-        {
-            OnMatchEndpoint = provider.MatchEndpoint;
-
-            OnExtractAuthorizationRequest = provider.ExtractAuthorizationRequest;
-            OnExtractConfigurationRequest = provider.ExtractConfigurationRequest;
-            OnExtractCryptographyRequest = provider.ExtractCryptographyRequest;
-            OnExtractIntrospectionRequest = provider.ExtractIntrospectionRequest;
-            OnExtractLogoutRequest = provider.ExtractLogoutRequest;
-            OnExtractRevocationRequest = provider.ExtractRevocationRequest;
-            OnExtractTokenRequest = provider.ExtractTokenRequest;
-            OnExtractUserinfoRequest = provider.ExtractUserinfoRequest;
-            OnValidateAuthorizationRequest = provider.ValidateAuthorizationRequest;
-            OnValidateConfigurationRequest = provider.ValidateConfigurationRequest;
-            OnValidateCryptographyRequest = provider.ValidateCryptographyRequest;
-            OnValidateIntrospectionRequest = provider.ValidateIntrospectionRequest;
-            OnValidateLogoutRequest = provider.ValidateLogoutRequest;
-            OnValidateRevocationRequest = provider.ValidateRevocationRequest;
-            OnValidateTokenRequest = provider.ValidateTokenRequest;
-            OnValidateUserinfoRequest = provider.ValidateUserinfoRequest;
-
-            OnHandleAuthorizationRequest = provider.HandleAuthorizationRequest;
-            OnHandleConfigurationRequest = provider.HandleConfigurationRequest;
-            OnHandleCryptographyRequest = provider.HandleCryptographyRequest;
-            OnHandleIntrospectionRequest = provider.HandleIntrospectionRequest;
-            OnHandleLogoutRequest = provider.HandleLogoutRequest;
-            OnHandleRevocationRequest = provider.HandleRevocationRequest;
-            OnHandleTokenRequest = provider.HandleTokenRequest;
-            OnHandleUserinfoRequest = provider.HandleUserinfoRequest;
-
-            OnApplyAuthorizationResponse = provider.ApplyAuthorizationResponse;
-            OnApplyConfigurationResponse = provider.ApplyConfigurationResponse;
-            OnApplyCryptographyResponse = provider.ApplyCryptographyResponse;
-            OnApplyIntrospectionResponse = provider.ApplyIntrospectionResponse;
-            OnApplyLogoutResponse = provider.ApplyLogoutResponse;
-            OnApplyRevocationResponse = provider.ApplyRevocationResponse;
-            OnApplyTokenResponse = provider.ApplyTokenResponse;
-            OnApplyUserinfoResponse = provider.ApplyUserinfoResponse;
-
-            OnProcessChallengeResponse = provider.ProcessChallengeResponse;
-            OnProcessSigninResponse = provider.ProcessSigninResponse;
-            OnProcessSignoutResponse = provider.ProcessSignoutResponse;
-
-            OnDeserializeAccessToken = provider.DeserializeAccessToken;
-            OnDeserializeAuthorizationCode = provider.DeserializeAuthorizationCode;
-            OnDeserializeIdentityToken = provider.DeserializeIdentityToken;
-            OnDeserializeRefreshToken = provider.DeserializeRefreshToken;
-
-            OnSerializeAccessToken = provider.SerializeAccessToken;
-            OnSerializeAuthorizationCode = provider.SerializeAuthorizationCode;
-            OnSerializeIdentityToken = provider.SerializeIdentityToken;
-            OnSerializeRefreshToken = provider.SerializeRefreshToken;
+            return _eventService.PublishAsync(new OpenIddictServerEvents.ProcessSignoutResponse(context));
         }
     }
 }
