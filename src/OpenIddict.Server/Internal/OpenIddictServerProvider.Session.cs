@@ -82,6 +82,8 @@ namespace OpenIddict.Server
 
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context)
         {
+            var options = (OpenIddictServerOptions) context.Options;
+
             // If an optional post_logout_redirect_uri was provided, validate it.
             if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))
             {
@@ -109,7 +111,32 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                if (!await _applicationManager.ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
+                async Task<bool> ValidatePostLogoutRedirectUriAsync(string address)
+                {
+                    var applications = await _applicationManager.FindByPostLogoutRedirectUriAsync(address);
+                    if (applications.IsDefaultOrEmpty)
+                    {
+                        return false;
+                    }
+
+                    if (options.IgnoreEndpointPermissions)
+                    {
+                        return true;
+                    }
+
+                    foreach (var application in applications)
+                    {
+                        if (await _applicationManager.HasPermissionAsync(
+                            application, OpenIddictConstants.Permissions.Endpoints.Logout))
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                 {
                     _logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
                                      "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);

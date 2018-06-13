@@ -94,7 +94,8 @@ namespace OpenIddict.Server
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the revocation endpoint.
-            if (!await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Revocation))
+            if (!options.IgnoreEndpointPermissions &&
+                !await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Revocation))
             {
                 _logger.LogError("The revocation request was rejected because the application '{ClientId}' " +
                                  "was not allowed to use the revocation endpoint.", context.ClientId);

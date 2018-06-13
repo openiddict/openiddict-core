@@ -508,6 +508,30 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Disables endpoint permissions enforcement. Calling this method is NOT recommended,
+        /// unless all the clients are first-party applications you own, control and fully trust.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder IgnoreEndpointPermissions()
+            => Configure(options => options.IgnoreEndpointPermissions = true);
+
+        /// <summary>
+        /// Disables grant type permissions enforcement. Calling this method is NOT recommended,
+        /// unless all the clients are first-party applications you own, control and fully trust.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder IgnoreGrantTypePermissions()
+            => Configure(options => options.IgnoreGrantTypePermissions = true);
+
+        /// <summary>
+        /// Disables scope permissions enforcement. Calling this method is NOT recommended,
+        /// unless all the clients are first-party applications you own, control and fully trust.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder IgnoreScopePermissions()
+            => Configure(options => options.IgnoreScopePermissions = true);
+
+        /// <summary>
         /// Registers the specified claims as supported claims so
         /// they can be returned as part of the discovery document.
         /// </summary>

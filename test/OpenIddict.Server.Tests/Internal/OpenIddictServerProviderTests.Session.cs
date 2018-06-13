@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,8 +92,8 @@ namespace OpenIddict.Server.Tests
             // Arrange
             var manager = CreateApplicationManager(instance =>
             {
-                instance.Setup(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
+                instance.Setup(mock => mock.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableArray.Create<OpenIddictApplication>());
             });
 
             var server = CreateAuthorizationServer(builder =>
@@ -112,7 +113,7 @@ namespace OpenIddict.Server.Tests
             Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified 'post_logout_redirect_uri' parameter is not valid.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -126,8 +127,8 @@ namespace OpenIddict.Server.Tests
             {
                 builder.Services.AddSingleton(CreateApplicationManager(instance =>
                 {
-                    instance.Setup(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
+                    instance.Setup(mock => mock.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(ImmutableArray.Create(new OpenIddictApplication()));
                 }));
 
                 builder.Services.AddSingleton(cache.Object);
@@ -168,8 +169,8 @@ namespace OpenIddict.Server.Tests
             {
                 builder.Services.AddSingleton(CreateApplicationManager(instance =>
                 {
-                    instance.Setup(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
+                    instance.Setup(mock => mock.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(ImmutableArray.Create(new OpenIddictApplication()));
                 }));
             });
 
@@ -194,8 +195,8 @@ namespace OpenIddict.Server.Tests
             {
                 builder.Services.AddSingleton(CreateApplicationManager(instance =>
                 {
-                    instance.Setup(mock => mock.ValidatePostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(false);
+                    instance.Setup(mock => mock.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(ImmutableArray.Create(new OpenIddictApplication()));
                 }));
 
                 builder.EnableAuthorizationEndpoint("/logout-status-code-middleware");

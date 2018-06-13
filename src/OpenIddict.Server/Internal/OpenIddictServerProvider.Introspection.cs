@@ -19,6 +19,8 @@ namespace OpenIddict.Server
     {
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context)
         {
+            var options = (OpenIddictServerOptions) context.Options;
+
             // Note: the OpenID Connect server middleware supports unauthenticated introspection requests
             // but OpenIddict uses a stricter policy preventing unauthenticated/public applications
             // from using the introspection endpoint, as required by the specifications.
@@ -51,7 +53,8 @@ namespace OpenIddict.Server
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the introspection endpoint.
-            if (!await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Introspection))
+            if (!options.IgnoreEndpointPermissions &&
+                !await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Introspection))
             {
                 _logger.LogError("The introspection request was rejected because the application '{ClientId}' " +
                                  "was not allowed to use the introspection endpoint.", context.ClientId);

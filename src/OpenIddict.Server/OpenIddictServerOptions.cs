@@ -101,6 +101,27 @@ namespace OpenIddict.Server
         public ISet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.
+        /// Setting this property to <c>true</c> is NOT recommended, unless all
+        /// the clients are first-party applications you own, control and fully trust.
+        /// </summary>
+        public bool IgnoreEndpointPermissions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether grant type permissions should be ignored.
+        /// Setting this property to <c>true</c> is NOT recommended, unless all
+        /// the clients are first-party applications you own, control and fully trust.
+        /// </summary>
+        public bool IgnoreGrantTypePermissions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether scope permissions should be ignored.
+        /// Setting this property to <c>true</c> is NOT recommended, unless all
+        /// the clients are first-party applications you own, control and fully trust.
+        /// </summary>
+        public bool IgnoreScopePermissions { get; set; }
+
+        /// <summary>
         /// Gets or sets the random number generator used to generate crypto-secure identifiers.
         /// </summary>
         public RandomNumberGenerator RandomNumberGenerator { get; set; } = RandomNumberGenerator.Create();

@@ -126,6 +126,13 @@ namespace Mvc.Server
                     // that specify non-registered scopes, uncomment the following line:
                     //
                     // options.DisableScopeValidation();
+
+                    // Note: if you don't want to use permissions, you can disable
+                    // permission enforcement by uncommenting the following lines:
+                    //
+                    // options.IgnoreEndpointPermissions()
+                    //        .IgnoreGrantTypePermissions()
+                    //        .IgnoreScopePermissions();
                 })
 
                 // Register the OpenIddict validation handler.
@@ -180,7 +187,10 @@ namespace Mvc.Server
                             OpenIddictConstants.Permissions.Endpoints.Logout,
                             OpenIddictConstants.Permissions.Endpoints.Token,
                             OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
-                            OpenIddictConstants.Permissions.GrantTypes.RefreshToken
+                            OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
+                            OpenIddictConstants.Permissions.Scopes.Email,
+                            OpenIddictConstants.Permissions.Scopes.Profile,
+                            OpenIddictConstants.Permissions.Scopes.Roles
                         }
                     };
 
@@ -207,7 +217,10 @@ namespace Mvc.Server
                         {
                             OpenIddictConstants.Permissions.Endpoints.Authorization,
                             OpenIddictConstants.Permissions.Endpoints.Token,
-                            OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode
+                            OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+                            OpenIddictConstants.Permissions.Scopes.Email,
+                            OpenIddictConstants.Permissions.Scopes.Profile,
+                            OpenIddictConstants.Permissions.Scopes.Roles
                         }
                     };
 
