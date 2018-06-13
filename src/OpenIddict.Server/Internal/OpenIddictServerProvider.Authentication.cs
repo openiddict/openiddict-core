@@ -180,7 +180,7 @@ namespace OpenIddict.Server
             }
 
             // Validates scopes, unless scope validation was explicitly disabled.
-            if (options.EnableScopeValidation)
+            if (!options.DisableScopeValidation)
             {
                 var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
                 scopes.ExceptWith(options.Scopes);

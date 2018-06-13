@@ -101,19 +101,12 @@ namespace Mvc.Server
                                            OpenIdConnectConstants.Scopes.Profile,
                                            OpenIddictConstants.Scopes.Roles);
 
-                    // Make the "client_id" parameter mandatory when sending a token request.
-                    options.RequireClientIdentification();
-
                     // When request caching is enabled, authorization and logout requests
                     // are stored in the distributed cache by OpenIddict and the user agent
                     // is redirected to the same page with a single parameter (request_id).
                     // This allows flowing large OpenID Connect requests even when using
                     // an external authentication provider like Google, Facebook or Twitter.
                     options.EnableRequestCaching();
-
-                    // Enable scope validation, so that authorization and token requests
-                    // that specify unregistered scopes are automatically rejected.
-                    options.EnableScopeValidation();
 
                     // During development, you can disable the HTTPS requirement.
                     options.DisableHttpsRequirement();
@@ -123,6 +116,16 @@ namespace Mvc.Server
                     //
                     // options.UseJsonWebTokens();
                     // options.AddEphemeralSigningKey();
+
+                    // Note: if you don't want to specify a client_id when sending
+                    // a token or revocation request, uncomment the following line:
+                    //
+                    // options.AcceptAnonymousClients();
+
+                    // Note: if you want to process authorization and token requests
+                    // that specify non-registered scopes, uncomment the following line:
+                    //
+                    // options.DisableScopeValidation();
                 })
 
                 // Register the OpenIddict validation handler.

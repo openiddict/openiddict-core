@@ -457,19 +457,19 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void EnableScopeValidation_ScopeValidationIsDisabled()
+        public void DisableScopeValidation_ScopeValidationIsDisabled()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            builder.EnableScopeValidation();
+            builder.DisableScopeValidation();
 
             var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.EnableScopeValidation);
+            Assert.True(options.DisableScopeValidation);
         }
 
         [Fact]
@@ -505,19 +505,19 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void RequireClientIdentification_ClientIdentificationIsEnforced()
+        public void AcceptAnonymousClients_ClientIdentificationIsOptional()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
             // Act
-            builder.RequireClientIdentification();
+            builder.AcceptAnonymousClients();
 
             var options = GetOptions(services);
 
             // Assert
-            Assert.True(options.RequireClientIdentification);
+            Assert.True(options.AcceptAnonymousClients);
         }
 
         [Fact]

@@ -205,8 +205,6 @@ namespace OpenIddict.Server.Tests
                         It.IsAny<CancellationToken>()))
                         .ReturnsAsync(ImmutableArray.Create<OpenIddictScope>());
                 }));
-
-                builder.EnableScopeValidation();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -257,7 +255,6 @@ namespace OpenIddict.Server.Tests
                         .ReturnsAsync(true);
                 }));
 
-                builder.EnableScopeValidation();
                 builder.RegisterScopes("registered_scope");
             });
 
@@ -331,7 +328,6 @@ namespace OpenIddict.Server.Tests
 
                 builder.RegisterScopes("scope_registered_in_options");
 
-                builder.EnableScopeValidation();
                 builder.Services.AddSingleton(manager);
             });
 

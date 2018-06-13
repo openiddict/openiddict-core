@@ -1450,6 +1450,9 @@ namespace OpenIddict.Server.Tests
 
                     .AddServer(options =>
                     {
+                        // Accept anonymous clients by default.
+                        options.AcceptAnonymousClients();
+
                         // Disable the transport security requirement during testing.
                         options.DisableHttpsRequirement();
 

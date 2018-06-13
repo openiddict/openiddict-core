@@ -49,7 +49,10 @@ namespace OpenIddict.Server.Tests
         public async Task ValidateRevocationRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
         {
             // Arrange
-            var server = CreateAuthorizationServer(builder => builder.RequireClientIdentification());
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options => options.AcceptAnonymousClients = false);
+            });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 

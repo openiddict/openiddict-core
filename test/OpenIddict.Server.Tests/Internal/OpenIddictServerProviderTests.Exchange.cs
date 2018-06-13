@@ -81,10 +81,7 @@ namespace OpenIddict.Server.Tests
         public async Task ValidateTokenRequest_AuthorizationCodeRequestIsRejectedWhenRedirectUriIsMissing()
         {
             // Arrange
-            var server = CreateAuthorizationServer(builder =>
-            {
-                builder.EnableScopeValidation();
-            });
+            var server = CreateAuthorizationServer();
 
             var client = new OpenIdConnectClient(server.CreateClient());
 
@@ -115,8 +112,6 @@ namespace OpenIddict.Server.Tests
                         It.IsAny<CancellationToken>()))
                         .ReturnsAsync(ImmutableArray.Create<OpenIddictScope>());
                 }));
-
-                builder.EnableScopeValidation();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -141,7 +136,6 @@ namespace OpenIddict.Server.Tests
             // Arrange
             var server = CreateAuthorizationServer(builder =>
             {
-                builder.EnableScopeValidation();
                 builder.RegisterScopes("registered_scope");
             });
 
@@ -182,7 +176,6 @@ namespace OpenIddict.Server.Tests
 
             var server = CreateAuthorizationServer(builder =>
             {
-                builder.EnableScopeValidation();
                 builder.RegisterScopes("scope_registered_in_options");
 
                 builder.Services.AddSingleton(manager);
@@ -254,7 +247,10 @@ namespace OpenIddict.Server.Tests
         public async Task ValidateTokenRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
         {
             // Arrange
-            var server = CreateAuthorizationServer(builder => builder.RequireClientIdentification());
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options => options.AcceptAnonymousClients = false);
+            });
 
             var client = new OpenIdConnectClient(server.CreateClient());
 

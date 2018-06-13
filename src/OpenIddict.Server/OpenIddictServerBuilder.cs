@@ -67,6 +67,14 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Makes client identification optional so that token and revocation
+        /// requests that don't specify a client_id are not automatically rejected.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder AcceptAnonymousClients()
+            => Configure(options => options.AcceptAnonymousClients = true);
+
+        /// <summary>
         /// Registers (and generates if necessary) a user-specific development
         /// certificate used to sign the JWT tokens issued by OpenIddict.
         /// </summary>
@@ -462,12 +470,12 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Rejects authorization and token requests that specify scopes that have not been
-        /// registered using <see cref="RegisterScopes(string[])"/> or the scope manager.
+        /// Allows processing authorization and token requests that specify scopes that have not
+        /// been registered using <see cref="RegisterScopes(string[])"/> or the scope manager.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder EnableScopeValidation()
-            => Configure(options => options.EnableScopeValidation = true);
+        public OpenIddictServerBuilder DisableScopeValidation()
+            => Configure(options => options.DisableScopeValidation = true);
 
         /// <summary>
         /// Enables the token endpoint.
@@ -594,16 +602,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return Configure(options => options.Scopes.UnionWith(scopes));
         }
-
-        /// <summary>
-        /// Makes client identification mandatory so that token and revocation
-        /// requests that don't specify a client_id are automatically rejected.
-        /// Note: enabling this option doesn't prevent public clients from using
-        /// the token and revocation endpoints, but specifying a client_id is required.
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder RequireClientIdentification()
-            => Configure(options => options.RequireClientIdentification = true);
 
         /// <summary>
         /// Sets the access token lifetime, after which client applications must retrieve

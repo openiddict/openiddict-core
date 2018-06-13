@@ -55,7 +55,7 @@ namespace OpenIddict.Server
             if (string.IsNullOrEmpty(context.ClientId))
             {
                 // Reject the request if client identification is mandatory.
-                if (options.RequireClientIdentification)
+                if (!options.AcceptAnonymousClients)
                 {
                     _logger.LogError("The revocation request was rejected becaused the " +
                                      "mandatory client_id parameter was missing or empty.");
