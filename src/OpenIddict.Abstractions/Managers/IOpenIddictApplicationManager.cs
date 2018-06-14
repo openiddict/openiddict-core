@@ -396,17 +396,6 @@ namespace OpenIddict.Abstractions
         Task<bool> ValidateClientSecretAsync([NotNull] object application, string secret, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Validates the specified post_logout_redirect_uri.
-        /// </summary>
-        /// <param name="address">The address that should be compared to the post_logout_redirect_uri stored in the database.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns a boolean indicating whether the post_logout_redirect_uri was valid.
-        /// </returns>
-        Task<bool> ValidatePostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Validates the redirect_uri to ensure it's associated with an application.
         /// </summary>
         /// <param name="application">The application.</param>

@@ -83,7 +83,7 @@ namespace OpenIddict.Server
             }
 
             // Validates scopes, unless scope validation was explicitly disabled.
-            if (options.EnableScopeValidation)
+            if (!options.DisableScopeValidation)
             {
                 var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
                 scopes.ExceptWith(options.Scopes);
@@ -132,7 +132,7 @@ namespace OpenIddict.Server
             if (string.IsNullOrEmpty(context.ClientId))
             {
                 // Reject the request if client identification is mandatory.
-                if (options.RequireClientIdentification)
+                if (!options.AcceptAnonymousClients)
                 {
                     logger.LogError("The token request was rejected becaused the " +
                                     "mandatory client_id parameter was missing or empty.");
@@ -171,7 +171,8 @@ namespace OpenIddict.Server
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the token endpoint.
-            if (!await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Token))
+            if (!options.IgnoreEndpointPermissions &&
+                !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Token))
             {
                 logger.LogError("The token request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the token endpoint.", context.ClientId);
@@ -184,7 +185,7 @@ namespace OpenIddict.Server
             }
 
             // Reject the request if the application is not allowed to use the specified grant type.
-            if (!await applicationManager.HasPermissionAsync(application,
+            if (!options.IgnoreGrantTypePermissions && !await applicationManager.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.GrantType + context.Request.GrantType))
             {
                 logger.LogError("The token request was rejected because the application '{ClientId}' was not allowed to " +
@@ -261,27 +262,32 @@ namespace OpenIddict.Server
                 return;
             }
 
-            foreach (var scope in context.Request.GetScopes())
+            // Unless permission enforcement was explicitly disabled, ensure
+            // the client application is allowed to use the specified scopes.
+            if (!options.IgnoreScopePermissions)
             {
-                // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
-                if (string.Equals(scope, OpenIdConnectConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
-                    string.Equals(scope, OpenIdConnectConstants.Scopes.OpenId, StringComparison.Ordinal))
+                foreach (var scope in context.Request.GetScopes())
                 {
-                    continue;
-                }
+                    // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
+                    if (string.Equals(scope, OpenIdConnectConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
+                        string.Equals(scope, OpenIdConnectConstants.Scopes.OpenId, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
 
-                // Reject the request if the application is not allowed to use the iterated scope.
-                if (!await applicationManager.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.Prefixes.Scope + scope))
-                {
-                    logger.LogError("The token request was rejected because the application '{ClientId}' " +
-                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+                    // Reject the request if the application is not allowed to use the iterated scope.
+                    if (!await applicationManager.HasPermissionAsync(application,
+                        OpenIddictConstants.Permissions.Prefixes.Scope + scope))
+                    {
+                        logger.LogError("The token request was rejected because the application '{ClientId}' " +
+                                        "was not allowed to use the scope {Scope}.", context.ClientId, scope);
 
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "This client application is not allowed to use the specified scope.");
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidRequest,
+                            description: "This client application is not allowed to use the specified scope.");
 
-                    return;
+                        return;
+                    }
                 }
             }
 

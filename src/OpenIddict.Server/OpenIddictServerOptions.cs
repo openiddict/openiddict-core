@@ -27,6 +27,13 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Gets or sets a boolean determining whether client identification is optional.
+        /// Enabling this option allows client applications to communicate with the token
+        /// and revocation endpoints without having to send their client identifier.
+        /// </summary>
+        public bool AcceptAnonymousClients { get; set; }
+
+        /// <summary>
         /// Gets or sets the user-provided <see cref="OpenIdConnectServerProvider"/> that the OpenIddict server
         /// invokes to enable developer control over the entire authentication/authorization process.
         /// </summary>
@@ -75,9 +82,9 @@ namespace OpenIddict.Server
         public bool EnableRequestCaching { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether scope validation is enabled.
+        /// Gets or sets a boolean indicating whether scope validation is disabled.
         /// </summary>
-        public bool EnableScopeValidation { get; set; }
+        public bool DisableScopeValidation { get; set; }
 
         /// <summary>
         /// Gets the OAuth2/OpenID Connect flows enabled for this application.
@@ -85,16 +92,30 @@ namespace OpenIddict.Server
         public ISet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.
+        /// Setting this property to <c>true</c> is NOT recommended, unless all
+        /// the clients are first-party applications you own, control and fully trust.
+        /// </summary>
+        public bool IgnoreEndpointPermissions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether grant type permissions should be ignored.
+        /// Setting this property to <c>true</c> is NOT recommended, unless all
+        /// the clients are first-party applications you own, control and fully trust.
+        /// </summary>
+        public bool IgnoreGrantTypePermissions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether scope permissions should be ignored.
+        /// Setting this property to <c>true</c> is NOT recommended, unless all
+        /// the clients are first-party applications you own, control and fully trust.
+        /// </summary>
+        public bool IgnoreScopePermissions { get; set; }
+
+        /// <summary>
         /// Gets or sets the random number generator used to generate crypto-secure identifiers.
         /// </summary>
         public RandomNumberGenerator RandomNumberGenerator { get; set; } = RandomNumberGenerator.Create();
-
-        /// <summary>
-        /// Gets or sets a boolean determining whether client identification is required.
-        /// Enabling this option requires registering a client application and sending a
-        /// valid client_id when communicating with the token and revocation endpoints.
-        /// </summary>
-        public bool RequireClientIdentification { get; set; }
 
         /// <summary>
         /// Gets the OAuth2/OpenID Connect scopes enabled for this application.

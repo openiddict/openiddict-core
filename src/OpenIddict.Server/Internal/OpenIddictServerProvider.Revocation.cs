@@ -59,7 +59,7 @@ namespace OpenIddict.Server
             if (string.IsNullOrEmpty(context.ClientId))
             {
                 // Reject the request if client identification is mandatory.
-                if (options.RequireClientIdentification)
+                if (!options.AcceptAnonymousClients)
                 {
                     logger.LogError("The revocation request was rejected becaused the " +
                                     "mandatory client_id parameter was missing or empty.");
@@ -98,7 +98,8 @@ namespace OpenIddict.Server
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the revocation endpoint.
-            if (!await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Revocation))
+            if (!options.IgnoreEndpointPermissions &&
+                !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Revocation))
             {
                 logger.LogError("The revocation request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the revocation endpoint.", context.ClientId);

@@ -206,8 +206,6 @@ namespace OpenIddict.Server.Tests
                         It.IsAny<CancellationToken>()))
                         .ReturnsAsync(ImmutableArray.Create<OpenIddictScope>());
                 }));
-
-                builder.EnableScopeValidation();
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -244,21 +242,8 @@ namespace OpenIddict.Server.Tests
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.GrantTypes.Implicit, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Prefixes.Scope + "registered_scope", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
                 }));
 
-                builder.EnableScopeValidation();
                 builder.RegisterScopes("registered_scope");
             });
 
@@ -312,27 +297,10 @@ namespace OpenIddict.Server.Tests
 
                     instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
                         .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.GrantTypes.Implicit, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Prefixes.Scope + "scope_registered_in_database", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Prefixes.Scope + "scope_registered_in_options", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
                 }));
 
                 builder.RegisterScopes("scope_registered_in_options");
 
-                builder.EnableScopeValidation();
                 builder.Services.AddSingleton(manager);
             });
 
@@ -591,6 +559,8 @@ namespace OpenIddict.Server.Tests
             var server = CreateAuthorizationServer(builder =>
             {
                 builder.Services.AddSingleton(manager);
+
+                builder.Configure(options => options.IgnoreEndpointPermissions = false);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -652,10 +622,6 @@ namespace OpenIddict.Server.Tests
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                instance.Setup(mock => mock.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
                 foreach (var permission in permissions)
                 {
                     instance.Setup(mock => mock.HasPermissionAsync(application, permission, It.IsAny<CancellationToken>()))
@@ -666,6 +632,8 @@ namespace OpenIddict.Server.Tests
             var server = CreateAuthorizationServer(builder =>
             {
                 builder.Services.AddSingleton(manager);
+
+                builder.Configure(options => options.IgnoreGrantTypePermissions = false);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -685,8 +653,6 @@ namespace OpenIddict.Server.Tests
             Assert.Equal(description, response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application, permissions[0], It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -700,14 +666,6 @@ namespace OpenIddict.Server.Tests
             {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
-
-                instance.Setup(mock => mock.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                instance.Setup(mock => mock.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
@@ -733,10 +691,6 @@ namespace OpenIddict.Server.Tests
             Assert.Equal("The specified 'redirect_uri' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -750,18 +704,6 @@ namespace OpenIddict.Server.Tests
             {
                 instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
-
-                instance.Setup(mock => mock.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                instance.Setup(mock => mock.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                instance.Setup(mock => mock.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
@@ -781,6 +723,7 @@ namespace OpenIddict.Server.Tests
             {
                 builder.Services.AddSingleton(manager);
                 builder.RegisterScopes(OpenIdConnectConstants.Scopes.Email, OpenIdConnectConstants.Scopes.Profile);
+                builder.Configure(options => options.IgnoreScopePermissions = false);
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -827,14 +770,6 @@ namespace OpenIddict.Server.Tests
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.GrantTypes.Implicit, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -893,18 +828,6 @@ namespace OpenIddict.Server.Tests
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.GrantTypes.Implicit, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -980,14 +903,6 @@ namespace OpenIddict.Server.Tests
 
                     instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
-
-                    instance.Setup(mock => mock.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.GrantTypes.Implicit, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(true);
 
                     instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);

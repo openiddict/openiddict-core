@@ -187,7 +187,7 @@ namespace OpenIddict.Server
             }
 
             // Validates scopes, unless scope validation was explicitly disabled.
-            if (options.EnableScopeValidation)
+            if (!options.DisableScopeValidation)
             {
                 var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
                 scopes.ExceptWith(options.Scopes);
@@ -323,7 +323,8 @@ namespace OpenIddict.Server
             }
 
             // Reject the request if the application is not allowed to use the authorization endpoint.
-            if (!await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Authorization))
+            if (!options.IgnoreEndpointPermissions &&
+                !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Authorization))
             {
                 logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the authorization endpoint.", context.ClientId);
@@ -335,62 +336,65 @@ namespace OpenIddict.Server
                 return;
             }
 
-            // Reject the request if the application is not allowed to use the authorization code flow.
-            if (context.Request.IsAuthorizationCodeFlow() && !await applicationManager.HasPermissionAsync(
-                application, OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode))
+            if (!options.IgnoreGrantTypePermissions)
             {
-                logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                "was not allowed to use the authorization code flow.", context.ClientId);
+                // Reject the request if the application is not allowed to use the authorization code flow.
+                if (context.Request.IsAuthorizationCodeFlow() && !await applicationManager.HasPermissionAsync(
+                    application, OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode))
+                {
+                    logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                    "was not allowed to use the authorization code flow.", context.ClientId);
 
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
-                    description: "The client application is not allowed to use the authorization code flow.");
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        description: "The client application is not allowed to use the authorization code flow.");
 
-                return;
-            }
+                    return;
+                }
 
-            // Reject the request if the application is not allowed to use the implicit flow.
-            if (context.Request.IsImplicitFlow() && !await applicationManager.HasPermissionAsync(
-                application, OpenIddictConstants.Permissions.GrantTypes.Implicit))
-            {
-                logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                "was not allowed to use the implicit flow.", context.ClientId);
+                // Reject the request if the application is not allowed to use the implicit flow.
+                if (context.Request.IsImplicitFlow() && !await applicationManager.HasPermissionAsync(
+                    application, OpenIddictConstants.Permissions.GrantTypes.Implicit))
+                {
+                    logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                    "was not allowed to use the implicit flow.", context.ClientId);
 
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
-                    description: "The client application is not allowed to use the implicit flow.");
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        description: "The client application is not allowed to use the implicit flow.");
 
-                return;
-            }
+                    return;
+                }
 
-            // Reject the request if the application is not allowed to use the authorization code/implicit flows.
-            if (context.Request.IsHybridFlow() && 
-               (!await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode) ||
-                !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.Implicit)))
-            {
-                logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                "was not allowed to use the hybrid flow.", context.ClientId);
+                // Reject the request if the application is not allowed to use the authorization code/implicit flows.
+                if (context.Request.IsHybridFlow() &&
+                   (!await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode) ||
+                    !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.Implicit)))
+                {
+                    logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                    "was not allowed to use the hybrid flow.", context.ClientId);
 
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
-                    description:  "The client application is not allowed to use the hybrid flow.");
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        description: "The client application is not allowed to use the hybrid flow.");
 
-                return;
-            }
+                    return;
+                }
 
-            // Reject the request if the offline_access scope was request and if the
-            // application is not allowed to use the authorization code/implicit flows.
-            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
-               !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.RefreshToken))
-            {
-                logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                "was not allowed to request the 'offline_access' scope.", context.ClientId);
+                // Reject the request if the offline_access scope was request and if the
+                // application is not allowed to use the authorization code/implicit flows.
+                if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
+                   !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.RefreshToken))
+                {
+                    logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                    "was not allowed to request the 'offline_access' scope.", context.ClientId);
 
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
-                    description: "The client application is not allowed to use the 'offline_access' scope.");
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The client application is not allowed to use the 'offline_access' scope.");
 
-                return;
+                    return;
+                }
             }
 
 
@@ -407,26 +411,31 @@ namespace OpenIddict.Server
                 return;
             }
 
-            foreach (var scope in context.Request.GetScopes())
+            // Unless permission enforcement was explicitly disabled, ensure
+            // the client application is allowed to use the specified scopes.
+            if (!options.IgnoreScopePermissions)
             {
-                // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
-                if (string.Equals(scope, OpenIdConnectConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
-                    string.Equals(scope, OpenIdConnectConstants.Scopes.OpenId, StringComparison.Ordinal))
+                foreach (var scope in context.Request.GetScopes())
                 {
-                    continue;
-                }
+                    // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
+                    if (string.Equals(scope, OpenIdConnectConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
+                        string.Equals(scope, OpenIdConnectConstants.Scopes.OpenId, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
 
-                // Reject the request if the application is not allowed to use the iterated scope.
-                if (!await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Prefixes.Scope + scope))
-                {
-                    logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
-                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+                    // Reject the request if the application is not allowed to use the iterated scope.
+                    if (!await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Prefixes.Scope + scope))
+                    {
+                        logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
+                                        "was not allowed to use the scope {Scope}.", context.ClientId, scope);
 
-                    context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
-                        description: "This client application is not allowed to use the specified scope.");
+                        context.Reject(
+                            error: OpenIdConnectConstants.Errors.InvalidRequest,
+                            description: "This client application is not allowed to use the specified scope.");
 
-                    return;
+                        return;
+                    }
                 }
             }
 

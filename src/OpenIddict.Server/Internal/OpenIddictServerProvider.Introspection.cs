@@ -20,6 +20,8 @@ namespace OpenIddict.Server
     {
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context)
         {
+            var options = (OpenIddictServerOptions) context.Options;
+
             var logger = GetLogger(context.HttpContext.RequestServices);
             var applicationManager = GetApplicationManager(context.HttpContext.RequestServices);
 
@@ -55,7 +57,8 @@ namespace OpenIddict.Server
             context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the introspection endpoint.
-            if (!await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Introspection))
+            if (!options.IgnoreEndpointPermissions &&
+                !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Introspection))
             {
                 logger.LogError("The introspection request was rejected because the application '{ClientId}' " +
                                 "was not allowed to use the introspection endpoint.", context.ClientId);
