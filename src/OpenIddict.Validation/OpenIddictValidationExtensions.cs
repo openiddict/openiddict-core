@@ -9,6 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Validation;
 
@@ -33,6 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.AddAuthentication();
+            builder.Services.TryAddScoped<IOpenIddictValidationEventService, OpenIddictValidationEventService>();
 
             return new OpenIddictValidationBuilder(builder.Services);
         }
@@ -92,18 +94,6 @@ namespace Microsoft.Extensions.DependencyInjection
                     nameof(options.UseReferenceTokens), "ASOS");
 
                 options.AccessTokenFormat = new TicketDataFormat(protector);
-            }
-
-            // If application events have been registered, import the events into the main provider.
-            if (options.ApplicationEvents != null)
-            {
-                var events = options.Events as OpenIddictValidationEvents;
-                if (events == null)
-                {
-                    throw new InvalidOperationException("The specified OAuth2 validation events are not compatible.");
-                }
-
-                events.Import(options.ApplicationEvents);
             }
 
             return app.UseOAuthValidation(options);

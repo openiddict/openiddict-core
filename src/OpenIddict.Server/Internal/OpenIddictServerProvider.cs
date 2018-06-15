@@ -20,6 +20,10 @@ namespace OpenIddict.Server
     [EditorBrowsable(EditorBrowsableState.Never)]
     public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
+        public override Task MatchEndpoint([NotNull] MatchEndpointContext context)
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.MatchEndpoint(context));
+
         public override Task ProcessChallengeResponse([NotNull] ProcessChallengeResponseContext context)
         {
             Debug.Assert(context.Request.IsAuthorizationRequest() ||
@@ -34,7 +38,8 @@ namespace OpenIddict.Server
                 context.Response.AddParameter(parameter.Item2, parameter.Item3);
             }
 
-            return base.ProcessChallengeResponse(context);
+            return GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ProcessChallengeResponse(context));
         }
 
         public override async Task ProcessSigninResponse([NotNull] ProcessSigninResponseContext context)
@@ -164,7 +169,8 @@ namespace OpenIddict.Server
                 context.Ticket.RemoveProperty(parameter.Item1);
             }
 
-            await base.ProcessSigninResponse(context);
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ProcessSigninResponse(context));
         }
 
         public override Task ProcessSignoutResponse([NotNull] ProcessSignoutResponseContext context)
@@ -178,61 +184,8 @@ namespace OpenIddict.Server
                 context.Response.AddParameter(parameter.Item2, parameter.Item3);
             }
 
-            return base.ProcessSignoutResponse(context);
-        }
-
-        public void Import([NotNull] OpenIdConnectServerProvider provider)
-        {
-            OnMatchEndpoint = provider.MatchEndpoint;
-
-            OnExtractAuthorizationRequest = provider.ExtractAuthorizationRequest;
-            OnExtractConfigurationRequest = provider.ExtractConfigurationRequest;
-            OnExtractCryptographyRequest = provider.ExtractCryptographyRequest;
-            OnExtractIntrospectionRequest = provider.ExtractIntrospectionRequest;
-            OnExtractLogoutRequest = provider.ExtractLogoutRequest;
-            OnExtractRevocationRequest = provider.ExtractRevocationRequest;
-            OnExtractTokenRequest = provider.ExtractTokenRequest;
-            OnExtractUserinfoRequest = provider.ExtractUserinfoRequest;
-            OnValidateAuthorizationRequest = provider.ValidateAuthorizationRequest;
-            OnValidateConfigurationRequest = provider.ValidateConfigurationRequest;
-            OnValidateCryptographyRequest = provider.ValidateCryptographyRequest;
-            OnValidateIntrospectionRequest = provider.ValidateIntrospectionRequest;
-            OnValidateLogoutRequest = provider.ValidateLogoutRequest;
-            OnValidateRevocationRequest = provider.ValidateRevocationRequest;
-            OnValidateTokenRequest = provider.ValidateTokenRequest;
-            OnValidateUserinfoRequest = provider.ValidateUserinfoRequest;
-
-            OnHandleAuthorizationRequest = provider.HandleAuthorizationRequest;
-            OnHandleConfigurationRequest = provider.HandleConfigurationRequest;
-            OnHandleCryptographyRequest = provider.HandleCryptographyRequest;
-            OnHandleIntrospectionRequest = provider.HandleIntrospectionRequest;
-            OnHandleLogoutRequest = provider.HandleLogoutRequest;
-            OnHandleRevocationRequest = provider.HandleRevocationRequest;
-            OnHandleTokenRequest = provider.HandleTokenRequest;
-            OnHandleUserinfoRequest = provider.HandleUserinfoRequest;
-
-            OnApplyAuthorizationResponse = provider.ApplyAuthorizationResponse;
-            OnApplyConfigurationResponse = provider.ApplyConfigurationResponse;
-            OnApplyCryptographyResponse = provider.ApplyCryptographyResponse;
-            OnApplyIntrospectionResponse = provider.ApplyIntrospectionResponse;
-            OnApplyLogoutResponse = provider.ApplyLogoutResponse;
-            OnApplyRevocationResponse = provider.ApplyRevocationResponse;
-            OnApplyTokenResponse = provider.ApplyTokenResponse;
-            OnApplyUserinfoResponse = provider.ApplyUserinfoResponse;
-
-            OnProcessChallengeResponse = provider.ProcessChallengeResponse;
-            OnProcessSigninResponse = provider.ProcessSigninResponse;
-            OnProcessSignoutResponse = provider.ProcessSignoutResponse;
-
-            OnDeserializeAccessToken = provider.DeserializeAccessToken;
-            OnDeserializeAuthorizationCode = provider.DeserializeAuthorizationCode;
-            OnDeserializeIdentityToken = provider.DeserializeIdentityToken;
-            OnDeserializeRefreshToken = provider.DeserializeRefreshToken;
-
-            OnSerializeAccessToken = provider.SerializeAccessToken;
-            OnSerializeAuthorizationCode = provider.SerializeAuthorizationCode;
-            OnSerializeIdentityToken = provider.SerializeIdentityToken;
-            OnSerializeRefreshToken = provider.SerializeRefreshToken;
+            return GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ProcessSignoutResponse(context));
         }
     }
 }

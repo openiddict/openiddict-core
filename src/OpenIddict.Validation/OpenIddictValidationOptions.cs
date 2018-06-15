@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System;
 using AspNet.Security.OAuth.Validation;
 
 namespace OpenIddict.Validation
@@ -19,14 +18,8 @@ namespace OpenIddict.Validation
         /// </summary>
         public OpenIddictValidationOptions()
         {
-            Events = new OpenIddictValidationEvents();
+            Events = new OpenIddictValidationProvider();
         }
-
-        /// <summary>
-        /// Gets or sets the user-provided <see cref="OAuthValidationEvents"/> that the OpenIddict
-        /// validation handler invokes to enable developer control over the entire authentication process.
-        /// </summary>
-        public OAuthValidationEvents ApplicationEvents { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether reference tokens are used.

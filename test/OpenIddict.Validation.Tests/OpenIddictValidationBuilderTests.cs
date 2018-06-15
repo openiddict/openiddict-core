@@ -4,16 +4,70 @@
  * the license and the contributors participating to this project.
  */
 
-using AspNet.Security.OAuth.Validation;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
+using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation.Tests
 {
     public class OpenIddictValidationBuilderTests
     {
+        [Fact]
+        public void AddEventHandler_HandlerIsAttached()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            var handler = new OpenIddictValidationEventHandler<CreateTicket>(
+                (notification, cancellationToken) => Task.FromResult(0));
+
+            // Act
+            builder.AddEventHandler(handler);
+
+            // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(IOpenIddictValidationEventHandler<CreateTicket>) &&
+                service.ImplementationInstance == handler);
+        }
+
+        [Fact]
+        public void AddEventHandler_ThrowsAnExceptionForInvalidHandlerType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.AddEventHandler<CreateTicket>(typeof(object));
+            });
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The specified type is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void AddEventHandler_HandlerIsRegistered()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.AddEventHandler<CreateTicket, CustomHandler>();
+
+            // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(IOpenIddictValidationEventHandler<CreateTicket>) &&
+                service.ImplementationType == typeof(CustomHandler));
+        }
+
         [Fact]
         public void Configure_OptionsAreCorrectlyAmended()
         {
@@ -44,22 +98,6 @@ namespace OpenIddict.Validation.Tests
 
             // Assert
             Assert.Equal(new[] { "Fabrikam", "Contoso" }, options.Audiences);
-        }
-
-        [Fact]
-        public void RegisterEvents_EventsAreAttached()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.RegisterEvents(new OAuthValidationEvents());
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.NotNull(options.ApplicationEvents);
         }
 
         [Fact]
@@ -136,6 +174,13 @@ namespace OpenIddict.Validation.Tests
         {
             var provider = services.BuildServiceProvider();
             return provider.GetRequiredService<IOptions<OpenIddictValidationOptions>>().Value;
+        }
+
+        public class CustomHandler : OpenIddictValidationEventHandler<CreateTicket>
+        {
+            public CustomHandler(Func<CreateTicket, CancellationToken, Task> handler) : base(handler)
+            {
+            }
         }
     }
 }

@@ -682,7 +682,11 @@ namespace OpenIddict.Server
             }
         }
 
-        private static ILogger GetLogger(IServiceProvider provider) => provider.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+        private static ILogger GetLogger(IServiceProvider provider)
+            => provider.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+
+        private static IOpenIddictServerEventService GetEventService(IServiceProvider provider)
+            => provider.GetRequiredService<IOpenIddictServerEventService>();
 
         private static IOpenIddictApplicationManager GetApplicationManager(IServiceProvider provider)
             => provider.GetService<IOpenIddictApplicationManager>() ?? throw new InvalidOperationException(new StringBuilder()

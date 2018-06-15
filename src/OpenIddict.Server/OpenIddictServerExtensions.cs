@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
@@ -36,6 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.AddAuthentication();
+            builder.Services.TryAddScoped<IOpenIddictServerEventService, OpenIddictServerEventService>();
 
             return new OpenIddictServerBuilder(builder.Services);
         }
@@ -208,18 +210,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
             {
                 options.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
-            }
-
-            // If an application provider was registered, import the events into the main provider.
-            if (options.ApplicationProvider != null)
-            {
-                var provider = options.Provider as OpenIddictServerProvider;
-                if (provider == null)
-                {
-                    throw new InvalidOperationException("The specified OpenID Connect server provider is not compatible.");
-                }
-
-                provider.Import(options.ApplicationProvider);
             }
 
             return app.UseOpenIdConnectServer(options);

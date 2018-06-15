@@ -35,7 +35,7 @@ using Xunit;
 
 namespace OpenIddict.Validation.Tests
 {
-    public class OpenIddictValidationEventsTests
+    public class OpenIddictValidationProviderTests
     {
         [Fact]
         public async Task DecryptToken_ThrowsAnExceptionWhenTokenManagerIsNotRegistered()

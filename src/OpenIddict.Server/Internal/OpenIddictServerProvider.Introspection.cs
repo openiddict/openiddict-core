@@ -18,6 +18,10 @@ namespace OpenIddict.Server
 {
     public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
+        public override Task ExtractIntrospectionRequest([NotNull] ExtractIntrospectionRequestContext context)
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ExtractIntrospectionRequest(context));
+
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
@@ -98,7 +102,8 @@ namespace OpenIddict.Server
 
             context.Validate();
 
-            await base.ValidateIntrospectionRequest(context);
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ValidateIntrospectionRequest(context));
         }
 
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context)
@@ -185,7 +190,12 @@ namespace OpenIddict.Server
                 }
             }
 
-            await base.HandleIntrospectionRequest(context);
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.HandleIntrospectionRequest(context));
         }
+
+        public override Task ApplyIntrospectionResponse([NotNull] ApplyIntrospectionResponseContext context)
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ApplyIntrospectionResponse(context));
     }
 }

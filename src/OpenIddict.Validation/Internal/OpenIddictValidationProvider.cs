@@ -20,13 +20,21 @@ namespace OpenIddict.Validation
     /// Provides the logic necessary to extract, validate and handle OAuth2 requests.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class OpenIddictValidationEvents : OAuthValidationEvents
+    public class OpenIddictValidationProvider : OAuthValidationEvents
     {
+        public override Task ApplyChallenge([NotNull] ApplyChallengeContext context)
+            => context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+                .PublishAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
+
+        public override Task CreateTicket([NotNull] CreateTicketContext context)
+            => context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+                .PublishAsync(new OpenIddictValidationEvents.CreateTicket(context));
+
         public override async Task DecryptToken([NotNull] DecryptTokenContext context)
         {
             var options = (OpenIddictValidationOptions) context.Options;
 
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictValidationEvents>>();
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictValidationProvider>>();
 
             if (options.UseReferenceTokens)
             {
@@ -86,16 +94,16 @@ namespace OpenIddict.Validation
                 context.HandleResponse();
             }
 
-            await base.DecryptToken(context);
+            await context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+                .PublishAsync(new OpenIddictValidationEvents.DecryptToken(context));
         }
 
-        public void Import([NotNull] OAuthValidationEvents events)
-        {
-            OnApplyChallenge = events.ApplyChallenge;
-            OnCreateTicket = events.CreateTicket;
-            OnDecryptToken = events.DecryptToken;
-            OnRetrieveToken = events.RetrieveToken;
-            OnValidateToken = events.ValidateToken;
-        }
+        public override Task RetrieveToken([NotNull] RetrieveTokenContext context)
+            => context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+                .PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
+
+        public override Task ValidateToken([NotNull] ValidateTokenContext context)
+            => context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+                .PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
     }
 }

@@ -21,6 +21,10 @@ namespace OpenIddict.Server
 {
     public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
+        public override Task ExtractTokenRequest([NotNull] ExtractTokenRequestContext context)
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ExtractTokenRequest(context));
+
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
@@ -293,7 +297,8 @@ namespace OpenIddict.Server
 
             context.Validate();
 
-            await base.ValidateTokenRequest(context);
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ValidateTokenRequest(context));
         }
 
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context)
@@ -316,7 +321,8 @@ namespace OpenIddict.Server
                 // the user code to handle the token request.
                 context.SkipToNextMiddleware();
 
-                await base.HandleTokenRequest(context);
+                await GetEventService(context.HttpContext.RequestServices)
+                    .PublishAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
 
                 return;
             }
@@ -408,7 +414,12 @@ namespace OpenIddict.Server
             // the user code to handle the token request.
             context.SkipToNextMiddleware();
 
-            await base.HandleTokenRequest(context);
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
         }
+
+        public override Task ApplyTokenResponse([NotNull] ApplyTokenResponseContext context)
+            => GetEventService(context.HttpContext.RequestServices)
+            .PublishAsync(new OpenIddictServerEvents.ApplyTokenResponse(context));
     }
 }

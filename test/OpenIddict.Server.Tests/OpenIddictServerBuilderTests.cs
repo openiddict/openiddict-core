@@ -7,8 +7,9 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,11 +17,63 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Xunit;
+using static OpenIddict.Server.OpenIddictServerEvents;
 
 namespace OpenIddict.Server.Tests
 {
     public class OpenIddictServerBuilderTests
     {
+        [Fact]
+        public void AddEventHandler_HandlerIsAttached()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            var handler = new OpenIddictServerEventHandler<ApplyAuthorizationResponse>(
+                (notification, cancellationToken) => Task.FromResult(0));
+
+            // Act
+            builder.AddEventHandler(handler);
+
+            // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(IOpenIddictServerEventHandler<ApplyAuthorizationResponse>) &&
+                service.ImplementationInstance == handler);
+        }
+
+        [Fact]
+        public void AddEventHandler_ThrowsAnExceptionForInvalidHandlerType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.AddEventHandler<ApplyAuthorizationResponse>(typeof(object));
+            });
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The specified type is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void AddEventHandler_HandlerIsRegistered()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.AddEventHandler<ApplyAuthorizationResponse, CustomHandler>();
+
+            // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(IOpenIddictServerEventHandler<ApplyAuthorizationResponse>) &&
+                service.ImplementationType == typeof(CustomHandler));
+        }
+
         [Fact]
         public void Configure_OptionsAreCorrectlyAmended()
         {
@@ -584,22 +637,6 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void RegisterProvider_ProviderIsAttached()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.RegisterProvider(new OpenIdConnectServerProvider());
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.NotNull(options.ApplicationProvider);
-        }
-
-        [Fact]
         public void RegisterClaims_ClaimsAreAdded()
         {
             // Arrange
@@ -702,6 +739,13 @@ namespace OpenIddict.Server.Tests
             var provider = services.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
             return options.Value;
+        }
+
+        public class CustomHandler : OpenIddictServerEventHandler<ApplyAuthorizationResponse>
+        {
+            public CustomHandler(Func<ApplyAuthorizationResponse, CancellationToken, Task> handler) : base(handler)
+            {
+            }
         }
     }
 }
