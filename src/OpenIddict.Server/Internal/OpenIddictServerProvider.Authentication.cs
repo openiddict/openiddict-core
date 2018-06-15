@@ -382,8 +382,8 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                // Reject the request if the offline_access scope was request and if the
-                // application is not allowed to use the authorization code/implicit flows.
+                // Reject the request if the offline_access scope was request and if
+                // the application is not allowed to use the refresh token grant type.
                 if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
                    !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.RefreshToken))
                 {
