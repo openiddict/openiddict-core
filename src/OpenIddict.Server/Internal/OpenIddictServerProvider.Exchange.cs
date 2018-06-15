@@ -182,19 +182,36 @@ namespace OpenIddict.Server
                 return;
             }
 
-            // Reject the request if the application is not allowed to use the specified grant type.
-            if (!options.IgnoreGrantTypePermissions &&
-                !await _applicationManager.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Prefixes.GrantType + context.Request.GrantType))
+            if (!options.IgnoreGrantTypePermissions)
             {
-                _logger.LogError("The token request was rejected because the application '{ClientId}' was not allowed to " +
-                                 "use the specified grant type: {GrantType}.", context.ClientId, context.Request.GrantType);
+                // Reject the request if the application is not allowed to use the specified grant type.
+                if (!await _applicationManager.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Prefixes.GrantType + context.Request.GrantType))
+                {
+                    _logger.LogError("The token request was rejected because the application '{ClientId}' was not allowed to " +
+                                     "use the specified grant type: {GrantType}.", context.ClientId, context.Request.GrantType);
 
-                context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
-                    description: "This client application is not allowed to use the specified grant type.");
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        description: "This client application is not allowed to use the specified grant type.");
 
-                return;
+                    return;
+                }
+
+                // Reject the request if the offline_access scope was request and if
+                // the application is not allowed to use the refresh token grant type.
+                if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
+                   !await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.RefreshToken))
+                {
+                    _logger.LogError("The token request was rejected because the application '{ClientId}' " +
+                                     "was not allowed to request the 'offline_access' scope.", context.ClientId);
+
+                    context.Reject(
+                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        description: "The client application is not allowed to use the 'offline_access' scope.");
+
+                    return;
+                }
             }
 
             if (await _applicationManager.IsPublicAsync(application))
