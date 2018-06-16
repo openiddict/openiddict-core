@@ -145,7 +145,7 @@ services.AddDbContext<ApplicationDbContext>(options =>
 });
 ```
 
-> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure you use the `options.ReplaceDefaultModels<TKey>()` core extension accepting a `TKey` generic argument and use the generic `options.UseOpenIddict<TKey>()` overload to configure Entity Framework Core to use the specified key type:
+> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure you use the `options.ReplaceDefaultEntities<TKey>()` core extension accepting a `TKey` generic argument and use the generic `options.UseOpenIddict<TKey>()` overload to configure Entity Framework Core to use the specified key type:
 
 
 ```csharp
@@ -155,7 +155,7 @@ services.AddOpenIddict()
         // Configure OpenIddict to use the default entities with a custom key type.
         options.UseEntityFrameworkCore()
                .UseDbContext<ApplicationDbContext>()
-               .ReplaceDefaultModels<Guid>();
+               .ReplaceDefaultEntities<Guid>();
     });
 
 services.AddDbContext<ApplicationDbContext>(options =>
