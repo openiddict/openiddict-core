@@ -51,10 +51,9 @@ To use OpenIddict, you need to:
 
   - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
-  - **Update your `.csproj` file** to reference `AspNet.Security.OAuth.Validation` and the `OpenIddict` packages:
+  - **Update your `.csproj` file** to reference the `OpenIddict` packages:
 
 ```xml
-<PackageReference Include="AspNet.Security.OAuth.Validation" Version="2.0.0-*" />
 <PackageReference Include="OpenIddict" Version="2.0.0-*" />
 <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="2.0.0-*" />
 <PackageReference Include="OpenIddict.Mvc" Version="2.0.0-*" />
@@ -87,11 +86,9 @@ public void ConfigureServices(IServiceCollection services)
     services.AddOpenIddict()
         .AddCore(options =>
         {
-            // Configure OpenIddict to use the default entities.
-            options.UseDefaultModels();
-
-            // Register the Entity Framework stores.
-            options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
+            // Configure OpenIddict to use the Entity Framework Core stores and entities.
+            options.UseEntityFrameworkCore()
+                   .UseDbContext<ApplicationDbContext>();
         })
 
         .AddServer(options =>
@@ -99,7 +96,7 @@ public void ConfigureServices(IServiceCollection services)
             // Register the ASP.NET Core MVC binder used by OpenIddict.
             // Note: if you don't call this method, you won't be able to
             // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
-            options.AddMvcBinders();
+            options.UseMvc();
 
             // Enable the token endpoint (required to use the password flow).
             options.EnableTokenEndpoint("/connect/token");
@@ -109,6 +106,9 @@ public void ConfigureServices(IServiceCollection services)
 
             // During development, you can disable the HTTPS requirement.
             options.DisableHttpsRequirement();
+
+            // Accept token requests that don't specify a client_id.
+            options.AcceptAnonymousClients();
         })
 
         .AddValidation();
@@ -145,18 +145,17 @@ services.AddDbContext<ApplicationDbContext>(options =>
 });
 ```
 
-> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure you use the `options.UseDefaultModels<TKey>()` extension accepting a `TKey` generic argument and use the generic `options.UseOpenIddict<TKey>()` overload to configure Entity Framework Core to use the specified key type:
+> **Note:** if you change the default entity primary key (e.g. to `int` or `Guid` instead of `string`), make sure you use the `options.ReplaceDefaultModels<TKey>()` core extension accepting a `TKey` generic argument and use the generic `options.UseOpenIddict<TKey>()` overload to configure Entity Framework Core to use the specified key type:
 
 
 ```csharp
 services.AddOpenIddict()
     .AddCore(options =>
     {
-        // Configure OpenIddict to use the default entities.
-        options.UseDefaultModels<Guid>();
-
-        // Register the Entity Framework stores.
-        options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
+        // Configure OpenIddict to use the default entities with a custom key type.
+        options.UseEntityFrameworkCore()
+               .UseDbContext<ApplicationDbContext>()
+               .ReplaceDefaultModels<Guid>();
     });
 
 services.AddDbContext<ApplicationDbContext>(options =>
@@ -184,11 +183,9 @@ public void ConfigureServices(IServiceCollection services)
     services.AddOpenIddict()
         .AddCore(options =>
         {
-            // Configure OpenIddict to use the default entities.
-            options.UseDefaultModels();
-
-            // Register the Entity Framework stores.
-            options.AddEntityFrameworkCoreStores<ApplicationDbContext>();
+            // Configure OpenIddict to use the Entity Framework Core stores and entities.
+            options.UseEntityFrameworkCore()
+                   .UseDbContext<ApplicationDbContext>();
         })
 
         .AddServer(options =>
@@ -196,7 +193,7 @@ public void ConfigureServices(IServiceCollection services)
             // Register the ASP.NET Core MVC binder used by OpenIddict.
             // Note: if you don't call this method, you won't be able to
             // bind OpenIdConnectRequest or OpenIdConnectResponse parameters.
-            options.AddMvcBinders();
+            options.UseMvc();
 
             // Enable the authorization and token endpoints (required to use the code flow).
             options.EnableAuthorizationEndpoint("/connect/authorize")
