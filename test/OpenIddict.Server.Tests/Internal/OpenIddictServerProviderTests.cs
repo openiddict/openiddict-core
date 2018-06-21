@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
@@ -112,6 +113,33 @@ namespace OpenIddict.Server.Tests
             Assert.Equal(new JArray(1, 2, 3), (JArray) response["custom_json_array_parameter"]);
             Assert.Equal(JObject.FromObject(new { Property = "value" }), (JObject) response["custom_json_object_parameter"]);
             Assert.Equal("value", (string) response["custom_string_parameter"]);
+        }
+
+        [Fact]
+        public async Task ProcessSigninResponse_ThrowsAnExceptionForInvalidIdentity()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer();
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+                {
+                    GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                    Username = "johndoe",
+                    Password = "A3ddj3w",
+                    ["use-null-authentication-type"] = true
+                });
+            });
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("The specified principal doesn't contain a valid or authenticated identity.")
+                .Append("Make sure that both 'ClaimsPrincipal.Identity' and 'ClaimsPrincipal.Identity.AuthenticationType' ")
+                .Append("are not null and that 'ClaimsPrincipal.Identity.IsAuthenticated' returns 'true'.")
+                .ToString(), exception.Message);
         }
 
         [Fact]
@@ -1471,7 +1499,10 @@ namespace OpenIddict.Server.Tests
                         return Task.CompletedTask;
                     }
 
-                    var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
+                    var identity = !request.HasParameter("use-null-authentication-type") ?
+                        new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme) :
+                        new ClaimsIdentity();
+
                     identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Magnifique");
 
                     var ticket = new AuthenticationTicket(

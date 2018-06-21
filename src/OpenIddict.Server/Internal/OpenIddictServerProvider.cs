@@ -4,9 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -74,6 +76,20 @@ namespace OpenIddict.Server
             Debug.Assert(context.Request.IsAuthorizationRequest() ||
                          context.Request.IsTokenRequest(),
                 "The request should be an authorization or token request.");
+
+            // While null/unauthenticated identities can be validly represented and are allowed by
+            // the OpenID Connect server handler, this most likely indicates that the developer
+            // has not correctly set the authentication type associated with the claims identity,
+            // which may later cause issues when validating opaque access tokens, as the resulting
+            // principal would be considered unauthenticated by the ASP.NET Core authorization stack.
+            if (context.Ticket.Principal.Identity == null || !context.Ticket.Principal.Identity.IsAuthenticated)
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The specified principal doesn't contain a valid or authenticated identity.")
+                    .Append("Make sure that both 'ClaimsPrincipal.Identity' and 'ClaimsPrincipal.Identity.AuthenticationType' ")
+                    .Append("are not null and that 'ClaimsPrincipal.Identity.IsAuthenticated' returns 'true'.")
+                    .ToString());
+            }
 
             if (context.Request.IsTokenRequest() && (context.Request.IsAuthorizationCodeGrantType() ||
                                                      context.Request.IsRefreshTokenGrantType()))
