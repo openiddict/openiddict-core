@@ -100,7 +100,7 @@ namespace OpenIddict.Server
                 // This scenario is deliberately not supported in OpenIddict and all the tickets
                 // must be linked. To ensure the properties are flowed from the authorization code
                 // or the refresh token to the new ticket, they are manually restored if necessary.
-                if (!context.Ticket.Properties.HasProperty(OpenIdConnectConstants.Properties.TokenId))
+                if (!context.Ticket.Properties.HasProperty(OpenIddictConstants.Properties.InternalTokenId))
                 {
                     // Retrieve the original authentication ticket from the request properties.
                     var ticket = context.Request.GetProperty<AuthenticationTicket>(
@@ -142,7 +142,8 @@ namespace OpenIddict.Server
                 // If token revocation was explicitly disabled, none of the following security routines apply.
                 if (!options.DisableTokenStorage)
                 {
-                    var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{context.Ticket.GetTokenId()}");
+                    var token = context.Request.GetProperty(OpenIddictConstants.Properties.Token + ":" +
+                        context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId));
                     Debug.Assert(token != null, "The token shouldn't be null.");
 
                     // If rolling tokens are enabled or if the request is a grant_type=authorization_code request,
@@ -192,7 +193,7 @@ namespace OpenIddict.Server
             // create an ad hoc authorization if an authorization code or a refresh token
             // is going to be returned to the client application as part of the response.
             if (!options.DisableAuthorizationStorage &&
-                !context.Ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId) &&
+                !context.Ticket.HasProperty(OpenIddictConstants.Properties.InternalAuthorizationId) &&
                 (context.IncludeAuthorizationCode || context.IncludeRefreshToken))
             {
                 await CreateAuthorizationAsync(context.Ticket, options, context.Request);

@@ -340,7 +340,7 @@ namespace OpenIddict.Server
             if (!options.DisableTokenStorage)
             {
                 // Extract the token identifier from the authentication ticket.
-                var identifier = context.Ticket.GetTokenId();
+                var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
                 Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
                 // Retrieve the authorization code/refresh token from the request properties.
@@ -396,7 +396,7 @@ namespace OpenIddict.Server
             if (!options.DisableAuthorizationStorage)
             {
                 // Extract the authorization identifier from the authentication ticket.
-                var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId);
+                var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
                 if (!string.IsNullOrEmpty(identifier))
                 {
                     var authorization = await _authorizationManager.FindByIdAsync(identifier);

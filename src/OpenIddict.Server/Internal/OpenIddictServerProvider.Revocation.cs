@@ -198,7 +198,7 @@ namespace OpenIddict.Server
             }
 
             // Extract the token identifier from the authentication ticket.
-            var identifier = context.Ticket.GetTokenId();
+            var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
             // Retrieve the token from the request properties. If it's already marked as revoked, directly return a 200 response.

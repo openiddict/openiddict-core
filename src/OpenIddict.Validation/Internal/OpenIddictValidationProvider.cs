@@ -82,8 +82,8 @@ namespace OpenIddict.Validation
                 ticket.Properties.ExpiresUtc = await manager.GetExpirationDateAsync(token);
 
                 // Restore the token and authorization identifiers attached with the database entry.
-                ticket.Properties.SetProperty(OpenIddictConstants.Properties.TokenId, await manager.GetIdAsync(token));
-                ticket.Properties.SetProperty(OpenIddictConstants.Properties.AuthorizationId,
+                ticket.Properties.SetProperty(OpenIddictConstants.Properties.InternalTokenId, await manager.GetIdAsync(token));
+                ticket.Properties.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId,
                     await manager.GetAuthorizationIdAsync(token));
 
                 context.Principal = ticket.Principal;

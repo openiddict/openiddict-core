@@ -107,7 +107,7 @@ namespace OpenIddict.Server
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
             Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client_id parameter shouldn't be null.");
 
-            var identifier = context.Ticket.GetTokenId();
+            var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
             if (!context.Ticket.IsAccessToken())
@@ -146,10 +146,10 @@ namespace OpenIddict.Server
 
             // If an authorization was attached to the access token, ensure it is still valid.
             if (!options.DisableAuthorizationStorage &&
-                 context.Ticket.HasProperty(OpenIddictConstants.Properties.AuthorizationId))
+                 context.Ticket.HasProperty(OpenIddictConstants.Properties.InternalAuthorizationId))
             {
                 var authorization = await _authorizationManager.FindByIdAsync(
-                    context.Ticket.GetProperty(OpenIddictConstants.Properties.AuthorizationId));
+                    context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId));
 
                 if (authorization == null || !await _authorizationManager.IsValidAsync(authorization))
                 {
