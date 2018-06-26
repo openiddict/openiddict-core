@@ -23,6 +23,12 @@ namespace OpenIddict.Validation
         }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether a database call is made
+        /// to validate the authorization associated with the received tokens.
+        /// </summary>
+        public bool EnableAuthorizationValidation { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether reference tokens are used.
         /// </summary>
         public bool UseReferenceTokens { get; set; }

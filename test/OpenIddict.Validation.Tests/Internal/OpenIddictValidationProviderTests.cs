@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OAuth.Validation;
+using AspNet.Security.OpenIdConnect.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -239,6 +240,223 @@ namespace OpenIddict.Validation.Tests
             format.Verify(mock => mock.Unprotect("valid-reference-token-payload"), Times.Once());
         }
 
+        [Fact]
+        public async Task ValidateToken_ThrowsAnExceptionWhenAuthorizationManagerIsNotRegistered()
+        {
+            // Arrange
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+            format.Setup(mock => mock.Unprotect("valid-token"))
+                .Returns(delegate
+                {
+                    var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
+                    identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
+
+                    return new AuthenticationTicket(
+                        new ClaimsPrincipal(identity),
+                        OpenIddictValidationDefaults.AuthenticationScheme);
+                });
+
+            var server = CreateResourceServer(builder =>
+            {
+                builder.Services.RemoveAll(typeof(IOpenIddictAuthorizationManager));
+
+                builder.EnableAuthorizationValidation();
+
+                builder.Configure(options =>
+                {
+                    options.AccessTokenFormat = format.Object;
+                    options.UseReferenceTokens = false;
+                });
+            });
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.SendAsync(request);
+            });
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling authorization validation.")
+                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public async Task ValidateToken_ReturnsFailedResultForUnknownAuthorization()
+        {
+            // Arrange
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+            format.Setup(mock => mock.Unprotect("valid-token"))
+                .Returns(delegate
+                {
+                    var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
+                    identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
+
+                    var ticket = new AuthenticationTicket(
+                        new ClaimsPrincipal(identity),
+                        OpenIddictValidationDefaults.AuthenticationScheme);
+
+                    ticket.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId, "5230CBAD-89F9-4C3F-B48C-9253B6FB8620");
+
+                    return ticket;
+                });
+
+            var manager = CreateAuthorizationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("5230CBAD-89F9-4C3F-B48C-9253B6FB8620", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(value: null);
+            });
+
+            var server = CreateResourceServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+
+                builder.EnableAuthorizationValidation();
+
+                builder.Configure(options =>
+                {
+                    options.AccessTokenFormat = format.Object;
+                    options.UseReferenceTokens = false;
+                });
+            });
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("5230CBAD-89F9-4C3F-B48C-9253B6FB8620", It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateToken_ReturnsFailedResultForInvalidAuthorization()
+        {
+            // Arrange
+            var authorization = new OpenIddictAuthorization();
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+            format.Setup(mock => mock.Unprotect("valid-token"))
+                .Returns(delegate
+                {
+                    var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
+                    identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
+
+                    var ticket = new AuthenticationTicket(
+                        new ClaimsPrincipal(identity),
+                        OpenIddictValidationDefaults.AuthenticationScheme);
+
+                    ticket.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId, "5230CBAD-89F9-4C3F-B48C-9253B6FB8620");
+
+                    return ticket;
+                });
+
+            var manager = CreateAuthorizationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("5230CBAD-89F9-4C3F-B48C-9253B6FB8620", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(authorization);
+
+                instance.Setup(mock => mock.IsValidAsync(authorization, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var server = CreateResourceServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+
+                builder.EnableAuthorizationValidation();
+
+                builder.Configure(options =>
+                {
+                    options.AccessTokenFormat = format.Object;
+                    options.UseReferenceTokens = false;
+                });
+            });
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("5230CBAD-89F9-4C3F-B48C-9253B6FB8620", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.IsValidAsync(authorization, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateToken_ReturnsValidResultForValidAuthorization()
+        {
+            // Arrange
+            var authorization = new OpenIddictAuthorization();
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+            format.Setup(mock => mock.Unprotect("valid-token"))
+                .Returns(delegate
+                {
+                    var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
+                    identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
+
+                    var ticket = new AuthenticationTicket(
+                        new ClaimsPrincipal(identity),
+                        OpenIddictValidationDefaults.AuthenticationScheme);
+
+                    ticket.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId, "5230CBAD-89F9-4C3F-B48C-9253B6FB8620");
+
+                    return ticket;
+                });
+
+            var manager = CreateAuthorizationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("5230CBAD-89F9-4C3F-B48C-9253B6FB8620", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(authorization);
+
+                instance.Setup(mock => mock.IsValidAsync(authorization, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            var server = CreateResourceServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+
+                builder.EnableAuthorizationValidation();
+
+                builder.Configure(options =>
+                {
+                    options.AccessTokenFormat = format.Object;
+                    options.UseReferenceTokens = false;
+                });
+            });
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("5230CBAD-89F9-4C3F-B48C-9253B6FB8620", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.IsValidAsync(authorization, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
         private static TestServer CreateResourceServer(Action<OpenIddictValidationBuilder> configuration = null)
         {
             var builder = new WebHostBuilder();
@@ -251,6 +469,7 @@ namespace OpenIddict.Validation.Tests
                 services.AddOpenIddict()
                     .AddCore(options =>
                     {
+                        options.SetDefaultAuthorizationEntity<OpenIddictAuthorization>();
                         options.SetDefaultTokenEntity<OpenIddictToken>();
                         options.Services.AddSingleton(CreateTokenManager());
                     })
@@ -320,6 +539,19 @@ namespace OpenIddict.Validation.Tests
             return new TestServer(builder);
         }
 
+        private static OpenIddictAuthorizationManager<OpenIddictAuthorization> CreateAuthorizationManager(
+            Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> configuration = null)
+        {
+            var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
+                Mock.Of<IOpenIddictAuthorizationStoreResolver>(),
+                Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>(),
+                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+
+            configuration?.Invoke(manager);
+
+            return manager.Object;
+        }
+
         private static OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(
             Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> configuration = null)
         {
@@ -332,6 +564,8 @@ namespace OpenIddict.Validation.Tests
 
             return manager.Object;
         }
+
+        public class OpenIddictAuthorization { }
 
         public class OpenIddictToken { }
     }

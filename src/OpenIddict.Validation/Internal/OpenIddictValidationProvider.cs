@@ -97,7 +97,37 @@ namespace OpenIddict.Validation
         public override Task RetrieveToken([NotNull] RetrieveTokenContext context)
             => _eventService.PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
 
-        public override Task ValidateToken([NotNull] ValidateTokenContext context)
-            => _eventService.PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
+        public override async Task ValidateToken([NotNull] ValidateTokenContext context)
+        {
+            var options = (OpenIddictValidationOptions) context.Options;
+            if (options.EnableAuthorizationValidation)
+            {
+                // Note: the authorization manager is deliberately not injected using constructor injection
+                // to allow using the validation handler without having to register the OpenIddict core services.
+                var manager = context.HttpContext.RequestServices.GetService<IOpenIddictAuthorizationManager>();
+                if (manager == null)
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The core services must be registered when enabling authorization validation.")
+                        .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                        .ToString());
+                }
+
+                var identifier = context.Properties.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
+                if (!string.IsNullOrEmpty(identifier))
+                {
+                    var authorization = await manager.FindByIdAsync(identifier);
+                    if (authorization == null || !await manager.IsValidAsync(authorization))
+                    {
+                        context.Fail("Authentication failed because the authorization " +
+                                     "associated with the access token was not longer valid.");
+
+                        return;
+                    }
+                }
+            }
+
+            await _eventService.PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
+        }
     }
 }

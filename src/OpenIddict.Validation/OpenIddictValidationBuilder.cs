@@ -173,6 +173,15 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Enables authorization validation so that a database call is made for each API request
+        /// to ensure the authorization associated with the access token is still valid.
+        /// Note: enabling this option may have an impact on performance.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        public OpenIddictValidationBuilder EnableAuthorizationValidation()
+            => Configure(options => options.EnableAuthorizationValidation = true);
+
+        /// <summary>
         /// Configures OpenIddict not to return the authentication error
         /// details as part of the standard WWW-Authenticate response header.
         /// </summary>
