@@ -87,10 +87,10 @@ namespace OpenIddict.Abstractions
         {
             public const string Application = ".application";
             public const string AuthenticationTicket = ".authentication_ticket";
-            public const string AuthorizationId = ".authorization_id";
+            public const string InternalAuthorizationId = ".internal_authorization_id";
+            public const string InternalTokenId = ".internal_token_id";
             public const string ReferenceToken = ".reference_token";
             public const string Token = ".token";
-            public const string TokenId = ".token_id";
         }
 
         public static class PropertyTypes

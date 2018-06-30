@@ -213,7 +213,7 @@ namespace OpenIddict.Server.Tests
                 new AuthenticationProperties(),
                 OpenIddictServerDefaults.AuthenticationScheme);
 
-            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(type);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
@@ -267,7 +267,7 @@ namespace OpenIddict.Server.Tests
                 new AuthenticationProperties(),
                 OpenIddictServerDefaults.AuthenticationScheme);
 
-            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
@@ -322,7 +322,7 @@ namespace OpenIddict.Server.Tests
                 OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Contoso");
-            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
@@ -429,7 +429,7 @@ namespace OpenIddict.Server.Tests
                 OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Fabrikam");
-            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
@@ -520,7 +520,7 @@ namespace OpenIddict.Server.Tests
                 OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Fabrikam");
-            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
@@ -610,7 +610,7 @@ namespace OpenIddict.Server.Tests
                 OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Fabrikam");
-            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
@@ -706,7 +706,7 @@ namespace OpenIddict.Server.Tests
                 OpenIddictServerDefaults.AuthenticationScheme);
 
             ticket.SetAudiences("Fabrikam");
-            ticket.SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "3E228451-1555-46F7-A471-951EFBA23A56");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AccessToken);
 
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
