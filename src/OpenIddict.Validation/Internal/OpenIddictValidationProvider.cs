@@ -33,9 +33,6 @@ namespace OpenIddict.Validation
         public override async Task DecryptToken([NotNull] DecryptTokenContext context)
         {
             var options = (OpenIddictValidationOptions) context.Options;
-
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictValidationProvider>>();
-
             if (options.UseReferenceTokens)
             {
                 // Note: the token manager is deliberately not injected using constructor injection
@@ -48,6 +45,8 @@ namespace OpenIddict.Validation
                         .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
                         .ToString());
                 }
+
+                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictValidationProvider>>();
 
                 // Retrieve the token entry from the database. If it
                 // cannot be found, assume the token is not valid.
@@ -102,8 +101,41 @@ namespace OpenIddict.Validation
             => context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
                 .PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
 
-        public override Task ValidateToken([NotNull] ValidateTokenContext context)
-            => context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+        public override async Task ValidateToken([NotNull] ValidateTokenContext context)
+        {
+            var options = (OpenIddictValidationOptions) context.Options;
+            if (options.EnableAuthorizationValidation)
+            {
+                // Note: the authorization manager is deliberately not injected using constructor injection
+                // to allow using the validation handler without having to register the OpenIddict core services.
+                var manager = context.HttpContext.RequestServices.GetService<IOpenIddictAuthorizationManager>();
+                if (manager == null)
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The core services must be registered when enabling authorization validation.")
+                        .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                        .ToString());
+                }
+
+                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictValidationProvider>>();
+
+                var identifier = context.Ticket.Properties.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
+                if (!string.IsNullOrEmpty(identifier))
+                {
+                    var authorization = await manager.FindByIdAsync(identifier);
+                    if (authorization == null || !await manager.IsValidAsync(authorization))
+                    {
+                        logger.LogError("Authentication failed because the authorization " +
+                                        "associated with the access token was not longer valid.");
+
+                        context.Ticket = null;
+                        return;
+                    }
+                }
+            }
+
+            await context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
                 .PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
+        }
     }
 }

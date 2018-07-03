@@ -101,6 +101,22 @@ namespace OpenIddict.Validation.Tests
         }
 
         [Fact]
+        public void EnableAuthorizationValidation_ValidationIsEnforced()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.EnableAuthorizationValidation();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.EnableAuthorizationValidation);
+        }
+
+        [Fact]
         public void RemoveErrorDetails_IncludeErrorDetailsIsSetToFalse()
         {
             // Arrange
