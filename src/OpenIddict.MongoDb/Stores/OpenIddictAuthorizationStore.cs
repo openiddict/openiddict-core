@@ -489,7 +489,7 @@ namespace OpenIddict.MongoDb
         /// whose result returns the instantiated authorization, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TAuthorization> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TAuthorization>(new TAuthorization());
+            => new ValueTask<TAuthorization>(Activator.CreateInstance<TAuthorization>());
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

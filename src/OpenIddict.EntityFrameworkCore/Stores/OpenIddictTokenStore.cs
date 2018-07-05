@@ -660,7 +660,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// whose result returns the instantiated token, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TToken> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TToken>(new TToken());
+            => new ValueTask<TToken>(Activator.CreateInstance<TToken>());
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

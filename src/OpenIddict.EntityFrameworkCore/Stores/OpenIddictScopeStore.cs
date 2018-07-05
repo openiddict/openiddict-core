@@ -480,7 +480,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// whose result returns the instantiated scope, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TScope>(new TScope());
+            => new ValueTask<TScope>(Activator.CreateInstance<TScope>());
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

@@ -490,7 +490,16 @@ namespace OpenIddict.MongoDb
         /// whose result returns the instantiated application, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TApplication> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TApplication>(new TApplication());
+        {
+            try
+            {
+                return new ValueTask<TApplication>(Activator.CreateInstance<TApplication>());
+            }
+            catch (MissingMethodException)
+            {
+                throw new ArgumentException("You are trying to create OpenIddict application from application description in store of abstract application type or type that has no parameterless constructor. Register generic store and inject store typed of derived class for abstract base class.");
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
