@@ -42,6 +42,7 @@ namespace OpenIddict.Abstractions
         public static class Exceptions
         {
             public const string ConcurrencyError = "concurrency_error";
+            public const string InstantiationError = "instantiation_error";
         }
 
         public static class Permissions

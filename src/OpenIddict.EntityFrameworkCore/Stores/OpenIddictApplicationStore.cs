@@ -723,9 +723,12 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 return new ValueTask<TApplication>(Activator.CreateInstance<TApplication>());
             }
-            catch (MissingMethodException)
+            catch (MissingMethodException exception)
             {
-                throw new ArgumentException("You are trying to create OpenIddict application from application description in store of abstract application type or type that has no parameterless constructor. Register generic store and inject store typed of derived class for abstract base class.");
+                throw new OpenIddictException(OpenIddictConstants.Exceptions.InstantiationError, new StringBuilder()
+                    .AppendLine("You are trying to create OpenIddict application from application description in store of abstract application type or type that has no parameterless constructor.")
+                    .Append("Register generic store and inject store typed of derived class for abstract base class.")
+                    .ToString(), exception);
             }
         }
 
