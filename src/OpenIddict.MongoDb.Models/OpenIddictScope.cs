@@ -52,8 +52,8 @@ namespace OpenIddict.MongoDb.Models
         /// <summary>
         /// Gets or sets the additional properties associated with the current scope.
         /// </summary>
-        [BsonExtraElements]
-        public virtual BsonDocument Properties { get; set; } = new BsonDocument();
+        [BsonElement("properties"), BsonIgnoreIfNull]
+        public virtual BsonDocument Properties { get; set; }
 
         /// <summary>
         /// Gets or sets the resources associated with the current scope.

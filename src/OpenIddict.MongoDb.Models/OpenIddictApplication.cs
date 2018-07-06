@@ -72,8 +72,8 @@ namespace OpenIddict.MongoDb.Models
         /// <summary>
         /// Gets or sets the additional properties associated with the current application.
         /// </summary>
-        [BsonExtraElements]
-        public virtual BsonDocument Properties { get; set; } = new BsonDocument();
+        [BsonElement("properties"), BsonIgnoreIfNull]
+        public virtual BsonDocument Properties { get; set; }
 
         /// <summary>
         /// Gets or sets the callback URLs associated with the current application.
