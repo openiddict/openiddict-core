@@ -662,7 +662,32 @@ namespace OpenIddict.EntityFrameworkCore
         /// whose result returns the instantiated authorization, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TAuthorization> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TAuthorization>(Activator.CreateInstance<TAuthorization>());
+        {
+            try
+            {
+                return new ValueTask<TAuthorization>(Activator.CreateInstance<TAuthorization>());
+            }
+
+            catch (MissingMemberException exception)
+            {
+                return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new authorization instance.")
+                        .Append("Make sure that the authorization entity has a public parameterless constructor or create ")
+                        .Append("a custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .ToString(), exception)));
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new authorization instance.")
+                        .Append("Make sure that the authorization entity is not an abstract class or create a ")
+                        .Append("custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

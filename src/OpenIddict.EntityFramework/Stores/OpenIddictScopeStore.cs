@@ -439,7 +439,32 @@ namespace OpenIddict.EntityFramework
         /// whose result returns the instantiated scope, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TScope>(Activator.CreateInstance<TScope>());
+        {
+            try
+            {
+                return new ValueTask<TScope>(Activator.CreateInstance<TScope>());
+            }
+
+            catch (MissingMemberException exception)
+            {
+                return new ValueTask<TScope>(Task.FromException<TScope>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new scope instance.")
+                        .Append("Make sure that the scope entity has a public parameterless constructor or create ")
+                        .Append("a custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .ToString(), exception)));
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TScope>(Task.FromException<TScope>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new scope instance.")
+                        .Append("Make sure that the scope entity is not an abstract class or create a ")
+                        .Append("custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

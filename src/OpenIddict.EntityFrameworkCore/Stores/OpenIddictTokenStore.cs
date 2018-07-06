@@ -660,7 +660,32 @@ namespace OpenIddict.EntityFrameworkCore
         /// whose result returns the instantiated token, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TToken> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TToken>(Activator.CreateInstance<TToken>());
+        {
+            try
+            {
+                return new ValueTask<TToken>(Activator.CreateInstance<TToken>());
+            }
+
+            catch (MissingMemberException exception)
+            {
+                return new ValueTask<TToken>(Task.FromException<TToken>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new token instance.")
+                        .Append("Make sure that the token entity has a public parameterless constructor or create ")
+                        .Append("a custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .ToString(), exception)));
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TToken>(Task.FromException<TToken>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new token instance.")
+                        .Append("Make sure that the token entity is not an abstract class or create a ")
+                        .Append("custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
