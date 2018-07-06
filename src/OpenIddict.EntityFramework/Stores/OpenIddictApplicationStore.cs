@@ -657,23 +657,13 @@ namespace OpenIddict.EntityFramework
                 return new ValueTask<TApplication>(Activator.CreateInstance<TApplication>());
             }
 
-            catch (MissingMemberException exception)
-            {
-                return new ValueTask<TApplication>(Task.FromException<TApplication>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new application instance.")
-                        .Append("Make sure that the application entity has a public parameterless constructor or create ")
-                        .Append("a custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
-                        .ToString(), exception)));
-            }
-
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TApplication>(Task.FromException<TApplication>(
                     new InvalidOperationException(new StringBuilder()
                         .AppendLine("An error occurred while trying to create a new application instance.")
-                        .Append("Make sure that the application entity is not an abstract class or create a ")
-                        .Append("custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
                         .ToString(), exception)));
             }
         }

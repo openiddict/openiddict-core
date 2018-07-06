@@ -666,23 +666,13 @@ namespace OpenIddict.EntityFrameworkCore
                 return new ValueTask<TToken>(Activator.CreateInstance<TToken>());
             }
 
-            catch (MissingMemberException exception)
-            {
-                return new ValueTask<TToken>(Task.FromException<TToken>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new token instance.")
-                        .Append("Make sure that the token entity has a public parameterless constructor or create ")
-                        .Append("a custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
-                        .ToString(), exception)));
-            }
-
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TToken>(Task.FromException<TToken>(
                     new InvalidOperationException(new StringBuilder()
                         .AppendLine("An error occurred while trying to create a new token instance.")
-                        .Append("Make sure that the token entity is not an abstract class or create a ")
-                        .Append("custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .Append("Make sure that the token entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom token store that overrides 'InstantiateAsync()' to use a custom factory.")
                         .ToString(), exception)));
             }
         }

@@ -445,23 +445,13 @@ namespace OpenIddict.EntityFramework
                 return new ValueTask<TScope>(Activator.CreateInstance<TScope>());
             }
 
-            catch (MissingMemberException exception)
-            {
-                return new ValueTask<TScope>(Task.FromException<TScope>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new scope instance.")
-                        .Append("Make sure that the scope entity has a public parameterless constructor or create ")
-                        .Append("a custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
-                        .ToString(), exception)));
-            }
-
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TScope>(Task.FromException<TScope>(
                     new InvalidOperationException(new StringBuilder()
                         .AppendLine("An error occurred while trying to create a new scope instance.")
-                        .Append("Make sure that the scope entity is not an abstract class or create a ")
-                        .Append("custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .Append("Make sure that the scope entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom scope store that overrides 'InstantiateAsync()' to use a custom factory.")
                         .ToString(), exception)));
             }
         }

@@ -580,23 +580,13 @@ namespace OpenIddict.EntityFramework
                 return new ValueTask<TAuthorization>(Activator.CreateInstance<TAuthorization>());
             }
 
-            catch (MissingMemberException exception)
-            {
-                return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new authorization instance.")
-                        .Append("Make sure that the authorization entity has a public parameterless constructor or create ")
-                        .Append("a custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
-                        .ToString(), exception)));
-            }
-
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
                     new InvalidOperationException(new StringBuilder()
                         .AppendLine("An error occurred while trying to create a new authorization instance.")
-                        .Append("Make sure that the authorization entity is not an abstract class or create a ")
-                        .Append("custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .Append("Make sure that the authorization entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.")
                         .ToString(), exception)));
             }
         }
