@@ -28,7 +28,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
     public class OpenIddictAuthorizationStore<TAuthorization> : IOpenIddictAuthorizationStore<TAuthorization>
-        where TAuthorization : OpenIddictAuthorization, new()
+        where TAuthorization : OpenIddictAuthorization
     {
         public OpenIddictAuthorizationStore(
             [NotNull] IMemoryCache cache,

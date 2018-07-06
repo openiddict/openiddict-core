@@ -46,7 +46,7 @@ namespace OpenIddict.EntityFramework
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
     public class OpenIddictScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
-        where TScope : OpenIddictScope<TKey>, new()
+        where TScope : OpenIddictScope<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {

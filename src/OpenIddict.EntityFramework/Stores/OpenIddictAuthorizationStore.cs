@@ -52,9 +52,9 @@ namespace OpenIddict.EntityFramework
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
     public class OpenIddictAuthorizationStore<TAuthorization, TApplication, TToken, TContext, TKey> : IOpenIddictAuthorizationStore<TAuthorization>
-        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
-        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
-        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
+        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
+        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
+        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {

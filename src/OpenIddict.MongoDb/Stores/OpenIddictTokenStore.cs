@@ -28,7 +28,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
     public class OpenIddictTokenStore<TToken> : IOpenIddictTokenStore<TToken>
-        where TToken : OpenIddictToken, new()
+        where TToken : OpenIddictToken
     {
         public OpenIddictTokenStore(
             [NotNull] IMemoryCache cache,

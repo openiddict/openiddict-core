@@ -28,7 +28,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
     public class OpenIddictApplicationStore<TApplication> : IOpenIddictApplicationStore<TApplication>
-        where TApplication : OpenIddictApplication, new()
+        where TApplication : OpenIddictApplication
     {
         public OpenIddictApplicationStore(
             [NotNull] IMemoryCache cache,
@@ -495,12 +495,25 @@ namespace OpenIddict.MongoDb
             {
                 return new ValueTask<TApplication>(Activator.CreateInstance<TApplication>());
             }
-            catch (MissingMethodException exception)
+
+            catch (MissingMemberException exception)
             {
-                throw new OpenIddictException(OpenIddictConstants.Exceptions.InstantiationError, new StringBuilder()
-                    .AppendLine("You are trying to create OpenIddict application from application description in store of abstract application type or type that has no parameterless constructor.")
-                    .Append("Register generic store and inject store typed of derived class for abstract base class.")
-                    .ToString(), exception);
+                return new ValueTask<TApplication>(Task.FromException<TApplication>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new application instance.")
+                        .Append("Make sure that the application entity has a public parameterless constructor or create ")
+                        .Append("a custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .ToString(), exception)));
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TApplication>(Task.FromException<TApplication>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new application instance.")
+                        .Append("Make sure that the application entity is not an abstract class or create a ")
+                        .Append("custom store that overrides the 'InstantiateAsync()' method to use a custom factory.")
+                        .ToString(), exception)));
             }
         }
 

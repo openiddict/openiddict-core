@@ -28,7 +28,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
     public class OpenIddictScopeStore<TScope> : IOpenIddictScopeStore<TScope>
-        where TScope : OpenIddictScope, new()
+        where TScope : OpenIddictScope
     {
         public OpenIddictScopeStore(
             [NotNull] IMemoryCache cache,
