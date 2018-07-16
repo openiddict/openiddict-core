@@ -276,7 +276,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve an application using its client identifier.
         /// </summary>
-        private static Func<TContext, string, Task<TApplication>> FindByClientId =
+        private static readonly Func<TContext, string, Task<TApplication>> FindByClientId =
             EF.CompileAsyncQuery((TContext context, string identifier) =>
                 (from application in context.Set<TApplication>().AsTracking()
                  where application.ClientId == identifier
@@ -304,7 +304,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve an application using its unique identifier.
         /// </summary>
-        private static Func<TContext, TKey, Task<TApplication>> FindById =
+        private static readonly Func<TContext, TKey, Task<TApplication>> FindById =
             EF.CompileAsyncQuery((TContext context, TKey identifier) =>
                 (from application in context.Set<TApplication>().AsTracking()
                  where application.Id.Equals(identifier)
@@ -333,7 +333,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve all the applications
         /// associated with the specified post_logout_redirect_uri.
         /// </summary>
-        private static Func<TContext, string, AsyncEnumerable<TApplication>> FindByPostLogoutRedirectUri =
+        private static readonly Func<TContext, string, AsyncEnumerable<TApplication>> FindByPostLogoutRedirectUri =
             // To optimize the efficiency of the query a bit, only applications whose stringified
             // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
             // are retrieved, a second pass is made to ensure only valid elements are returned.
@@ -385,7 +385,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve all the
         /// applications associated with the specified redirect_uri.
         /// </summary>
-        private static Func<TContext, string, AsyncEnumerable<TApplication>> FindByRedirectUri =
+        private static readonly Func<TContext, string, AsyncEnumerable<TApplication>> FindByRedirectUri =
             // To optimize the efficiency of the query a bit, only applications whose stringified
             // RedirectUris property contains the specified URL are returned. Once the applications
             // are retrieved, a second pass is made to ensure only valid elements are returned.

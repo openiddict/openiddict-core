@@ -29,8 +29,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
 
             builder.Services.TryAddScoped(typeof(OpenIddictApplicationManager<>));

@@ -206,7 +206,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the list of
         /// tokens corresponding to the specified application identifier.
         /// </summary>
-        private static Func<TContext, TKey, AsyncEnumerable<TToken>> FindByApplicationId =
+        private static readonly Func<TContext, TKey, AsyncEnumerable<TToken>> FindByApplicationId =
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -244,7 +244,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the list of
         /// tokens corresponding to the specified authorization identifier.
         /// </summary>
-        private static Func<TContext, TKey, AsyncEnumerable<TToken>> FindByAuthorizationId =
+        private static readonly Func<TContext, TKey, AsyncEnumerable<TToken>> FindByAuthorizationId =
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Authorization.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -281,7 +281,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve a token using its unique identifier.
         /// </summary>
-        private static Func<TContext, TKey, Task<TToken>> FindById =
+        private static readonly Func<TContext, TKey, Task<TToken>> FindById =
             EF.CompileAsyncQuery((TContext context, TKey identifier) =>
                 (from token in context.Set<TToken>()
                     .Include(token => token.Application)
@@ -313,7 +313,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the list of
         /// tokens corresponding to the specified reference identifier.
         /// </summary>
-        private static Func<TContext, string, Task<TToken>> FindByReferenceId =
+        private static readonly Func<TContext, string, Task<TToken>> FindByReferenceId =
             EF.CompileAsyncQuery((TContext context, string identifier) =>
                 (from token in context.Set<TToken>()
                     .Include(token => token.Application)
@@ -346,7 +346,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the
         /// list of tokens corresponding to the specified subject.
         /// </summary>
-        private static Func<TContext, string, AsyncEnumerable<TToken>> FindBySubject =
+        private static readonly Func<TContext, string, AsyncEnumerable<TToken>> FindBySubject =
             EF.CompileAsyncQuery((TContext context, string subject) =>
                 from token in context.Set<TToken>()
                     .Include(token => token.Application)

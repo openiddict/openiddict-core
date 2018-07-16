@@ -253,7 +253,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the authorizations corresponding
         /// to the specified subject and associated with the application identifier.
         /// </summary>
-        private static Func<TContext, TKey, string, AsyncEnumerable<TAuthorization>> FindBySubjectAndClient =
+        private static readonly Func<TContext, TKey, string, AsyncEnumerable<TAuthorization>> FindBySubjectAndClient =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -298,7 +298,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the authorizations matching the specified parameters.
         /// </summary>
-        private static Func<TContext, TKey, string, string, AsyncEnumerable<TAuthorization>> FindBySubjectClientAndStatus =
+        private static readonly Func<TContext, TKey, string, string, AsyncEnumerable<TAuthorization>> FindBySubjectClientAndStatus =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -349,7 +349,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the authorizations matching the specified parameters.
         /// </summary>
-        private static Func<TContext, TKey, string, string, string, AsyncEnumerable<TAuthorization>> FindBySubjectClientStatusAndType =
+        private static readonly Func<TContext, TKey, string, string, string, AsyncEnumerable<TAuthorization>> FindBySubjectClientStatusAndType =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -408,7 +408,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve an authorization using its unique identifier.
         /// </summary>
-        private static Func<TContext, TKey, Task<TAuthorization>> FindById =
+        private static readonly Func<TContext, TKey, Task<TAuthorization>> FindById =
             EF.CompileAsyncQuery((TContext context, TKey identifier) =>
                 (from authorization in context.Set<TAuthorization>()
                     .Include(authorization => authorization.Application)
@@ -439,7 +439,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve all the
         /// authorizations corresponding to the specified subject.
         /// </summary>
-        private static Func<TContext, string, AsyncEnumerable<TAuthorization>> FindBySubject =
+        private static readonly Func<TContext, string, AsyncEnumerable<TAuthorization>> FindBySubject =
             EF.CompileAsyncQuery((TContext context, string subject) =>
                 from authorization in context.Set<TAuthorization>()
                     .Include(authorization => authorization.Application)

@@ -183,7 +183,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve a scope using its unique identifier.
         /// </summary>
-        private static Func<TContext, TKey, Task<TScope>> FindById =
+        private static readonly Func<TContext, TKey, Task<TScope>> FindById =
             EF.CompileAsyncQuery((TContext context, TKey identifier) =>
                 (from scope in context.Set<TScope>().AsTracking()
                  where scope.Id.Equals(identifier)
@@ -211,7 +211,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve a scope using its name.
         /// </summary>
-        private static Func<TContext, string, Task<TScope>> FindByName =
+        private static readonly Func<TContext, string, Task<TScope>> FindByName =
             EF.CompileAsyncQuery((TContext context, string name) =>
                 (from scope in context.Set<TScope>().AsTracking()
                  where scope.Name == name
@@ -239,7 +239,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve a list of scopes using their name.
         /// </summary>
-        private static Func<TContext, ImmutableArray<string>, AsyncEnumerable<TScope>> FindByNames =
+        private static readonly Func<TContext, ImmutableArray<string>, AsyncEnumerable<TScope>> FindByNames =
             EF.CompileAsyncQuery((TContext context, ImmutableArray<string> names) =>
                 from scope in context.Set<TScope>().AsTracking()
                 where names.Contains(scope.Name)
@@ -268,7 +268,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve all the scopes that contain the specified resource.
         /// </summary>
-        private static Func<TContext, string, AsyncEnumerable<TScope>> FindByResource =
+        private static readonly Func<TContext, string, AsyncEnumerable<TScope>> FindByResource =
             // To optimize the efficiency of the query a bit, only scopes whose stringified
             // Resources column contains the specified resource are returned. Once the scopes
             // are retrieved, a second pass is made to ensure only valid elements are returned.
