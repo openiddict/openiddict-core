@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.ComponentModel;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,11 +13,12 @@ using OpenIddict.EntityFrameworkCore.Models;
 
 namespace OpenIddict.EntityFrameworkCore
 {
-    public class OpenIddictEntityFrameworkCore<TApplication, TAuthorization, TScope, TToken, TKey> : IDbContextOptionsExtension
-        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
-        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
-        where TScope : OpenIddictScope<TKey>, new()
-        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public class OpenIddictEntityFrameworkCoreExtension<TApplication, TAuthorization, TScope, TToken, TKey> : IDbContextOptionsExtension
+        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
+        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
+        where TScope : OpenIddictScope<TKey>
+        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
         where TKey : IEquatable<TKey>
     {
         public void ApplyServices([NotNull] IServiceCollection services)
