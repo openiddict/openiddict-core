@@ -28,7 +28,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     /// <typeparam name="TToken">The type of the Token entity.</typeparam>
     public class OpenIddictTokenStore<TToken> : IOpenIddictTokenStore<TToken>
-        where TToken : OpenIddictToken, new()
+        where TToken : OpenIddictToken
     {
         public OpenIddictTokenStore(
             [NotNull] IMemoryCache cache,
@@ -507,7 +507,22 @@ namespace OpenIddict.MongoDb
         /// whose result returns the instantiated token, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TToken> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TToken>(new TToken());
+        {
+            try
+            {
+                return new ValueTask<TToken>(Activator.CreateInstance<TToken>());
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TToken>(Task.FromException<TToken>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new token instance.")
+                        .Append("Make sure that the token entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom token store that overrides 'InstantiateAsync()' to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

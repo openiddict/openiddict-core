@@ -52,9 +52,9 @@ namespace OpenIddict.EntityFramework
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
     public class OpenIddictApplicationStore<TApplication, TAuthorization, TToken, TContext, TKey> : IOpenIddictApplicationStore<TApplication>
-        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
-        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
-        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
+        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
+        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
+        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
@@ -651,7 +651,22 @@ namespace OpenIddict.EntityFramework
         /// whose result returns the instantiated application, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TApplication> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TApplication>(new TApplication());
+        {
+            try
+            {
+                return new ValueTask<TApplication>(Activator.CreateInstance<TApplication>());
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TApplication>(Task.FromException<TApplication>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new application instance.")
+                        .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

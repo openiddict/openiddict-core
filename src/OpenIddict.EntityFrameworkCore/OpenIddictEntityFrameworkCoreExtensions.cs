@@ -107,10 +107,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
         public static DbContextOptionsBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this DbContextOptionsBuilder builder)
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
-            where TScope : OpenIddictScope<TKey>, new()
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
+            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
+            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
+            where TScope : OpenIddictScope<TKey>
+            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
             if (builder == null)
@@ -153,10 +153,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
         public static ModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this ModelBuilder builder)
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
-            where TScope : OpenIddictScope<TKey>, new()
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
+            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
+            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
+            where TScope : OpenIddictScope<TKey>
+            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
             if (builder == null)

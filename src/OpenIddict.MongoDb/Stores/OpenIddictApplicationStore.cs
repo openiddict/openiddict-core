@@ -28,7 +28,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
     public class OpenIddictApplicationStore<TApplication> : IOpenIddictApplicationStore<TApplication>
-        where TApplication : OpenIddictApplication, new()
+        where TApplication : OpenIddictApplication
     {
         public OpenIddictApplicationStore(
             [NotNull] IMemoryCache cache,
@@ -490,7 +490,22 @@ namespace OpenIddict.MongoDb
         /// whose result returns the instantiated application, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TApplication> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TApplication>(new TApplication());
+        {
+            try
+            {
+                return new ValueTask<TApplication>(Activator.CreateInstance<TApplication>());
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TApplication>(Task.FromException<TApplication>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new application instance.")
+                        .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

@@ -46,7 +46,7 @@ namespace OpenIddict.EntityFramework
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
     public class OpenIddictScopeStore<TScope, TContext, TKey> : IOpenIddictScopeStore<TScope>
-        where TScope : OpenIddictScope<TKey>, new()
+        where TScope : OpenIddictScope<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
@@ -439,7 +439,22 @@ namespace OpenIddict.EntityFramework
         /// whose result returns the instantiated scope, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TScope>(new TScope());
+        {
+            try
+            {
+                return new ValueTask<TScope>(Activator.CreateInstance<TScope>());
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TScope>(Task.FromException<TScope>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new scope instance.")
+                        .Append("Make sure that the scope entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom scope store that overrides 'InstantiateAsync()' to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

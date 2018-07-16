@@ -52,9 +52,9 @@ namespace OpenIddict.EntityFramework
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
     public class OpenIddictTokenStore<TToken, TApplication, TAuthorization, TContext, TKey> : IOpenIddictTokenStore<TToken>
-        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
-        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
-        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
+        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
+        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
+        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
@@ -582,7 +582,22 @@ namespace OpenIddict.EntityFramework
         /// whose result returns the instantiated token, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TToken> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TToken>(new TToken());
+        {
+            try
+            {
+                return new ValueTask<TToken>(Activator.CreateInstance<TToken>());
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TToken>(Task.FromException<TToken>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new token instance.")
+                        .Append("Make sure that the token entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom token store that overrides 'InstantiateAsync()' to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

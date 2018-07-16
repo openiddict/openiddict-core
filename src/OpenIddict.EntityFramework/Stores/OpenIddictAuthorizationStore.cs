@@ -52,9 +52,9 @@ namespace OpenIddict.EntityFramework
     /// <typeparam name="TContext">The type of the Entity Framework database context.</typeparam>
     /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
     public class OpenIddictAuthorizationStore<TAuthorization, TApplication, TToken, TContext, TKey> : IOpenIddictAuthorizationStore<TAuthorization>
-        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
-        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
-        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
+        where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
+        where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
+        where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
     {
@@ -574,7 +574,22 @@ namespace OpenIddict.EntityFramework
         /// whose result returns the instantiated authorization, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TAuthorization> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TAuthorization>(new TAuthorization());
+        {
+            try
+            {
+                return new ValueTask<TAuthorization>(Activator.CreateInstance<TAuthorization>());
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new authorization instance.")
+                        .Append("Make sure that the authorization entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

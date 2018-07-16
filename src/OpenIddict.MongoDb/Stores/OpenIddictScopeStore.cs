@@ -28,7 +28,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
     public class OpenIddictScopeStore<TScope> : IOpenIddictScopeStore<TScope>
-        where TScope : OpenIddictScope, new()
+        where TScope : OpenIddictScope
     {
         public OpenIddictScopeStore(
             [NotNull] IMemoryCache cache,
@@ -394,7 +394,22 @@ namespace OpenIddict.MongoDb
         /// whose result returns the instantiated scope, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TScope> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TScope>(new TScope());
+        {
+            try
+            {
+                return new ValueTask<TScope>(Activator.CreateInstance<TScope>());
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TScope>(Task.FromException<TScope>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new scope instance.")
+                        .Append("Make sure that the scope entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom scope store that overrides 'InstantiateAsync()' to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

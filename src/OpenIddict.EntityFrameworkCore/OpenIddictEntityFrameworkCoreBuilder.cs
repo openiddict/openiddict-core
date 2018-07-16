@@ -103,10 +103,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
         public OpenIddictEntityFrameworkCoreBuilder ReplaceDefaultEntities<TApplication, TAuthorization, TScope, TToken, TKey>()
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>, new()
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>, new()
-            where TScope : OpenIddictScope<TKey>, new()
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>, new()
+            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
+            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
+            where TScope : OpenIddictScope<TKey>
+            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
             Services.Configure<OpenIddictCoreOptions>(options =>

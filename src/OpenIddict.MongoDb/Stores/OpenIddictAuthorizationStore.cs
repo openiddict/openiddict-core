@@ -28,7 +28,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
     public class OpenIddictAuthorizationStore<TAuthorization> : IOpenIddictAuthorizationStore<TAuthorization>
-        where TAuthorization : OpenIddictAuthorization, new()
+        where TAuthorization : OpenIddictAuthorization
     {
         public OpenIddictAuthorizationStore(
             [NotNull] IMemoryCache cache,
@@ -489,7 +489,22 @@ namespace OpenIddict.MongoDb
         /// whose result returns the instantiated authorization, that can be persisted in the database.
         /// </returns>
         public virtual ValueTask<TAuthorization> InstantiateAsync(CancellationToken cancellationToken)
-            => new ValueTask<TAuthorization>(new TAuthorization());
+        {
+            try
+            {
+                return new ValueTask<TAuthorization>(Activator.CreateInstance<TAuthorization>());
+            }
+
+            catch (MemberAccessException exception)
+            {
+                return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
+                    new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An error occurred while trying to create a new authorization instance.")
+                        .Append("Make sure that the authorization entity is not abstract and has a public parameterless constructor ")
+                        .Append("or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.")
+                        .ToString(), exception)));
+            }
+        }
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

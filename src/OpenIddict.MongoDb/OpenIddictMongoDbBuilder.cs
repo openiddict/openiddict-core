@@ -78,7 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder ReplaceDefaultApplicationEntity<TApplication>()
-            where TApplication : OpenIddictApplication, new()
+            where TApplication : OpenIddictApplication
         {
             Services.Configure<OpenIddictCoreOptions>(options => options.DefaultApplicationType = typeof(TApplication));
 
@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder ReplaceDefaultAuthorizationEntity<TAuthorization>()
-            where TAuthorization : OpenIddictAuthorization, new()
+            where TAuthorization : OpenIddictAuthorization
         {
             Services.Configure<OpenIddictCoreOptions>(options => options.DefaultAuthorizationType = typeof(TAuthorization));
 
@@ -102,7 +102,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder ReplaceDefaultScopeEntity<TScope>()
-            where TScope : OpenIddictScope, new()
+            where TScope : OpenIddictScope
         {
             Services.Configure<OpenIddictCoreOptions>(options => options.DefaultScopeType = typeof(TScope));
 
@@ -114,7 +114,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
         public OpenIddictMongoDbBuilder ReplaceDefaultTokenEntity<TToken>()
-            where TToken : OpenIddictToken, new()
+            where TToken : OpenIddictToken
         {
             Services.Configure<OpenIddictCoreOptions>(options => options.DefaultTokenType = typeof(TToken));
 
