@@ -492,8 +492,11 @@ namespace OpenIddict.Server
         {
             var options = (OpenIddictServerOptions) context.Options;
 
+            // Note: as this stage, the request associated with the context may be null if an error
+            // occurred very early in the pipeline (e.g an invalid HTTP verb was used by the caller).
+
             // Remove the authorization request from the distributed cache.
-            if (options.EnableRequestCaching && !string.IsNullOrEmpty(context.Request.RequestId))
+            if (options.EnableRequestCaching && !string.IsNullOrEmpty(context.Request?.RequestId))
             {
                 // Note: the cache key is always prefixed with a specific marker
                 // to avoid collisions with the other types of cached requests.
