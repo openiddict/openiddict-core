@@ -31,7 +31,9 @@ namespace OpenIddict.Server.Tests
                            .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
                            .SetDefaultScopeEntity<OpenIddictScope>()
                            .SetDefaultTokenEntity<OpenIddictToken>();
-                });
+                })
+
+                .AddServer();
 
             var builder = new ApplicationBuilder(services.BuildServiceProvider());
 
