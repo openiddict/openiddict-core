@@ -6,12 +6,12 @@
 
 using System.Collections.Immutable;
 using System.IO;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -976,6 +976,29 @@ namespace OpenIddict.Server.Tests
             cache.Verify(mock => mock.RemoveAsync(
                 OpenIddictConstants.Environment.AuthorizationRequest +
                 "b2ee7815-5579-4ff7-86b0-ba671b939d96"), Times.Once());
+        }
+
+        [Fact]
+        public async Task ApplyAuthorizationResponse_SupportsNullRequests()
+        {
+            // Note: when an invalid HTTP verb is used, the OpenID Connect server handler refuses to extract the request
+            // and immediately returns an error. In this specific case, ApplyAuthorizationResponseContext.Request is null
+            // and this test ensures ApplyAuthorizationResponse can safely handle cases where the request is unavailable.
+
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.EnableRequestCaching();
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.SendAsync(HttpMethod.Put, AuthorizationEndpoint, new OpenIdConnectRequest());
+
+            // Assert
+            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
         }
 
         [Fact]
