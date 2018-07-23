@@ -5,8 +5,10 @@
  */
 
 using System;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
@@ -15,26 +17,47 @@ namespace OpenIddict.EntityFramework.Tests
 {
     public class OpenIddictEntityFrameworkExtensionsTests
     {
-        [Theory]
-        [InlineData(typeof(OpenIddictApplicationStoreResolver))]
-        [InlineData(typeof(OpenIddictAuthorizationStoreResolver))]
-        [InlineData(typeof(OpenIddictScopeStoreResolver))]
-        [InlineData(typeof(OpenIddictTokenStoreResolver))]
-        public void AddEntityFrameworkStores_RegistersEntityFrameworkStoreFactories(Type type)
+        [Fact]
+        public void UseEntityFramework_ThrowsAnExceptionForNullBuilder()
         {
             // Arrange
-            var services = new ServiceCollection().AddOptions();
+            var builder = (OpenIddictCoreBuilder) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFramework());
+
+            Assert.Equal("builder", exception.ParamName);
+        }
+
+        [Fact]
+        public void UseEntityFramework_ThrowsAnExceptionForNullConfiguration()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictCoreBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFramework(configuration: null));
+
+            Assert.Equal("configuration", exception.ParamName);
+        }
+
+        [Fact]
+        public void UseEntityFramework_RegistersCachingServices()
+        {
+            // Arrange
+            var services = new ServiceCollection();
             var builder = new OpenIddictCoreBuilder(services);
 
             // Act
             builder.UseEntityFramework();
 
             // Assert
-            Assert.Contains(services, service => service.ImplementationType == type);
+            Assert.Contains(services, service => service.ServiceType == typeof(IMemoryCache));
         }
 
         [Fact]
-        public void UseEntityFrameworkModels_KeyTypeDefaultsToString()
+        public void UseEntityFramework_RegistersDefaultEntities()
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
@@ -51,6 +74,43 @@ namespace OpenIddict.EntityFramework.Tests
             Assert.Equal(typeof(OpenIddictAuthorization), options.DefaultAuthorizationType);
             Assert.Equal(typeof(OpenIddictScope), options.DefaultScopeType);
             Assert.Equal(typeof(OpenIddictToken), options.DefaultTokenType);
+        }
+
+        [Theory]
+        [InlineData(typeof(IOpenIddictApplicationStoreResolver), typeof(OpenIddictApplicationStoreResolver))]
+        [InlineData(typeof(IOpenIddictAuthorizationStoreResolver), typeof(OpenIddictAuthorizationStoreResolver))]
+        [InlineData(typeof(IOpenIddictScopeStoreResolver), typeof(OpenIddictScopeStoreResolver))]
+        [InlineData(typeof(IOpenIddictTokenStoreResolver), typeof(OpenIddictTokenStoreResolver))]
+        public void UseEntityFramework_RegistersEntityFrameworkStoreResolvers(Type serviceType, Type implementationType)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictCoreBuilder(services);
+
+            // Act
+            builder.UseEntityFramework();
+
+            // Assert
+            Assert.Contains(services, service => service.ServiceType == serviceType &&
+                                                 service.ImplementationType == implementationType);
+        }
+
+        [Theory]
+        [InlineData(typeof(OpenIddictApplicationStore<,,,,>))]
+        [InlineData(typeof(OpenIddictAuthorizationStore<,,,,>))]
+        [InlineData(typeof(OpenIddictScopeStore<,,>))]
+        [InlineData(typeof(OpenIddictTokenStore<,,,,>))]
+        public void UseEntityFramework_RegistersEntityFrameworkStore(Type type)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictCoreBuilder(services);
+
+            // Act
+            builder.UseEntityFramework();
+
+            // Assert
+            Assert.Contains(services, service => service.ServiceType == type && service.ImplementationType == type);
         }
     }
 }

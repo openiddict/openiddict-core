@@ -11,7 +11,11 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -19,6 +23,89 @@ namespace OpenIddict.Server.Tests
 {
     public class OpenIddictServerExtensionsTests
     {
+        public void AddServer_ThrowsAnExceptionForNullBuilder()
+        {
+            // Arrange
+            var builder = (OpenIddictBuilder) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddServer());
+
+            Assert.Equal("builder", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddServer_ThrowsAnExceptionForNullConfiguration()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.AddServer(configuration: null));
+
+            Assert.Equal("configuration", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddServer_RegistersCachingServices()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.AddServer();
+
+            // Assert
+            Assert.Contains(services, service => service.ServiceType == typeof(IDistributedCache));
+            Assert.Contains(services, service => service.ServiceType == typeof(IMemoryCache));
+        }
+
+        [Fact]
+        public void AddServer_RegistersLoggingServices()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.AddServer();
+
+            // Assert
+            Assert.Contains(services, service => service.ServiceType == typeof(ILogger<>));
+        }
+
+        [Fact]
+        public void AddServer_RegistersOptionsServices()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.AddServer();
+
+            // Assert
+            Assert.Contains(services, service => service.ServiceType == typeof(IOptions<>));
+        }
+
+        [Fact]
+        public void AddServer_RegistersEventService()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.AddServer();
+
+            // Assert
+            Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
+                                                 service.ServiceType == typeof(IOpenIddictServerEventService) &&
+                                                 service.ImplementationType == typeof(OpenIddictServerEventService));
+        }
+
         [Fact]
         public void UseOpenIddictServer_ThrowsAnExceptionWhenNoFlowIsEnabled()
         {

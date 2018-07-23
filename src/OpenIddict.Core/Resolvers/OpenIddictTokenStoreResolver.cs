@@ -30,7 +30,7 @@ namespace OpenIddict.Core
             if (store == null)
             {
                 throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("No token store factory has been registered in the dependency injection container.")
+                    .AppendLine("No token store has been registered in the dependency injection container.")
                     .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
                     .AppendLine("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
                     .Append("To register a custom store, create an implementation of 'IOpenIddictTokenStore' and ")

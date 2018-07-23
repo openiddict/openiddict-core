@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,31 @@ namespace OpenIddict.Mvc.Tests
 {
     public class OpenIddictMvcExtensionsTests
     {
+        [Fact]
+        public void UseMvc_ThrowsAnExceptionForNullBuilder()
+        {
+            // Arrange
+            var builder = (OpenIddictServerBuilder) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseMvc());
+
+            Assert.Equal("builder", exception.ParamName);
+        }
+
+        [Fact]
+        public void UseMvc_ThrowsAnExceptionForNullConfiguration()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictServerBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseMvc(configuration: null));
+
+            Assert.Equal("configuration", exception.ParamName);
+        }
+
         [Fact]
         public void UseMvc_RegistersModelBinderProvider()
         {

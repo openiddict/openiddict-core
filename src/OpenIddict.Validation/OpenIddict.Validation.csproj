@@ -19,6 +19,7 @@
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.Validation" Version="$(AspNetContribOpenIdExtensionsVersion)" />
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>

@@ -17,6 +17,18 @@ namespace OpenIddict.Core.Tests
     public class OpenIddictCoreBuilderTests
     {
         [Fact]
+        public void Constructor_ThrowsAnExceptionForNullServices()
+        {
+            // Arrange
+            var services = (IServiceCollection) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictCoreBuilder(services));
+
+            Assert.Equal("services", exception.ParamName);
+        }
+
+        [Fact]
         public void ReplaceApplicationManager_ThrowsAnExceptionForInvalidManager()
         {
             // Arrange
