@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -12,6 +13,18 @@ namespace OpenIddict.Mvc.Tests
 {
     public class OpenIddictMvcBuilderTests
     {
+        [Fact]
+        public void Constructor_ThrowsAnExceptionForNullServices()
+        {
+            // Arrange
+            var services = (IServiceCollection) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictMvcBuilder(services));
+
+            Assert.Equal("services", exception.ParamName);
+        }
+
         [Fact]
         public void Configure_OptionsAreCorrectlyAmended()
         {

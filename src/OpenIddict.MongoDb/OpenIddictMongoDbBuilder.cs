@@ -58,22 +58,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures the MongoDB stores to use the specified database
-        /// instead of retrieving it from the dependency injection container.
-        /// </summary>
-        /// <param name="database">The <see cref="IMongoDatabase"/>.</param>
-        /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
-        public OpenIddictMongoDbBuilder UseDatabase([NotNull] IMongoDatabase database)
-        {
-            if (database == null)
-            {
-                throw new ArgumentNullException(nameof(database));
-            }
-
-            return Configure(options => options.Database = database);
-        }
-
-        /// <summary>
         /// Configures OpenIddict to use the specified entity as the default application entity.
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
@@ -179,6 +163,22 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return Configure(options => options.TokensCollectionName = name);
+        }
+
+        /// <summary>
+        /// Configures the MongoDB stores to use the specified database
+        /// instead of retrieving it from the dependency injection container.
+        /// </summary>
+        /// <param name="database">The <see cref="IMongoDatabase"/>.</param>
+        /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+        public OpenIddictMongoDbBuilder UseDatabase([NotNull] IMongoDatabase database)
+        {
+            if (database == null)
+            {
+                throw new ArgumentNullException(nameof(database));
+            }
+
+            return Configure(options => options.Database = database);
         }
     }
 }

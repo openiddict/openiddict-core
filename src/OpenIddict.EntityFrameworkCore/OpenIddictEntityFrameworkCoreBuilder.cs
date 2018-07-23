@@ -58,34 +58,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures the OpenIddict Entity Framework Core stores to use the specified database context type.
-        /// </summary>
-        /// <typeparam name="TContext">The type of the <see cref="DbContext"/> used by OpenIddict.</typeparam>
-        /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
-        public OpenIddictEntityFrameworkCoreBuilder UseDbContext<TContext>()
-            where TContext : DbContext => UseDbContext(typeof(TContext));
-
-        /// <summary>
-        /// Configures the OpenIddict Entity Framework Core stores to use the specified database context type.
-        /// </summary>
-        /// <param name="type">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
-        /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
-        public OpenIddictEntityFrameworkCoreBuilder UseDbContext([NotNull] Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            if (!typeof(DbContext).IsAssignableFrom(type))
-            {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
-            }
-
-            return Configure(options => options.DbContextType = type);
-        }
-
-        /// <summary>
         /// Configures OpenIddict to use the default OpenIddict
         /// Entity Framework Core entities, with the specified key type.
         /// </summary>
@@ -118,6 +90,35 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             return this;
+        }
+
+        /// <summary>
+        /// Configures the OpenIddict Entity Framework Core stores to use the specified database context type.
+        /// </summary>
+        /// <typeparam name="TContext">The type of the <see cref="DbContext"/> used by OpenIddict.</typeparam>
+        /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
+        public OpenIddictEntityFrameworkCoreBuilder UseDbContext<TContext>()
+            where TContext : DbContext
+            => UseDbContext(typeof(TContext));
+
+        /// <summary>
+        /// Configures the OpenIddict Entity Framework Core stores to use the specified database context type.
+        /// </summary>
+        /// <param name="type">The type of the <see cref="DbContext"/> used by OpenIddict.</param>
+        /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
+        public OpenIddictEntityFrameworkCoreBuilder UseDbContext([NotNull] Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (!typeof(DbContext).IsAssignableFrom(type))
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            return Configure(options => options.DbContextType = type);
         }
     }
 }

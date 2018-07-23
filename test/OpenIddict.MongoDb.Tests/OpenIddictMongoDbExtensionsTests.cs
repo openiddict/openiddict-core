@@ -10,61 +10,61 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
-using OpenIddict.EntityFrameworkCore.Models;
+using OpenIddict.MongoDb.Models;
 using Xunit;
 
-namespace OpenIddict.EntityFrameworkCore.Tests
+namespace OpenIddict.MongoDb.Tests
 {
-    public class OpenIddictEntityFrameworkCoreExtensionsTests
+    public class OpenIddictMongoDbExtensionsTests
     {
         [Fact]
-        public void UseEntityFrameworkCore_ThrowsAnExceptionForNullBuilder()
+        public void UseMongoDb_ThrowsAnExceptionForNullBuilder()
         {
             // Arrange
             var builder = (OpenIddictCoreBuilder) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore());
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseMongoDb());
 
             Assert.Equal("builder", exception.ParamName);
         }
 
         [Fact]
-        public void UseEntityFrameworkCore_ThrowsAnExceptionForNullConfiguration()
+        public void UseMongoDb_ThrowsAnExceptionForNullConfiguration()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenIddictCoreBuilder(services);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseEntityFrameworkCore(configuration: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.UseMongoDb(configuration: null));
 
             Assert.Equal("configuration", exception.ParamName);
         }
 
         [Fact]
-        public void UseEntityFrameworkCore_RegistersCachingServices()
+        public void UseMongoDb_RegistersCachingServices()
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenIddictCoreBuilder(services);
 
             // Act
-            builder.UseEntityFrameworkCore();
+            builder.UseMongoDb();
 
             // Assert
             Assert.Contains(services, service => service.ServiceType == typeof(IMemoryCache));
         }
 
         [Fact]
-        public void UseEntityFrameworkCore_RegistersDefaultEntities()
+        public void UseMongoDb_RegistersDefaultEntities()
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
             var builder = new OpenIddictCoreBuilder(services);
 
             // Act
-            builder.UseEntityFrameworkCore();
+            builder.UseMongoDb();
 
             // Assert
             var provider = services.BuildServiceProvider();
@@ -81,14 +81,14 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         [InlineData(typeof(IOpenIddictAuthorizationStoreResolver), typeof(OpenIddictAuthorizationStoreResolver))]
         [InlineData(typeof(IOpenIddictScopeStoreResolver), typeof(OpenIddictScopeStoreResolver))]
         [InlineData(typeof(IOpenIddictTokenStoreResolver), typeof(OpenIddictTokenStoreResolver))]
-        public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolvers(Type serviceType, Type implementationType)
+        public void UseMongoDb_RegistersMongoDbStoreResolvers(Type serviceType, Type implementationType)
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenIddictCoreBuilder(services);
 
             // Act
-            builder.UseEntityFrameworkCore();
+            builder.UseMongoDb();
 
             // Assert
             Assert.Contains(services, service => service.ServiceType == serviceType &&
@@ -96,21 +96,37 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         }
 
         [Theory]
-        [InlineData(typeof(OpenIddictApplicationStore<,,,,>))]
-        [InlineData(typeof(OpenIddictAuthorizationStore<,,,,>))]
-        [InlineData(typeof(OpenIddictScopeStore<,,>))]
-        [InlineData(typeof(OpenIddictTokenStore<,,,,>))]
-        public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStore(Type type)
+        [InlineData(typeof(OpenIddictApplicationStore<>))]
+        [InlineData(typeof(OpenIddictAuthorizationStore<>))]
+        [InlineData(typeof(OpenIddictScopeStore<>))]
+        [InlineData(typeof(OpenIddictTokenStore<>))]
+        public void UseMongoDb_RegistersMongoDbStore(Type type)
         {
             // Arrange
             var services = new ServiceCollection();
             var builder = new OpenIddictCoreBuilder(services);
 
             // Act
-            builder.UseEntityFrameworkCore();
+            builder.UseMongoDb();
 
             // Assert
             Assert.Contains(services, service => service.ServiceType == type && service.ImplementationType == type);
+        }
+
+        [Fact]
+        public void UseMongoDb_RegistersMongoDbContext()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictCoreBuilder(services);
+
+            // Act
+            builder.UseMongoDb();
+
+            // Assert
+            Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Singleton &&
+                                                 service.ServiceType == typeof(IOpenIddictMongoDbContext) &&
+                                                 service.ImplementationType == typeof(OpenIddictMongoDbContext));
         }
     }
 }

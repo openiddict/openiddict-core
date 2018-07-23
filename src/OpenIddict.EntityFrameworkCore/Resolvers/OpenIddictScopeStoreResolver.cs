@@ -55,7 +55,7 @@ namespace OpenIddict.EntityFrameworkCore
                     throw new InvalidOperationException(new StringBuilder()
                         .AppendLine("The specified scope type is not compatible with the Entity Framework Core stores.")
                         .Append("When enabling the Entity Framework Core stores, make sure you use the built-in ")
-                        .Append("'OpenIdScope' entity (from the 'OpenIddict.EntityFrameworkCore.Models' package) ")
+                        .Append("'OpenIddictScope' entity (from the 'OpenIddict.EntityFrameworkCore.Models' package) ")
                         .Append("or a custom entity that inherits from the generic 'OpenIddictScope' entity.")
                         .ToString());
                 }

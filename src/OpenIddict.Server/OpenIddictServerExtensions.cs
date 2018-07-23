@@ -34,6 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.AddAuthentication();
             builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddLogging();
             builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
 

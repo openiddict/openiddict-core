@@ -33,6 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.AddAuthentication();
+            builder.Services.AddLogging();
             builder.Services.AddOptions();
 
             builder.Services.TryAddScoped<IOpenIddictValidationEventService, OpenIddictValidationEventService>();

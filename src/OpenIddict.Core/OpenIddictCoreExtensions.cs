@@ -29,6 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            builder.Services.AddLogging();
             builder.Services.AddOptions();
 
             builder.Services.TryAddScoped(typeof(OpenIddictApplicationManager<>));

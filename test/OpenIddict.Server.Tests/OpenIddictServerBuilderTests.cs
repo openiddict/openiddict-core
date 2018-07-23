@@ -24,6 +24,18 @@ namespace OpenIddict.Server.Tests
     public class OpenIddictServerBuilderTests
     {
         [Fact]
+        public void Constructor_ThrowsAnExceptionForNullServices()
+        {
+            // Arrange
+            var services = (IServiceCollection) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictServerBuilder(services));
+
+            Assert.Equal("services", exception.ParamName);
+        }
+
+        [Fact]
         public void AddEventHandler_HandlerIsAttached()
         {
             // Arrange

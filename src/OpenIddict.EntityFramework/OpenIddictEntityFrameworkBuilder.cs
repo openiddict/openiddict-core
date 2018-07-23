@@ -59,12 +59,36 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Configures OpenIddict to use the specified entities, derived
+        /// from the default OpenIddict Entity Framework 6.x entities.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
+        public OpenIddictEntityFrameworkBuilder ReplaceDefaultEntities<TApplication, TAuthorization, TScope, TToken, TKey>()
+            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
+            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
+            where TScope : OpenIddictScope<TKey>
+            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
+            where TKey : IEquatable<TKey>
+        {
+            Services.Configure<OpenIddictCoreOptions>(options =>
+            {
+                options.DefaultApplicationType = typeof(TApplication);
+                options.DefaultAuthorizationType = typeof(TAuthorization);
+                options.DefaultScopeType = typeof(TScope);
+                options.DefaultTokenType = typeof(TToken);
+            });
+
+            return this;
+        }
+
+        /// <summary>
         /// Configures the OpenIddict Entity Framework 6.x stores to use the specified database context type.
         /// </summary>
         /// <typeparam name="TContext">The type of the <see cref="DbContext"/> used by OpenIddict.</typeparam>
         /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
         public OpenIddictEntityFrameworkBuilder UseDbContext<TContext>()
-            where TContext : DbContext => UseDbContext(typeof(TContext));
+            where TContext : DbContext
+            => UseDbContext(typeof(TContext));
 
         /// <summary>
         /// Configures the OpenIddict Entity Framework 6.x stores to use the specified database context type.
@@ -86,29 +110,6 @@ namespace Microsoft.Extensions.DependencyInjection
             Services.TryAddScoped(type);
 
             return Configure(options => options.DbContextType = type);
-        }
-
-        /// <summary>
-        /// Configures OpenIddict to use the specified entities, derived
-        /// from the default OpenIddict Entity Framework 6.x entities.
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
-        public OpenIddictEntityFrameworkBuilder ReplaceDefaultEntities<TApplication, TAuthorization, TScope, TToken, TKey>()
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
-            where TScope : OpenIddictScope<TKey>
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
-            where TKey : IEquatable<TKey>
-        {
-            Services.Configure<OpenIddictCoreOptions>(options =>
-            {
-                options.DefaultApplicationType = typeof(TApplication);
-                options.DefaultAuthorizationType = typeof(TAuthorization);
-                options.DefaultScopeType = typeof(TScope);
-                options.DefaultTokenType = typeof(TToken);
-            });
-
-            return this;
         }
     }
 }
