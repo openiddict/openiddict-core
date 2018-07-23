@@ -70,6 +70,15 @@ namespace OpenIddict.Validation
                     return;
                 }
 
+                // Ensure the access token is still valid (i.e was not marked as revoked).
+                if (!await manager.IsValidAsync(token))
+                {
+                    logger.LogError("Authentication failed because the access token was no longer valid.");
+
+                    context.HandleResponse();
+                    return;
+                }
+
                 var ticket = context.DataFormat.Unprotect(payload);
                 if (ticket == null)
                 {
