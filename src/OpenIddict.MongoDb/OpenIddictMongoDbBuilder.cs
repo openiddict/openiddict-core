@@ -136,6 +136,15 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Sets the maximal duration given to the MongoDB client to initialize
+        /// the database and register the indexes used by the OpenIddict entities.
+        /// </summary>
+        /// <param name="timeout">The timeout.</param>
+        /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+        public OpenIddictMongoDbBuilder SetInitializationTimeout(TimeSpan timeout)
+            => Configure(options => options.InitializationTimeout = timeout);
+
+        /// <summary>
         /// Replaces the default scopes collection name (by default, openiddict.scopes).
         /// </summary>
         /// <param name="name">The collection name</param>
