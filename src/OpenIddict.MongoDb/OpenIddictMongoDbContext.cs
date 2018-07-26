@@ -23,6 +23,7 @@ namespace OpenIddict.MongoDb
     {
         private readonly IOptionsMonitor<OpenIddictMongoDbOptions> _options;
         private readonly IServiceProvider _provider;
+        private readonly SemaphoreSlim _semaphore;
         private IMongoDatabase _database;
 
         public OpenIddictMongoDbContext(
@@ -31,6 +32,7 @@ namespace OpenIddict.MongoDb
         {
             _options = options;
             _provider = provider;
+            _semaphore = new SemaphoreSlim(1);
         }
 
         /// <summary>
@@ -55,56 +57,73 @@ namespace OpenIddict.MongoDb
                     throw new InvalidOperationException("The OpenIddict MongoDB options cannot be retrieved.");
                 }
 
-                var database = options.Database;
-                if (database == null)
-                {
-                    database = _provider.GetService<IMongoDatabase>();
-                }
-
-                if (database == null)
+                if (!await _semaphore.WaitAsync(options.InitializationTimeout, cancellationToken))
                 {
                     throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("No suitable MongoDB database service can be found.")
-                        .Append("To configure the OpenIddict MongoDB stores to use a specific database, use ")
-                        .Append("'services.AddOpenIddict().AddCore().UseMongoDb().UseDatabase()' or register an ")
-                        .Append("'IMongoDatabase' in the dependency injection container in 'ConfigureServices()'.")
+                        .AppendLine("The MongoDB database couldn't be initialized within a reasonable timeframe.")
+                        .Append("Make sure that the MongoDB server is ready and accepts connections from this machine ")
+                        .Append("or use 'options.UseMongoDb().SetInitializationTimeout()' to manually adjust the timeout.")
                         .ToString());
                 }
 
-                // Note: the cancellation token passed as a parameter is deliberately not used here to ensure
-                // the cancellation of a single store operation doesn't prevent the indexes from being created.
-                var applications = database.GetCollection<OpenIddictApplication>(options.ApplicationsCollectionName);
-                await applications.Indexes.CreateOneAsync(
-                    Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.ClientId),
-                    new CreateIndexOptions
+                try
+                {
+                    var database = options.Database;
+                    if (database == null)
                     {
-                        Unique = true
-                    });
+                        database = _provider.GetService<IMongoDatabase>();
+                    }
 
-                await applications.Indexes.CreateOneAsync(
-                    Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.PostLogoutRedirectUris));
-
-                await applications.Indexes.CreateOneAsync(
-                    Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.RedirectUris));
-
-                var scopes = database.GetCollection<OpenIddictScope>(options.ScopesCollectionName);
-                await scopes.Indexes.CreateOneAsync(
-                    Builders<OpenIddictScope>.IndexKeys.Ascending(scope => scope.Name),
-                    new CreateIndexOptions
+                    if (database == null)
                     {
-                        Unique = true
-                    });
+                        throw new InvalidOperationException(new StringBuilder()
+                            .AppendLine("No suitable MongoDB database service can be found.")
+                            .Append("To configure the OpenIddict MongoDB stores to use a specific database, use ")
+                            .Append("'services.AddOpenIddict().AddCore().UseMongoDb().UseDatabase()' or register an ")
+                            .Append("'IMongoDatabase' in the dependency injection container in 'ConfigureServices()'.")
+                            .ToString());
+                    }
 
-                var tokens = database.GetCollection<OpenIddictToken>(options.TokensCollectionName);
-                await tokens.Indexes.CreateOneAsync(
-                    Builders<OpenIddictToken>.IndexKeys.Ascending(token => token.ReferenceId),
-                    new CreateIndexOptions<OpenIddictToken>
-                    {
-                        PartialFilterExpression = Builders<OpenIddictToken>.Filter.Exists(token => token.ReferenceId),
-                        Unique = true
-                    });
+                    // Note: the cancellation token passed as a parameter is deliberately not used here to ensure
+                    // the cancellation of a single store operation doesn't prevent the indexes from being created.
+                    var applications = database.GetCollection<OpenIddictApplication>(options.ApplicationsCollectionName);
+                    await applications.Indexes.CreateOneAsync(
+                        Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.ClientId),
+                        new CreateIndexOptions
+                        {
+                            Unique = true
+                        });
 
-                return _database = database;
+                    await applications.Indexes.CreateOneAsync(
+                        Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.PostLogoutRedirectUris));
+
+                    await applications.Indexes.CreateOneAsync(
+                        Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.RedirectUris));
+
+                    var scopes = database.GetCollection<OpenIddictScope>(options.ScopesCollectionName);
+                    await scopes.Indexes.CreateOneAsync(
+                        Builders<OpenIddictScope>.IndexKeys.Ascending(scope => scope.Name),
+                        new CreateIndexOptions
+                        {
+                            Unique = true
+                        });
+
+                    var tokens = database.GetCollection<OpenIddictToken>(options.TokensCollectionName);
+                    await tokens.Indexes.CreateOneAsync(
+                        Builders<OpenIddictToken>.IndexKeys.Ascending(token => token.ReferenceId),
+                        new CreateIndexOptions<OpenIddictToken>
+                        {
+                            PartialFilterExpression = Builders<OpenIddictToken>.Filter.Exists(token => token.ReferenceId),
+                            Unique = true
+                        });
+
+                    return _database = database;
+                }
+
+                finally
+                {
+                    _semaphore.Release();
+                }
             }
 
             return new ValueTask<IMongoDatabase>(ExecuteAsync());

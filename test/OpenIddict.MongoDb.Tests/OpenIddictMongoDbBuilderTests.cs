@@ -196,6 +196,23 @@ namespace OpenIddict.MongoDb.Tests
             Assert.Equal("custom_collection", options.ScopesCollectionName);
         }
 
+        [Fact]
+        public void SetInitializationTimeout_TimeoutIsCorrectlySet()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetInitializationTimeout(TimeSpan.FromDays(42));
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
+
+            Assert.Equal(TimeSpan.FromDays(42), options.InitializationTimeout);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]

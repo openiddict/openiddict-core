@@ -26,9 +26,9 @@ namespace OpenIddict.EntityFramework.Tests
             var services = new ServiceCollection();
             services.AddSingleton(Mock.Of<IOpenIddictScopeStore<CustomScope>>());
 
-            var monitor = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>();
+            var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>();
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictScopeStoreResolver(monitor, provider);
+            var resolver = new OpenIddictScopeStoreResolver(options, provider);
 
             // Act and assert
             Assert.NotNull(resolver.Get<CustomScope>());
@@ -40,9 +40,9 @@ namespace OpenIddict.EntityFramework.Tests
             // Arrange
             var services = new ServiceCollection();
 
-            var monitor = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>();
+            var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>();
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictScopeStoreResolver(monitor, provider);
+            var resolver = new OpenIddictScopeStoreResolver(options, provider);
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomScope>());
@@ -61,14 +61,14 @@ namespace OpenIddict.EntityFramework.Tests
             // Arrange
             var services = new ServiceCollection();
 
-            var monitor = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>(
+            var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>(
                 mock => mock.CurrentValue == new OpenIddictEntityFrameworkOptions
                 {
                     DbContextType = null
                 });
 
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictScopeStoreResolver(monitor, provider);
+            var resolver = new OpenIddictScopeStoreResolver(options, provider);
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictScope>());
@@ -88,14 +88,14 @@ namespace OpenIddict.EntityFramework.Tests
             services.AddSingleton(Mock.Of<IOpenIddictScopeStore<CustomScope>>());
             services.AddSingleton(CreateStore());
 
-            var monitor = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>(
+            var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>(
                 mock => mock.CurrentValue == new OpenIddictEntityFrameworkOptions
                 {
                     DbContextType = typeof(DbContext)
                 });
 
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictScopeStoreResolver(monitor, provider);
+            var resolver = new OpenIddictScopeStoreResolver(options, provider);
 
             // Act and assert
             Assert.NotNull(resolver.Get<MyScope>());
