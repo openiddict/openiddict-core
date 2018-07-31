@@ -283,6 +283,37 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Registers a <see cref="X509Certificate2"/> retrieved from an
+        /// embedded resource and used to sign the JWT tokens issued by OpenIddict.
+        /// </summary>
+        /// <param name="assembly">The assembly containing the certificate.</param>
+        /// <param name="resource">The name of the embedded resource.</param>
+        /// <param name="password">The password used to open the certificate.</param>
+        /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder AddSigningCertificate(
+            [NotNull] Assembly assembly, [NotNull] string resource,
+            [NotNull] string password, X509KeyStorageFlags flags)
+        {
+            if (assembly == null)
+            {
+                throw new ArgumentNullException(nameof(assembly));
+            }
+
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+
+            if (string.IsNullOrEmpty(password))
+            {
+                throw new ArgumentException("The password cannot be null or empty.", nameof(password));
+            }
+
+            return Configure(options => options.SigningCredentials.AddCertificate(assembly, resource, password, flags));
+        }
+
+        /// <summary>
         /// Registers a <see cref="X509Certificate2"/> extracted from a
         /// stream and used to sign the JWT tokens issued by OpenIddict.
         /// </summary>

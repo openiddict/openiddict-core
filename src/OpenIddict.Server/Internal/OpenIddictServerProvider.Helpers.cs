@@ -490,7 +490,7 @@ namespace OpenIddict.Server
             }
         }
 
-        private async Task<bool> TryExtendTokenAsync(
+        private async Task<bool> TryExtendRefreshTokenAsync(
             [NotNull] object token, [NotNull] AuthenticationTicket ticket, [NotNull] OpenIddictServerOptions options)
         {
             var identifier = ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
@@ -499,15 +499,26 @@ namespace OpenIddict.Server
             try
             {
                 // Compute the new expiration date of the refresh token.
-                var date = options.SystemClock.UtcNow;
-                date += ticket.GetRefreshTokenLifetime() ?? options.RefreshTokenLifetime;
+                var lifetime = ticket.GetRefreshTokenLifetime() ?? options.RefreshTokenLifetime;
+                if (lifetime != null)
+                {
+                    // Note: the request cancellation token is deliberately not used here to ensure the caller
+                    // cannot prevent this operation from being executed by resetting the TCP connection.
+                    var date = options.SystemClock.UtcNow + lifetime;
+                    await _tokenManager.ExtendAsync(token, date);
 
-                // Note: the request cancellation token is deliberately not used here to ensure the caller
-                // cannot prevent this operation from being executed by resetting the TCP connection.
-                await _tokenManager.ExtendAsync(token, date);
+                    _logger.LogInformation("The expiration date of the refresh token '{Identifier}' " +
+                                           "was automatically updated: {Date}.", identifier, date);
+                }
 
-                _logger.LogInformation("The expiration date of the refresh token '{Identifier}' " +
-                                       "was automatically updated: {Date}.", identifier, date);
+                else
+                {
+                    // Note: the request cancellation token is deliberately not used here to ensure the caller
+                    // cannot prevent this operation from being executed by resetting the TCP connection.
+                    await _tokenManager.ExtendAsync(token, date: null);
+
+                    _logger.LogInformation("The expiration date of the refresh token '{Identifier}' was removed.", identifier);
+                }
 
                 return true;
             }

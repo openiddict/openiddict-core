@@ -183,7 +183,7 @@ namespace OpenIddict.Server
                         // already updated the expiration date associated with the refresh token.
                         if (!options.UseRollingTokens && options.UseSlidingExpiration)
                         {
-                            await TryExtendTokenAsync(token, context.Ticket, options);
+                            await TryExtendRefreshTokenAsync(token, context.Ticket, options);
                         }
                     }
                 }
