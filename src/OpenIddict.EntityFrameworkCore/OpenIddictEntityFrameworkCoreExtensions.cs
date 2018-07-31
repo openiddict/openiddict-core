@@ -78,7 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework context
+        /// Registers the OpenIddict entity sets in the Entity Framework Core context
         /// using the default OpenIddict models and the default key type (string).
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
@@ -90,8 +90,8 @@ namespace Microsoft.Extensions.DependencyInjection
                                      OpenIddictToken, string>();
 
         /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework context
-        /// using the default OpenIddict models and the specified key type.
+        /// Registers the OpenIddict entity sets in the Entity Framework Core 
+        /// context using the default OpenIddict models and the specified key type.
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
@@ -103,8 +103,8 @@ namespace Microsoft.Extensions.DependencyInjection
                                      OpenIddictToken<TKey>, TKey>();
 
         /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework context
-        /// using the specified entities and the specified key type.
+        /// Registers the OpenIddict entity sets in the Entity Framework Core
+        /// context using the specified entities and the specified key type.
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
@@ -125,7 +125,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework context
+        /// Registers the OpenIddict entity sets in the Entity Framework Core context
         /// using the default OpenIddict models and the default key type (string).
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
@@ -137,8 +137,8 @@ namespace Microsoft.Extensions.DependencyInjection
                                      OpenIddictToken, string>();
 
         /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework context
-        /// using the default OpenIddict models and the specified key type.
+        /// Registers the OpenIddict entity sets in the Entity Framework Core
+        /// context using the default OpenIddict models and the specified key type.
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
@@ -149,8 +149,8 @@ namespace Microsoft.Extensions.DependencyInjection
                                      OpenIddictToken<TKey>, TKey>();
 
         /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework context
-        /// using the specified entities and the specified key type.
+        /// Registers the OpenIddict entity sets in the Entity Framework Core
+        /// context using the specified entities and the specified key type.
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
@@ -166,101 +166,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            // Warning: optional foreign keys MUST NOT be added as CLR properties because
-            // Entity Framework would throw an exception due to the TKey generic parameter
-            // being non-nullable when using value types like short, int, long or Guid.
-
-            // Configure the TApplication entity.
-            builder.Entity<TApplication>(entity =>
-            {
-                entity.HasKey(application => application.Id);
-
-                entity.HasIndex(application => application.ClientId)
-                      .IsUnique();
-
-                entity.Property(application => application.ClientId)
-                      .IsRequired();
-
-                entity.Property(application => application.ConcurrencyToken)
-                      .IsConcurrencyToken();
-
-                entity.Property(application => application.Type)
-                      .IsRequired();
-
-                entity.HasMany(application => application.Authorizations)
-                      .WithOne(authorization => authorization.Application)
-                      .HasForeignKey("ApplicationId")
-                      .IsRequired(required: false);
-
-                entity.HasMany(application => application.Tokens)
-                      .WithOne(token => token.Application)
-                      .HasForeignKey("ApplicationId")
-                      .IsRequired(required: false);
-
-                entity.ToTable("OpenIddictApplications");
-            });
-
-            // Configure the TAuthorization entity.
-            builder.Entity<TAuthorization>(entity =>
-            {
-                entity.HasKey(authorization => authorization.Id);
-
-                entity.Property(authorization => authorization.ConcurrencyToken)
-                      .IsConcurrencyToken();
-
-                entity.Property(authorization => authorization.Status)
-                      .IsRequired();
-
-                entity.Property(authorization => authorization.Subject)
-                      .IsRequired();
-
-                entity.Property(authorization => authorization.Type)
-                      .IsRequired();
-
-                entity.HasMany(authorization => authorization.Tokens)
-                      .WithOne(token => token.Authorization)
-                      .HasForeignKey("AuthorizationId")
-                      .IsRequired(required: false);
-
-                entity.ToTable("OpenIddictAuthorizations");
-            });
-
-            // Configure the TScope entity.
-            builder.Entity<TScope>(entity =>
-            {
-                entity.HasKey(scope => scope.Id);
-
-                entity.HasIndex(scope => scope.Name)
-                      .IsUnique();
-
-                entity.Property(scope => scope.ConcurrencyToken)
-                      .IsConcurrencyToken();
-
-                entity.Property(scope => scope.Name)
-                      .IsRequired();
-
-                entity.ToTable("OpenIddictScopes");
-            });
-
-            // Configure the TToken entity.
-            builder.Entity<TToken>(entity =>
-            {
-                entity.HasKey(token => token.Id);
-
-                entity.HasIndex(token => token.ReferenceId)
-                      .IsUnique();
-
-                entity.Property(token => token.ConcurrencyToken)
-                      .IsConcurrencyToken();
-
-                entity.Property(token => token.Subject)
-                      .IsRequired();
-
-                entity.Property(token => token.Type)
-                      .IsRequired();
-
-                entity.ToTable("OpenIddictTokens");
-            });
+            builder.ApplyConfiguration(new OpenIddictApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>());
+            builder.ApplyConfiguration(new OpenIddictAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>());
+            builder.ApplyConfiguration(new OpenIddictScopeConfiguration<TScope, TKey>());
+            builder.ApplyConfiguration(new OpenIddictTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
 
             return builder;
         }
