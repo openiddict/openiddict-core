@@ -5,10 +5,7 @@
  */
 
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure.Annotations;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.EntityFramework;
@@ -80,7 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework context
+        /// Registers the OpenIddict entity sets in the Entity Framework 6.x context
         /// using the default OpenIddict models and the default key type (string).
         /// </summary>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
@@ -92,8 +89,8 @@ namespace Microsoft.Extensions.DependencyInjection
                                      OpenIddictToken, string>();
 
         /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework context
-        /// using the specified entities and the specified key type.
+        /// Registers the OpenIddict entity sets in the Entity Framework 6.x
+        /// context using the specified entities and the specified key type.
         /// Note: using this method requires creating non-generic derived classes
         /// for all the OpenIddict entities (application, authorization, scope, token).
         /// </summary>
@@ -111,145 +108,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            // Note: unlike Entity Framework 6.x 1.x/2.x, Entity Framework 6.x
-            // always throws an exception when using generic types as entity types.
-            // To ensure a better exception is thrown, a manual check is made here.
-            if (typeof(TApplication).IsGenericType)
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The application entity cannot be a generic type.")
-                    .Append("Consider creating a non-generic derived class.")
-                    .ToString());
-            }
-
-            if (typeof(TAuthorization).IsGenericType)
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The authorization entity cannot be a generic type.")
-                    .Append("Consider creating a non-generic derived class.")
-                    .ToString());
-            }
-
-            if (typeof(TScope).IsGenericType)
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The scope entity cannot be a generic type.")
-                    .Append("Consider creating a non-generic derived class.")
-                    .ToString());
-            }
-
-            if (typeof(TToken).IsGenericType)
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The token entity cannot be a generic type.")
-                    .Append("Consider creating a non-generic derived class.")
-                    .ToString());
-            }
-
-            // Warning: optional foreign keys MUST NOT be added as CLR properties because
-            // Entity Framework would throw an exception due to the TKey generic parameter
-            // being non-nullable when using value types like short, int, long or Guid.
-
-            // Configure the TApplication entity.
-            builder.Entity<TApplication>()
-                   .HasKey(application => application.Id);
-
-            builder.Entity<TApplication>()
-                   .Property(application => application.ClientId)
-                   .IsRequired()
-                   .HasMaxLength(450)
-                   .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
-
-            builder.Entity<TApplication>()
-                   .Property(application => application.ConcurrencyToken)
-                   .IsConcurrencyToken();
-
-            builder.Entity<TApplication>()
-                   .Property(application => application.Type)
-                   .IsRequired();
-
-            builder.Entity<TApplication>()
-                   .HasMany(application => application.Authorizations)
-                   .WithOptional(authorization => authorization.Application)
-                   .Map(association => association.MapKey("ApplicationId"));
-
-            builder.Entity<TApplication>()
-                   .HasMany(application => application.Tokens)
-                   .WithOptional(token => token.Application)
-                   .Map(association => association.MapKey("ApplicationId"));
-
-            builder.Entity<TApplication>()
-                   .ToTable("OpenIddictApplications");
-
-            // Configure the TAuthorization entity.
-            builder.Entity<TAuthorization>()
-                   .HasKey(authorization => authorization.Id);
-
-            builder.Entity<TAuthorization>()
-                   .Property(authorization => authorization.ConcurrencyToken)
-                   .IsConcurrencyToken();
-
-            builder.Entity<TAuthorization>()
-                   .Property(authorization => authorization.Status)
-                   .IsRequired();
-
-            builder.Entity<TAuthorization>()
-                   .Property(authorization => authorization.Subject)
-                   .IsRequired();
-
-            builder.Entity<TAuthorization>()
-                   .Property(authorization => authorization.Type)
-                   .IsRequired();
-
-            builder.Entity<TAuthorization>()
-                   .HasMany(application => application.Tokens)
-                   .WithOptional(token => token.Authorization)
-                   .Map(association => association.MapKey("AuthorizationId"))
-                   .WillCascadeOnDelete();
-
-            builder.Entity<TAuthorization>()
-                   .ToTable("OpenIddictAuthorizations");
-
-            // Configure the TScope entity.
-            builder.Entity<TScope>()
-                   .HasKey(scope => scope.Id);
-
-            builder.Entity<TScope>()
-                   .Property(scope => scope.ConcurrencyToken)
-                   .IsConcurrencyToken();
-
-            builder.Entity<TScope>()
-                   .Property(scope => scope.Name)
-                   .IsRequired()
-                   .HasMaxLength(450)
-                   .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
-
-            builder.Entity<TScope>()
-                   .ToTable("OpenIddictScopes");
-
-            // Configure the TToken entity.
-            builder.Entity<TToken>()
-                   .HasKey(token => token.Id);
-
-            builder.Entity<TToken>()
-                   .Property(token => token.ConcurrencyToken)
-                   .IsConcurrencyToken();
-
-            builder.Entity<TToken>()
-                   .Property(token => token.ReferenceId)
-                   .HasMaxLength(450)
-                   .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
-
-            builder.Entity<TToken>()
-                   .Property(token => token.Subject)
-                   .IsRequired();
-
-            builder.Entity<TToken>()
-                   .Property(token => token.Type)
-                   .IsRequired();
-
-            builder.Entity<TToken>()
-                   .ToTable("OpenIddictTokens");
+            builder.Configurations.Add(new OpenIddictApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>());
+            builder.Configurations.Add(new OpenIddictAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>());
+            builder.Configurations.Add(new OpenIddictScopeConfiguration<TScope, TKey>());
+            builder.Configurations.Add(new OpenIddictTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
 
             return builder;
         }
