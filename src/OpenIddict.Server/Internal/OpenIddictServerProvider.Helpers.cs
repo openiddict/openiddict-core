@@ -517,7 +517,7 @@ namespace OpenIddict.Server
             }
         }
 
-        private async Task<bool> TryExtendTokenAsync(
+        private async Task<bool> TryExtendRefreshTokenAsync(
             [NotNull] object token, [NotNull] AuthenticationTicket ticket,
             [NotNull] HttpContext context, [NotNull] OpenIddictServerOptions options)
         {
@@ -530,8 +530,7 @@ namespace OpenIddict.Server
             try
             {
                 // Compute the new expiration date of the refresh token.
-                var date = options.SystemClock.UtcNow;
-                date += ticket.GetRefreshTokenLifetime() ?? options.RefreshTokenLifetime;
+                var date = options.SystemClock.UtcNow + (ticket.GetRefreshTokenLifetime() ?? options.RefreshTokenLifetime);
 
                 // Note: the request cancellation token is deliberately not used here to ensure the caller
                 // cannot prevent this operation from being executed by resetting the TCP connection.
