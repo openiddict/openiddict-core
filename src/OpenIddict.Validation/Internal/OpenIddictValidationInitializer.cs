@@ -6,6 +6,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
@@ -46,6 +47,16 @@ namespace OpenIddict.Validation
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException("The options instance name cannot be null or empty.", nameof(name));
+            }
+
+            if (options.EventsType == null || options.EventsType != typeof(OpenIddictValidationProvider))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("OpenIddict can only be used with its built-in validation provider.")
+                    .AppendLine("This error may indicate that 'OpenIddictValidationOptions.EventsType' was manually set.")
+                    .Append("To execute custom request handling logic, consider registering an event handler using ")
+                    .Append("the generic 'services.AddOpenIddict().AddValidation().AddEventHandler()' method.")
+                    .ToString());
             }
 
             if (options.DataProtectionProvider == null)

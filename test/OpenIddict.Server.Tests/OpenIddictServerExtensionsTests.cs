@@ -204,5 +204,45 @@ namespace OpenIddict.Server.Tests
             Assert.Contains(options.Schemes, scheme => scheme.Name == OpenIddictServerDefaults.AuthenticationScheme &&
                                                        scheme.HandlerType == typeof(OpenIddictServerHandler));
         }
+
+        [Fact]
+        public void AddServer_ThrowsAnExceptionWhenSchemeIsAlreadyRegisteredWithDifferentHandlerType()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddAuthentication()
+                .AddOpenIdConnectServer();
+
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.AddServer();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var exception = Assert.Throws<InvalidOperationException>(delegate
+            {
+                return provider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
+            });
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("The OpenIddict server handler cannot be registered as an authentication scheme.")
+                .AppendLine("This may indicate that an instance of the OpenID Connect server was registered.")
+                .Append("Make sure that 'services.AddAuthentication().AddOpenIdConnectServer()' is not used.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public void AddServer_CanBeSafelyInvokedMultipleTimes()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act and assert
+            builder.AddServer();
+            builder.AddServer();
+            builder.AddServer();
+        }
     }
 }

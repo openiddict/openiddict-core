@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Text;
 using AspNet.Security.OAuth.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
@@ -164,6 +165,46 @@ namespace OpenIddict.Validation.Tests
 
             Assert.Contains(options.Schemes, scheme => scheme.Name == OpenIddictValidationDefaults.AuthenticationScheme &&
                                                        scheme.HandlerType == typeof(OpenIddictValidationHandler));
+        }
+
+        [Fact]
+        public void AddValidation_ThrowsAnExceptionWhenSchemeIsAlreadyRegisteredWithDifferentHandlerType()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddAuthentication()
+                .AddOAuthValidation();
+
+            var builder = new OpenIddictBuilder(services);
+
+            // Act
+            builder.AddValidation();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var exception = Assert.Throws<InvalidOperationException>(delegate
+            {
+                return provider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
+            });
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("The OpenIddict validation handler cannot be registered as an authentication scheme.")
+                .AppendLine("This may indicate that an instance of the OAuth validation handler was registered.")
+                .Append("Make sure that 'services.AddAuthentication().AddOAuthValidation()' is not used.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public void AddValidation_CanBeSafelyInvokedMultipleTimes()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act and assert
+            builder.AddValidation();
+            builder.AddValidation();
+            builder.AddValidation();
         }
     }
 }

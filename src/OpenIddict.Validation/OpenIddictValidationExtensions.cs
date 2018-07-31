@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Text;
 using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
@@ -53,8 +54,18 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 // Note: this method is guaranteed to be idempotent. To prevent multiple schemes from being
                 // registered (which would result in an exception being thrown), a manual check is made here.
-                if (options.SchemeMap.ContainsKey(OpenIddictValidationDefaults.AuthenticationScheme))
+                if (options.SchemeMap.TryGetValue(OpenIddictValidationDefaults.AuthenticationScheme, out var handler))
                 {
+                    // If the handler type doesn't correspond to the OpenIddict handler, throw an exception.
+                    if (handler.HandlerType != typeof(OpenIddictValidationHandler))
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .AppendLine("The OpenIddict validation handler cannot be registered as an authentication scheme.")
+                            .AppendLine("This may indicate that an instance of the OAuth validation handler was registered.")
+                            .Append("Make sure that 'services.AddAuthentication().AddOAuthValidation()' is not used.")
+                            .ToString());
+                    }
+
                     return;
                 }
 

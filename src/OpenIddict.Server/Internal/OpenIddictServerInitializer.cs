@@ -63,6 +63,16 @@ namespace OpenIddict.Server
                 throw new InvalidOperationException("A random number generator must be registered.");
             }
 
+            if (options.ProviderType == null || options.ProviderType != typeof(OpenIddictServerProvider))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("OpenIddict can only be used with its built-in server provider.")
+                    .AppendLine("This error may indicate that 'OpenIddictServerOptions.ProviderType' was manually set.")
+                    .Append("To execute custom request handling logic, consider registering an event handler using ")
+                    .Append("the generic 'services.AddOpenIddict().AddServer().AddEventHandler()' method.")
+                    .ToString());
+            }
+
             // When no distributed cache has been registered in the options,
             // try to resolve it from the dependency injection container.
             if (options.Cache == null)

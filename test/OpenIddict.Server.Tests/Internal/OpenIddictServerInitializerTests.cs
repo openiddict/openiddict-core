@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
+using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -41,6 +42,58 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Equal("A random number generator must be registered.", exception.Message);
+        }
+
+        [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenProviderTypeIsNull()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options => options.ProviderType = null);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            // Assert
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in server provider.")
+                .AppendLine("This error may indicate that 'OpenIddictServerOptions.ProviderType' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddServer().AddEventHandler()' method.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenProviderTypeIsIncompatible()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Configure(options => options.ProviderType = typeof(OpenIdConnectServerProvider));
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            // Assert
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in server provider.")
+                .AppendLine("This error may indicate that 'OpenIddictServerOptions.ProviderType' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddServer().AddEventHandler()' method.")
+                .ToString(), exception.Message);
         }
 
         [Fact]
