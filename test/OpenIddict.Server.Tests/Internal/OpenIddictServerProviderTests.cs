@@ -1005,7 +1005,7 @@ namespace OpenIddict.Server.Tests
                 new AuthenticationProperties(),
                 OpenIddictServerDefaults.AuthenticationScheme);
 
-            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "3E228451-1555-46F7-A471-951EFBA23A56");
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "60FFF7EA-F98E-437B-937E-5073CC313103");
             ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
             ticket.SetScopes(OpenIdConnectConstants.Scopes.OpenId, OpenIdConnectConstants.Scopes.OfflineAccess);
 
@@ -1061,6 +1061,138 @@ namespace OpenIddict.Server.Tests
             Mock.Get(manager).Verify(mock => mock.ExtendAsync(token,
                 new DateTimeOffset(2017, 01, 15, 00, 00, 00, TimeSpan.Zero),
                 It.IsAny<CancellationToken>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task ProcessSigninResponse_DoesNotUpdateExpirationDateWhenAlreadyNull()
+        {
+            // Arrange
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(),
+                new AuthenticationProperties(),
+                OpenIddictServerDefaults.AuthenticationScheme);
+
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "60FFF7EA-F98E-437B-937E-5073CC313103");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
+            ticket.SetScopes(OpenIdConnectConstants.Scopes.OpenId, OpenIdConnectConstants.Scopes.OfflineAccess);
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Protect(It.IsAny<AuthenticationTicket>()))
+                .Returns("8xLOxBtZp8");
+
+            format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
+                .Returns(ticket);
+
+            var token = new OpenIddictToken();
+
+            var manager = CreateTokenManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<DateTimeOffset?>(result: null));
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+
+                builder.Configure(options =>
+                {
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow ==
+                        new DateTimeOffset(2017, 01, 05, 00, 00, 00, TimeSpan.Zero));
+                    options.RefreshTokenLifetime = null;
+                    options.RefreshTokenFormat = format.Object;
+                });
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                RefreshToken = "8xLOxBtZp8"
+            });
+
+            // Assert
+            Assert.Null(response.RefreshToken);
+
+            Mock.Get(manager).Verify(mock => mock.ExtendAsync(token, null, It.IsAny<CancellationToken>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task ProcessSigninResponse_SetsExpirationDateToNullWhenLifetimeIsNull()
+        {
+            // Arrange
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(),
+                new AuthenticationProperties(),
+                OpenIddictServerDefaults.AuthenticationScheme);
+
+            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "60FFF7EA-F98E-437B-937E-5073CC313103");
+            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
+            ticket.SetScopes(OpenIdConnectConstants.Scopes.OpenId, OpenIdConnectConstants.Scopes.OfflineAccess);
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+
+            format.Setup(mock => mock.Protect(It.IsAny<AuthenticationTicket>()))
+                .Returns("8xLOxBtZp8");
+
+            format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
+                .Returns(ticket);
+
+            var token = new OpenIddictToken();
+
+            var manager = CreateTokenManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<DateTimeOffset?>(DateTimeOffset.Now + TimeSpan.FromDays(1)));
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+
+                builder.Configure(options =>
+                {
+                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow ==
+                        new DateTimeOffset(2017, 01, 05, 00, 00, 00, TimeSpan.Zero));
+                    options.RefreshTokenLifetime = null;
+                    options.RefreshTokenFormat = format.Object;
+                });
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                RefreshToken = "8xLOxBtZp8"
+            });
+
+            // Assert
+            Assert.Null(response.RefreshToken);
+
+            Mock.Get(manager).Verify(mock => mock.ExtendAsync(token, null, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]

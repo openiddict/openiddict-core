@@ -504,14 +504,14 @@ namespace OpenIddict.Server
                 {
                     // Note: the request cancellation token is deliberately not used here to ensure the caller
                     // cannot prevent this operation from being executed by resetting the TCP connection.
-                    var date = options.SystemClock.UtcNow + lifetime;
+                    var date = options.SystemClock.UtcNow + lifetime.Value;
                     await _tokenManager.ExtendAsync(token, date);
 
                     _logger.LogInformation("The expiration date of the refresh token '{Identifier}' " +
                                            "was automatically updated: {Date}.", identifier, date);
                 }
 
-                else
+                else if (await _tokenManager.GetExpirationDateAsync(token) != null)
                 {
                     // Note: the request cancellation token is deliberately not used here to ensure the caller
                     // cannot prevent this operation from being executed by resetting the TCP connection.

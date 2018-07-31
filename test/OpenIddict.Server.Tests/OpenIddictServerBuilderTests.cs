@@ -602,6 +602,22 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void SetAccessTokenLifetime_AccessTokenLifetimeCanBeSetToNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetAccessTokenLifetime(null);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Null(options.AccessTokenLifetime);
+        }
+
+        [Fact]
         public void SetAuthorizationCodeLifetime_DefaultAuthorizationCodeLifetimeIsReplaced()
         {
             // Arrange
@@ -615,6 +631,22 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Equal(TimeSpan.FromMinutes(42), options.AuthorizationCodeLifetime);
+        }
+
+        [Fact]
+        public void SetAuthorizationCodeLifetime_AuthorizationCodeLifetimeCanBeSetToNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetAuthorizationCodeLifetime(null);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Null(options.AuthorizationCodeLifetime);
         }
 
         [Fact]
@@ -634,6 +666,22 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void SetIdentityTokenLifetime_IdentityTokenLifetimeCanBeSetToNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetIdentityTokenLifetime(null);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Null(options.IdentityTokenLifetime);
+        }
+
+        [Fact]
         public void SetRefreshTokenLifetime_DefaultRefreshTokenLifetimeIsReplaced()
         {
             // Arrange
@@ -647,6 +695,22 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Equal(TimeSpan.FromMinutes(42), options.RefreshTokenLifetime);
+        }
+
+        [Fact]
+        public void SetRefreshTokenLifetime_RefreshTokenLifetimeCanBeSetToNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetRefreshTokenLifetime(null);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Null(options.RefreshTokenLifetime);
         }
 
         [Fact]

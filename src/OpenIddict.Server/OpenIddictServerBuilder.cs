@@ -701,29 +701,32 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a new access token by making a grant_type=refresh_token token request
         /// or a prompt=none authorization request, depending on the selected flow.
         /// Using long-lived access tokens or tokens that never expire is not recommended.
+        /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
         /// </summary>
         /// <param name="lifetime">The access token lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAccessTokenLifetime(TimeSpan lifetime)
+        public OpenIddictServerBuilder SetAccessTokenLifetime([CanBeNull] TimeSpan? lifetime)
             => Configure(options => options.AccessTokenLifetime = lifetime);
 
         /// <summary>
         /// Sets the authorization code lifetime, after which client applications
         /// are unable to send a grant_type=authorization_code token request.
         /// Using short-lived authorization codes is strongly recommended.
+        /// While discouraged, <c>null</c> can be specified to issue codes that never expire.
         /// </summary>
         /// <param name="lifetime">The authorization code lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAuthorizationCodeLifetime(TimeSpan lifetime)
+        public OpenIddictServerBuilder SetAuthorizationCodeLifetime([CanBeNull] TimeSpan? lifetime)
             => Configure(options => options.AuthorizationCodeLifetime = lifetime);
 
         /// <summary>
         /// Sets the identity token lifetime, after which client
         /// applications should refuse processing identity tokens.
+        /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
         /// </summary>
         /// <param name="lifetime">The identity token lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetIdentityTokenLifetime(TimeSpan lifetime)
+        public OpenIddictServerBuilder SetIdentityTokenLifetime([CanBeNull] TimeSpan? lifetime)
             => Configure(options => options.IdentityTokenLifetime = lifetime);
 
         /// <summary>
@@ -731,10 +734,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a new authorization from the user. When sliding expiration is enabled,
         /// a new refresh token is always issued to the client application,
         /// which prolongs the validity period of the refresh token.
+        /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
         /// </summary>
         /// <param name="lifetime">The refresh token lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetRefreshTokenLifetime(TimeSpan lifetime)
+        public OpenIddictServerBuilder SetRefreshTokenLifetime([CanBeNull] TimeSpan? lifetime)
             => Configure(options => options.RefreshTokenLifetime = lifetime);
 
         /// <summary>
