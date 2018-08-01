@@ -85,9 +85,19 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(app));
             }
 
+            var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictServerOptions>>().Value;
+            if (options.Provider == null || options.Provider.GetType() != typeof(OpenIddictServerProvider))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("OpenIddict can only be used with its built-in server provider.")
+                    .AppendLine("This error may indicate that 'OpenIddictServerOptions.Provider' was manually set.")
+                    .Append("To execute custom request handling logic, consider registering an event handler using ")
+                    .Append("the generic 'services.AddOpenIddict().AddServer().AddEventHandler()' method.")
+                    .ToString());
+            }
+
             // When no distributed cache has been registered in the options, use the
             // global instance registered in the dependency injection container.
-            var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictServerOptions>>().Value;
             if (options.Cache == null)
             {
                 options.Cache = app.ApplicationServices.GetRequiredService<IDistributedCache>();

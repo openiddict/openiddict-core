@@ -5,6 +5,9 @@
  */
 
 using System;
+using System.Text;
+using AspNet.Security.OAuth.Validation;
+using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -81,6 +84,63 @@ namespace OpenIddict.Validation.Tests
             Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
                                                  service.ServiceType == typeof(IOpenIddictValidationEventService) &&
                                                  service.ImplementationType == typeof(OpenIddictValidationEventService));
+        }
+
+        [Fact]
+        public void AddValidation_CanBeSafelyInvokedMultipleTimes()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act and assert
+            builder.AddValidation();
+            builder.AddValidation();
+            builder.AddValidation();
+        }
+
+        [Fact]
+        public void UseOpenIddictValidation_ThrowsAnExceptionWhenEventsAreNull()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOpenIddict()
+                .AddValidation()
+                    .Configure(options => options.Events = null);
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictValidation());
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in validation provider.")
+                .AppendLine("This error may indicate that 'OpenIddictValidationOptions.Events' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddValidation().AddEventHandler()' method.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictValidation_ThrowsAnExceptionWhenEventsTypeIsIncompatible()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOpenIddict()
+                .AddValidation()
+                    .Configure(options => options.Events = new OAuthValidationEvents());
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictValidation());
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in validation provider.")
+                .AppendLine("This error may indicate that 'OpenIddictValidationOptions.Events' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddValidation().AddEventHandler()' method.")
+                .ToString(), exception.Message);
         }
     }
 }

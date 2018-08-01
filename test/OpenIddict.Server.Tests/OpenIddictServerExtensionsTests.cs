@@ -8,6 +8,7 @@ using System;
 using System.Reflection;
 using System.Text;
 using AspNet.Security.OpenIdConnect.Primitives;
+using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http;
@@ -104,6 +105,79 @@ namespace OpenIddict.Server.Tests
             Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
                                                  service.ServiceType == typeof(IOpenIddictServerEventService) &&
                                                  service.ImplementationType == typeof(OpenIddictServerEventService));
+        }
+
+        [Fact]
+        public void AddServer_CanBeSafelyInvokedMultipleTimes()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictBuilder(services);
+
+            // Act and assert
+            builder.AddServer();
+            builder.AddServer();
+            builder.AddServer();
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenProviderIsNull()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .Configure(options => options.Provider = null);
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in server provider.")
+                .AppendLine("This error may indicate that 'OpenIddictServerOptions.Provider' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddServer().AddEventHandler()' method.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenProviderTypeIsIncompatible()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .Configure(options => options.Provider = new OpenIdConnectServerProvider());
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in server provider.")
+                .AppendLine("This error may indicate that 'OpenIddictServerOptions.Provider' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddServer().AddEventHandler()' method.")
+                .ToString(), exception.Message);
         }
 
         [Fact]

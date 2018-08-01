@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -84,6 +85,16 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictValidationOptions>>().Value;
+            if (options.Events == null || options.Events.GetType() != typeof(OpenIddictValidationProvider))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("OpenIddict can only be used with its built-in validation provider.")
+                    .AppendLine("This error may indicate that 'OpenIddictValidationOptions.Events' was manually set.")
+                    .Append("To execute custom request handling logic, consider registering an event handler using ")
+                    .Append("the generic 'services.AddOpenIddict().AddValidation().AddEventHandler()' method.")
+                    .ToString());
+            }
+
             if (options.DataProtectionProvider == null)
             {
                 options.DataProtectionProvider = app.ApplicationServices.GetDataProtectionProvider();
