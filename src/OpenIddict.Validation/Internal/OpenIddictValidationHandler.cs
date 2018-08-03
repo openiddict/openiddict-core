@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.ComponentModel;
 using System.Text.Encodings.Web;
 using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
@@ -12,9 +11,13 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation.Internal
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    /// <summary>
+    /// Provides the logic necessary to extract and validate tokens from HTTP requests.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
+    /// </summary>
     public class OpenIddictValidationHandler : OAuthValidationHandler
     {
         public OpenIddictValidationHandler(

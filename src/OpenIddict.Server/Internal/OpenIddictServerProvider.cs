@@ -18,16 +18,17 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server.Internal
 {
     /// <summary>
     /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
+    public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         private readonly ILogger _logger;
-        private readonly IOpenIddictServerEventService _eventService;
+        private readonly OpenIddictServerEventService _eventService;
         private readonly IOpenIddictApplicationManager _applicationManager;
         private readonly IOpenIddictAuthorizationManager _authorizationManager;
         private readonly IOpenIddictScopeManager _scopeManager;
@@ -35,7 +36,7 @@ namespace OpenIddict.Server
 
         public OpenIddictServerProvider(
             [NotNull] ILogger<OpenIddictServerProvider> logger,
-            [NotNull] IOpenIddictServerEventService eventService,
+            [NotNull] OpenIddictServerEventService eventService,
             [NotNull] IOpenIddictApplicationManager applicationManager,
             [NotNull] IOpenIddictAuthorizationManager authorizationManager,
             [NotNull] IOpenIddictScopeManager scopeManager,

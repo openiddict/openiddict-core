@@ -33,7 +33,7 @@ using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using Xunit;
 
-namespace OpenIddict.Validation.Tests
+namespace OpenIddict.Validation.Internal.Tests
 {
     public class OpenIddictValidationProviderTests
     {
@@ -59,7 +59,8 @@ namespace OpenIddict.Validation.Tests
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("The core services must be registered when enabling reference tokens support.")
-                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
                 .ToString(), exception.Message);
         }
 
@@ -333,7 +334,8 @@ namespace OpenIddict.Validation.Tests
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("The core services must be registered when enabling authorization validation.")
-                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
                 .ToString(), exception.Message);
         }
 

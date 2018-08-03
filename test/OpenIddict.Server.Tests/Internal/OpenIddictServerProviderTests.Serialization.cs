@@ -18,7 +18,7 @@ using Moq;
 using OpenIddict.Abstractions;
 using Xunit;
 
-namespace OpenIddict.Server.Tests
+namespace OpenIddict.Server.Internal.Tests
 {
     public partial class OpenIddictServerProviderTests
     {

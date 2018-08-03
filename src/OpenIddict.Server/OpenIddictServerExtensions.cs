@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
+using OpenIddict.Server.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -38,18 +39,19 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<IOpenIddictServerEventService, OpenIddictServerEventService>();
+            builder.Services.TryAddScoped<OpenIddictServerEventService>();
             builder.Services.TryAddScoped<OpenIddictServerHandler>();
             builder.Services.TryAddScoped(provider =>
             {
                 InvalidOperationException CreateException() => new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the server handler.")
-                    .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                    .AppendLine("The core services must be registered when enabling the OpenIddict server handler.")
+                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                    .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
                     .ToString());
 
                 return new OpenIddictServerProvider(
                     provider.GetRequiredService<ILogger<OpenIddictServerProvider>>(),
-                    provider.GetRequiredService<IOpenIddictServerEventService>(),
+                    provider.GetRequiredService<OpenIddictServerEventService>(),
                     provider.GetService<IOpenIddictApplicationManager>() ?? throw CreateException(),
                     provider.GetService<IOpenIddictAuthorizationManager>() ?? throw CreateException(),
                     provider.GetService<IOpenIddictScopeManager>() ?? throw CreateException(),

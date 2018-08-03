@@ -19,9 +19,14 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server.Internal
 {
-    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
+    /// <summary>
+    /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
+    /// </summary>
+    public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         private async Task CreateAuthorizationAsync([NotNull] AuthenticationTicket ticket,
             [NotNull] OpenIddictServerOptions options, [NotNull] OpenIdConnectRequest request)

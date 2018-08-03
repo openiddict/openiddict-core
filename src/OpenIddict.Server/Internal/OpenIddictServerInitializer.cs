@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using AspNet.Security.OpenIdConnect.Primitives;
@@ -17,13 +16,13 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server.Internal
 {
     /// <summary>
-    /// Contains the methods required to ensure that the configuration
-    /// used by OpenIddict is in a consistent and valid state.
+    /// Contains the methods required to ensure that the OpenIddict server configuration is valid.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public class OpenIddictServerInitializer : IPostConfigureOptions<OpenIddictServerOptions>
     {
         private readonly IDistributedCache _cache;

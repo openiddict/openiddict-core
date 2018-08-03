@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenIddict.Validation.Internal;
 using Xunit;
 
 namespace OpenIddict.Validation.Tests
@@ -96,7 +97,7 @@ namespace OpenIddict.Validation.Tests
 
             // Assert
             Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                                 service.ServiceType == typeof(IOpenIddictValidationEventService) &&
+                                                 service.ServiceType == typeof(OpenIddictValidationEventService) &&
                                                  service.ImplementationType == typeof(OpenIddictValidationEventService));
         }
 

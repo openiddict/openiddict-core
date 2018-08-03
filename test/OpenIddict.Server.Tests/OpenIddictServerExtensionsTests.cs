@@ -13,6 +13,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenIddict.Server.Internal;
 using Xunit;
 
 namespace OpenIddict.Server.Tests
@@ -113,7 +114,7 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                                 service.ServiceType == typeof(IOpenIddictServerEventService) &&
+                                                 service.ServiceType == typeof(OpenIddictServerEventService) &&
                                                  service.ImplementationType == typeof(OpenIddictServerEventService));
         }
 
@@ -165,8 +166,9 @@ namespace OpenIddict.Server.Tests
             var exception = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredService<OpenIddictServerProvider>());
 
             Assert.Equal(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the server handler.")
-                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .AppendLine("The core services must be registered when enabling the OpenIddict server handler.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
                 .ToString(), exception.Message);
         }
 

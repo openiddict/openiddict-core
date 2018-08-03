@@ -1,15 +1,23 @@
-﻿using System;
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+ * See https://github.com/openiddict/openiddict-core for more information concerning
+ * the license and the contributors participating to this project.
+ */
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation.Internal
 {
     /// <summary>
-    /// Dispatches notifications by invoking the corresponding handlers.
+    /// Dispatches events by invoking the corresponding notification handlers.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
-    public class OpenIddictValidationEventService : IOpenIddictValidationEventService
+    public class OpenIddictValidationEventService
     {
         private readonly IServiceProvider _provider;
 

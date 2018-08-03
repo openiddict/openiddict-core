@@ -8,10 +8,12 @@ using System;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation.Internal
 {
     /// <summary>
     /// Defines a set of commonly used helpers.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
     internal static class OpenIddictValidationHelpers
     {

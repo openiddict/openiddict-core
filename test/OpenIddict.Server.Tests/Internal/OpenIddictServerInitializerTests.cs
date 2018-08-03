@@ -19,7 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace OpenIddict.Server.Tests
+namespace OpenIddict.Server.Internal.Tests
 {
     public class OpenIddictServerInitializerTests
     {

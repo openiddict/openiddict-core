@@ -5,20 +5,19 @@
  */
 
 using System;
-using System.ComponentModel;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation.Internal
 {
     /// <summary>
-    /// Contains the methods required to ensure that the configuration used by
-    /// the OpenIddict validation handler is in a consistent and valid state.
+    /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public class OpenIddictValidationInitializer : IPostConfigureOptions<OpenIddictValidationOptions>
     {
         private readonly IDataProtectionProvider _dataProtectionProvider;

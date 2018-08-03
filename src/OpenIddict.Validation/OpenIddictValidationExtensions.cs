@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Validation;
+using OpenIddict.Validation.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -37,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddLogging();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<IOpenIddictValidationEventService, OpenIddictValidationEventService>();
+            builder.Services.TryAddScoped<OpenIddictValidationEventService>();
             builder.Services.TryAddScoped<OpenIddictValidationHandler>();
             builder.Services.TryAddScoped<OpenIddictValidationProvider>();
 

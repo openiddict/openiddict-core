@@ -11,7 +11,7 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace OpenIddict.Server.Tests
+namespace OpenIddict.Server.Internal.Tests
 {
     public partial class OpenIddictServerProviderTests
     {

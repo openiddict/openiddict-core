@@ -16,9 +16,14 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Server.Internal
 {
-    public partial class OpenIddictServerProvider : OpenIdConnectServerProvider
+    /// <summary>
+    /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
+    /// </summary>
+    public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task ExtractTokenRequest([NotNull] ExtractTokenRequestContext context)
             => _eventService.PublishAsync(new OpenIddictServerEvents.ExtractTokenRequest(context));

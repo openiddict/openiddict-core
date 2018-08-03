@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.Extensions.Caching.Distributed;
+using OpenIddict.Server.Internal;
 
 namespace OpenIddict.Server
 {
