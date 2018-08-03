@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
+using OpenIddict.Server.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -42,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<IOpenIddictServerEventService, OpenIddictServerEventService>();
+            builder.Services.TryAddScoped<OpenIddictServerEventService>();
 
             return new OpenIddictServerBuilder(builder.Services);
         }

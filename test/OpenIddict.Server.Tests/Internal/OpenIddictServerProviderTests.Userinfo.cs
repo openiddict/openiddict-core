@@ -9,7 +9,7 @@ using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Xunit;
 
-namespace OpenIddict.Server.Tests
+namespace OpenIddict.Server.Internal.Tests
 {
     public partial class OpenIddictServerProviderTests
     {

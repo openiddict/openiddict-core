@@ -18,6 +18,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using OpenIddict.Server.Internal;
+using OpenIddict.Server.Internal.Tests;
 using Xunit;
 
 namespace OpenIddict.Server.Tests
@@ -103,7 +105,7 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                                 service.ServiceType == typeof(IOpenIddictServerEventService) &&
+                                                 service.ServiceType == typeof(OpenIddictServerEventService) &&
                                                  service.ImplementationType == typeof(OpenIddictServerEventService));
         }
 

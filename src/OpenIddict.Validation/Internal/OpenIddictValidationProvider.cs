@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using AspNet.Security.OAuth.Validation;
@@ -14,20 +13,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 
-namespace OpenIddict.Validation
+namespace OpenIddict.Validation.Internal
 {
     /// <summary>
-    /// Provides the logic necessary to extract, validate and handle OAuth2 requests.
+    /// Provides the logic necessary to extract and validate tokens from HTTP requests.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public class OpenIddictValidationProvider : OAuthValidationEvents
+    public sealed class OpenIddictValidationProvider : OAuthValidationEvents
     {
         public override Task ApplyChallenge([NotNull] ApplyChallengeContext context)
-            => context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+            => context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
                 .PublishAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
 
         public override Task CreateTicket([NotNull] CreateTicketContext context)
-            => context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+            => context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
                 .PublishAsync(new OpenIddictValidationEvents.CreateTicket(context));
 
         public override async Task DecryptToken([NotNull] DecryptTokenContext context)
@@ -42,7 +42,8 @@ namespace OpenIddict.Validation
                 {
                     throw new InvalidOperationException(new StringBuilder()
                         .AppendLine("The core services must be registered when enabling reference tokens support.")
-                        .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                        .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                        .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
                         .ToString());
                 }
 
@@ -102,12 +103,12 @@ namespace OpenIddict.Validation
                 context.HandleResponse();
             }
 
-            await context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+            await context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
                 .PublishAsync(new OpenIddictValidationEvents.DecryptToken(context));
         }
 
         public override Task RetrieveToken([NotNull] RetrieveTokenContext context)
-            => context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+            => context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
                 .PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
 
         public override async Task ValidateToken([NotNull] ValidateTokenContext context)
@@ -122,7 +123,8 @@ namespace OpenIddict.Validation
                 {
                     throw new InvalidOperationException(new StringBuilder()
                         .AppendLine("The core services must be registered when enabling authorization validation.")
-                        .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                        .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                        .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
                         .ToString());
                 }
 
@@ -143,7 +145,7 @@ namespace OpenIddict.Validation
                 }
             }
 
-            await context.HttpContext.RequestServices.GetRequiredService<IOpenIddictValidationEventService>()
+            await context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
                 .PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
         }
     }

@@ -1137,7 +1137,7 @@ namespace OpenIddict.Core
             => UpdateAsync((TAuthorization) authorization, cancellationToken);
 
         Task IOpenIddictAuthorizationManager.UpdateAsync(object authorization, OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
-            => UpdateAsync((TAuthorization) authorization, cancellationToken);
+            => UpdateAsync((TAuthorization) authorization, descriptor, cancellationToken);
 
         Task<ImmutableArray<ValidationResult>> IOpenIddictAuthorizationManager.ValidateAsync(object authorization, CancellationToken cancellationToken)
             => ValidateAsync((TAuthorization) authorization, cancellationToken);
