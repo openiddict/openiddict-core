@@ -59,7 +59,7 @@ namespace Mvc.Server
             {
                 return View("Error", new ErrorViewModel
                 {
-                    Error = OpenIdConnectConstants.Errors.InvalidClient,
+                    Error = OpenIddictConstants.Errors.InvalidClient,
                     ErrorDescription = "Details concerning the calling client application cannot be found in the database"
                 });
             }
@@ -88,7 +88,7 @@ namespace Mvc.Server
             {
                 return View("Error", new ErrorViewModel
                 {
-                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    Error = OpenIddictConstants.Errors.ServerError,
                     ErrorDescription = "An internal error has occurred"
                 });
             }
@@ -159,7 +159,7 @@ namespace Mvc.Server
                 {
                     return BadRequest(new OpenIdConnectResponse
                     {
-                        Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                        Error = OpenIddictConstants.Errors.InvalidGrant,
                         ErrorDescription = "The username/password couple is invalid."
                     });
                 }
@@ -204,7 +204,7 @@ namespace Mvc.Server
 
                     return BadRequest(new OpenIdConnectResponse
                     {
-                        Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                        Error = OpenIddictConstants.Errors.InvalidGrant,
                         ErrorDescription = "The username/password couple is invalid."
                     });
                 }
@@ -235,7 +235,7 @@ namespace Mvc.Server
                 {
                     return BadRequest(new OpenIdConnectResponse
                     {
-                        Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                        Error = OpenIddictConstants.Errors.InvalidGrant,
                         ErrorDescription = "The token is no longer valid."
                     });
                 }
@@ -245,7 +245,7 @@ namespace Mvc.Server
                 {
                     return BadRequest(new OpenIdConnectResponse
                     {
-                        Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                        Error = OpenIddictConstants.Errors.InvalidGrant,
                         ErrorDescription = "The user is no longer allowed to sign in."
                     });
                 }
@@ -259,7 +259,7 @@ namespace Mvc.Server
 
             return BadRequest(new OpenIdConnectResponse
             {
-                Error = OpenIdConnectConstants.Errors.UnsupportedGrantType,
+                Error = OpenIddictConstants.Errors.UnsupportedGrantType,
                 ErrorDescription = "The specified grant type is not supported."
             });
         }
@@ -302,27 +302,27 @@ namespace Mvc.Server
 
             switch (claim.Type)
             {
-                case OpenIdConnectConstants.Claims.Name:
-                    yield return OpenIdConnectConstants.Destinations.AccessToken;
+                case OpenIddictConstants.Claims.Name:
+                    yield return OpenIddictConstants.Destinations.AccessToken;
 
-                    if (ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
-                        yield return OpenIdConnectConstants.Destinations.IdentityToken;
-
-                    yield break;
-
-                case OpenIdConnectConstants.Claims.Email:
-                    yield return OpenIdConnectConstants.Destinations.AccessToken;
-
-                    if (ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
-                        yield return OpenIdConnectConstants.Destinations.IdentityToken;
+                    if (ticket.HasScope(OpenIddictConstants.Scopes.Profile))
+                        yield return OpenIddictConstants.Destinations.IdentityToken;
 
                     yield break;
 
-                case OpenIdConnectConstants.Claims.Role:
-                    yield return OpenIdConnectConstants.Destinations.AccessToken;
+                case OpenIddictConstants.Claims.Email:
+                    yield return OpenIddictConstants.Destinations.AccessToken;
 
-                    if (ticket.HasScope(OpenIddictConstants.Claims.Roles))
-                        yield return OpenIdConnectConstants.Destinations.IdentityToken;
+                    if (ticket.HasScope(OpenIddictConstants.Scopes.Email))
+                        yield return OpenIddictConstants.Destinations.IdentityToken;
+
+                    yield break;
+
+                case OpenIddictConstants.Claims.Role:
+                    yield return OpenIddictConstants.Destinations.AccessToken;
+
+                    if (ticket.HasScope(OpenIddictConstants.Scopes.Roles))
+                        yield return OpenIddictConstants.Destinations.IdentityToken;
 
                     yield break;
 
@@ -330,7 +330,7 @@ namespace Mvc.Server
                 case "AspNet.Identity.SecurityStamp": yield break;
 
                 default:
-                    yield return OpenIdConnectConstants.Destinations.AccessToken;
+                    yield return OpenIddictConstants.Destinations.AccessToken;
                     yield break;
             }
         }
