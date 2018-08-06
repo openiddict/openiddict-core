@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Abstractions\OpenIddict.Abstractions.csproj" />
     <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
     <ProjectReference Include="..\OpenIddict.Mvc\OpenIddict.Mvc.csproj" />
     <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
