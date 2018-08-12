@@ -73,9 +73,9 @@ namespace OpenIddict.MongoDb.Tests
             var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act and assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async delegate
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
             {
-                await Task.WhenAll(
+                return Task.WhenAll(
                     context.GetDatabaseAsync(CancellationToken.None).AsTask(),
                     context.GetDatabaseAsync(CancellationToken.None).AsTask(),
                     context.GetDatabaseAsync(CancellationToken.None).AsTask(),

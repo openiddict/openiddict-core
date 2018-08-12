@@ -6,20 +6,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Moq;
 using Xunit;
 
-namespace OpenIddict.Mvc.Tests
+namespace OpenIddict.Mvc.Internal.Tests
 {
     public class OpenIddictMvcModelBinderProviderTests
     {

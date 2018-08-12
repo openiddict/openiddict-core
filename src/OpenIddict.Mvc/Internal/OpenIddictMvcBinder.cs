@@ -14,17 +14,24 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace OpenIddict.Mvc
+namespace OpenIddict.Mvc.Internal
 {
     /// <summary>
     /// Represents an ASP.NET Core MVC model binder that is able to bind
-    /// <see cref="OpenIdConnectRequest"/> and
-    /// <see cref="OpenIdConnectResponse"/> instances.
+    /// <see cref="OpenIdConnectRequest"/> and <see cref="OpenIdConnectResponse"/> instances.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
     public class OpenIddictMvcBinder : IModelBinder
     {
         private readonly IOptionsMonitor<OpenIddictMvcOptions> _options;
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="OpenIddictMvcBinder"/> class.
+        /// <see cref="OpenIdConnectRequest"/> and <see cref="OpenIdConnectResponse"/> instances.
+        /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future minor releases.
+        /// </summary>
         public OpenIddictMvcBinder([NotNull] IOptionsMonitor<OpenIddictMvcOptions> options)
         {
             _options = options;

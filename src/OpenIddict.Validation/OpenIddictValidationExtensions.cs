@@ -16,6 +16,9 @@ using OpenIddict.Validation.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Exposes extensions allowing to register the OpenIddict validation services.
+    /// </summary>
     public static class OpenIddictValidationExtensions
     {
         /// <summary>
@@ -62,8 +65,9 @@ namespace Microsoft.Extensions.DependencyInjection
                     {
                         throw new InvalidOperationException(new StringBuilder()
                             .AppendLine("The OpenIddict validation handler cannot be registered as an authentication scheme.")
-                            .AppendLine("This may indicate that an instance of the OAuth validation handler was registered.")
-                            .Append("Make sure that 'services.AddAuthentication().AddOAuthValidation()' is not used.")
+                            .AppendLine("This may indicate that an instance of the OAuth validation or JWT bearer handler was registered.")
+                            .Append("Make sure that neither 'services.AddAuthentication().AddOAuthValidation()' nor ")
+                            .Append("'services.AddAuthentication().AddJwtBearer()' are called from 'ConfigureServices'.")
                             .ToString());
                     }
 

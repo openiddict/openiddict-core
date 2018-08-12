@@ -14,6 +14,9 @@ using OpenIddict.EntityFrameworkCore.Models;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Exposes extensions allowing to register the OpenIddict Entity Framework Core services.
+    /// </summary>
     public static class OpenIddictEntityFrameworkCoreExtensions
     {
         /// <summary>

@@ -190,8 +190,9 @@ namespace OpenIddict.Validation.Tests
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("The OpenIddict validation handler cannot be registered as an authentication scheme.")
-                .AppendLine("This may indicate that an instance of the OAuth validation handler was registered.")
-                .Append("Make sure that 'services.AddAuthentication().AddOAuthValidation()' is not used.")
+                .AppendLine("This may indicate that an instance of the OAuth validation or JWT bearer handler was registered.")
+                .Append("Make sure that neither 'services.AddAuthentication().AddOAuthValidation()' nor ")
+                .Append("'services.AddAuthentication().AddJwtBearer()' are called from 'ConfigureServices'.")
                 .ToString(), exception.Message);
         }
 

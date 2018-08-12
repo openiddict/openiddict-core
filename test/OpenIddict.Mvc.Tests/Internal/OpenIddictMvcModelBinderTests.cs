@@ -19,7 +19,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace OpenIddict.Mvc.Tests
+namespace OpenIddict.Mvc.Internal.Tests
 {
     public class OpenIddictMvcModelBinderTests
     {

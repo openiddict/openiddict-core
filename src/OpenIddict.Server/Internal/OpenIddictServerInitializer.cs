@@ -30,6 +30,8 @@ namespace OpenIddict.Server.Internal
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictServerInitializer"/> class.
+        /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future minor releases.
         /// </summary>
         public OpenIddictServerInitializer(
             [NotNull] IDistributedCache cache,

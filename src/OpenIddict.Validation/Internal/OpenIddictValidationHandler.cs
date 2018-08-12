@@ -20,6 +20,11 @@ namespace OpenIddict.Validation.Internal
     /// </summary>
     public class OpenIddictValidationHandler : OAuthValidationHandler
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="OpenIddictValidationHandler"/> class.
+        /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future minor releases.
+        /// </summary>
         public OpenIddictValidationHandler(
             [NotNull] IOptionsMonitor<OpenIddictValidationOptions> options,
             [NotNull] ILoggerFactory logger,

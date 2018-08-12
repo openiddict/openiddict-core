@@ -10,11 +10,13 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
-namespace OpenIddict.Mvc
+namespace OpenIddict.Mvc.Internal
 {
     /// <summary>
-    /// Represents an ASP.NET Core MVC model binder provider that is
-    /// able to provide instances of <see cref="OpenIddictMvcBinder"/>.
+    /// Represents an ASP.NET Core MVC model binder provider that is able to provide instances
+    /// of <see cref="OpenIddictMvcBinder"/> for the OpenID Connect server primitives.
+    /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
     public class OpenIddictMvcBinderProvider : IModelBinderProvider
     {
