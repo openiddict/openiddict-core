@@ -17,6 +17,9 @@ using OpenIddict.Validation.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Exposes extensions allowing to register the OpenIddict validation services.
+    /// </summary>
     public static class OpenIddictValidationExtensions
     {
         /// <summary>

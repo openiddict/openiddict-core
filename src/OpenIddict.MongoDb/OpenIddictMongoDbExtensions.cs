@@ -13,6 +13,9 @@ using OpenIddict.MongoDb.Models;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Exposes extensions allowing to register the OpenIddict MongoDB services.
+    /// </summary>
     public static class OpenIddictMongoDbExtensions
     {
         /// <summary>

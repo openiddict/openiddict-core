@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace OpenIddict.Mvc.Tests
+namespace OpenIddict.Mvc.Internal.Tests
 {
     public class OpenIddictMvcModelBinderTests
     {

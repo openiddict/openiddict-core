@@ -22,6 +22,9 @@ using OpenIddict.Server.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Exposes extensions allowing to register the OpenIddict server services.
+    /// </summary>
     public static class OpenIddictServerExtensions
     {
         /// <summary>

@@ -14,6 +14,9 @@ using OpenIddict.Core;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Exposes extensions allowing to register the OpenIddict core services.
+    /// </summary>
     public static class OpenIddictCoreExtensions
     {
         /// <summary>

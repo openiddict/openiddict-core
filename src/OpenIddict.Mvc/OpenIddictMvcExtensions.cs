@@ -7,10 +7,13 @@
 using System;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Mvc;
+using OpenIddict.Mvc.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Exposes extensions allowing to register the OpenIddict MVC services.
+    /// </summary>
     public static class OpenIddictMvcExtensions
     {
         /// <summary>
