@@ -13,7 +13,7 @@ OpenIddict is based on
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)** and the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)**. You can also create your own custom grant types.
 
-Note: OpenIddict natively supports **[Entity Framework Core](https://github.com/aspnet/EntityFramework)** and **[Entity Framework 6](https://github.com/aspnet/EntityFramework6)** out-of-the-box, but you can also provide your own stores.
+Note: OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/packages/OpenIddict.EntityFrameworkCore)**, **[Entity Framework 6](https://www.nuget.org/packages/OpenIddict.EntityFramework)** and **[MongoDB](https://www.nuget.org/packages/OpenIddict.MongoDb)** out-of-the-box, but you can also provide your own stores.
 
 > Note: **the OpenIddict 2.x packages are only compatible with ASP.NET Core 2.x**.
 > If your application targets ASP.NET Core 1.x, use the OpenIddict 1.x packages.

@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using AspNet.Security.OAuth.Validation;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Models;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
+using OpenIddict.Validation;
 
 namespace Mvc.Server.Controllers
 {
@@ -22,7 +22,7 @@ namespace Mvc.Server.Controllers
 
         //
         // GET: /api/userinfo
-        [Authorize(AuthenticationSchemes = OAuthValidationDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
         [HttpGet("userinfo"), Produces("application/json")]
         public async Task<IActionResult> Userinfo()
         {

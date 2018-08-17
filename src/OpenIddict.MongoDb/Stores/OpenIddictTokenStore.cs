@@ -68,7 +68,7 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
-            return await collection.CountAsync(FilterDefinition<TToken>.Empty);
+            return await collection.CountDocumentsAsync(FilterDefinition<TToken>.Empty);
         }
 
         /// <summary>

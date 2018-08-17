@@ -87,35 +87,35 @@ namespace OpenIddict.MongoDb
                     // Note: the cancellation token passed as a parameter is deliberately not used here to ensure
                     // the cancellation of a single store operation doesn't prevent the indexes from being created.
                     var applications = database.GetCollection<OpenIddictApplication>(options.ApplicationsCollectionName);
-                    await applications.Indexes.CreateOneAsync(
+                    await applications.Indexes.CreateOneAsync(new CreateIndexModel<OpenIddictApplication>(
                         Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.ClientId),
                         new CreateIndexOptions
                         {
                             Unique = true
-                        });
+                        }));
 
-                    await applications.Indexes.CreateOneAsync(
-                        Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.PostLogoutRedirectUris));
+                    await applications.Indexes.CreateOneAsync(new CreateIndexModel<OpenIddictApplication>(
+                        Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.PostLogoutRedirectUris)));
 
-                    await applications.Indexes.CreateOneAsync(
-                        Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.RedirectUris));
+                    await applications.Indexes.CreateOneAsync(new CreateIndexModel<OpenIddictApplication>(
+                        Builders<OpenIddictApplication>.IndexKeys.Ascending(application => application.RedirectUris)));
 
                     var scopes = database.GetCollection<OpenIddictScope>(options.ScopesCollectionName);
-                    await scopes.Indexes.CreateOneAsync(
+                    await scopes.Indexes.CreateOneAsync(new CreateIndexModel<OpenIddictScope>(
                         Builders<OpenIddictScope>.IndexKeys.Ascending(scope => scope.Name),
                         new CreateIndexOptions
                         {
                             Unique = true
-                        });
+                        }));
 
                     var tokens = database.GetCollection<OpenIddictToken>(options.TokensCollectionName);
-                    await tokens.Indexes.CreateOneAsync(
+                    await tokens.Indexes.CreateOneAsync(new CreateIndexModel<OpenIddictToken>(
                         Builders<OpenIddictToken>.IndexKeys.Ascending(token => token.ReferenceId),
                         new CreateIndexOptions<OpenIddictToken>
                         {
                             PartialFilterExpression = Builders<OpenIddictToken>.Filter.Exists(token => token.ReferenceId),
                             Unique = true
-                        });
+                        }));
 
                     return _database = database;
                 }

@@ -8,11 +8,11 @@
     <CryptoHelperVersion>3.0.2</CryptoHelperVersion>
     <DataAnnotationsVersion>4.4.0</DataAnnotationsVersion>
     <EntityFrameworkVersion>6.1.3</EntityFrameworkVersion>
-    <JetBrainsVersion>10.3.0</JetBrainsVersion>
+    <JetBrainsVersion>2018.2.1</JetBrainsVersion>
     <JsonNetVersion>10.0.2</JsonNetVersion>
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
-    <ImmutableCollectionsVersion>1.4.0</ImmutableCollectionsVersion>
-    <MongoDbVersion>2.6.1</MongoDbVersion>
+    <ImmutableCollectionsVersion>1.5.0</ImmutableCollectionsVersion>
+    <MongoDbVersion>2.7.0</MongoDbVersion>
     <MoqVersion>4.7.63</MoqVersion>
     <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
     <NetStandardLibraryNetFrameworkVersion>2.0.0</NetStandardLibraryNetFrameworkVersion>

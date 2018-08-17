@@ -48,7 +48,7 @@ namespace OpenIddict.MongoDb.Tests
             var provider = services.BuildServiceProvider();
 
             var manager = new Mock<IMongoIndexManager<OpenIddictApplication>>();
-            manager.Setup(mock => mock.CreateOneAsync(It.IsAny<IndexKeysDefinition<OpenIddictApplication>>(), It.IsAny<CreateIndexOptions>(), It.IsAny<CancellationToken>()))
+            manager.Setup(mock => mock.CreateOneAsync(It.IsAny<CreateIndexModel<OpenIddictApplication>>(), It.IsAny<CreateOneIndexOptions>(), It.IsAny<CancellationToken>()))
                 .Returns(async delegate
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(1000));
