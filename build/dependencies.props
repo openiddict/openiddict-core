@@ -9,9 +9,9 @@
     <DataAnnotationsVersion>4.1.0</DataAnnotationsVersion>
     <EntityFrameworkVersion>6.1.3</EntityFrameworkVersion>
     <ImmutableCollectionsVersion>1.2.0</ImmutableCollectionsVersion>
-    <JetBrainsVersion>10.3.0</JetBrainsVersion>
+    <JetBrainsVersion>2018.2.1</JetBrainsVersion>
     <JsonNetVersion>9.0.1</JsonNetVersion>
-    <MongoDbVersion>2.6.1</MongoDbVersion>
+    <MongoDbVersion>2.7.0</MongoDbVersion>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <MoqVersion>4.7.63</MoqVersion>
     <QueryableVersion>4.0.1</QueryableVersion>
