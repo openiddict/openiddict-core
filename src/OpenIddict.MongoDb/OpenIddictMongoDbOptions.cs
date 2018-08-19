@@ -31,6 +31,11 @@ namespace OpenIddict.MongoDb
         public IMongoDatabase Database { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether automatic initialization should be disabled.
+        /// </summary>
+        public bool DisableInitialization { get; set; }
+
+        /// <summary>
         /// Gets or sets the maximal duration given to the MongoDB client to initialize
         /// the database and register the indexes used by the OpenIddict entities.
         /// </summary>
