@@ -162,6 +162,31 @@ namespace OpenIddict.MongoDb.Tests
         }
 
         [Fact]
+        public async Task GetDatabaseAsync_SkipsInitializationWhenDisabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var provider = services.BuildServiceProvider();
+
+            var database = GetDatabase();
+            var options = Options.Create(new OpenIddictMongoDbOptions
+            {
+                Database = database.Object,
+                DisableInitialization = true
+            });
+
+            var context = new OpenIddictMongoDbContext(options, provider);
+
+            // Act
+            await context.GetDatabaseAsync(CancellationToken.None);
+
+            // Assert
+            database.Verify(mock => mock.GetCollection<OpenIddictApplication>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Never());
+            database.Verify(mock => mock.GetCollection<OpenIddictScope>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Never());
+            database.Verify(mock => mock.GetCollection<OpenIddictToken>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Never());
+        }
+
+        [Fact]
         public async Task GetDatabaseAsync_ReturnsCachedDatabase()
         {
             // Arrange

@@ -58,6 +58,14 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Disables initialization so that the MongoDB indexes used by OpenIddict
+        /// are not automatically created the first time the stores are invoked.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
+        public OpenIddictMongoDbBuilder DisableInitialization()
+            => Configure(options => options.DisableInitialization = true);
+
+        /// <summary>
         /// Configures OpenIddict to use the specified entity as the default application entity.
         /// </summary>
         /// <returns>The <see cref="OpenIddictMongoDbBuilder"/>.</returns>
