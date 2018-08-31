@@ -7,7 +7,6 @@
 using System;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using OpenIddict.MongoDb;
 using OpenIddict.MongoDb.Models;
 

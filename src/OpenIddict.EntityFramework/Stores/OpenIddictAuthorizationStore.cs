@@ -335,6 +335,50 @@ namespace OpenIddict.EntityFramework
         }
 
         /// <summary>
+        /// Retrieves the authorizations matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the authorization.</param>
+        /// <param name="client">The client associated with the authorization.</param>
+        /// <param name="status">The authorization status.</param>
+        /// <param name="type">The authorization type.</param>
+        /// <param name="scopes">The minimal scopes associated with the authorization.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the criteria.
+        /// </returns>
+        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, [NotNull] string type,
+            ImmutableArray<string> scopes, CancellationToken cancellationToken)
+        {
+            var authorizations = await FindAsync(subject, client, status, type, cancellationToken);
+            if (authorizations.IsEmpty)
+            {
+                return ImmutableArray.Create<TAuthorization>();
+            }
+
+            var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
+
+            foreach (var authorization in authorizations)
+            {
+                async Task<bool> HasScopesAsync()
+                    => (await GetScopesAsync(authorization, cancellationToken))
+                        .ToImmutableHashSet(StringComparer.Ordinal)
+                        .IsSupersetOf(scopes);
+
+                if (await HasScopesAsync())
+                {
+                    builder.Add(authorization);
+                }
+            }
+
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
+        }
+
+        /// <summary>
         /// Retrieves an authorization using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the authorization.</param>

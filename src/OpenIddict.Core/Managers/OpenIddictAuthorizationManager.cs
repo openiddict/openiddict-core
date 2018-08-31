@@ -279,7 +279,7 @@ namespace OpenIddict.Core
         /// </returns>
         public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
             [NotNull] string subject, [NotNull] string client,
-            [NotNull] string status, CancellationToken cancellationToken)
+            [NotNull] string status, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(subject))
             {
@@ -400,17 +400,42 @@ namespace OpenIddict.Core
             [NotNull] string status, [NotNull] string type,
             ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
         {
-            var authorizations = await FindAsync(subject, client, status, type, cancellationToken);
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+            }
+
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var authorizations = await Store.FindAsync(subject, client, status, type, scopes, cancellationToken);
             if (authorizations.IsEmpty)
             {
                 return ImmutableArray.Create<TAuthorization>();
             }
-            
+
             var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
 
             foreach (var authorization in authorizations)
             {
-                if (await HasScopesAsync(authorization, scopes, cancellationToken))
+                if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal)
+                    && await HasScopesAsync(authorization, scopes, cancellationToken))
                 {
                     builder.Add(authorization);
                 }
@@ -888,13 +913,6 @@ namespace OpenIddict.Core
             if (!string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
             {
                 await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Revoked, cancellationToken);
-
-                var results = await ValidateAsync(authorization, cancellationToken);
-                if (results.Any(result => result != ValidationResult.Success))
-                {
-                    throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, authorization);
-                }
-
                 await UpdateAsync(authorization, cancellationToken);
             }
         }

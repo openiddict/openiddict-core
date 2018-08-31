@@ -184,7 +184,7 @@ namespace OpenIddict.Server.Internal
             // Note: make sure the foreach statement iterates on a copy of the ticket
             // as the property collection is modified when the property is removed.
             var parameters = GetParameters(context.HttpContext, context.Request, context.Ticket.Properties);
-            foreach (var parameter in parameters.ToArray())
+            foreach (var parameter in parameters.ToList())
             {
                 context.Response.AddParameter(parameter.Item2, parameter.Item3);
                 context.Ticket.RemoveProperty(parameter.Item1);

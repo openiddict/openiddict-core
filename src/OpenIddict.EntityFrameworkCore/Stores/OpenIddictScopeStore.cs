@@ -197,7 +197,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             var key = ConvertIdentifierFromString(identifier);
 
-            return (from scope in Scopes
+            return (from scope in Scopes.AsTracking()
                     where scope.Id.Equals(key)
                     select scope).FirstOrDefaultAsync(cancellationToken);
         }
@@ -218,7 +218,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
             }
 
-            return (from scope in Scopes
+            return (from scope in Scopes.AsTracking()
                     where scope.Name == name
                     select scope).FirstOrDefaultAsync(cancellationToken);
         }
@@ -241,7 +241,7 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return ImmutableArray.CreateRange(
-                await (from scope in Scopes
+                await (from scope in Scopes.AsTracking()
                        where names.Contains(scope.Name)
                        select scope).ToListAsync(cancellationToken));
         }
@@ -268,7 +268,7 @@ namespace OpenIddict.EntityFrameworkCore
             // are retrieved, a second pass is made to ensure only valid elements are returned.
             // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            var scopes = await (from scope in Scopes
+            var scopes = await (from scope in Scopes.AsTracking()
                                 where scope.Resources.Contains(resource)
                                 select scope).ToListAsync(cancellationToken);
 
@@ -488,7 +488,7 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual async Task<ImmutableArray<TScope>> ListAsync(
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            var query = Scopes.OrderBy(scope => scope.Id).AsQueryable();
+            var query = Scopes.OrderBy(scope => scope.Id).AsTracking();
 
             if (offset.HasValue)
             {

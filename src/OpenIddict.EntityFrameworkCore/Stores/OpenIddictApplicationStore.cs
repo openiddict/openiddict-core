@@ -290,7 +290,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             var key = ConvertIdentifierFromString(identifier);
 
-            return (from application in Applications
+            return (from application in Applications.AsTracking()
                     where application.Id.Equals(key)
                     select application).FirstOrDefaultAsync();
         }
@@ -311,7 +311,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return (from application in Applications
+            return (from application in Applications.AsTracking()
                     where application.ClientId == identifier
                     select application).FirstOrDefaultAsync();
         }
@@ -337,7 +337,7 @@ namespace OpenIddict.EntityFrameworkCore
             // are retrieved, a second pass is made to ensure only valid elements are returned.
             // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            var applications = await (from application in Applications
+            var applications = await (from application in Applications.AsTracking()
                                       where application.PostLogoutRedirectUris.Contains(address)
                                       select application).ToListAsync(cancellationToken);
 
@@ -384,7 +384,7 @@ namespace OpenIddict.EntityFrameworkCore
             // are retrieved, a second pass is made to ensure only valid elements are returned.
             // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            var applications = await (from application in Applications
+            var applications = await (from application in Applications.AsTracking()
                                       where application.RedirectUris.Contains(address)
                                       select application).ToListAsync(cancellationToken);
 
@@ -726,7 +726,7 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual async Task<ImmutableArray<TApplication>> ListAsync(
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            var query = Applications.OrderBy(application => application.Id).AsQueryable();
+            var query = Applications.OrderBy(application => application.Id).AsTracking();
 
             if (offset.HasValue)
             {
