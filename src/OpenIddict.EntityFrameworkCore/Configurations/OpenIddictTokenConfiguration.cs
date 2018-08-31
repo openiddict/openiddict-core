@@ -42,6 +42,11 @@ namespace OpenIddict.EntityFrameworkCore
             builder.HasIndex(token => token.ReferenceId)
                    .IsUnique();
 
+            builder.HasIndex("ApplicationId",
+                nameof(OpenIddictToken.Status),
+                nameof(OpenIddictToken.Subject),
+                nameof(OpenIddictToken.Type));
+
             builder.Property(token => token.ConcurrencyToken)
                    .IsConcurrencyToken();
 

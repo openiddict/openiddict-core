@@ -39,6 +39,12 @@ namespace OpenIddict.EntityFrameworkCore
 
             builder.HasKey(authorization => authorization.Id);
 
+            builder.HasIndex("ApplicationId",
+                nameof(OpenIddictAuthorization.Scopes),
+                nameof(OpenIddictAuthorization.Status),
+                nameof(OpenIddictAuthorization.Subject),
+                nameof(OpenIddictAuthorization.Type));
+
             builder.Property(authorization => authorization.ConcurrencyToken)
                    .IsConcurrencyToken();
 

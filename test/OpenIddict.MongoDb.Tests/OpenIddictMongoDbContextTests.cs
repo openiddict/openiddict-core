@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,11 +49,11 @@ namespace OpenIddict.MongoDb.Tests
             var provider = services.BuildServiceProvider();
 
             var manager = new Mock<IMongoIndexManager<OpenIddictApplication>>();
-            manager.Setup(mock => mock.CreateOneAsync(It.IsAny<CreateIndexModel<OpenIddictApplication>>(), It.IsAny<CreateOneIndexOptions>(), It.IsAny<CancellationToken>()))
+            manager.Setup(mock => mock.CreateManyAsync(It.IsAny<IEnumerable<CreateIndexModel<OpenIddictApplication>>>(), It.IsAny<CancellationToken>()))
                 .Returns(async delegate
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(1000));
-                    return nameof(OpenIddictMongoDbContextTests);
+                    return new[] { string.Empty };
                 });
 
             var collection = new Mock<IMongoCollection<OpenIddictApplication>>();
@@ -84,8 +85,8 @@ namespace OpenIddict.MongoDb.Tests
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("The MongoDB database couldn't be initialized within a reasonable timeframe.")
-                .Append("Make sure that the MongoDB server is ready and accepts connections from this machine ")
-                .Append("or use 'options.UseMongoDb().SetInitializationTimeout()' to manually adjust the timeout.")
+                .Append("Make sure that the MongoDB server is ready and accepts connections from this machine or use ")
+                .Append("'services.AddOpenIddict().AddCore().UseMongoDb().SetInitializationTimeout()' to adjust the timeout.")
                 .ToString(), exception.Message);
         }
 
@@ -187,6 +188,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             database.Verify(mock => mock.GetCollection<OpenIddictApplication>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Never());
+            database.Verify(mock => mock.GetCollection<OpenIddictAuthorization>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Never());
             database.Verify(mock => mock.GetCollection<OpenIddictScope>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Never());
             database.Verify(mock => mock.GetCollection<OpenIddictToken>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Never());
         }
@@ -212,6 +214,7 @@ namespace OpenIddict.MongoDb.Tests
             Assert.Same(database.Object, await context.GetDatabaseAsync(CancellationToken.None));
 
             database.Verify(mock => mock.GetCollection<OpenIddictApplication>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Once());
+            database.Verify(mock => mock.GetCollection<OpenIddictAuthorization>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Once());
             database.Verify(mock => mock.GetCollection<OpenIddictScope>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Once());
             database.Verify(mock => mock.GetCollection<OpenIddictToken>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Once());
         }
@@ -255,6 +258,7 @@ namespace OpenIddict.MongoDb.Tests
             Assert.Same(database.Object, await context.GetDatabaseAsync(CancellationToken.None));
 
             database.Verify(mock => mock.GetCollection<OpenIddictApplication>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Exactly(2));
+            database.Verify(mock => mock.GetCollection<OpenIddictAuthorization>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Once());
             database.Verify(mock => mock.GetCollection<OpenIddictScope>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Once());
             database.Verify(mock => mock.GetCollection<OpenIddictToken>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()), Times.Once());
         }
@@ -264,6 +268,10 @@ namespace OpenIddict.MongoDb.Tests
             var applications = new Mock<IMongoCollection<OpenIddictApplication>>();
             applications.SetupGet(mock => mock.Indexes)
                 .Returns(Mock.Of<IMongoIndexManager<OpenIddictApplication>>());
+
+            var authorizations = new Mock<IMongoCollection<OpenIddictAuthorization>>();
+            authorizations.SetupGet(mock => mock.Indexes)
+                .Returns(Mock.Of<IMongoIndexManager<OpenIddictAuthorization>>());
 
             var scopes = new Mock<IMongoCollection<OpenIddictScope>>();
             scopes.SetupGet(mock => mock.Indexes)
@@ -276,6 +284,8 @@ namespace OpenIddict.MongoDb.Tests
             var database = new Mock<IMongoDatabase>();
             database.Setup(mock => mock.GetCollection<OpenIddictApplication>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()))
                 .Returns(applications.Object);
+            database.Setup(mock => mock.GetCollection<OpenIddictAuthorization>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()))
+                .Returns(authorizations.Object);
             database.Setup(mock => mock.GetCollection<OpenIddictScope>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()))
                 .Returns(scopes.Object);
             database.Setup(mock => mock.GetCollection<OpenIddictToken>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()))

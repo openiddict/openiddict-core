@@ -865,12 +865,6 @@ namespace OpenIddict.Core
                 await Store.SetClientSecretAsync(application, secret, cancellationToken);
             }
 
-            var results = await ValidateAsync(application, cancellationToken);
-            if (results.Any(result => result != ValidationResult.Success))
-            {
-                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, application);
-            }
-
             await UpdateAsync(application, cancellationToken);
         }
 

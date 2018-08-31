@@ -61,6 +61,50 @@ namespace OpenIddict.Abstractions
         Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the tokens corresponding to the specified
+        /// subject and associated with the application identifier.
+        /// </summary>
+        /// <param name="subject">The subject associated with the token.</param>
+        /// <param name="client">The client associated with the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens corresponding to the subject/client.
+        /// </returns>
+        Task<ImmutableArray<TToken>> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the tokens matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the token.</param>
+        /// <param name="client">The client associated with the token.</param>
+        /// <param name="status">The token status.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens corresponding to the criteria.
+        /// </returns>
+        Task<ImmutableArray<TToken>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the tokens matching the specified parameters.
+        /// </summary>
+        /// <param name="subject">The subject associated with the token.</param>
+        /// <param name="client">The client associated with the token.</param>
+        /// <param name="status">The token status.</param>
+        /// <param name="type">The token type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the tokens corresponding to the criteria.
+        /// </returns>
+        Task<ImmutableArray<TToken>> FindAsync(
+            [NotNull] string subject, [NotNull] string client,
+            [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Retrieves the list of tokens corresponding to the specified application identifier.
         /// </summary>
         /// <param name="identifier">The application identifier associated with the tokens.</param>
