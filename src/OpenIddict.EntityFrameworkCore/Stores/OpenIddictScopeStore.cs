@@ -510,7 +510,7 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual async Task<ImmutableArray<TScope>> ListAsync(
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            var query = Scopes.OrderBy(scope => scope.Id).AsQueryable();
+            var query = Scopes.OrderBy(scope => scope.Id).AsTracking();
 
             if (offset.HasValue)
             {

@@ -738,7 +738,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             var query = Authorizations.Include(authorization => authorization.Application)
                                       .OrderBy(authorization => authorization.Id)
-                                      .AsQueryable();
+                                      .AsTracking();
 
             if (offset.HasValue)
             {

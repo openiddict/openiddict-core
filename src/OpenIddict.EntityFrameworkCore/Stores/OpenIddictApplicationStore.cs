@@ -748,7 +748,7 @@ namespace OpenIddict.EntityFrameworkCore
         public virtual async Task<ImmutableArray<TApplication>> ListAsync(
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
-            var query = Applications.OrderBy(application => application.Id).AsQueryable();
+            var query = Applications.OrderBy(application => application.Id).AsTracking();
 
             if (offset.HasValue)
             {
