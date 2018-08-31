@@ -615,7 +615,7 @@ namespace OpenIddict.MongoDb
         }
 
         /// <summary>
-        /// Removes the ad-hoc authorizations that are marked as invalid or have no valid token attached.
+        /// Removes the ad-hoc authorizations that are marked as invalid or have no valid/nonexpired token attached.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
@@ -626,17 +626,57 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
+            // Note: directly deleting the resulting set of an aggregate query is not supported by MongoDB.
+            // To work around this limitation, the authorization identifiers are stored in an intermediate
+            // list and delete requests are sent to remove the documents corresponding to these identifiers.
+
             var identifiers =
                 await (from authorization in collection.AsQueryable()
                        join token in database.GetCollection<OpenIddictToken>(Options.CurrentValue.TokensCollectionName).AsQueryable()
                                   on authorization.Id equals token.AuthorizationId into tokens
                        where authorization.Status != OpenIddictConstants.Statuses.Valid ||
                             (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
-                            !tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid))
-                       orderby authorization.Id
+                            !tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid &&
+                                                 token.ExpirationDate > DateTime.UtcNow))
                        select authorization.Id).ToListAsync(cancellationToken);
 
-            await collection.DeleteManyAsync(authorization => identifiers.Contains(authorization.Id));
+            // Note: to avoid generating delete requests with very large filters, a buffer is used here and the
+            // maximum number of elements that can be removed by a single call to PruneAsync() is limited to 50000.
+            foreach (var buffer in Buffer(identifiers.Take(50_000), 1_000))
+            {
+                await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id));
+
+                // Delete the tokens associated with the pruned authorizations.
+                await database.GetCollection<OpenIddictToken>(Options.CurrentValue.TokensCollectionName)
+                    .DeleteManyAsync(token => buffer.Contains(token.AuthorizationId), cancellationToken);
+            }
+
+            IEnumerable<IList<TSource>> Buffer<TSource>(IEnumerable<TSource> source, int count)
+            {
+                List<TSource> buffer = null;
+
+                foreach (var element in source)
+                {
+                    if (buffer == null)
+                    {
+                        buffer = new List<TSource>();
+                    }
+
+                    buffer.Add(element);
+
+                    if (buffer.Count == count)
+                    {
+                        yield return buffer;
+
+                        buffer = null;
+                    }
+                }
+
+                if (buffer != null)
+                {
+                    yield return buffer;
+                }
+            }
         }
 
         /// <summary>

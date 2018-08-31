@@ -780,7 +780,7 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Removes the ad-hoc authorizations that are marked as invalid or have no valid token attached.
+        /// Removes the ad-hoc authorizations that are marked as invalid or have no valid/nonexpired token attached.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
@@ -834,7 +834,8 @@ namespace OpenIddict.EntityFrameworkCore
                         await (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
                                where authorization.Status != OpenIddictConstants.Statuses.Valid ||
                                     (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
-                                    !authorization.Tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid))
+                                    !authorization.Tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid &&
+                                                                       token.ExpirationDate > DateTimeOffset.UtcNow))
                                orderby authorization.Id
                                select authorization).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
 
