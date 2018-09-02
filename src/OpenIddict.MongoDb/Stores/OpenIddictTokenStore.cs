@@ -714,8 +714,8 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TToken>(Options.Value.TokensCollectionName);
 
-            await collection.DeleteManyAsync(token => token.ExpirationDate < DateTimeOffset.UtcNow ||
-                                                      token.Status != OpenIddictConstants.Statuses.Valid, cancellationToken);
+            await collection.DeleteManyAsync(token => token.Status != OpenIddictConstants.Statuses.Valid ||
+                                                      token.ExpirationDate < DateTime.UtcNow, cancellationToken);
         }
 
         /// <summary>
