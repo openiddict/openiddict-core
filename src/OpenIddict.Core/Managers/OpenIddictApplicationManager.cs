@@ -90,7 +90,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual Task CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
-            => CreateAsync(application, /* secret: */ null, cancellationToken);
+            => CreateAsync(application, secret: null, cancellationToken);
 
         /// <summary>
         /// Creates a new application.
@@ -180,7 +180,7 @@ namespace OpenIddict.Core
             var secret = await Store.GetClientSecretAsync(application, cancellationToken);
             if (!string.IsNullOrEmpty(secret))
             {
-                await Store.SetClientSecretAsync(application, /* secret: */ null, cancellationToken);
+                await Store.SetClientSecretAsync(application, secret: null, cancellationToken);
                 await CreateAsync(application, secret, cancellationToken);
             }
             else

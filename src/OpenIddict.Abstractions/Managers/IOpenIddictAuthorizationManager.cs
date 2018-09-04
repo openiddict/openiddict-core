@@ -110,7 +110,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorizations corresponding to the criteria.
         /// </returns>
-        Task<ImmutableArray<object>> FindAsync([NotNull] string subject, [NotNull] string client, [NotNull] string status, CancellationToken cancellationToken);
+        Task<ImmutableArray<object>> FindAsync([NotNull] string subject, [NotNull] string client, [NotNull] string status, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the authorizations matching the specified parameters.
@@ -357,7 +357,7 @@ namespace OpenIddict.Abstractions
         Task PopulateAsync([NotNull] object authorization, [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Removes the ad-hoc authorizations that are marked as invalid or have no valid/nonexpired token attached.
+        /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no valid/nonexpired token attached.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
