@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Threading;
@@ -136,6 +137,12 @@ namespace OpenIddict.Server.Internal.Tests
 
                 builder.EnableRequestCaching();
 
+                builder.SetRequestCachingPolicy(new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(42),
+                    SlidingExpiration = TimeSpan.FromSeconds(42)
+                });
+
                 builder.Configure(options => options.RandomNumberGenerator = generator.Object);
             });
 
@@ -156,7 +163,9 @@ namespace OpenIddict.Server.Internal.Tests
             cache.Verify(mock => mock.SetAsync(
                 OpenIddictConstants.Environment.LogoutRequest + identifier,
                 It.IsAny<byte[]>(),
-                It.IsAny<DistributedCacheEntryOptions>(),
+                It.Is<DistributedCacheEntryOptions>(options =>
+                    options.AbsoluteExpirationRelativeToNow == TimeSpan.FromDays(42) &&
+                    options.SlidingExpiration == TimeSpan.FromSeconds(42)),
                 It.IsAny<CancellationToken>()), Times.Once());
 
             generator.Verify(mock => mock.GetBytes(It.Is<byte[]>(bytes => bytes.Length == 256 / 8)), Times.Once());

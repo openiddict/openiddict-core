@@ -211,6 +211,11 @@ namespace OpenIddict.Core
         public virtual async Task<ImmutableArray<TScope>> FindByNamesAsync(
             ImmutableArray<string> names, CancellationToken cancellationToken = default)
         {
+            if (names.IsDefaultOrEmpty)
+            {
+                return ImmutableArray.Create<TScope>();
+            }
+
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));

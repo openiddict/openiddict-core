@@ -165,6 +165,30 @@ namespace OpenIddict.Server.Internal.Tests
         }
 
         [Fact]
+        public async Task PostConfigure_ThrowsAnExceptionWhenCachingPolicyIsNullAndRequestCachingEnabled()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.EnableAuthorizationEndpoint("/connect/authorize")
+                       .AllowImplicitFlow()
+                       .EnableRequestCaching();
+
+                builder.Configure(options => options.RequestCachingPolicy = null);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/");
+            });
+
+            Assert.Equal("A caching policy must be specified when enabling request caching.", exception.Message);
+        }
+
+        [Fact]
         public async Task PostConfigure_ThrowsAnExceptionWhenTokenStorageIsDisabled()
         {
             // Arrange

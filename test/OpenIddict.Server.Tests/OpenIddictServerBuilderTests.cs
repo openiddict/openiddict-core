@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -711,6 +712,54 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Null(options.RefreshTokenLifetime);
+        }
+
+        [Fact]
+        public void SetRequestCachingPolicy_ThrowsAnExceptionForNullPolicy()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetRequestCachingPolicy(null));
+
+            Assert.Equal("policy", exception.ParamName);
+        }
+
+        [Fact]
+        public void SetRequestCachingPolicy_PolicyIsUpdated()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            var policy = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(42),
+                SlidingExpiration = TimeSpan.FromSeconds(42)
+            };
+
+            // Act
+            builder.SetRequestCachingPolicy(policy);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Same(policy, options.RequestCachingPolicy);
+        }
+
+        [Fact]
+        public void SetIssuer_ThrowsAnExceptionForNullIssuer()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => builder.SetIssuer(null));
+
+            Assert.Equal("address", exception.ParamName);
         }
 
         [Fact]

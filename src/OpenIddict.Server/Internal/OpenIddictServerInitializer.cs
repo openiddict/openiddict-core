@@ -152,6 +152,11 @@ namespace OpenIddict.Server.Internal
                     "The token endpoint must be enabled to use the authorization code, client credentials, password and refresh token flows.");
             }
 
+            if (options.EnableRequestCaching && options.RequestCachingPolicy == null)
+            {
+                throw new InvalidOperationException("A caching policy must be specified when enabling request caching.");
+            }
+
             if (options.RevocationEndpointPath.HasValue && options.DisableTokenStorage)
             {
                 throw new InvalidOperationException("The revocation endpoint cannot be enabled when token storage is disabled.");

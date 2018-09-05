@@ -114,6 +114,16 @@ namespace OpenIddict.Server
         public RandomNumberGenerator RandomNumberGenerator { get; set; } = RandomNumberGenerator.Create();
 
         /// <summary>
+        /// Gets or sets the caching policy used to determine how long the authorization
+        /// and end session requests should be cached by the distributed cache implementation.
+        /// </summary>
+        public DistributedCacheEntryOptions RequestCachingPolicy { get; set; } = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
+            SlidingExpiration = TimeSpan.FromMinutes(30)
+        };
+
+        /// <summary>
         /// Gets the OAuth2/OpenID Connect scopes enabled for this application.
         /// </summary>
         public ISet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal)

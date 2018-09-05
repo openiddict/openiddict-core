@@ -15,7 +15,6 @@ using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -469,11 +468,7 @@ namespace OpenIddict.Server.Internal
                 // to avoid collisions with the other types of cached requests.
                 var key = OpenIddictConstants.Environment.AuthorizationRequest + context.Request.RequestId;
 
-                await options.Cache.SetAsync(key, stream.ToArray(), new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpiration = context.Options.SystemClock.UtcNow + TimeSpan.FromMinutes(30),
-                    SlidingExpiration = TimeSpan.FromMinutes(10)
-                });
+                await options.Cache.SetAsync(key, stream.ToArray(), options.RequestCachingPolicy);
 
                 // Create a new authorization request containing only the request_id parameter.
                 var address = QueryHelpers.AddQueryString(
