@@ -19,6 +19,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
 
@@ -698,6 +699,23 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetRefreshTokenLifetime(TimeSpan lifetime)
             => Configure(options => options.RefreshTokenLifetime = lifetime);
+
+        /// <summary>
+        /// Sets the caching policy used to determine how long the authorization and
+        /// end session requests should be cached by the distributed cache implementation.
+        /// Note: the specified policy is only used when request caching is explicitly enabled.
+        /// </summary>
+        /// <param name="policy">The request caching policy.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetRequestCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
+        {
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
+            return Configure(options => options.RequestCachingPolicy = policy);
+        }
 
         /// <summary>
         /// Sets the issuer address, which is used as the base address

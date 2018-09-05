@@ -270,6 +270,35 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenCachingPolicyIsNullAndRequestCachingEnabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .EnableAuthorizationEndpoint("/connect/authorize")
+                    .AllowImplicitFlow()
+                    .EnableRequestCaching()
+                    .Configure(options => options.RequestCachingPolicy = null);
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal("A caching policy must be specified when enabling request caching.", exception.Message);
+        }
+
+        [Fact]
         public void UseOpenIddictServer_ThrowsAnExceptionWhenTokenStorageIsDisabled()
         {
             // Arrange

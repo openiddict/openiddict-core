@@ -887,7 +887,7 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Removes the ad-hoc authorizations that are marked as invalid or have no valid/nonexpired token attached.
+        /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no valid/nonexpired token attached.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>

@@ -591,8 +591,8 @@ namespace OpenIddict.Server.Internal
                 if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.Boolean))
                 {
                     var name = property.Key.Substring(
-                        /* index: */ 0,
-                        /* length: */ property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.Boolean));
+                        startIndex: 0,
+                        length: property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.Boolean));
 
                     bool value;
 
@@ -615,8 +615,8 @@ namespace OpenIddict.Server.Internal
                 else if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.Integer))
                 {
                     var name = property.Key.Substring(
-                        /* index: */ 0,
-                        /* length: */ property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.Integer));
+                        startIndex: 0,
+                        length: property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.Integer));
 
                     long value;
 
@@ -639,8 +639,8 @@ namespace OpenIddict.Server.Internal
                 else if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.Json))
                 {
                     var name = property.Key.Substring(
-                        /* index: */ 0,
-                        /* length: */ property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.Json));
+                        startIndex: 0,
+                        length: property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.Json));
 
                     if (request.IsAuthorizationRequest() || request.IsLogoutRequest())
                     {
@@ -671,8 +671,8 @@ namespace OpenIddict.Server.Internal
                 else if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.String))
                 {
                     var name = property.Key.Substring(
-                        /* index: */ 0,
-                        /* length: */ property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.String));
+                        startIndex: 0,
+                        length: property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.String));
 
                     yield return Tuple.Create(property.Key, name, new OpenIdConnectParameter(property.Value));
                 }
