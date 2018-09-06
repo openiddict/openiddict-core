@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddLogging();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<OpenIddictValidationEventService>();
+            builder.Services.TryAddScoped<IOpenIddictValidationEventService, OpenIddictValidationEventService>();
             builder.Services.TryAddScoped<OpenIddictValidationHandler>();
             builder.Services.TryAddScoped<OpenIddictValidationProvider>();
 

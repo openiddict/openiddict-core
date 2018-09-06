@@ -8,12 +8,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Text;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore.Models;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.EntityFrameworkCore
 {
@@ -50,7 +49,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             var type = _cache.GetOrAdd(typeof(TAuthorization), key =>
             {
-                var root = OpenIddictCoreHelpers.FindGenericBaseType(key, typeof(OpenIddictAuthorization<,,>));
+                var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictAuthorization<,,>));
                 if (root == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()

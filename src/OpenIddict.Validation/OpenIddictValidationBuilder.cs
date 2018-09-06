@@ -7,11 +7,10 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
-using OpenIddict.Abstractions;
+using OpenIddict.Extensions;
 using OpenIddict.Validation;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -42,13 +41,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public IServiceCollection Services { get; }
 
         /// <summary>
-        /// Registers an event handler for the specified event type.
+        /// Registers an inline event handler for the specified event type.
         /// </summary>
-        /// <param name="handler">The handler added to the DI container.</param>
+        /// <param name="handler">The handler delegate.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictValidationBuilder AddEventHandler<TEvent>(
-            [NotNull] IOpenIddictValidationEventHandler<TEvent> handler)
+            [NotNull] Func<TEvent, Task<OpenIddictValidationEventState>> handler)
             where TEvent : class, IOpenIddictValidationEvent
         {
             if (handler == null)
@@ -56,62 +55,30 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            Services.AddSingleton(handler);
+            Services.AddSingleton<IOpenIddictValidationEventHandler<TEvent>>(
+                new OpenIddictValidationEventHandler<TEvent>(handler));
 
             return this;
         }
 
         /// <summary>
-        /// Registers an event handler for the specified event type.
+        /// Registers an event handler that will be invoked for all the events listed by the implemented interfaces.
         /// </summary>
-        /// <param name="handler">The handler added to the DI container.</param>
-        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictValidationBuilder AddEventHandler<TEvent>([NotNull] Func<TEvent, Task> handler)
-            where TEvent : class, IOpenIddictValidationEvent
-            => AddEventHandler<TEvent>((notification, cancellationToken) => handler(notification));
-
-        /// <summary>
-        /// Registers an event handler for the specified event type.
-        /// </summary>
-        /// <param name="handler">The handler added to the DI container.</param>
-        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictValidationBuilder AddEventHandler<TEvent>([NotNull] Func<TEvent, CancellationToken, Task> handler)
-            where TEvent : class, IOpenIddictValidationEvent
-        {
-            if (handler == null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            return AddEventHandler(new OpenIddictValidationEventHandler<TEvent>(handler));
-        }
-
-        /// <summary>
-        /// Registers an event handler for the specified event type.
-        /// </summary>
-        /// <typeparam name="TEvent">The type of the event.</typeparam>
         /// <typeparam name="THandler">The type of the handler.</typeparam>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictValidationBuilder AddEventHandler<TEvent, THandler>(
-            ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TEvent : class, IOpenIddictValidationEvent
-            where THandler : IOpenIddictValidationEventHandler<TEvent>
-            => AddEventHandler<TEvent>(typeof(THandler));
+        public OpenIddictValidationBuilder AddEventHandler<THandler>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            => AddEventHandler(typeof(THandler), lifetime);
 
         /// <summary>
-        /// Registers an event handler for the specified event type.
+        /// Registers an event handler that will be invoked for all the events listed by the implemented interfaces.
         /// </summary>
         /// <param name="type">The type of the handler.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictValidationBuilder AddEventHandler<TEvent>(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TEvent : class, IOpenIddictValidationEvent
+        public OpenIddictValidationBuilder AddEventHandler([NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -123,12 +90,21 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("Handlers cannot be registered as transient services.", nameof(lifetime));
             }
 
-            if (!typeof(IOpenIddictValidationEventHandler<TEvent>).IsAssignableFrom(type))
+            if (type.IsGenericTypeDefinition)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
 
-            Services.Add(new ServiceDescriptor(typeof(IOpenIddictValidationEventHandler<TEvent>), type, lifetime));
+            var services = OpenIddictHelpers.FindGenericBaseTypes(type, typeof(IOpenIddictValidationEventHandler<>)).ToArray();
+            if (services.Length == 0)
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            foreach (var service in services)
+            {
+                Services.Add(new ServiceDescriptor(service, type, lifetime));
+            }
 
             return this;
         }

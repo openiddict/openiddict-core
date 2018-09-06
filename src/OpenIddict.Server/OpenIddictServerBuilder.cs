@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
@@ -20,6 +19,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Extensions;
 using OpenIddict.Server;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -50,13 +50,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public IServiceCollection Services { get; }
 
         /// <summary>
-        /// Registers an event handler for the specified event type.
+        /// Registers an inline event handler for the specified event type.
         /// </summary>
-        /// <param name="handler">The handler added to the DI container.</param>
+        /// <param name="handler">The handler delegate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictServerBuilder AddEventHandler<TEvent>(
-            [NotNull] IOpenIddictServerEventHandler<TEvent> handler)
+            [NotNull] Func<TEvent, Task<OpenIddictServerEventState>> handler)
             where TEvent : class, IOpenIddictServerEvent
         {
             if (handler == null)
@@ -64,62 +64,30 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            Services.AddSingleton(handler);
+            Services.AddSingleton<IOpenIddictServerEventHandler<TEvent>>(
+                new OpenIddictServerEventHandler<TEvent>(handler));
 
             return this;
         }
 
         /// <summary>
-        /// Registers an event handler for the specified event type.
+        /// Registers an event handler that will be invoked for all the events listed by the implemented interfaces.
         /// </summary>
-        /// <param name="handler">The handler added to the DI container.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder AddEventHandler<TEvent>([NotNull] Func<TEvent, Task> handler)
-            where TEvent : class, IOpenIddictServerEvent
-            => AddEventHandler<TEvent>((notification, cancellationToken) => handler(notification));
-
-        /// <summary>
-        /// Registers an event handler for the specified event type.
-        /// </summary>
-        /// <param name="handler">The handler added to the DI container.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder AddEventHandler<TEvent>([NotNull] Func<TEvent, CancellationToken, Task> handler)
-            where TEvent : class, IOpenIddictServerEvent
-        {
-            if (handler == null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            return AddEventHandler(new OpenIddictServerEventHandler<TEvent>(handler));
-        }
-
-        /// <summary>
-        /// Registers an event handler for the specified event type.
-        /// </summary>
-        /// <typeparam name="TEvent">The type of the event.</typeparam>
         /// <typeparam name="THandler">The type of the handler.</typeparam>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder AddEventHandler<TEvent, THandler>(
-            ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TEvent : class, IOpenIddictServerEvent
-            where THandler : IOpenIddictServerEventHandler<TEvent>
-            => AddEventHandler<TEvent>(typeof(THandler));
+        public OpenIddictServerBuilder AddEventHandler<THandler>(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            => AddEventHandler(typeof(THandler), lifetime);
 
         /// <summary>
-        /// Registers an event handler for the specified event type.
+        /// Registers an event handler that will be invoked for all the events listed by the implemented interfaces.
         /// </summary>
         /// <param name="type">The type of the handler.</param>
         /// <param name="lifetime">The lifetime of the registered service.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public OpenIddictServerBuilder AddEventHandler<TEvent>(
-            [NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TEvent : class, IOpenIddictServerEvent
+        public OpenIddictServerBuilder AddEventHandler([NotNull] Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             if (type == null)
             {
@@ -131,12 +99,21 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("Handlers cannot be registered as transient services.", nameof(lifetime));
             }
 
-            if (!typeof(IOpenIddictServerEventHandler<TEvent>).IsAssignableFrom(type))
+            if (type.IsGenericTypeDefinition)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
 
-            Services.Add(new ServiceDescriptor(typeof(IOpenIddictServerEventHandler<TEvent>), type, lifetime));
+            var services = OpenIddictHelpers.FindGenericBaseTypes(type, typeof(IOpenIddictServerEventHandler<>)).ToArray();
+            if (services.Length == 0)
+            {
+                throw new ArgumentException("The specified type is invalid.", nameof(type));
+            }
+
+            foreach (var service in services)
+            {
+                Services.Add(new ServiceDescriptor(service, type, lifetime));
+            }
 
             return this;
         }

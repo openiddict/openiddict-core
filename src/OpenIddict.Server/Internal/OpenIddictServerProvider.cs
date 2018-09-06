@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -28,7 +27,7 @@ namespace OpenIddict.Server.Internal
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         private readonly ILogger _logger;
-        private readonly OpenIddictServerEventService _eventService;
+        private readonly IOpenIddictServerEventService _eventService;
         private readonly IOpenIddictApplicationManager _applicationManager;
         private readonly IOpenIddictAuthorizationManager _authorizationManager;
         private readonly IOpenIddictScopeManager _scopeManager;
@@ -41,7 +40,7 @@ namespace OpenIddict.Server.Internal
         /// </summary>
         public OpenIddictServerProvider(
             [NotNull] ILogger<OpenIddictServerProvider> logger,
-            [NotNull] OpenIddictServerEventService eventService,
+            [NotNull] IOpenIddictServerEventService eventService,
             [NotNull] IOpenIddictApplicationManager applicationManager,
             [NotNull] IOpenIddictAuthorizationManager authorizationManager,
             [NotNull] IOpenIddictScopeManager scopeManager,

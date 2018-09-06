@@ -10,6 +10,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
+using OpenIddict.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -86,7 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var root = OpenIddictCoreHelpers.FindGenericBaseType(type, typeof(IOpenIddictApplicationStore<>));
+            var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictApplicationStore<>));
             if (root == null)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
@@ -143,7 +144,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var root = OpenIddictCoreHelpers.FindGenericBaseType(type, typeof(IOpenIddictAuthorizationStore<>));
+            var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictAuthorizationStore<>));
             if (root == null)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
@@ -200,7 +201,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var root = OpenIddictCoreHelpers.FindGenericBaseType(type, typeof(IOpenIddictScopeStore<>));
+            var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictScopeStore<>));
             if (root == null)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
@@ -257,7 +258,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var root = OpenIddictCoreHelpers.FindGenericBaseType(type, typeof(IOpenIddictTokenStore<>));
+            var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictTokenStore<>));
             if (root == null)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
@@ -314,7 +315,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var root = OpenIddictCoreHelpers.FindGenericBaseType(type, typeof(OpenIddictApplicationManager<>));
+            var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictApplicationManager<>));
             if (root == null)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
@@ -411,7 +412,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var root = OpenIddictCoreHelpers.FindGenericBaseType(type, typeof(OpenIddictAuthorizationManager<>));
+            var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictAuthorizationManager<>));
             if (root == null)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
@@ -507,7 +508,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var root = OpenIddictCoreHelpers.FindGenericBaseType(type, typeof(OpenIddictScopeManager<>));
+            var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictScopeManager<>));
             if (root == null)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
@@ -604,7 +605,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            var root = OpenIddictCoreHelpers.FindGenericBaseType(type, typeof(OpenIddictTokenManager<>));
+            var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictTokenManager<>));
             if (root == null)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));

@@ -1,21 +1,30 @@
 ﻿using System;
-using System.ComponentModel;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace OpenIddict.Core
+namespace OpenIddict.Extensions
 {
     /// <summary>
     /// Exposes common helpers used by the OpenIddict assemblies.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static class OpenIddictCoreHelpers
+    internal static class OpenIddictHelpers
     {
         /// <summary>
-        /// Finds the base type that matches the specified generic type definition.
+        /// Finds the first base type that matches the specified generic type definition.
         /// </summary>
         /// <param name="type">The type to introspect.</param>
         /// <param name="definition">The generic type definition.</param>
         /// <returns>A <see cref="Type"/> instance if the base type was found, <c>null</c> otherwise.</returns>
         public static Type FindGenericBaseType(Type type, Type definition)
+            => FindGenericBaseTypes(type, definition).FirstOrDefault();
+
+        /// <summary>
+        /// Finds all the base types that matches the specified generic type definition.
+        /// </summary>
+        /// <param name="type">The type to introspect.</param>
+        /// <param name="definition">The generic type definition.</param>
+        /// <returns>A <see cref="Type"/> instance if the base type was found, <c>null</c> otherwise.</returns>
+        public static IEnumerable<Type> FindGenericBaseTypes(Type type, Type definition)
         {
             if (type == null)
             {
@@ -43,7 +52,7 @@ namespace OpenIddict.Core
 
                     if (contract.GetGenericTypeDefinition() == definition)
                     {
-                        return contract;
+                        yield return contract;
                     }
                 }
             }
@@ -59,12 +68,10 @@ namespace OpenIddict.Core
 
                     if (candidate.GetGenericTypeDefinition() == definition)
                     {
-                        return candidate;
+                        yield return candidate;
                     }
                 }
             }
-
-            return null;
         }
     }
 }

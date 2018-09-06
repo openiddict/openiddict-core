@@ -61,7 +61,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.MongoDb.Models",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Abstractions.Tests", "test\OpenIddict.Abstractions.Tests\OpenIddict.Abstractions.Tests.csproj", "{8FACE85E-EF8F-4AB1-85DD-4010D5E2165D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.MongoDb.Tests", "test\OpenIddict.MongoDb.Tests\OpenIddict.MongoDb.Tests.csproj", "{27F603EF-D335-445B-9443-6B5A6CA3C110}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.MongoDb.Tests", "test\OpenIddict.MongoDb.Tests\OpenIddict.MongoDb.Tests.csproj", "{27F603EF-D335-445B-9443-6B5A6CA3C110}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{D8075F1F-6257-463B-B481-BDC7C5ABA292}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Extensions", "shared\OpenIddict.Extensions\OpenIddict.Extensions.csproj", "{B90761B9-7582-44CB-AB0D-3C4058693227}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -157,6 +161,10 @@ Global
 		{27F603EF-D335-445B-9443-6B5A6CA3C110}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27F603EF-D335-445B-9443-6B5A6CA3C110}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27F603EF-D335-445B-9443-6B5A6CA3C110}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B90761B9-7582-44CB-AB0D-3C4058693227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B90761B9-7582-44CB-AB0D-3C4058693227}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B90761B9-7582-44CB-AB0D-3C4058693227}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B90761B9-7582-44CB-AB0D-3C4058693227}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -184,6 +192,7 @@ Global
 		{14C55FB6-9626-4BDE-8961-3BE91DDD6418} = {D544447C-D701-46BB-9A5B-C76C612A596B}
 		{8FACE85E-EF8F-4AB1-85DD-4010D5E2165D} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 		{27F603EF-D335-445B-9443-6B5A6CA3C110} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
+		{B90761B9-7582-44CB-AB0D-3C4058693227} = {D8075F1F-6257-463B-B481-BDC7C5ABA292}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A710059F-0466-4D48-9B3A-0EF4F840B616}

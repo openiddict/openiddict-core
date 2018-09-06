@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<OpenIddictServerEventService>();
+            builder.Services.TryAddScoped<IOpenIddictServerEventService, OpenIddictServerEventService>();
             builder.Services.TryAddScoped<OpenIddictServerHandler>();
             builder.Services.TryAddScoped(provider =>
             {
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 return new OpenIddictServerProvider(
                     provider.GetRequiredService<ILogger<OpenIddictServerProvider>>(),
-                    provider.GetRequiredService<OpenIddictServerEventService>(),
+                    provider.GetRequiredService<IOpenIddictServerEventService>(),
                     provider.GetService<IOpenIddictApplicationManager>() ?? throw CreateException(),
                     provider.GetService<IOpenIddictAuthorizationManager>() ?? throw CreateException(),
                     provider.GetService<IOpenIddictScopeManager>() ?? throw CreateException(),

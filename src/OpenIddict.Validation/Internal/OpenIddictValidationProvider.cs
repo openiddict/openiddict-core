@@ -21,14 +21,14 @@ namespace OpenIddict.Validation.Internal
     /// </summary>
     public sealed class OpenIddictValidationProvider : OAuthValidationEvents
     {
-        private readonly OpenIddictValidationEventService _eventService;
+        private readonly IOpenIddictValidationEventService _eventService;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictValidationProvider"/> class.
         /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
         /// directly from your code. This API may change or be removed in future minor releases.
         /// </summary>
-        public OpenIddictValidationProvider([NotNull] OpenIddictValidationEventService eventService)
+        public OpenIddictValidationProvider([NotNull] IOpenIddictValidationEventService eventService)
             => _eventService = eventService;
 
         public override Task ApplyChallenge([NotNull] ApplyChallengeContext context)
