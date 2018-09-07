@@ -23,11 +23,11 @@ namespace OpenIddict.Validation.Internal
     public sealed class OpenIddictValidationProvider : OAuthValidationEvents
     {
         public override Task ApplyChallenge([NotNull] ApplyChallengeContext context)
-            => context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
+            => GetEventService(context.HttpContext.RequestServices)
                 .PublishAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
 
         public override Task CreateTicket([NotNull] CreateTicketContext context)
-            => context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
+            => GetEventService(context.HttpContext.RequestServices)
                 .PublishAsync(new OpenIddictValidationEvents.CreateTicket(context));
 
         public override async Task DecryptToken([NotNull] DecryptTokenContext context)
@@ -47,7 +47,7 @@ namespace OpenIddict.Validation.Internal
                         .ToString());
                 }
 
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictValidationProvider>>();
+                var logger = GetLogger(context.HttpContext.RequestServices);
 
                 // Retrieve the token entry from the database. If it
                 // cannot be found, assume the token is not valid.
@@ -103,12 +103,12 @@ namespace OpenIddict.Validation.Internal
                 context.HandleResponse();
             }
 
-            await context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
+            await GetEventService(context.HttpContext.RequestServices)
                 .PublishAsync(new OpenIddictValidationEvents.DecryptToken(context));
         }
 
         public override Task RetrieveToken([NotNull] RetrieveTokenContext context)
-            => context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
+            => GetEventService(context.HttpContext.RequestServices)
                 .PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
 
         public override async Task ValidateToken([NotNull] ValidateTokenContext context)
@@ -128,7 +128,7 @@ namespace OpenIddict.Validation.Internal
                         .ToString());
                 }
 
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<OpenIddictValidationProvider>>();
+                var logger = GetLogger(context.HttpContext.RequestServices);
 
                 var identifier = context.Ticket.Properties.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
                 if (!string.IsNullOrEmpty(identifier))
@@ -145,8 +145,14 @@ namespace OpenIddict.Validation.Internal
                 }
             }
 
-            await context.HttpContext.RequestServices.GetRequiredService<OpenIddictValidationEventService>()
+            await GetEventService(context.HttpContext.RequestServices)
                 .PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
         }
+
+        private static ILogger GetLogger(IServiceProvider provider)
+            => provider.GetRequiredService<ILogger<OpenIddictValidationProvider>>();
+
+        private static IOpenIddictValidationEventService GetEventService(IServiceProvider provider)
+            => provider.GetRequiredService<IOpenIddictValidationEventService>();
     }
 }

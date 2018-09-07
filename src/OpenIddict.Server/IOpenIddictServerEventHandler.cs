@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
@@ -20,12 +19,10 @@ namespace OpenIddict.Server
         /// Processes the event.
         /// </summary>
         /// <param name="notification">The event to process.</param>
-        /// <param name="cancellationToken">
-        /// The <see cref="CancellationToken"/> that can be used to abort the operation.
-        /// </param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result determines whether next handlers in the pipeline are invoked.
         /// </returns>
-        Task HandleAsync([NotNull] TEvent notification, CancellationToken cancellationToken);
+        Task<OpenIddictServerEventState> HandleAsync([NotNull] TEvent notification);
     }
 }

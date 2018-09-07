@@ -11,8 +11,8 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore.Models;
+using OpenIddict.Extensions;
 
 namespace OpenIddict.EntityFrameworkCore
 {
@@ -49,7 +49,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             var type = _cache.GetOrAdd(typeof(TApplication), key =>
             {
-                var root = OpenIddictCoreHelpers.FindGenericBaseType(key, typeof(OpenIddictApplication<,,>));
+                var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictApplication<,,>));
                 if (root == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()

@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,20 +34,18 @@ namespace OpenIddict.Validation.Tests
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
-            var handler = new OpenIddictValidationEventHandler<CreateTicket>(
-                (notification, cancellationToken) => Task.FromResult(0));
 
             // Act
-            builder.AddEventHandler(handler);
+            builder.AddEventHandler<CreateTicket>(notification => Task.FromResult(OpenIddictValidationEventState.Handled));
 
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(IOpenIddictValidationEventHandler<CreateTicket>) &&
-                service.ImplementationInstance == handler);
+                service.ImplementationInstance.GetType() == typeof(OpenIddictValidationEventHandler<CreateTicket>));
         }
 
         [Fact]
-        public void AddEventHandler_ThrowsAnExceptionForInvalidHandlerType()
+        public void AddEventHandler_ThrowsAnExceptionForUnsupportedLifetime()
         {
             // Arrange
             var services = CreateServices();
@@ -57,7 +54,41 @@ namespace OpenIddict.Validation.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(delegate
             {
-                return builder.AddEventHandler<CreateTicket>(typeof(object));
+                return builder.AddEventHandler<CustomHandler>(ServiceLifetime.Transient);
+            });
+
+            Assert.Equal("lifetime", exception.ParamName);
+            Assert.StartsWith("Handlers cannot be registered as transient services.", exception.Message);
+        }
+
+        [Fact]
+        public void AddEventHandler_ThrowsAnExceptionForOpenGenericHandlerType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.AddEventHandler(typeof(OpenIddictValidationEventHandler<>));
+            });
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The specified type is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void AddEventHandler_ThrowsAnExceptionForNonHandlerType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.AddEventHandler(typeof(object));
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -72,12 +103,17 @@ namespace OpenIddict.Validation.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.AddEventHandler<CreateTicket, CustomHandler>();
+            builder.AddEventHandler<CustomHandler>(ServiceLifetime.Singleton);
 
             // Assert
             Assert.Contains(services, service =>
+                service.ServiceType == typeof(IOpenIddictValidationEventHandler<ApplyChallenge>) &&
+                service.ImplementationType == typeof(CustomHandler) &&
+                service.Lifetime == ServiceLifetime.Singleton);
+            Assert.Contains(services, service =>
                 service.ServiceType == typeof(IOpenIddictValidationEventHandler<CreateTicket>) &&
-                service.ImplementationType == typeof(CustomHandler));
+                service.ImplementationType == typeof(CustomHandler) &&
+                service.Lifetime == ServiceLifetime.Singleton);
         }
 
         [Fact]
@@ -204,10 +240,17 @@ namespace OpenIddict.Validation.Tests
             return provider.GetRequiredService<IOptions<OpenIddictValidationOptions>>().Value;
         }
 
-        public class CustomHandler : OpenIddictValidationEventHandler<CreateTicket>
+        public class CustomHandler : IOpenIddictValidationEventHandler<ApplyChallenge>,
+                                     IOpenIddictValidationEventHandler<CreateTicket>
         {
-            public CustomHandler(Func<CreateTicket, CancellationToken, Task> handler) : base(handler)
+            public Task<OpenIddictValidationEventState> HandleAsync(ApplyChallenge notification)
             {
+                throw new NotImplementedException();
+            }
+
+            public Task<OpenIddictValidationEventState> HandleAsync(CreateTicket notification)
+            {
+                throw new NotImplementedException();
             }
         }
     }

@@ -7,7 +7,6 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.DataProtection;
@@ -42,20 +41,18 @@ namespace OpenIddict.Server.Tests
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
-            var handler = new OpenIddictServerEventHandler<ApplyAuthorizationResponse>(
-                (notification, cancellationToken) => Task.FromResult(0));
 
             // Act
-            builder.AddEventHandler(handler);
+            builder.AddEventHandler<ApplyAuthorizationResponse>(notification => Task.FromResult(OpenIddictServerEventState.Handled));
 
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(IOpenIddictServerEventHandler<ApplyAuthorizationResponse>) &&
-                service.ImplementationInstance == handler);
+                service.ImplementationInstance.GetType() == typeof(OpenIddictServerEventHandler<ApplyAuthorizationResponse>));
         }
 
         [Fact]
-        public void AddEventHandler_ThrowsAnExceptionForInvalidHandlerType()
+        public void AddEventHandler_ThrowsAnExceptionForUnsupportedLifetime()
         {
             // Arrange
             var services = CreateServices();
@@ -64,7 +61,41 @@ namespace OpenIddict.Server.Tests
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(delegate
             {
-                return builder.AddEventHandler<ApplyAuthorizationResponse>(typeof(object));
+                return builder.AddEventHandler<CustomHandler>(ServiceLifetime.Transient);
+            });
+
+            Assert.Equal("lifetime", exception.ParamName);
+            Assert.StartsWith("Handlers cannot be registered as transient services.", exception.Message);
+        }
+
+        [Fact]
+        public void AddEventHandler_ThrowsAnExceptionForOpenGenericHandlerType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.AddEventHandler(typeof(OpenIddictServerEventHandler<>));
+            });
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The specified type is invalid.", exception.Message);
+        }
+
+        [Fact]
+        public void AddEventHandler_ThrowsAnExceptionForNonHandlerType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return builder.AddEventHandler(typeof(object));
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -79,12 +110,17 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.AddEventHandler<ApplyAuthorizationResponse, CustomHandler>();
+            builder.AddEventHandler<CustomHandler>(ServiceLifetime.Singleton);
 
             // Assert
             Assert.Contains(services, service =>
                 service.ServiceType == typeof(IOpenIddictServerEventHandler<ApplyAuthorizationResponse>) &&
-                service.ImplementationType == typeof(CustomHandler));
+                service.ImplementationType == typeof(CustomHandler) &&
+                service.Lifetime == ServiceLifetime.Singleton);
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(IOpenIddictServerEventHandler<HandleAuthorizationRequest>) &&
+                service.ImplementationType == typeof(CustomHandler) &&
+                service.Lifetime == ServiceLifetime.Singleton);
         }
 
         [Fact]
@@ -802,10 +838,17 @@ namespace OpenIddict.Server.Tests
             return options.Value;
         }
 
-        public class CustomHandler : OpenIddictServerEventHandler<ApplyAuthorizationResponse>
+        public class CustomHandler : IOpenIddictServerEventHandler<ApplyAuthorizationResponse>,
+                                     IOpenIddictServerEventHandler<HandleAuthorizationRequest>
         {
-            public CustomHandler(Func<ApplyAuthorizationResponse, CancellationToken, Task> handler) : base(handler)
+            public Task<OpenIddictServerEventState> HandleAsync(ApplyAuthorizationResponse notification)
             {
+                throw new NotImplementedException();
+            }
+
+            public Task<OpenIddictServerEventState> HandleAsync(HandleAuthorizationRequest notification)
+            {
+                throw new NotImplementedException();
             }
         }
     }

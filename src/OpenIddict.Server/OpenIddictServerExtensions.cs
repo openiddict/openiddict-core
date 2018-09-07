@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<OpenIddictServerEventService>();
+            builder.Services.TryAddScoped<IOpenIddictServerEventService, OpenIddictServerEventService>();
 
             return new OpenIddictServerBuilder(builder.Services);
         }
