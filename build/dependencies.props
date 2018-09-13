@@ -1,8 +1,8 @@
 <Project>
 
   <PropertyGroup Label="Package Versions">
-    <AspNetContribOpenIdExtensionsVersion>2.0.0-rtm-0318</AspNetContribOpenIdExtensionsVersion>
-    <AspNetContribOpenIdServerVersion>2.0.0-rtm-1400</AspNetContribOpenIdServerVersion>
+    <AspNetContribOpenIdExtensionsVersion>2.0.0</AspNetContribOpenIdExtensionsVersion>
+    <AspNetContribOpenIdServerVersion>2.0.0</AspNetContribOpenIdServerVersion>
     <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
     <CoreFxVersion>4.4.0</CoreFxVersion>
     <CryptoHelperVersion>3.0.2</CryptoHelperVersion>
