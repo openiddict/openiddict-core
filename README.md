@@ -25,6 +25,10 @@ It also allows you to manage all your users using local password or an external 
 (e.g. Facebook or Google) for all your applications in one central place,
 with the power to control who can access your API and the information that is exposed to each client.
 
+## Documentation
+
+**The documentation can be found in the [dedicated repository](https://openiddict.github.io/openiddict-documentation)**.
+
 ## Samples
 
 **[Specialized samples can be found in the samples repository](https://github.com/openiddict/openiddict-samples):**
