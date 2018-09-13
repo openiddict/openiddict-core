@@ -8,7 +8,6 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
@@ -16,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
+using OpenIddict.Abstractions;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
@@ -252,7 +252,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode, options.GrantTypes);
+            Assert.Contains(OpenIddictConstants.GrantTypes.AuthorizationCode, options.GrantTypes);
         }
 
         [Fact]
@@ -270,7 +270,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials, options.GrantTypes);
+            Assert.Contains(OpenIddictConstants.GrantTypes.ClientCredentials, options.GrantTypes);
         }
 
         [Fact]
@@ -306,7 +306,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.Implicit, options.GrantTypes);
+            Assert.Contains(OpenIddictConstants.GrantTypes.Implicit, options.GrantTypes);
         }
 
         [Fact]
@@ -324,7 +324,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.Password, options.GrantTypes);
+            Assert.Contains(OpenIddictConstants.GrantTypes.Password, options.GrantTypes);
         }
 
         [Fact]
@@ -342,7 +342,7 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken, options.GrantTypes);
+            Assert.Contains(OpenIddictConstants.GrantTypes.RefreshToken, options.GrantTypes);
         }
 
         [Fact]

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Newtonsoft.Json.Linq;
+using OpenIddict.Abstractions;
 using Xunit;
 
 namespace OpenIddict.Server.Internal.Tests
@@ -33,11 +34,11 @@ namespace OpenIddict.Server.Internal.Tests
         }
 
         [Theory]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.ClientCredentials)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Implicit)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Password)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.RefreshToken)]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode)]
+        [InlineData(OpenIddictConstants.GrantTypes.ClientCredentials)]
+        [InlineData(OpenIddictConstants.GrantTypes.Implicit)]
+        [InlineData(OpenIddictConstants.GrantTypes.Password)]
+        [InlineData(OpenIddictConstants.GrantTypes.RefreshToken)]
         public async Task HandleConfigurationRequest_EnabledFlowsAreReturned(string flow)
         {
             // Arrange
@@ -69,7 +70,7 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 builder.Configure(options =>
                 {
-                    options.GrantTypes.Remove(OpenIdConnectConstants.GrantTypes.RefreshToken);
+                    options.GrantTypes.Remove(OpenIddictConstants.GrantTypes.RefreshToken);
                     options.Scopes.Clear();
                 });
             });
@@ -84,7 +85,7 @@ namespace OpenIddict.Server.Internal.Tests
         }
 
         [Theory]
-        [InlineData(OpenIdConnectConstants.Scopes.OpenId)]
+        [InlineData(OpenIddictConstants.Scopes.OpenId)]
         public async Task HandleConfigurationRequest_DefaultScopesAreReturned(string scope)
         {
             // Arrange
@@ -133,7 +134,7 @@ namespace OpenIddict.Server.Internal.Tests
             var response = await client.GetAsync(ConfigurationEndpoint);
 
             // Assert
-            Assert.Contains(OpenIdConnectConstants.Scopes.OfflineAccess,
+            Assert.Contains(OpenIddictConstants.Scopes.OfflineAccess,
                 ((JArray) response[OpenIdConnectConstants.Metadata.ScopesSupported]).Values<string>());
         }
 
@@ -147,7 +148,7 @@ namespace OpenIddict.Server.Internal.Tests
                 {
                     // Note: at least one flow must be enabled.
                     options.GrantTypes.Clear();
-                    options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.AuthorizationCode);
+                    options.GrantTypes.Add(OpenIddictConstants.GrantTypes.AuthorizationCode);
                 });
             });
 
@@ -157,7 +158,7 @@ namespace OpenIddict.Server.Internal.Tests
             var response = await client.GetAsync(ConfigurationEndpoint);
 
             // Assert
-            Assert.DoesNotContain(OpenIdConnectConstants.Scopes.OfflineAccess,
+            Assert.DoesNotContain(OpenIddictConstants.Scopes.OfflineAccess,
                 ((JArray) response[OpenIdConnectConstants.Metadata.ScopesSupported]).Values<string>());
         }
 
@@ -193,12 +194,12 @@ namespace OpenIddict.Server.Internal.Tests
 
             // Assert
             Assert.Equal(6, claims.Length);
-            Assert.Contains(OpenIdConnectConstants.Claims.Audience, claims);
-            Assert.Contains(OpenIdConnectConstants.Claims.ExpiresAt, claims);
-            Assert.Contains(OpenIdConnectConstants.Claims.IssuedAt, claims);
-            Assert.Contains(OpenIdConnectConstants.Claims.Issuer, claims);
-            Assert.Contains(OpenIdConnectConstants.Claims.JwtId, claims);
-            Assert.Contains(OpenIdConnectConstants.Claims.Subject, claims);
+            Assert.Contains(OpenIddictConstants.Claims.Audience, claims);
+            Assert.Contains(OpenIddictConstants.Claims.ExpiresAt, claims);
+            Assert.Contains(OpenIddictConstants.Claims.IssuedAt, claims);
+            Assert.Contains(OpenIddictConstants.Claims.Issuer, claims);
+            Assert.Contains(OpenIddictConstants.Claims.JwtId, claims);
+            Assert.Contains(OpenIddictConstants.Claims.Subject, claims);
         }
 
         [Fact]

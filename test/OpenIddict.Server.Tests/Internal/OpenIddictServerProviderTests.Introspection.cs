@@ -40,7 +40,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The mandatory 'client_id' and/or 'client_secret' parameters are missing.", response.ErrorDescription);
         }
 
@@ -70,7 +70,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The specified 'client_id' parameter is invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -110,7 +110,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal("This client application is not allowed to use the introspection endpoint.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -149,7 +149,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("This client application is not allowed to use the introspection endpoint.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -190,7 +190,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The specified client credentials are invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -206,7 +206,7 @@ namespace OpenIddict.Server.Internal.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -252,7 +252,7 @@ namespace OpenIddict.Server.Internal.Tests
 
             // Assert
             Assert.Single(response.GetParameters());
-            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+            Assert.False((bool) response[OpenIddictConstants.Claims.Active]);
         }
 
         [Fact]
@@ -260,7 +260,7 @@ namespace OpenIddict.Server.Internal.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -306,7 +306,7 @@ namespace OpenIddict.Server.Internal.Tests
 
             // Assert
             Assert.Single(response.GetParameters());
-            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+            Assert.False((bool) response[OpenIddictConstants.Claims.Active]);
         }
 
         [Fact]
@@ -314,7 +314,7 @@ namespace OpenIddict.Server.Internal.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -361,7 +361,7 @@ namespace OpenIddict.Server.Internal.Tests
 
             // Assert
             Assert.Single(response.GetParameters());
-            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+            Assert.False((bool) response[OpenIddictConstants.Claims.Active]);
         }
 
         [Fact]
@@ -369,7 +369,7 @@ namespace OpenIddict.Server.Internal.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Subject, "Bob le Bricoleur");
 
             var manager = CreateTokenManager(instance =>
             {
@@ -410,7 +410,7 @@ namespace OpenIddict.Server.Internal.Tests
 
             // Assert
             Assert.Single(response.GetParameters());
-            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+            Assert.False((bool) response[OpenIddictConstants.Claims.Active]);
 
 
             Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()), Times.Once());
@@ -421,7 +421,7 @@ namespace OpenIddict.Server.Internal.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -502,7 +502,7 @@ namespace OpenIddict.Server.Internal.Tests
 
             // Assert
             Assert.Single(response.GetParameters());
-            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+            Assert.False((bool) response[OpenIddictConstants.Claims.Active]);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Never());
         }
@@ -512,7 +512,7 @@ namespace OpenIddict.Server.Internal.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -592,7 +592,7 @@ namespace OpenIddict.Server.Internal.Tests
 
             // Assert
             Assert.Single(response.GetParameters());
-            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+            Assert.False((bool) response[OpenIddictConstants.Claims.Active]);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -602,7 +602,7 @@ namespace OpenIddict.Server.Internal.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -687,7 +687,7 @@ namespace OpenIddict.Server.Internal.Tests
 
             // Assert
             Assert.Single(response.GetParameters());
-            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+            Assert.False((bool) response[OpenIddictConstants.Claims.Active]);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.IsValidAsync(authorization, It.IsAny<CancellationToken>()), Times.Once());
@@ -698,7 +698,7 @@ namespace OpenIddict.Server.Internal.Tests
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -769,7 +769,7 @@ namespace OpenIddict.Server.Internal.Tests
 
             // Assert
             Assert.Single(response.GetParameters());
-            Assert.False((bool) response[OpenIdConnectConstants.Claims.Active]);
+            Assert.False((bool) response[OpenIddictConstants.Claims.Active]);
 
             Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()), Times.Once());

@@ -31,7 +31,7 @@ namespace Mvc.Server.Controllers
             {
                 return BadRequest(new OpenIdConnectResponse
                 {
-                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    Error = OpenIddictConstants.Errors.InvalidGrant,
                     ErrorDescription = "The user profile is no longer available."
                 });
             }
@@ -39,21 +39,21 @@ namespace Mvc.Server.Controllers
             var claims = new JObject();
 
             // Note: the "sub" claim is a mandatory claim and must be included in the JSON response.
-            claims[OpenIdConnectConstants.Claims.Subject] = await _userManager.GetUserIdAsync(user);
+            claims[OpenIddictConstants.Claims.Subject] = await _userManager.GetUserIdAsync(user);
 
-            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Email))
+            if (User.HasClaim(OpenIddictConstants.Claims.Scope, OpenIddictConstants.Scopes.Email))
             {
-                claims[OpenIdConnectConstants.Claims.Email] = await _userManager.GetEmailAsync(user);
-                claims[OpenIdConnectConstants.Claims.EmailVerified] = await _userManager.IsEmailConfirmedAsync(user);
+                claims[OpenIddictConstants.Claims.Email] = await _userManager.GetEmailAsync(user);
+                claims[OpenIddictConstants.Claims.EmailVerified] = await _userManager.IsEmailConfirmedAsync(user);
             }
 
-            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIdConnectConstants.Scopes.Phone))
+            if (User.HasClaim(OpenIddictConstants.Claims.Scope, OpenIddictConstants.Scopes.Phone))
             {
-                claims[OpenIdConnectConstants.Claims.PhoneNumber] = await _userManager.GetPhoneNumberAsync(user);
-                claims[OpenIdConnectConstants.Claims.PhoneNumberVerified] = await _userManager.IsPhoneNumberConfirmedAsync(user);
+                claims[OpenIddictConstants.Claims.PhoneNumber] = await _userManager.GetPhoneNumberAsync(user);
+                claims[OpenIddictConstants.Claims.PhoneNumberVerified] = await _userManager.IsPhoneNumberConfirmedAsync(user);
             }
 
-            if (User.HasClaim(OpenIdConnectConstants.Claims.Scope, OpenIddictConstants.Scopes.Roles))
+            if (User.HasClaim(OpenIddictConstants.Claims.Scope, OpenIddictConstants.Scopes.Roles))
             {
                 claims[OpenIddictConstants.Claims.Roles] = JArray.FromObject(await _userManager.GetRolesAsync(user));
             }

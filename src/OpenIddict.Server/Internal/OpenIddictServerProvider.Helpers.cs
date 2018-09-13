@@ -44,7 +44,7 @@ namespace OpenIddict.Server.Internal
             {
                 Principal = ticket.Principal,
                 Status = OpenIddictConstants.Statuses.Valid,
-                Subject = ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject),
+                Subject = ticket.Principal.GetClaim(OpenIddictConstants.Claims.Subject),
                 Type = OpenIddictConstants.AuthorizationTypes.AdHoc
             };
 
@@ -133,7 +133,7 @@ namespace OpenIddict.Server.Internal
                 ExpirationDate = ticket.Properties.ExpiresUtc,
                 Principal = ticket.Principal,
                 Status = OpenIddictConstants.Statuses.Valid,
-                Subject = ticket.Principal.GetClaim(OpenIdConnectConstants.Claims.Subject),
+                Subject = ticket.Principal.GetClaim(OpenIddictConstants.Claims.Subject),
                 Type = type
             };
 

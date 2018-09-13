@@ -45,7 +45,7 @@ namespace OpenIddict.Server.Internal
                                     "request caching support was not enabled.");
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The 'request_id' parameter is not supported.");
 
                     return;
@@ -62,7 +62,7 @@ namespace OpenIddict.Server.Internal
                                     "or invalid request_id parameter was specified.");
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The specified 'request_id' parameter is invalid.");
 
                     return;
@@ -104,7 +104,7 @@ namespace OpenIddict.Server.Internal
                                     "a valid absolute URL: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.");
 
                     return;
@@ -116,7 +116,7 @@ namespace OpenIddict.Server.Internal
                                     "a URL fragment: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The 'post_logout_redirect_uri' parameter must not include a fragment.");
 
                     return;
@@ -153,7 +153,7 @@ namespace OpenIddict.Server.Internal
                                     "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The specified 'post_logout_redirect_uri' parameter is not valid.");
 
                     return;
@@ -200,7 +200,7 @@ namespace OpenIddict.Server.Internal
                 var address = QueryHelpers.AddQueryString(
                     uri: context.HttpContext.Request.Scheme + "://" + context.HttpContext.Request.Host +
                          context.HttpContext.Request.PathBase + context.HttpContext.Request.Path,
-                    name: OpenIdConnectConstants.Parameters.RequestId, value: context.Request.RequestId);
+                    name: OpenIddictConstants.Parameters.RequestId, value: context.Request.RequestId);
 
                 context.HttpContext.Response.Redirect(address);
 

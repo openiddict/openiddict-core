@@ -7,7 +7,6 @@
 using System;
 using System.Reflection;
 using System.Text;
-using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
@@ -18,7 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using OpenIddict.Server.Internal;
+using OpenIddict.Abstractions;
 using OpenIddict.Server.Internal.Tests;
 using Xunit;
 
@@ -207,8 +206,8 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Implicit)]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode)]
+        [InlineData(OpenIddictConstants.GrantTypes.Implicit)]
         public void UseOpenIddictServer_ThrowsAnExceptionWhenAuthorizationEndpointIsDisabled(string flow)
         {
             // Arrange
@@ -237,10 +236,10 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.ClientCredentials)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Password)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.RefreshToken)]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode)]
+        [InlineData(OpenIddictConstants.GrantTypes.ClientCredentials)]
+        [InlineData(OpenIddictConstants.GrantTypes.Password)]
+        [InlineData(OpenIddictConstants.GrantTypes.RefreshToken)]
         public void UseOpenIddictServer_ThrowsAnExceptionWhenTokenEndpointIsDisabled(string flow)
         {
             // Arrange

@@ -13,13 +13,13 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Abstractions;
 using OpenIddict.Extensions;
 using OpenIddict.Server;
 
@@ -361,7 +361,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowAuthorizationCodeFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.AuthorizationCode));
+            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.AuthorizationCode));
 
         /// <summary>
         /// Enables client credentials flow support. For more information about this
@@ -369,7 +369,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowClientCredentialsFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.ClientCredentials));
+            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.ClientCredentials));
 
         /// <summary>
         /// Enables custom grant type support.
@@ -394,7 +394,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowImplicitFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.Implicit));
+            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.Implicit));
 
         /// <summary>
         /// Enables password flow support. For more information about this specific
@@ -402,7 +402,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowPasswordFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.Password));
+            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.Password));
 
         /// <summary>
         /// Enables refresh token flow support. For more information about this
@@ -410,7 +410,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowRefreshTokenFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIdConnectConstants.GrantTypes.RefreshToken));
+            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.RefreshToken));
 
         /// <summary>
         /// Disables authorization storage so that ad-hoc authorizations are

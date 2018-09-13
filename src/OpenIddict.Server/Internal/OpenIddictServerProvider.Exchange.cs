@@ -45,18 +45,18 @@ namespace OpenIddict.Server.Internal
                                 "grant type is not supported.", context.Request.GrantType);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedGrantType,
+                    error: OpenIddictConstants.Errors.UnsupportedGrantType,
                     description: "The specified 'grant_type' parameter is not supported.");
 
                 return;
             }
 
             // Reject token requests that specify scope=offline_access if the refresh token flow is not enabled.
-            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
-               !options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
+            if (context.Request.HasScope(OpenIddictConstants.Scopes.OfflineAccess) &&
+               !options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.RefreshToken))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The 'offline_access' scope is not allowed.");
 
                 return;
@@ -70,7 +70,7 @@ namespace OpenIddict.Server.Internal
             if (context.Request.IsAuthorizationCodeGrantType() && string.IsNullOrEmpty(context.Request.RedirectUri))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The mandatory 'redirect_uri' parameter is missing.");
 
                 return;
@@ -82,10 +82,10 @@ namespace OpenIddict.Server.Internal
             // that rejects grant_type=client_credentials requests containing the 'offline_access' scope.
             // See https://tools.ietf.org/html/rfc6749#section-4.4.3 for more information.
             if (context.Request.IsClientCredentialsGrantType() &&
-                context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess))
+                context.Request.HasScope(OpenIddictConstants.Scopes.OfflineAccess))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The 'offline_access' scope is not valid for the specified 'grant_type' parameter.");
 
                 return;
@@ -112,7 +112,7 @@ namespace OpenIddict.Server.Internal
                     logger.LogError("The token request was rejected because invalid scopes were specified: {Scopes}.", scopes);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidScope,
+                        error: OpenIddictConstants.Errors.InvalidScope,
                         description: "The specified 'scope' parameter is not valid.");
 
                     return;
@@ -126,7 +126,7 @@ namespace OpenIddict.Server.Internal
                                                                    string.IsNullOrEmpty(context.Request.ClientSecret)))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The 'client_id' and 'client_secret' parameters are " +
                                  "required when using the client credentials grant.");
 
@@ -147,7 +147,7 @@ namespace OpenIddict.Server.Internal
                                     "mandatory client_id parameter was missing or empty.");
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The mandatory 'client_id' parameter is missing.");
 
                     return;
@@ -169,7 +169,7 @@ namespace OpenIddict.Server.Internal
                                 "application was not found: '{ClientId}'.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    error: OpenIddictConstants.Errors.InvalidClient,
                     description: "The specified 'client_id' parameter is invalid.");
 
                 return;
@@ -187,7 +187,7 @@ namespace OpenIddict.Server.Internal
                                 "was not allowed to use the token endpoint.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    error: OpenIddictConstants.Errors.UnauthorizedClient,
                     description: "This client application is not allowed to use the token endpoint.");
 
                 return;
@@ -203,7 +203,7 @@ namespace OpenIddict.Server.Internal
                                     "use the specified grant type: {GrantType}.", context.ClientId, context.Request.GrantType);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        error: OpenIddictConstants.Errors.UnauthorizedClient,
                         description: "This client application is not allowed to use the specified grant type.");
 
                     return;
@@ -211,14 +211,14 @@ namespace OpenIddict.Server.Internal
 
                 // Reject the request if the offline_access scope was request and if
                 // the application is not allowed to use the refresh token grant type.
-                if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
+                if (context.Request.HasScope(OpenIddictConstants.Scopes.OfflineAccess) &&
                    !await applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.RefreshToken))
                 {
                     logger.LogError("The token request was rejected because the application '{ClientId}' " +
                                     "was not allowed to request the 'offline_access' scope.", context.ClientId);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The client application is not allowed to use the 'offline_access' scope.");
 
                     return;
@@ -234,7 +234,7 @@ namespace OpenIddict.Server.Internal
                                     "was not allowed to use the client credentials grant.", context.Request.ClientId);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        error: OpenIddictConstants.Errors.UnauthorizedClient,
                         description: "The specified 'grant_type' parameter is not valid for this client application.");
 
                     return;
@@ -247,7 +247,7 @@ namespace OpenIddict.Server.Internal
                                     "was not allowed to send a client secret.", context.ClientId);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The 'client_secret' parameter is not valid for this client application.");
 
                     return;
@@ -271,7 +271,7 @@ namespace OpenIddict.Server.Internal
                                 "'{ClientId}' didn't specify a client secret.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    error: OpenIddictConstants.Errors.InvalidClient,
                     description: "The 'client_secret' parameter required for this client application is missing.");
 
                 return;
@@ -283,7 +283,7 @@ namespace OpenIddict.Server.Internal
                                 "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    error: OpenIddictConstants.Errors.InvalidClient,
                     description: "The specified client credentials are invalid.");
 
                 return;
@@ -296,8 +296,8 @@ namespace OpenIddict.Server.Internal
                 foreach (var scope in context.Request.GetScopes())
                 {
                     // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
-                    if (string.Equals(scope, OpenIdConnectConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
-                        string.Equals(scope, OpenIdConnectConstants.Scopes.OpenId, StringComparison.Ordinal))
+                    if (string.Equals(scope, OpenIddictConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
+                        string.Equals(scope, OpenIddictConstants.Scopes.OpenId, StringComparison.Ordinal))
                     {
                         continue;
                     }
@@ -310,7 +310,7 @@ namespace OpenIddict.Server.Internal
                                         "was not allowed to use the scope {Scope}.", context.ClientId, scope);
 
                         context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidRequest,
+                            error: OpenIddictConstants.Errors.InvalidRequest,
                             description: "This client application is not allowed to use the specified scope.");
 
                         return;
@@ -385,7 +385,7 @@ namespace OpenIddict.Server.Internal
                                     "or refresh token '{Identifier}' has already been redeemed.", identifier);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        error: OpenIddictConstants.Errors.InvalidGrant,
                         description: context.Request.IsAuthorizationCodeGrantType() ?
                             "The specified authorization code has already been redeemed." :
                             "The specified refresh token has already been redeemed.");
@@ -399,7 +399,7 @@ namespace OpenIddict.Server.Internal
                                     "or refresh token '{Identifier}' was no longer valid.", identifier);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidGrant,
+                        error: OpenIddictConstants.Errors.InvalidGrant,
                         description: context.Request.IsAuthorizationCodeGrantType() ?
                             "The specified authorization code is no longer valid." :
                             "The specified refresh token is no longer valid.");
@@ -423,7 +423,7 @@ namespace OpenIddict.Server.Internal
                                         "the associated authorization was no longer valid.");
 
                         context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidGrant,
+                            error: OpenIddictConstants.Errors.InvalidGrant,
                             description: context.Request.IsAuthorizationCodeGrantType() ?
                                 "The authorization associated with the authorization code is no longer valid." :
                                 "The authorization associated with the refresh token is no longer valid.");
