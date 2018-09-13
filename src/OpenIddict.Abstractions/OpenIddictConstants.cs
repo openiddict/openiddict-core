@@ -206,8 +206,6 @@ namespace OpenIddict.Abstractions
             {
                 public const string Address = "scp:address";
                 public const string Email = "scp:email";
-                public const string OfflineAccess = "scp:offline_access";
-                public const string OpenId = "scp:openid";
                 public const string Phone = "scp:phone";
                 public const string Profile = "scp:profile";
                 public const string Roles = "scp:roles";
