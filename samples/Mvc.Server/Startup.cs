@@ -48,9 +48,9 @@ namespace Mvc.Server
             // which saves you from doing the mapping in your authorization controller.
             services.Configure<IdentityOptions>(options =>
             {
-                options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
-                options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
-                options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
+                options.ClaimsIdentity.UserNameClaimType = OpenIddictConstants.Claims.Name;
+                options.ClaimsIdentity.UserIdClaimType = OpenIddictConstants.Claims.Subject;
+                options.ClaimsIdentity.RoleClaimType = OpenIddictConstants.Claims.Role;
             });
 
             services.AddAuthentication()
@@ -97,8 +97,8 @@ namespace Mvc.Server
                            .AllowRefreshTokenFlow();
 
                     // Mark the "email", "profile" and "roles" scopes as supported scopes.
-                    options.RegisterScopes(OpenIdConnectConstants.Scopes.Email,
-                                           OpenIdConnectConstants.Scopes.Profile,
+                    options.RegisterScopes(OpenIddictConstants.Scopes.Email,
+                                           OpenIddictConstants.Scopes.Profile,
                                            OpenIddictConstants.Scopes.Roles);
 
                     // When request caching is enabled, authorization and logout requests

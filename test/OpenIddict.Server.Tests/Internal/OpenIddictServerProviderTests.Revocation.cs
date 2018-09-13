@@ -41,7 +41,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedTokenType, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnsupportedTokenType, response.Error);
             Assert.Equal("The specified 'token_type_hint' parameter is not supported.", response.ErrorDescription);
         }
 
@@ -64,7 +64,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
         }
 
@@ -94,7 +94,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The specified 'client_id' parameter is invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -135,7 +135,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal("This client application is not allowed to use the revocation endpoint.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -175,7 +175,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The 'client_secret' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -214,7 +214,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -253,7 +253,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -295,7 +295,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The specified client credentials are invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -334,7 +334,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedTokenType, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnsupportedTokenType, response.Error);
             Assert.Equal("The specified token cannot be revoked.", response.ErrorDescription);
 
             format.Verify(mock => mock.Unprotect("SlAV32hkKG"), Times.Once());
@@ -349,7 +349,7 @@ namespace OpenIddict.Server.Internal.Tests
                 mock.ValidTo == DateTime.UtcNow.AddDays(1));
 
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.TokenUsage, OpenIdConnectConstants.TokenUsages.IdToken);
+            identity.AddClaim(OpenIddictConstants.Claims.TokenUsage, OpenIdConnectConstants.TokenUsages.IdToken);
 
             var handler = new Mock<JwtSecurityTokenHandler>();
 
@@ -374,7 +374,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedTokenType, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnsupportedTokenType, response.Error);
             Assert.Equal("The specified token cannot be revoked.", response.ErrorDescription);
 
             handler.As<ISecurityTokenValidator>()

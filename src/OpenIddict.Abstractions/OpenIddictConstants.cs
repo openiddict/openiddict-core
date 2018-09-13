@@ -123,6 +123,61 @@ namespace OpenIddict.Abstractions
             public const string ConcurrencyError = "concurrency_error";
         }
 
+        public static class GrantTypes
+        {
+            public const string AuthorizationCode = "authorization_code";
+            public const string ClientCredentials = "client_credentials";
+            public const string Implicit = "implicit";
+            public const string Password = "password";
+            public const string RefreshToken = "refresh_token";
+        }
+
+        public static class Metadata
+        {
+            public const string AcrValuesSupported = "acr_values_supported";
+            public const string AuthorizationEndpoint = "authorization_endpoint";
+            public const string ClaimsLocalesSupported = "claims_locales_supported";
+            public const string ClaimsParameterSupported = "claims_parameter_supported";
+            public const string ClaimsSupported = "claims_supported";
+            public const string ClaimTypesSupported = "claim_types_supported";
+            public const string CodeChallengeMethodsSupported = "code_challenge_methods_supported";
+            public const string DisplayValuesSupported = "display_values_supported";
+            public const string EndSessionEndpoint = "end_session_endpoint";
+            public const string GrantTypesSupported = "grant_types_supported";
+            public const string IdTokenEncryptionAlgValuesSupported = "id_token_encryption_alg_values_supported";
+            public const string IdTokenEncryptionEncValuesSupported = "id_token_encryption_enc_values_supported";
+            public const string IdTokenSigningAlgValuesSupported = "id_token_signing_alg_values_supported";
+            public const string IntrospectionEndpoint = "introspection_endpoint";
+            public const string IntrospectionEndpointAuthMethodsSupported = "introspection_endpoint_auth_methods_supported";
+            public const string IntrospectionEndpointAuthSigningAlgValuesSupported = "introspection_endpoint_auth_signing_alg_values_supported";
+            public const string Issuer = "issuer";
+            public const string JwksUri = "jwks_uri";
+            public const string OpPolicyUri = "op_policy_uri";
+            public const string OpTosUri = "op_tos_uri";
+            public const string RequestObjectEncryptionAlgValuesSupported = "request_object_encryption_alg_values_supported";
+            public const string RequestObjectEncryptionEncValuesSupported = "request_object_encryption_enc_values_supported";
+            public const string RequestObjectSigningAlgValuesSupported = "request_object_signing_alg_values_supported";
+            public const string RequestParameterSupported = "request_parameter_supported";
+            public const string RequestUriParameterSupported = "request_uri_parameter_supported";
+            public const string RequireRequestUriRegistration = "require_request_uri_registration";
+            public const string ResponseModesSupported = "response_modes_supported";
+            public const string ResponseTypesSupported = "response_types_supported";
+            public const string RevocationEndpoint = "revocation_endpoint";
+            public const string RevocationEndpointAuthMethodsSupported = "revocation_endpoint_auth_methods_supported";
+            public const string RevocationEndpointAuthSigningAlgValuesSupported = "revocation_endpoint_auth_signing_alg_values_supported";
+            public const string ScopesSupported = "scopes_supported";
+            public const string ServiceDocumentation = "service_documentation";
+            public const string SubjectTypesSupported = "subject_types_supported";
+            public const string TokenEndpoint = "token_endpoint";
+            public const string TokenEndpointAuthMethodsSupported = "token_endpoint_auth_methods_supported";
+            public const string TokenEndpointAuthSigningAlgValuesSupported = "token_endpoint_auth_signing_alg_values_supported";
+            public const string UiLocalesSupported = "ui_locales_supported";
+            public const string UserinfoEncryptionAlgValuesSupported = "userinfo_encryption_alg_values_supported";
+            public const string UserinfoEncryptionEncValuesSupported = "userinfo_encryption_enc_values_supported";
+            public const string UserinfoEndpoint = "userinfo_endpoint";
+            public const string UserinfoSigningAlgValuesSupported = "userinfo_signing_alg_values_supported";
+        }
+
         public static class Parameters
         {
             public const string AccessToken = "access_token";
@@ -239,6 +294,21 @@ namespace OpenIddict.Abstractions
             public const string Integer = "#public_integer";
             public const string Json = "#public_json";
             public const string String = "#public_string";
+        }
+
+        public static class ResponseModes
+        {
+            public const string FormPost = "form_post";
+            public const string Fragment = "fragment";
+            public const string Query = "query";
+        }
+
+        public static class ResponseTypes
+        {
+            public const string Code = "code";
+            public const string IdToken = "id_token";
+            public const string None = "none";
+            public const string Token = "token";
         }
 
         public static class Separators

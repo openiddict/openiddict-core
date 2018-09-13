@@ -36,7 +36,7 @@ namespace OpenIddict.Server.Internal
             if (string.IsNullOrEmpty(context.ClientId) || string.IsNullOrEmpty(context.ClientSecret))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The mandatory 'client_id' and/or 'client_secret' parameters are missing.");
 
                 return;
@@ -50,7 +50,7 @@ namespace OpenIddict.Server.Internal
                                  "application was not found: '{ClientId}'.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    error: OpenIddictConstants.Errors.InvalidClient,
                     description: "The specified 'client_id' parameter is invalid.");
 
                 return;
@@ -68,7 +68,7 @@ namespace OpenIddict.Server.Internal
                                  "was not allowed to use the introspection endpoint.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    error: OpenIddictConstants.Errors.UnauthorizedClient,
                     description: "This client application is not allowed to use the introspection endpoint.");
 
                 return;
@@ -81,7 +81,7 @@ namespace OpenIddict.Server.Internal
                                  "'{ClientId}' was not allowed to use this endpoint.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    error: OpenIddictConstants.Errors.InvalidClient,
                     description: "This client application is not allowed to use the introspection endpoint.");
 
                 return;
@@ -94,7 +94,7 @@ namespace OpenIddict.Server.Internal
                                  "'{ClientId}' didn't specify valid client credentials.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidClient,
+                    error: OpenIddictConstants.Errors.InvalidClient,
                     description: "The specified client credentials are invalid.");
 
                 return;

@@ -127,15 +127,15 @@ namespace OpenIddict.Server.Internal
                     // Always include the "openid" scope when the developer doesn't explicitly call SetScopes.
                     // Note: the application is allowed to specify a different "scopes": in this case,
                     // don't replace the "scopes" property stored in the authentication ticket.
-                    if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OpenId) && !context.Ticket.HasScope())
+                    if (context.Request.HasScope(OpenIddictConstants.Scopes.OpenId) && !context.Ticket.HasScope())
                     {
-                        context.Ticket.SetScopes(OpenIdConnectConstants.Scopes.OpenId);
+                        context.Ticket.SetScopes(OpenIddictConstants.Scopes.OpenId);
                     }
 
-                    context.IncludeIdentityToken = context.Ticket.HasScope(OpenIdConnectConstants.Scopes.OpenId);
+                    context.IncludeIdentityToken = context.Ticket.HasScope(OpenIddictConstants.Scopes.OpenId);
                 }
 
-                context.IncludeRefreshToken = context.Ticket.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess);
+                context.IncludeRefreshToken = context.Ticket.HasScope(OpenIddictConstants.Scopes.OfflineAccess);
 
                 // Always include a refresh token for grant_type=refresh_token requests if
                 // rolling tokens are enabled and if the offline_access scope was specified.
@@ -160,7 +160,7 @@ namespace OpenIddict.Server.Internal
                         if (!await TryRedeemTokenAsync(token))
                         {
                             context.Reject(
-                                error: OpenIdConnectConstants.Errors.InvalidGrant,
+                                error: OpenIddictConstants.Errors.InvalidGrant,
                                 description: context.Request.IsAuthorizationCodeGrantType() ?
                                     "The specified authorization code is no longer valid." :
                                     "The specified refresh token is no longer valid.");

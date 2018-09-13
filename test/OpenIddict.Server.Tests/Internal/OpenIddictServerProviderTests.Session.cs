@@ -37,7 +37,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The 'request_id' parameter is not supported.", response.ErrorDescription);
         }
 
@@ -61,7 +61,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified 'request_id' parameter is invalid.", response.ErrorDescription);
         }
 
@@ -84,7 +84,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal(message, response.ErrorDescription);
         }
 
@@ -112,7 +112,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified 'post_logout_redirect_uri' parameter is not valid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
@@ -154,7 +154,7 @@ namespace OpenIddict.Server.Internal.Tests
                 PostLogoutRedirectUri = "http://www.fabrikam.com/path"
             });
 
-            var identifier = (string) response[OpenIdConnectConstants.Parameters.RequestId];
+            var identifier = (string) response[OpenIddictConstants.Parameters.RequestId];
 
             // Assert
             Assert.Single(response.GetParameters());
@@ -216,7 +216,7 @@ namespace OpenIddict.Server.Internal.Tests
             var response = await client.SendAsync(HttpMethods.Put, LogoutEndpoint, new OpenIdConnectRequest());
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
         }
 
@@ -244,7 +244,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, (string) response["error_custom"]);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, (string) response["error_custom"]);
         }
     }
 }

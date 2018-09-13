@@ -7,7 +7,6 @@
 using System;
 using System.Linq;
 using System.Text;
-using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
@@ -15,6 +14,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server.Internal
 {
@@ -135,18 +135,18 @@ namespace OpenIddict.Server.Internal
 
             // Ensure the authorization endpoint has been enabled when
             // the authorization code or implicit grants are supported.
-            if (!options.AuthorizationEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
-                                                                options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit)))
+            if (!options.AuthorizationEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.AuthorizationCode) ||
+                                                                options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.Implicit)))
             {
                 throw new InvalidOperationException("The authorization endpoint must be enabled to use the authorization code and implicit flows.");
             }
 
             // Ensure the token endpoint has been enabled when the authorization code,
             // client credentials, password or refresh token grants are supported.
-            if (!options.TokenEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
-                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.ClientCredentials) ||
-                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Password) ||
-                                                        options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken)))
+            if (!options.TokenEndpointPath.HasValue && (options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.AuthorizationCode) ||
+                                                        options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.ClientCredentials) ||
+                                                        options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.Password) ||
+                                                        options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.RefreshToken)))
             {
                 throw new InvalidOperationException(
                     "The token endpoint must be enabled to use the authorization code, client credentials, password and refresh token flows.");
@@ -190,7 +190,7 @@ namespace OpenIddict.Server.Internal
 
             // Ensure at least one asymmetric signing certificate/key was registered if the implicit flow was enabled.
             if (!options.SigningCredentials.Any(credentials => credentials.Key is AsymmetricSecurityKey) &&
-                 options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))
+                 options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.Implicit))
             {
                 throw new InvalidOperationException(new StringBuilder()
                     .AppendLine("At least one asymmetric signing key must be registered when enabling the implicit flow.")
@@ -201,9 +201,9 @@ namespace OpenIddict.Server.Internal
             }
 
             // Automatically add the offline_access scope if the refresh token grant has been enabled.
-            if (options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
+            if (options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.RefreshToken))
             {
-                options.Scopes.Add(OpenIdConnectConstants.Scopes.OfflineAccess);
+                options.Scopes.Add(OpenIddictConstants.Scopes.OfflineAccess);
             }
         }
     }

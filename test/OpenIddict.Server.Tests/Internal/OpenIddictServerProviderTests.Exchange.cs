@@ -23,10 +23,10 @@ namespace OpenIddict.Server.Internal.Tests
     public partial class OpenIddictServerProviderTests
     {
         [Theory]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.ClientCredentials)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Password)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.RefreshToken)]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode)]
+        [InlineData(OpenIddictConstants.GrantTypes.ClientCredentials)]
+        [InlineData(OpenIddictConstants.GrantTypes.Password)]
+        [InlineData(OpenIddictConstants.GrantTypes.RefreshToken)]
         public async Task ValidateTokenRequest_RequestIsRejectedWhenFlowIsNotEnabled(string flow)
         {
             // Arrange
@@ -48,7 +48,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedGrantType, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnsupportedGrantType, response.Error);
             Assert.Equal("The specified 'grant_type' parameter is not supported.", response.ErrorDescription);
         }
 
@@ -58,7 +58,7 @@ namespace OpenIddict.Server.Internal.Tests
             // Arrange
             var server = CreateAuthorizationServer(builder =>
             {
-                builder.Configure(options => options.GrantTypes.Remove(OpenIdConnectConstants.GrantTypes.RefreshToken));
+                builder.Configure(options => options.GrantTypes.Remove(OpenIddictConstants.GrantTypes.RefreshToken));
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -66,14 +66,14 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w",
-                Scope = OpenIdConnectConstants.Scopes.OfflineAccess
+                Scope = OpenIddictConstants.Scopes.OfflineAccess
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The 'offline_access' scope is not allowed.", response.ErrorDescription);
         }
 
@@ -90,12 +90,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = null
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The mandatory 'redirect_uri' parameter is missing.", response.ErrorDescription);
         }
 
@@ -119,14 +119,14 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w",
                 Scope = "unregistered_scope"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidScope, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidScope, response.Error);
             Assert.Equal("The specified 'scope' parameter is not valid.", response.ErrorDescription);
         }
 
@@ -144,7 +144,7 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w",
                 Scope = "registered_scope"
@@ -186,7 +186,7 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w",
                 Scope = "scope_registered_in_database scope_registered_in_options"
@@ -210,12 +210,12 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.ClientCredentials,
-                Scope = OpenIdConnectConstants.Scopes.OfflineAccess
+                GrantType = OpenIddictConstants.GrantTypes.ClientCredentials,
+                Scope = OpenIddictConstants.Scopes.OfflineAccess
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The 'offline_access' scope is not valid for the specified 'grant_type' parameter.", response.ErrorDescription);
         }
 
@@ -234,11 +234,11 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = identifier,
                 ClientSecret = secret,
-                GrantType = OpenIdConnectConstants.GrantTypes.ClientCredentials
+                GrantType = OpenIddictConstants.GrantTypes.ClientCredentials
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The 'client_id' and 'client_secret' parameters are " +
                          "required when using the client credentials grant.", response.ErrorDescription);
         }
@@ -258,13 +258,13 @@ namespace OpenIddict.Server.Internal.Tests
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
                 ClientId = null,
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
         }
 
@@ -289,13 +289,13 @@ namespace OpenIddict.Server.Internal.Tests
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
                 ClientId = "Fabrikam",
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The specified 'client_id' parameter is invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -330,13 +330,13 @@ namespace OpenIddict.Server.Internal.Tests
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
                 ClientId = "Fabrikam",
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal("This client application is not allowed to use the token endpoint.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -373,13 +373,13 @@ namespace OpenIddict.Server.Internal.Tests
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
                 ClientId = "Fabrikam",
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal("This client application is not allowed to use the specified grant type.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -420,14 +420,14 @@ namespace OpenIddict.Server.Internal.Tests
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
                 ClientId = "Fabrikam",
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w",
-                Scope = OpenIdConnectConstants.Scopes.OfflineAccess
+                Scope = OpenIddictConstants.Scopes.OfflineAccess
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The client application is not allowed to use the 'offline_access' scope.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
@@ -461,11 +461,11 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                GrantType = OpenIdConnectConstants.GrantTypes.ClientCredentials
+                GrantType = OpenIddictConstants.GrantTypes.ClientCredentials
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal("The specified 'grant_type' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -499,13 +499,13 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The 'client_secret' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -539,13 +539,13 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 ClientSecret = null,
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -579,13 +579,13 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 ClientSecret = null,
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -622,13 +622,13 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidClient, response.Error);
             Assert.Equal("The specified client credentials are invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -655,12 +655,12 @@ namespace OpenIddict.Server.Internal.Tests
 
                 instance.Setup(mock => mock.HasPermissionAsync(application,
                     OpenIddictConstants.Permissions.Prefixes.Scope +
-                    OpenIdConnectConstants.Scopes.Profile, It.IsAny<CancellationToken>()))
+                    OpenIddictConstants.Scopes.Profile, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.HasPermissionAsync(application,
                     OpenIddictConstants.Permissions.Prefixes.Scope +
-                    OpenIdConnectConstants.Scopes.Email, It.IsAny<CancellationToken>()))
+                    OpenIddictConstants.Scopes.Email, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
 
                 instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
@@ -670,7 +670,7 @@ namespace OpenIddict.Server.Internal.Tests
             var server = CreateAuthorizationServer(builder =>
             {
                 builder.Services.AddSingleton(manager);
-                builder.RegisterScopes(OpenIdConnectConstants.Scopes.Email, OpenIdConnectConstants.Scopes.Profile);
+                builder.RegisterScopes(OpenIddictConstants.Scopes.Email, OpenIddictConstants.Scopes.Profile);
                 builder.Configure(options => options.IgnoreScopePermissions = false);
             });
 
@@ -681,28 +681,28 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                GrantType = OpenIdConnectConstants.GrantTypes.Password,
+                GrantType = OpenIddictConstants.GrantTypes.Password,
                 Username = "johndoe",
                 Password = "A3ddj3w",
                 Scope = "openid offline_access profile email"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIdConnectConstants.Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
+                OpenIddictConstants.Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIdConnectConstants.Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
+                OpenIddictConstants.Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIdConnectConstants.Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
+                OpenIddictConstants.Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIdConnectConstants.Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
+                OpenIddictConstants.Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -750,7 +750,7 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
@@ -800,7 +800,7 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
                 RefreshToken = "8xLOxBtZp8"
             });
 
@@ -857,12 +857,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified authorization code is invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
@@ -914,12 +914,12 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
                 RefreshToken = "8xLOxBtZp8"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified refresh token is invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
@@ -982,12 +982,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified authorization code has already been redeemed.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
@@ -1048,12 +1048,12 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
                 RefreshToken = "8xLOxBtZp8"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified refresh token has already been redeemed.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
@@ -1132,12 +1132,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified authorization code has already been redeemed.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
@@ -1213,12 +1213,12 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
                 RefreshToken = "8xLOxBtZp8"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified refresh token has already been redeemed.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
@@ -1306,12 +1306,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified authorization code has already been redeemed.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
@@ -1399,12 +1399,12 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
                 RefreshToken = "8xLOxBtZp8"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified refresh token has already been redeemed.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
@@ -1474,12 +1474,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified authorization code is no longer valid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
@@ -1544,12 +1544,12 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
                 RefreshToken = "8xLOxBtZp8"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified refresh token is no longer valid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
@@ -1627,7 +1627,7 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
@@ -1710,7 +1710,7 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
@@ -1789,12 +1789,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The authorization associated with the authorization code is no longer valid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
@@ -1874,12 +1874,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 Code = "SplxlOBeZQQYbYS6WxSbIA",
-                GrantType = OpenIdConnectConstants.GrantTypes.AuthorizationCode,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
                 RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The authorization associated with the authorization code is no longer valid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
@@ -1953,12 +1953,12 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
                 RefreshToken = "8xLOxBtZp8"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The authorization associated with the refresh token is no longer valid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
@@ -2036,12 +2036,12 @@ namespace OpenIddict.Server.Internal.Tests
             // Act
             var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
             {
-                GrantType = OpenIdConnectConstants.GrantTypes.RefreshToken,
+                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
                 RefreshToken = "8xLOxBtZp8"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidGrant, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The authorization associated with the refresh token is no longer valid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()), Times.Once());
@@ -2049,16 +2049,16 @@ namespace OpenIddict.Server.Internal.Tests
         }
 
         [Theory]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.ClientCredentials)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Password)]
-        [InlineData(OpenIdConnectConstants.GrantTypes.RefreshToken)]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode)]
+        [InlineData(OpenIddictConstants.GrantTypes.ClientCredentials)]
+        [InlineData(OpenIddictConstants.GrantTypes.Password)]
+        [InlineData(OpenIddictConstants.GrantTypes.RefreshToken)]
         [InlineData("urn:ietf:params:oauth:grant-type:custom_grant")]
         public async Task HandleTokenRequest_RequestsAreNotHandledLocally(string flow)
         {
             // Arrange
             var identity = new ClaimsIdentity(OpenIddictServerDefaults.AuthenticationScheme);
-            identity.AddClaim(OpenIdConnectConstants.Claims.Subject, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Subject, "Bob le Bricoleur");
 
             var ticket = new AuthenticationTicket(
                 new ClaimsPrincipal(identity),
@@ -2069,12 +2069,12 @@ namespace OpenIddict.Server.Internal.Tests
 
             switch (flow)
             {
-                case OpenIdConnectConstants.GrantTypes.AuthorizationCode:
+                case OpenIddictConstants.GrantTypes.AuthorizationCode:
                     ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.AuthorizationCode);
                     ticket.SetPresenters("Fabrikam");
                     break;
 
-                case OpenIdConnectConstants.GrantTypes.RefreshToken:
+                case OpenIddictConstants.GrantTypes.RefreshToken:
                     ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
                     break;
             }

@@ -7,6 +7,7 @@
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
+using OpenIddict.Abstractions;
 using Xunit;
 
 namespace OpenIddict.Server.Internal.Tests
@@ -27,8 +28,8 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal("SlAV32hkKG", (string) response[OpenIdConnectConstants.Parameters.AccessToken]);
-            Assert.Equal("Bob le Bricoleur", (string) response[OpenIdConnectConstants.Claims.Subject]);
+            Assert.Equal("SlAV32hkKG", (string) response[OpenIddictConstants.Parameters.AccessToken]);
+            Assert.Equal("Bob le Bricoleur", (string) response[OpenIddictConstants.Claims.Subject]);
         }
     }
 }

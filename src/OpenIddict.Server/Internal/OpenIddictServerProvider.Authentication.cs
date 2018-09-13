@@ -42,7 +42,7 @@ namespace OpenIddict.Server.Internal
                                  "an unsupported parameter: {Parameter}.", "request");
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.RequestNotSupported,
+                    error: OpenIddictConstants.Errors.RequestNotSupported,
                     description: "The 'request' parameter is not supported.");
 
                 return;
@@ -55,7 +55,7 @@ namespace OpenIddict.Server.Internal
                                  "an unsupported parameter: {Parameter}.", "request_uri");
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.RequestUriNotSupported,
+                    error: OpenIddictConstants.Errors.RequestUriNotSupported,
                     description: "The 'request_uri' parameter is not supported.");
 
                 return;
@@ -72,7 +72,7 @@ namespace OpenIddict.Server.Internal
                                      "request caching support was not enabled.");
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The 'request_id' parameter is not supported.");
 
                     return;
@@ -89,7 +89,7 @@ namespace OpenIddict.Server.Internal
                                      "or invalid request_id parameter was specified.");
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The specified 'request_id' parameter is invalid.");
 
                     return;
@@ -126,7 +126,7 @@ namespace OpenIddict.Server.Internal
                                  "response type is not supported.", context.Request.ResponseType);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
+                    error: OpenIddictConstants.Errors.UnsupportedResponseType,
                     description: "The specified 'response_type' parameter is not supported.");
 
                 return;
@@ -134,50 +134,50 @@ namespace OpenIddict.Server.Internal
 
             // Reject code flow authorization requests if the authorization code flow is not enabled.
             if (context.Request.IsAuthorizationCodeFlow() &&
-               !options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode))
+               !options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.AuthorizationCode))
             {
                 _logger.LogError("The authorization request was rejected because " +
                                  "the authorization code flow was not enabled.");
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
+                    error: OpenIddictConstants.Errors.UnsupportedResponseType,
                     description: "The specified 'response_type' parameter is not allowed.");
 
                 return;
             }
 
             // Reject implicit flow authorization requests if the implicit flow is not enabled.
-            if (context.Request.IsImplicitFlow() && !options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit))
+            if (context.Request.IsImplicitFlow() && !options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.Implicit))
             {
                 _logger.LogError("The authorization request was rejected because the implicit flow was not enabled.");
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
+                    error: OpenIddictConstants.Errors.UnsupportedResponseType,
                     description: "The specified 'response_type' parameter is not allowed.");
 
                 return;
             }
 
             // Reject hybrid flow authorization requests if the authorization code or the implicit flows are not enabled.
-            if (context.Request.IsHybridFlow() && (!options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.AuthorizationCode) ||
-                                                   !options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.Implicit)))
+            if (context.Request.IsHybridFlow() && (!options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.AuthorizationCode) ||
+                                                   !options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.Implicit)))
             {
                 _logger.LogError("The authorization request was rejected because the " +
                                  "authorization code flow or the implicit flow was not enabled.");
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnsupportedResponseType,
+                    error: OpenIddictConstants.Errors.UnsupportedResponseType,
                     description: "The specified 'response_type' parameter is not allowed.");
 
                 return;
             }
 
             // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
-            if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
-               !options.GrantTypes.Contains(OpenIdConnectConstants.GrantTypes.RefreshToken))
+            if (context.Request.HasScope(OpenIddictConstants.Scopes.OfflineAccess) &&
+               !options.GrantTypes.Contains(OpenIddictConstants.GrantTypes.RefreshToken))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The 'offline_access' scope is not allowed.");
 
                 return;
@@ -204,7 +204,7 @@ namespace OpenIddict.Server.Internal
                     _logger.LogError("The authentication request was rejected because invalid scopes were specified: {Scopes}.", scopes);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidScope,
+                        error: OpenIddictConstants.Errors.InvalidScope,
                         description: "The specified 'scope' parameter is not valid.");
 
                     return;
@@ -222,7 +222,7 @@ namespace OpenIddict.Server.Internal
                                  "response mode is not supported.", context.Request.ResponseMode);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The specified 'response_mode' parameter is not supported.");
 
                 return;
@@ -235,7 +235,7 @@ namespace OpenIddict.Server.Internal
             if (string.IsNullOrEmpty(context.RedirectUri))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The mandatory 'redirect_uri' parameter is missing.");
 
                 return;
@@ -253,7 +253,7 @@ namespace OpenIddict.Server.Internal
                                      "required 'code_challenge_method' parameter was missing.");
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The 'code_challenge_method' parameter must be specified.");
 
                     return;
@@ -267,20 +267,20 @@ namespace OpenIddict.Server.Internal
                                      "'code_challenge_method' parameter was set to 'plain'.");
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The specified 'code_challenge_method' parameter is not allowed.");
 
                     return;
                 }
 
                 // Reject authorization requests that contain response_type=token when a code_challenge is specified.
-                if (context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token))
+                if (context.Request.HasResponseType(OpenIddictConstants.ResponseTypes.Token))
                 {
                     _logger.LogError("The authorization request was rejected because the " +
                                      "specified response type was not compatible with PKCE.");
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The specified 'response_type' parameter is not allowed when using PKCE.");
 
                     return;
@@ -295,7 +295,7 @@ namespace OpenIddict.Server.Internal
                                  "application was not found: '{ClientId}'.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The specified 'client_id' parameter is invalid.");
 
                 return;
@@ -310,10 +310,10 @@ namespace OpenIddict.Server.Internal
             // Note: when using the authorization code grant, ValidateTokenRequest is responsible of rejecting
             // the token request if the client_id corresponds to an unauthenticated confidential client.
             if (await _applicationManager.IsConfidentialAsync(application) &&
-                context.Request.HasResponseType(OpenIdConnectConstants.ResponseTypes.Token))
+                context.Request.HasResponseType(OpenIddictConstants.ResponseTypes.Token))
             {
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    error: OpenIddictConstants.Errors.UnauthorizedClient,
                     description: "The specified 'response_type' parameter is not valid for this client application.");
 
                 return;
@@ -327,7 +327,7 @@ namespace OpenIddict.Server.Internal
                                  "was not allowed to use the authorization endpoint.", context.ClientId);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                    error: OpenIddictConstants.Errors.UnauthorizedClient,
                     description: "This client application is not allowed to use the authorization endpoint.");
 
                 return;
@@ -343,7 +343,7 @@ namespace OpenIddict.Server.Internal
                                      "was not allowed to use the authorization code flow.", context.ClientId);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        error: OpenIddictConstants.Errors.UnauthorizedClient,
                         description: "The client application is not allowed to use the authorization code flow.");
 
                     return;
@@ -357,7 +357,7 @@ namespace OpenIddict.Server.Internal
                                      "was not allowed to use the implicit flow.", context.ClientId);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        error: OpenIddictConstants.Errors.UnauthorizedClient,
                         description: "The client application is not allowed to use the implicit flow.");
 
                     return;
@@ -372,7 +372,7 @@ namespace OpenIddict.Server.Internal
                                      "was not allowed to use the hybrid flow.", context.ClientId);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.UnauthorizedClient,
+                        error: OpenIddictConstants.Errors.UnauthorizedClient,
                         description: "The client application is not allowed to use the hybrid flow.");
 
                     return;
@@ -380,14 +380,14 @@ namespace OpenIddict.Server.Internal
 
                 // Reject the request if the offline_access scope was request and if
                 // the application is not allowed to use the refresh token grant type.
-                if (context.Request.HasScope(OpenIdConnectConstants.Scopes.OfflineAccess) &&
+                if (context.Request.HasScope(OpenIddictConstants.Scopes.OfflineAccess) &&
                    !await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.GrantTypes.RefreshToken))
                 {
                     _logger.LogError("The authorization request was rejected because the application '{ClientId}' " +
                                      "was not allowed to request the 'offline_access' scope.", context.ClientId);
 
                     context.Reject(
-                        error: OpenIdConnectConstants.Errors.InvalidRequest,
+                        error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The client application is not allowed to use the 'offline_access' scope.");
 
                     return;
@@ -401,7 +401,7 @@ namespace OpenIddict.Server.Internal
                                  "was invalid: '{RedirectUri}'.", context.RedirectUri);
 
                 context.Reject(
-                    error: OpenIdConnectConstants.Errors.InvalidRequest,
+                    error: OpenIddictConstants.Errors.InvalidRequest,
                     description: "The specified 'redirect_uri' parameter is not valid for this client application.");
 
                 return;
@@ -414,8 +414,8 @@ namespace OpenIddict.Server.Internal
                 foreach (var scope in context.Request.GetScopes())
                 {
                     // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
-                    if (string.Equals(scope, OpenIdConnectConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
-                        string.Equals(scope, OpenIdConnectConstants.Scopes.OpenId, StringComparison.Ordinal))
+                    if (string.Equals(scope, OpenIddictConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
+                        string.Equals(scope, OpenIddictConstants.Scopes.OpenId, StringComparison.Ordinal))
                     {
                         continue;
                     }
@@ -427,7 +427,7 @@ namespace OpenIddict.Server.Internal
                                          "was not allowed to use the scope {Scope}.", context.ClientId, scope);
 
                         context.Reject(
-                            error: OpenIdConnectConstants.Errors.InvalidRequest,
+                            error: OpenIddictConstants.Errors.InvalidRequest,
                             description: "This client application is not allowed to use the specified scope.");
 
                         return;
@@ -474,7 +474,7 @@ namespace OpenIddict.Server.Internal
                 var address = QueryHelpers.AddQueryString(
                     uri: context.HttpContext.Request.Scheme + "://" + context.HttpContext.Request.Host +
                          context.HttpContext.Request.PathBase + context.HttpContext.Request.Path,
-                    name: OpenIdConnectConstants.Parameters.RequestId, value: context.Request.RequestId);
+                    name: OpenIddictConstants.Parameters.RequestId, value: context.Request.RequestId);
 
                 context.HttpContext.Response.Redirect(address);
 

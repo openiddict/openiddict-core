@@ -41,12 +41,12 @@ namespace OpenIddict.Server.Internal.Tests
                 Request = "eyJhbGciOiJub25lIn0.eyJpc3MiOiJodHRwOi8vd3d3LmZhYnJpa2FtLmNvbSIsImF1ZCI6Imh0" +
                           "dHA6Ly93d3cuY29udG9zby5jb20iLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNsaWVudF9pZCI6" +
                           "IkZhYnJpa2FtIiwicmVkaXJlY3RfdXJpIjoiaHR0cDovL3d3dy5mYWJyaWthbS5jb20vcGF0aCJ9.",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code,
-                Scope = OpenIdConnectConstants.Scopes.OpenId
+                ResponseType = OpenIddictConstants.ResponseTypes.Code,
+                Scope = OpenIddictConstants.Scopes.OpenId
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.RequestNotSupported, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.RequestNotSupported, response.Error);
             Assert.Equal("The 'request' parameter is not supported.", response.ErrorDescription);
         }
 
@@ -64,12 +64,12 @@ namespace OpenIddict.Server.Internal.Tests
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 RequestUri = "http://www.fabrikam.com/request/GkurKxf5T0Y-mnPFCHqWOMiZi4VS138cQO_V7PZHAdM",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code,
-                Scope = OpenIdConnectConstants.Scopes.OpenId
+                ResponseType = OpenIddictConstants.ResponseTypes.Code,
+                Scope = OpenIddictConstants.Scopes.OpenId
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.RequestUriNotSupported, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.RequestUriNotSupported, response.Error);
             Assert.Equal("The 'request_uri' parameter is not supported.", response.ErrorDescription);
         }
 
@@ -88,7 +88,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The 'request_id' parameter is not supported.", response.ErrorDescription);
         }
 
@@ -112,7 +112,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified 'request_id' parameter is invalid.", response.ErrorDescription);
         }
 
@@ -129,11 +129,11 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.None
+                ResponseType = OpenIddictConstants.ResponseTypes.None
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedResponseType, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnsupportedResponseType, response.Error);
             Assert.Equal("The specified 'response_type' parameter is not supported.", response.ErrorDescription);
         }
 
@@ -154,21 +154,21 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedResponseType, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnsupportedResponseType, response.Error);
             Assert.Equal("The specified 'response_type' parameter is not supported.", response.ErrorDescription);
         }
 
         [Theory]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode, "code")]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode, "code id_token")]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode, "code id_token token")]
-        [InlineData(OpenIdConnectConstants.GrantTypes.AuthorizationCode, "code token")]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Implicit, "code id_token")]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Implicit, "code id_token token")]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Implicit, "code token")]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Implicit, "id_token")]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Implicit, "id_token token")]
-        [InlineData(OpenIdConnectConstants.GrantTypes.Implicit, "token")]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode, "code")]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode, "code id_token")]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode, "code id_token token")]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode, "code token")]
+        [InlineData(OpenIddictConstants.GrantTypes.Implicit, "code id_token")]
+        [InlineData(OpenIddictConstants.GrantTypes.Implicit, "code id_token token")]
+        [InlineData(OpenIddictConstants.GrantTypes.Implicit, "code token")]
+        [InlineData(OpenIddictConstants.GrantTypes.Implicit, "id_token")]
+        [InlineData(OpenIddictConstants.GrantTypes.Implicit, "id_token token")]
+        [InlineData(OpenIddictConstants.GrantTypes.Implicit, "token")]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCorrespondingFlowIsDisabled(string flow, string type)
         {
             // Arrange
@@ -186,11 +186,11 @@ namespace OpenIddict.Server.Internal.Tests
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = type,
-                Scope = OpenIdConnectConstants.Scopes.OpenId
+                Scope = OpenIddictConstants.Scopes.OpenId
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnsupportedResponseType, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnsupportedResponseType, response.Error);
             Assert.Equal("The specified 'response_type' parameter is not allowed.", response.ErrorDescription);
         }
 
@@ -216,12 +216,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code,
+                ResponseType = OpenIddictConstants.ResponseTypes.Code,
                 Scope = "unregistered_scope"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidScope, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidScope, response.Error);
             Assert.Equal("The specified 'scope' parameter is not valid.", response.ErrorDescription);
         }
 
@@ -256,7 +256,7 @@ namespace OpenIddict.Server.Internal.Tests
                 ClientId = "Fabrikam",
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Token,
+                ResponseType = OpenIddictConstants.ResponseTypes.Token,
                 Scope = "registered_scope"
             });
 
@@ -313,7 +313,7 @@ namespace OpenIddict.Server.Internal.Tests
                 ClientId = "Fabrikam",
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Token,
+                ResponseType = OpenIddictConstants.ResponseTypes.Token,
                 Scope = "scope_registered_in_database scope_registered_in_options"
             });
 
@@ -330,7 +330,7 @@ namespace OpenIddict.Server.Internal.Tests
             // Arrange
             var server = CreateAuthorizationServer(builder =>
             {
-                builder.Configure(options => options.GrantTypes.Remove(OpenIdConnectConstants.GrantTypes.RefreshToken));
+                builder.Configure(options => options.GrantTypes.Remove(OpenIddictConstants.GrantTypes.RefreshToken));
             });
 
             var client = new OpenIdConnectClient(server.CreateClient());
@@ -340,12 +340,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code,
-                Scope = OpenIdConnectConstants.Scopes.OfflineAccess
+                ResponseType = OpenIddictConstants.ResponseTypes.Code,
+                Scope = OpenIddictConstants.Scopes.OfflineAccess
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The 'offline_access' scope is not allowed.", response.ErrorDescription);
         }
 
@@ -363,11 +363,11 @@ namespace OpenIddict.Server.Internal.Tests
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseMode = "unknown_response_mode",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code
+                ResponseType = OpenIddictConstants.ResponseTypes.Code
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified 'response_mode' parameter is not supported.", response.ErrorDescription);
         }
 
@@ -384,11 +384,11 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = null,
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code
+                ResponseType = OpenIddictConstants.ResponseTypes.Code
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The mandatory 'redirect_uri' parameter is missing.", response.ErrorDescription);
         }
 
@@ -407,11 +407,11 @@ namespace OpenIddict.Server.Internal.Tests
                 CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
                 CodeChallengeMethod = null,
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code
+                ResponseType = OpenIddictConstants.ResponseTypes.Code
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The 'code_challenge_method' parameter must be specified.", response.ErrorDescription);
         }
 
@@ -430,11 +430,11 @@ namespace OpenIddict.Server.Internal.Tests
                 CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
                 CodeChallengeMethod = OpenIdConnectConstants.CodeChallengeMethods.Plain,
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code
+                ResponseType = OpenIddictConstants.ResponseTypes.Code
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified 'code_challenge_method' parameter is not allowed.", response.ErrorDescription);
         }
 
@@ -457,11 +457,11 @@ namespace OpenIddict.Server.Internal.Tests
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = type,
-                Scope = OpenIdConnectConstants.Scopes.OpenId
+                Scope = OpenIddictConstants.Scopes.OpenId
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified 'response_type' parameter is not allowed when using PKCE.", response.ErrorDescription);
         }
 
@@ -487,11 +487,11 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code
+                ResponseType = OpenIddictConstants.ResponseTypes.Code
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified 'client_id' parameter is invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -530,11 +530,11 @@ namespace OpenIddict.Server.Internal.Tests
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = type,
-                Scope = OpenIdConnectConstants.Scopes.OpenId
+                Scope = OpenIddictConstants.Scopes.OpenId
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal("The specified 'response_type' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -571,11 +571,11 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code
+                ResponseType = OpenIddictConstants.ResponseTypes.Code
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal("This client application is not allowed to use the authorization endpoint.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -646,11 +646,11 @@ namespace OpenIddict.Server.Internal.Tests
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = type,
-                Scope = OpenIdConnectConstants.Scopes.OpenId
+                Scope = OpenIddictConstants.Scopes.OpenId
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.UnauthorizedClient, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.UnauthorizedClient, response.Error);
             Assert.Equal(description, response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -691,12 +691,12 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code,
-                Scope = OpenIdConnectConstants.Scopes.OfflineAccess
+                ResponseType = OpenIddictConstants.ResponseTypes.Code,
+                Scope = OpenIddictConstants.Scopes.OfflineAccess
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The client application is not allowed to use the 'offline_access' scope.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
@@ -730,11 +730,11 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code
+                ResponseType = OpenIddictConstants.ResponseTypes.Code
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified 'redirect_uri' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
@@ -757,19 +757,19 @@ namespace OpenIddict.Server.Internal.Tests
 
                 instance.Setup(mock => mock.HasPermissionAsync(application,
                     OpenIddictConstants.Permissions.Prefixes.Scope +
-                    OpenIdConnectConstants.Scopes.Profile, It.IsAny<CancellationToken>()))
+                    OpenIddictConstants.Scopes.Profile, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.HasPermissionAsync(application,
                     OpenIddictConstants.Permissions.Prefixes.Scope +
-                    OpenIdConnectConstants.Scopes.Email, It.IsAny<CancellationToken>()))
+                    OpenIddictConstants.Scopes.Email, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
             });
 
             var server = CreateAuthorizationServer(builder =>
             {
                 builder.Services.AddSingleton(manager);
-                builder.RegisterScopes(OpenIdConnectConstants.Scopes.Email, OpenIdConnectConstants.Scopes.Profile);
+                builder.RegisterScopes(OpenIddictConstants.Scopes.Email, OpenIddictConstants.Scopes.Profile);
                 builder.Configure(options => options.IgnoreScopePermissions = false);
             });
 
@@ -780,26 +780,26 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Code,
+                ResponseType = OpenIddictConstants.ResponseTypes.Code,
                 Scope = "openid offline_access profile email"
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIdConnectConstants.Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
+                OpenIddictConstants.Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIdConnectConstants.Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
+                OpenIddictConstants.Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIdConnectConstants.Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
+                OpenIddictConstants.Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
                 OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIdConnectConstants.Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
+                OpenIddictConstants.Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -845,10 +845,10 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Token
+                ResponseType = OpenIddictConstants.ResponseTypes.Token
             });
 
-            var identifier = (string) response[OpenIdConnectConstants.Parameters.RequestId];
+            var identifier = (string) response[OpenIddictConstants.Parameters.RequestId];
 
             // Assert
             Assert.Single(response.GetParameters());
@@ -916,7 +916,7 @@ namespace OpenIddict.Server.Internal.Tests
                 Nonce = "n-0S6_WzA2Mj",
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = type,
-                Scope = OpenIdConnectConstants.Scopes.OpenId
+                Scope = OpenIddictConstants.Scopes.OpenId
             });
 
             // Assert
@@ -933,7 +933,7 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 ClientId = "Fabrikam",
                 RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = OpenIdConnectConstants.ResponseTypes.Token
+                ResponseType = OpenIddictConstants.ResponseTypes.Token
             };
 
             var stream = new MemoryStream();
@@ -1008,7 +1008,7 @@ namespace OpenIddict.Server.Internal.Tests
             var response = await client.SendAsync(HttpMethods.Put, AuthorizationEndpoint, new OpenIdConnectRequest());
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
             Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
         }
 
@@ -1032,7 +1032,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Assert.Equal(OpenIdConnectConstants.Errors.InvalidRequest, (string) response["error_custom"]);
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, (string) response["error_custom"]);
         }
     }
 }

@@ -7,9 +7,9 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.Extensions.Caching.Distributed;
+using OpenIddict.Abstractions;
 using OpenIddict.Server.Internal;
 
 namespace OpenIddict.Server
@@ -46,12 +46,12 @@ namespace OpenIddict.Server
         /// </summary>
         public ISet<string> Claims { get; } = new HashSet<string>(StringComparer.Ordinal)
         {
-            OpenIdConnectConstants.Claims.Audience,
-            OpenIdConnectConstants.Claims.ExpiresAt,
-            OpenIdConnectConstants.Claims.IssuedAt,
-            OpenIdConnectConstants.Claims.Issuer,
-            OpenIdConnectConstants.Claims.JwtId,
-            OpenIdConnectConstants.Claims.Subject
+            OpenIddictConstants.Claims.Audience,
+            OpenIddictConstants.Claims.ExpiresAt,
+            OpenIddictConstants.Claims.IssuedAt,
+            OpenIddictConstants.Claims.Issuer,
+            OpenIddictConstants.Claims.JwtId,
+            OpenIddictConstants.Claims.Subject
         };
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace OpenIddict.Server
         /// </summary>
         public ISet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal)
         {
-            OpenIdConnectConstants.Scopes.OpenId
+            OpenIddictConstants.Scopes.OpenId
         };
 
         /// <summary>
