@@ -29,12 +29,10 @@ namespace OpenIddict.Validation.Internal
         /// directly from your code. This API may change or be removed in future minor releases.
         /// </summary>
         public OpenIddictValidationConfiguration([NotNull] IDataProtectionProvider dataProtectionProvider)
-        {
-            _dataProtectionProvider = dataProtectionProvider;
-        }
+            => _dataProtectionProvider = dataProtectionProvider;
 
         /// <summary>
-        /// Registers the OpenIddict server handler in the global authentication options.
+        /// Registers the OpenIddict validation handler in the global authentication options.
         /// </summary>
         /// <param name="options">The options instance to initialize.</param>
         public void Configure(AuthenticationOptions options)
@@ -51,10 +49,7 @@ namespace OpenIddict.Validation.Internal
                     .ToString());
             }
 
-            options.AddScheme(OpenIddictValidationDefaults.AuthenticationScheme, scheme =>
-            {
-                scheme.HandlerType = typeof(OpenIddictValidationHandler);
-            });
+            options.AddScheme<OpenIddictValidationHandler>(OpenIddictValidationDefaults.AuthenticationScheme, displayName: null);
         }
 
         /// <summary>

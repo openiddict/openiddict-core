@@ -5,12 +5,9 @@
  */
 
 using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Moq;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -101,70 +98,5 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Assert
             Assert.Contains(services, service => service.ServiceType == type && service.ImplementationType == type);
         }
-
-        [Fact]
-        public void UseOpenIddict_RegistersDefaultEntityConfigurations()
-        {
-            // Arrange
-            var builder = new Mock<ModelBuilder>(new ConventionSet());
-
-            // Act
-            builder.Object.UseOpenIddict();
-
-            // Assert
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictApplicationConfiguration<OpenIddictApplication, OpenIddictAuthorization, OpenIddictToken, string>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictAuthorizationConfiguration<OpenIddictAuthorization, OpenIddictApplication, OpenIddictToken, string>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictScopeConfiguration<OpenIddictScope, string>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictTokenConfiguration<OpenIddictToken, OpenIddictApplication, OpenIddictAuthorization, string>>()), Times.Once());
-        }
-
-        [Fact]
-        public void UseOpenIddict_RegistersDefaultEntityConfigurationsWithCustomKeyType()
-        {
-            // Arrange
-            var builder = new Mock<ModelBuilder>(new ConventionSet());
-
-            // Act
-            builder.Object.UseOpenIddict<long>();
-
-            // Assert
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictApplicationConfiguration<OpenIddictApplication<long>, OpenIddictAuthorization<long>, OpenIddictToken<long>, long>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictAuthorizationConfiguration<OpenIddictAuthorization<long>, OpenIddictApplication<long>, OpenIddictToken<long>, long>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictScopeConfiguration<OpenIddictScope<long>, long>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictTokenConfiguration<OpenIddictToken<long>, OpenIddictApplication<long>, OpenIddictAuthorization<long>, long>>()), Times.Once());
-        }
-
-        [Fact]
-        public void UseOpenIddict_RegistersCustomEntityConfigurations()
-        {
-            // Arrange
-            var builder = new Mock<ModelBuilder>(new ConventionSet());
-
-            // Act
-            builder.Object.UseOpenIddict<CustomApplication, CustomAuthorization, CustomScope, CustomToken, Guid>();
-
-            // Assert
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictApplicationConfiguration<CustomApplication, CustomAuthorization, CustomToken, Guid>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictAuthorizationConfiguration<CustomAuthorization, CustomApplication, CustomToken, Guid>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictScopeConfiguration<CustomScope, Guid>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictTokenConfiguration<CustomToken, CustomApplication, CustomAuthorization, Guid>>()), Times.Once());
-        }
-
-        public class CustomApplication : OpenIddictApplication<Guid, CustomAuthorization, CustomToken> { }
-        public class CustomAuthorization : OpenIddictAuthorization<Guid, CustomApplication, CustomToken> { }
-        public class CustomScope : OpenIddictScope<Guid> { }
-        public class CustomToken : OpenIddictToken<Guid, CustomApplication, CustomAuthorization> { }
     }
 }

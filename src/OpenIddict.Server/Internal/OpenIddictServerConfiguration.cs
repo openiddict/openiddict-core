@@ -59,10 +59,7 @@ namespace OpenIddict.Server.Internal
                     .ToString());
             }
 
-            options.AddScheme(OpenIddictServerDefaults.AuthenticationScheme, scheme =>
-            {
-                scheme.HandlerType = typeof(OpenIddictServerHandler);
-            });
+            options.AddScheme<OpenIddictServerHandler>(OpenIddictServerDefaults.AuthenticationScheme, displayName: null);
         }
 
         /// <summary>

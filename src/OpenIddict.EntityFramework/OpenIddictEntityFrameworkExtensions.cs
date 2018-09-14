@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Data.Entity;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.EntityFramework;
@@ -78,46 +77,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             configuration(builder.UseEntityFramework());
-
-            return builder;
-        }
-
-        /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework 6.x context
-        /// using the default OpenIddict models and the default key type (string).
-        /// </summary>
-        /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-        /// <returns>The Entity Framework context builder.</returns>
-        public static DbModelBuilder UseOpenIddict([NotNull] this DbModelBuilder builder)
-            => builder.UseOpenIddict<OpenIddictApplication,
-                                     OpenIddictAuthorization,
-                                     OpenIddictScope,
-                                     OpenIddictToken, string>();
-
-        /// <summary>
-        /// Registers the OpenIddict entity sets in the Entity Framework 6.x
-        /// context using the specified entities and the specified key type.
-        /// Note: using this method requires creating non-generic derived classes
-        /// for all the OpenIddict entities (application, authorization, scope, token).
-        /// </summary>
-        /// <param name="builder">The builder used to configure the Entity Framework context.</param>
-        /// <returns>The Entity Framework context builder.</returns>
-        public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this DbModelBuilder builder)
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
-            where TScope : OpenIddictScope<TKey>
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
-            where TKey : IEquatable<TKey>
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.Configurations.Add(new OpenIddictApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>());
-            builder.Configurations.Add(new OpenIddictAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>());
-            builder.Configurations.Add(new OpenIddictScopeConfiguration<TScope, TKey>());
-            builder.Configurations.Add(new OpenIddictTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
 
             return builder;
         }

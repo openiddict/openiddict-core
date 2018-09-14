@@ -107,7 +107,7 @@ namespace OpenIddict.Server.Internal
             Debug.Assert(context.Ticket != null, "The authentication ticket shouldn't be null.");
             Debug.Assert(!string.IsNullOrEmpty(context.Request.ClientId), "The client_id parameter shouldn't be null.");
 
-            var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
+            var identifier = context.Ticket.GetInternalTokenId();
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
             if (!context.Ticket.IsAccessToken())
@@ -145,12 +145,9 @@ namespace OpenIddict.Server.Internal
             }
 
             // If an authorization was attached to the access token, ensure it is still valid.
-            if (!options.DisableAuthorizationStorage &&
-                 context.Ticket.HasProperty(OpenIddictConstants.Properties.InternalAuthorizationId))
+            if (!options.DisableAuthorizationStorage && !string.IsNullOrEmpty(context.Ticket.GetInternalAuthorizationId()))
             {
-                var authorization = await _authorizationManager.FindByIdAsync(
-                    context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId));
-
+                var authorization = await _authorizationManager.FindByIdAsync(context.Ticket.GetInternalAuthorizationId());
                 if (authorization == null || !await _authorizationManager.IsValidAsync(authorization))
                 {
                     _logger.LogError("The token '{Identifier}' was declared as inactive because " +

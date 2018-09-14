@@ -81,7 +81,7 @@ namespace OpenIddict.Server.Internal
 
                 // Attach the unique identifier of the ad hoc authorization to the authentication ticket
                 // so that it is attached to all the derived tokens, allowing batched revocations support.
-                ticket.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId, identifier);
+                ticket.SetInternalAuthorizationId(identifier);
             }
         }
 
@@ -118,7 +118,7 @@ namespace OpenIddict.Server.Internal
 
             var descriptor = new OpenIddictTokenDescriptor
             {
-                AuthorizationId = ticket.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId),
+                AuthorizationId = ticket.GetInternalAuthorizationId(),
                 CreationDate = ticket.Properties.IssuedUtc,
                 ExpirationDate = ticket.Properties.ExpiresUtc,
                 Principal = ticket.Principal,
@@ -203,8 +203,8 @@ namespace OpenIddict.Server.Internal
             ticket.Properties.ExpiresUtc = descriptor.ExpirationDate;
 
             // Restore the token/authorization identifiers using the identifiers attached with the database entry.
-            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, identifier)
-                  .SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId, descriptor.AuthorizationId);
+            ticket.SetInternalAuthorizationId(descriptor.AuthorizationId)
+                  .SetInternalTokenId(identifier);
 
             if (options.UseReferenceTokens)
             {
@@ -309,7 +309,7 @@ namespace OpenIddict.Server.Internal
                     return null;
                 }
 
-                identifier = ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
+                identifier = ticket.GetInternalTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
                     _logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
@@ -337,9 +337,8 @@ namespace OpenIddict.Server.Internal
             ticket.Properties.ExpiresUtc = await _tokenManager.GetExpirationDateAsync(token);
 
             // Restore the token/authorization identifiers using the identifiers attached with the database entry.
-            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, identifier);
-            ticket.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId,
-                await _tokenManager.GetAuthorizationIdAsync(token));
+            ticket.SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
+                  .SetInternalTokenId(identifier);
 
             _logger.LogTrace("The token '{Identifier}' was successfully decrypted and " +
                              "retrieved from the database: {Claims} ; {Properties}.",
@@ -353,7 +352,7 @@ namespace OpenIddict.Server.Internal
             // Note: if the authorization identifier or the authorization itself
             // cannot be found, return true as the authorization doesn't need
             // to be revoked if it doesn't exist or is already invalid.
-            var identifier = ticket.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
+            var identifier = ticket.GetInternalAuthorizationId();
             if (string.IsNullOrEmpty(identifier))
             {
                 return true;
@@ -427,7 +426,7 @@ namespace OpenIddict.Server.Internal
         private async Task<bool> TryRevokeTokensAsync([NotNull] AuthenticationTicket ticket)
         {
             // Note: if the authorization identifier is null, return true as no tokens need to be revoked.
-            var identifier = ticket.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
+            var identifier = ticket.GetInternalAuthorizationId();
             if (string.IsNullOrEmpty(identifier))
             {
                 return true;
@@ -438,7 +437,7 @@ namespace OpenIddict.Server.Internal
             foreach (var token in await _tokenManager.FindByAuthorizationIdAsync(identifier))
             {
                 // Don't change the status of the token used in the token request.
-                if (string.Equals(ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId),
+                if (string.Equals(ticket.GetInternalTokenId(),
                     await _tokenManager.GetIdAsync(token), StringComparison.Ordinal))
                 {
                     continue;
@@ -484,7 +483,7 @@ namespace OpenIddict.Server.Internal
         private async Task<bool> TryExtendRefreshTokenAsync(
             [NotNull] object token, [NotNull] AuthenticationTicket ticket, [NotNull] OpenIddictServerOptions options)
         {
-            var identifier = ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
+            var identifier = ticket.GetInternalTokenId();
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
 
             try

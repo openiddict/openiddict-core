@@ -199,7 +199,7 @@ namespace OpenIddict.Server.Internal
             }
 
             // Extract the token identifier from the authentication ticket.
-            var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
+            var identifier = context.Ticket.GetInternalTokenId();
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
             var token = await _tokenManager.FindByIdAsync(identifier);
