@@ -173,7 +173,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(typeof(IPostConfigureOptions<OpenIddictServerOptions>), typeof(OpenIddictServerInitializer))]
+        [InlineData(typeof(IPostConfigureOptions<OpenIddictServerOptions>), typeof(OpenIddictServerConfiguration))]
         [InlineData(typeof(IPostConfigureOptions<OpenIddictServerOptions>), typeof(OpenIdConnectServerInitializer))]
         public void AddServer_RegistersInitializers(Type serviceType, Type implementationType)
         {

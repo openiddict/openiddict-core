@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Text;
 using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
@@ -45,39 +44,13 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddScoped<OpenIddictValidationHandler>();
             builder.Services.TryAddScoped<OpenIddictValidationProvider>();
 
-            // Note: TryAddEnumerable() is used here to ensure the initializer is only registered once.
+            // Register the options initializers used by the OAuth validation handler and OpenIddict.
+            // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
             builder.Services.TryAddEnumerable(new[]
             {
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationInitializer>(),
+                ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictValidationConfiguration>(),
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationConfiguration>(),
                 ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OAuthValidationInitializer>()
-            });
-
-            // Register the OpenIddict validation handler in the authentication options,
-            // so it can be discovered by the default authentication handler provider.
-            builder.Services.Configure<AuthenticationOptions>(options =>
-            {
-                // Note: this method is guaranteed to be idempotent. To prevent multiple schemes from being
-                // registered (which would result in an exception being thrown), a manual check is made here.
-                if (options.SchemeMap.TryGetValue(OpenIddictValidationDefaults.AuthenticationScheme, out var handler))
-                {
-                    // If the handler type doesn't correspond to the OpenIddict handler, throw an exception.
-                    if (handler.HandlerType != typeof(OpenIddictValidationHandler))
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .AppendLine("The OpenIddict validation handler cannot be registered as an authentication scheme.")
-                            .AppendLine("This may indicate that an instance of the OAuth validation or JWT bearer handler was registered.")
-                            .Append("Make sure that neither 'services.AddAuthentication().AddOAuthValidation()' nor ")
-                            .Append("'services.AddAuthentication().AddJwtBearer()' are called from 'ConfigureServices'.")
-                            .ToString());
-                    }
-
-                    return;
-                }
-
-                options.AddScheme(OpenIddictValidationDefaults.AuthenticationScheme, scheme =>
-                {
-                    scheme.HandlerType = typeof(OpenIddictValidationHandler);
-                });
             });
 
             return new OpenIddictValidationBuilder(builder.Services);

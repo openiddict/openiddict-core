@@ -134,7 +134,7 @@ namespace OpenIddict.Validation.Tests
         }
 
         [Theory]
-        [InlineData(typeof(IPostConfigureOptions<OpenIddictValidationOptions>), typeof(OpenIddictValidationInitializer))]
+        [InlineData(typeof(IPostConfigureOptions<OpenIddictValidationOptions>), typeof(OpenIddictValidationConfiguration))]
         [InlineData(typeof(IPostConfigureOptions<OpenIddictValidationOptions>), typeof(OAuthValidationInitializer))]
         public void AddValidation_RegistersInitializers(Type serviceType, Type implementationType)
         {

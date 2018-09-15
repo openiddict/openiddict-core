@@ -10,16 +10,41 @@ using System.Threading.Tasks;
 using AspNet.Security.OAuth.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace OpenIddict.Validation.Internal.Tests
 {
-    public class OpenIddictValidationInitializerTests
+    public class OpenIddictValidationConfigurationTests
     {
+        [Fact]
+        public void Configure_ThrowsAnExceptionWhenSchemeIsAlreadyRegisteredWithDifferentHandlerType()
+        {
+            // Arrange
+            var options = new AuthenticationOptions();
+            options.AddScheme(OpenIddictValidationDefaults.AuthenticationScheme, builder =>
+            {
+                builder.HandlerType = typeof(OAuthValidationHandler);
+            });
+
+            var initializer = new OpenIddictValidationConfiguration(Mock.Of<IDataProtectionProvider>());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => initializer.Configure(options));
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("The OpenIddict validation handler cannot be registered as an authentication scheme.")
+                .AppendLine("This may indicate that an instance of the OAuth validation or JWT bearer handler was registered.")
+                .Append("Make sure that neither 'services.AddAuthentication().AddOAuthValidation()' nor ")
+                .Append("'services.AddAuthentication().AddJwtBearer()' are called from 'ConfigureServices'.")
+                .ToString(), exception.Message);
+        }
+
         [Fact]
         public async Task PostConfigure_ThrowsAnExceptionWhenEventsTypeIsNull()
         {

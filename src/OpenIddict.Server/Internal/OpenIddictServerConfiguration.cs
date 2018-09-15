@@ -23,22 +23,46 @@ namespace OpenIddict.Server.Internal
     /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
     /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
-    public class OpenIddictServerInitializer : IPostConfigureOptions<OpenIddictServerOptions>
+    public class OpenIddictServerConfiguration : IConfigureOptions<AuthenticationOptions>,
+                                                 IPostConfigureOptions<OpenIddictServerOptions>
     {
         private readonly IDistributedCache _cache;
         private readonly IDataProtectionProvider _dataProtectionProvider;
 
         /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictServerInitializer"/> class.
+        /// Creates a new instance of the <see cref="OpenIddictServerConfiguration"/> class.
         /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
         /// directly from your code. This API may change or be removed in future minor releases.
         /// </summary>
-        public OpenIddictServerInitializer(
+        public OpenIddictServerConfiguration(
             [NotNull] IDistributedCache cache,
             [NotNull] IDataProtectionProvider dataProtectionProvider)
         {
             _cache = cache;
             _dataProtectionProvider = dataProtectionProvider;
+        }
+
+        /// <summary>
+        /// Registers the OpenIddict server handler in the global authentication options.
+        /// </summary>
+        /// <param name="options">The options instance to initialize.</param>
+        public void Configure(AuthenticationOptions options)
+        {
+            // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
+            if (options.SchemeMap.TryGetValue(OpenIddictServerDefaults.AuthenticationScheme, out var builder) &&
+                builder.HandlerType != typeof(OpenIddictServerHandler))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The OpenIddict server handler cannot be registered as an authentication scheme.")
+                    .AppendLine("This may indicate that an instance of the OpenID Connect server was registered.")
+                    .Append("Make sure that 'services.AddAuthentication().AddOpenIdConnectServer()' is not used.")
+                    .ToString());
+            }
+
+            options.AddScheme(OpenIddictServerDefaults.AuthenticationScheme, scheme =>
+            {
+                scheme.HandlerType = typeof(OpenIddictServerHandler);
+            });
         }
 
         /// <summary>

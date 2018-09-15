@@ -11,18 +11,45 @@ using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Server;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 using OpenIddict.Abstractions;
 using Xunit;
 
 namespace OpenIddict.Server.Internal.Tests
 {
-    public class OpenIddictServerInitializerTests
+    public class OpenIddictServerConfigurationTests
     {
+        [Fact]
+        public void Configure_ThrowsAnExceptionWhenSchemeIsAlreadyRegisteredWithDifferentHandlerType()
+        {
+            // Arrange
+            var options = new AuthenticationOptions();
+            options.AddScheme(OpenIddictServerDefaults.AuthenticationScheme, builder =>
+            {
+                builder.HandlerType = typeof(OpenIdConnectServerHandler);
+            });
+
+            var initializer = new OpenIddictServerConfiguration(
+                Mock.Of<IDistributedCache>(),
+                Mock.Of<IDataProtectionProvider>());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => initializer.Configure(options));
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("The OpenIddict server handler cannot be registered as an authentication scheme.")
+                .AppendLine("This may indicate that an instance of the OpenID Connect server was registered.")
+                .Append("Make sure that 'services.AddAuthentication().AddOpenIdConnectServer()' is not used.")
+                .ToString(), exception.Message);
+        }
+
         [Fact]
         public async Task PostConfigure_ThrowsAnExceptionWhenRandomNumberGeneratorIsNull()
         {
