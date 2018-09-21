@@ -379,6 +379,31 @@ namespace OpenIddict.EntityFramework
         }
 
         /// <summary>
+        /// Retrieves the list of authorizations corresponding to the specified application identifier.
+        /// </summary>
+        /// <param name="identifier">The application identifier associated with the authorizations.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the specified application.
+        /// </returns>
+        public virtual async Task<ImmutableArray<TAuthorization>> FindByApplicationIdAsync(
+            [NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            var key = ConvertIdentifierFromString(identifier);
+
+            return ImmutableArray.CreateRange(
+                await (from authorization in Authorizations.Include(authorization => authorization.Application)
+                       where authorization.Application.Id.Equals(key)
+                       select authorization).ToListAsync(cancellationToken));
+        }
+
+        /// <summary>
         /// Retrieves an authorization using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the authorization.</param>

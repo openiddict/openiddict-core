@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Diagnostics;
 
 namespace OpenIddict.EntityFrameworkCore.Models
 {
@@ -23,6 +24,7 @@ namespace OpenIddict.EntityFrameworkCore.Models
     /// <summary>
     /// Represents an OpenIddict scope.
     /// </summary>
+    [DebuggerDisplay("Id = {Id.ToString(),nq} ; Name = {Name,nq}")]
     public class OpenIddictScope<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>

@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace OpenIddict.EntityFramework.Models
 {
@@ -24,6 +25,7 @@ namespace OpenIddict.EntityFramework.Models
     /// <summary>
     /// Represents an OpenIddict application.
     /// </summary>
+    [DebuggerDisplay("Id = {Id.ToString(),nq} ; ClientId = {ClientId,nq} ; Type = {Type,nq}")]
     public class OpenIddictApplication<TKey, TAuthorization, TToken> where TKey : IEquatable<TKey>
     {
         /// <summary>

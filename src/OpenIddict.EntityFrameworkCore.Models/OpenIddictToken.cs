@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Diagnostics;
 
 namespace OpenIddict.EntityFrameworkCore.Models
 {
@@ -31,6 +32,7 @@ namespace OpenIddict.EntityFrameworkCore.Models
     /// <summary>
     /// Represents an OpenIddict token.
     /// </summary>
+    [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; Type = {Type,nq} ; Status = {Status,nq}")]
     public class OpenIddictToken<TKey, TApplication, TAuthorization> where TKey : IEquatable<TKey>
     {
         /// <summary>

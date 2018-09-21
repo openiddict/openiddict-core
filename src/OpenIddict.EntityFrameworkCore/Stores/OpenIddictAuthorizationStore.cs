@@ -450,6 +450,44 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Exposes a compiled query allowing to retrieve the list of
+        /// authorizations corresponding to the specified application identifier.
+        /// </summary>
+        private static readonly Func<TContext, TKey, AsyncEnumerable<TAuthorization>> FindByApplicationId =
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
+            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
+            // this compiled query uses an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+            EF.CompileAsyncQuery((TContext context, TKey identifier) =>
+                from authorization in context.Set<TAuthorization>()
+                    .Include(authorization => authorization.Application)
+                    .AsTracking()
+                join application in context.Set<TApplication>().AsTracking() on authorization.Application.Id equals application.Id
+                where application.Id.Equals(identifier)
+                select authorization);
+
+        /// <summary>
+        /// Retrieves the list of authorizations corresponding to the specified application identifier.
+        /// </summary>
+        /// <param name="identifier">The application identifier associated with the authorizations.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the specified application.
+        /// </returns>
+        public virtual async Task<ImmutableArray<TAuthorization>> FindByApplicationIdAsync(
+            [NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            return ImmutableArray.CreateRange(await FindByApplicationId(Context,
+                ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
+        }
+
+        /// <summary>
         /// Exposes a compiled query allowing to retrieve an authorization using its unique identifier.
         /// </summary>
         private static readonly Func<TContext, TKey, Task<TAuthorization>> FindById =

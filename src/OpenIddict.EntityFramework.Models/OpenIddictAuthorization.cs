@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace OpenIddict.EntityFramework.Models
 {
@@ -24,6 +25,7 @@ namespace OpenIddict.EntityFramework.Models
     /// <summary>
     /// Represents an OpenIddict authorization.
     /// </summary>
+    [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; Type = {Type,nq} ; Status = {Status,nq}")]
     public class OpenIddictAuthorization<TKey, TApplication, TToken> where TKey : IEquatable<TKey>
     {
         /// <summary>
