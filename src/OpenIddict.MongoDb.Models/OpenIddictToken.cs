@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -13,6 +14,7 @@ namespace OpenIddict.MongoDb.Models
     /// <summary>
     /// Represents an OpenIddict token.
     /// </summary>
+    [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; Type = {Type,nq} ; Status = {Status,nq}")]
     public class OpenIddictToken
     {
         /// <summary>

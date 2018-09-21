@@ -277,16 +277,14 @@ namespace OpenIddict.EntityFrameworkCore
             // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
-                IQueryable<TApplication> applications, TKey key, string principal)
-                => from authorization in authorizations.Include(authorization => authorization.Application).AsTracking()
-                   where authorization.Subject == principal
-                   join application in applications.AsTracking() on authorization.Application.Id equals application.Id
-                   where application.Id.Equals(key)
-                   select authorization;
+            var key = ConvertIdentifierFromString(client);
 
-            return ImmutableArray.CreateRange(await Query(
-                Authorizations, Applications, ConvertIdentifierFromString(client), subject).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(
+                await (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
+                       where authorization.Subject == subject
+                       join application in Applications.AsTracking() on authorization.Application.Id equals application.Id
+                       where application.Id.Equals(key)
+                       select authorization).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -324,16 +322,14 @@ namespace OpenIddict.EntityFrameworkCore
             // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
-                IQueryable<TApplication> applications, TKey key, string principal, string state)
-                => from authorization in authorizations.Include(authorization => authorization.Application).AsTracking()
-                   where authorization.Subject == principal && authorization.Status == state
-                   join application in applications.AsTracking() on authorization.Application.Id equals application.Id
-                   where application.Id.Equals(key)
-                   select authorization;
+            var key = ConvertIdentifierFromString(client);
 
-            return ImmutableArray.CreateRange(await Query(
-                Authorizations, Applications, ConvertIdentifierFromString(client), subject, status).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(
+                await (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
+                       where authorization.Subject == subject && authorization.Status == status
+                       join application in Applications.AsTracking() on authorization.Application.Id equals application.Id
+                       where application.Id.Equals(key)
+                       select authorization).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -377,18 +373,16 @@ namespace OpenIddict.EntityFrameworkCore
             // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-            IQueryable<TAuthorization> Query(IQueryable<TAuthorization> authorizations,
-                IQueryable<TApplication> applications, TKey key, string principal, string state, string kind)
-                => from authorization in authorizations.Include(authorization => authorization.Application).AsTracking()
-                   where authorization.Subject == principal &&
-                         authorization.Status == state &&
-                         authorization.Type == kind
-                   join application in applications.AsTracking() on authorization.Application.Id equals application.Id
-                   where application.Id.Equals(key)
-                   select authorization;
+            var key = ConvertIdentifierFromString(client);
 
-            return ImmutableArray.CreateRange(await Query(
-                Authorizations, Applications, ConvertIdentifierFromString(client), subject, status, type).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(
+                await (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
+                       where authorization.Subject == subject &&
+                             authorization.Status == status &&
+                             authorization.Type == type
+                       join application in Applications.AsTracking() on authorization.Application.Id equals application.Id
+                       where application.Id.Equals(key)
+                       select authorization).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -433,6 +427,37 @@ namespace OpenIddict.EntityFrameworkCore
             return builder.Count == builder.Capacity ?
                 builder.MoveToImmutable() :
                 builder.ToImmutable();
+        }
+
+        /// <summary>
+        /// Retrieves the list of authorizations corresponding to the specified application identifier.
+        /// </summary>
+        /// <param name="identifier">The application identifier associated with the authorizations.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the authorizations corresponding to the specified application.
+        /// </returns>
+        public virtual async Task<ImmutableArray<TAuthorization>> FindByApplicationIdAsync(
+            [NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
+            // filtered using authorization.Application.Id.Equals(key). To work around this issue,
+            // this method is overriden to use an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
+
+            var key = ConvertIdentifierFromString(identifier);
+
+            return ImmutableArray.CreateRange(
+                await (from authorization in Authorizations.Include(authorization => authorization.Application).AsTracking()
+                       join application in Applications.AsTracking() on authorization.Application.Id equals application.Id
+                       where application.Id.Equals(identifier)
+                       select authorization).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -504,14 +529,12 @@ namespace OpenIddict.EntityFrameworkCore
 
             async Task<string> RetrieveApplicationIdAsync()
             {
-                IQueryable<TKey> Query(IQueryable<TAuthorization> authorizations, TKey key)
-                    => from element in authorizations.AsTracking()
-                       where element.Id.Equals(key) &&
-                             element.Application != null
-                       select element.Application.Id;
+                var key = await (from element in Authorizations.AsTracking()
+                                 where element.Id.Equals(authorization.Id) &&
+                                       element.Application != null
+                                 select element.Application.Id).FirstOrDefaultAsync(cancellationToken);
 
-                return ConvertIdentifierToString(await GetAsync(
-                    (authorizations, key) => Query(authorizations, key), authorization.Id, cancellationToken));
+                return ConvertIdentifierToString(key);
             }
 
             return new ValueTask<string>(RetrieveApplicationIdAsync());
