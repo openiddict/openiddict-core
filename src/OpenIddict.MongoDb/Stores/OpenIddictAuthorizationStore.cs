@@ -33,7 +33,7 @@ namespace OpenIddict.MongoDb
         public OpenIddictAuthorizationStore(
             [NotNull] IMemoryCache cache,
             [NotNull] IOpenIddictMongoDbContext context,
-            [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options)
+            [NotNull] IOptions<OpenIddictMongoDbOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -53,7 +53,7 @@ namespace OpenIddict.MongoDb
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictMongoDbOptions> Options { get; }
+        protected IOptions<OpenIddictMongoDbOptions> Options { get; }
 
         /// <summary>
         /// Determines the number of authorizations that exist in the database.
@@ -66,7 +66,7 @@ namespace OpenIddict.MongoDb
         public virtual async Task<long> CountAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return await collection.CountDocumentsAsync(FilterDefinition<TAuthorization>.Empty);
         }
@@ -89,7 +89,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return await ((IMongoQueryable<TAuthorization>) query(collection.AsQueryable())).LongCountAsync();
         }
@@ -110,7 +110,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             await collection.InsertOneAsync(authorization, null, cancellationToken);
         }
@@ -131,7 +131,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             if ((await collection.DeleteOneAsync(entity =>
                 entity.Id == authorization.Id &&
@@ -144,7 +144,7 @@ namespace OpenIddict.MongoDb
             }
 
             // Delete the tokens associated with the authorization.
-            await database.GetCollection<OpenIddictToken>(Options.CurrentValue.TokensCollectionName)
+            await database.GetCollection<OpenIddictToken>(Options.Value.TokensCollectionName)
                 .DeleteManyAsync(token => token.AuthorizationId == authorization.Id, cancellationToken);
         }
 
@@ -173,7 +173,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(authorization =>
                 authorization.Subject == subject &&
@@ -211,7 +211,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(authorization =>
                 authorization.Subject == subject &&
@@ -256,7 +256,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(authorization =>
                 authorization.Subject == subject &&
@@ -304,7 +304,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(authorization =>
                 authorization.Subject == subject &&
@@ -332,7 +332,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(authorization =>
                 authorization.ApplicationId == ObjectId.Parse(identifier)).ToListAsync(cancellationToken));
@@ -355,7 +355,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return await collection.Find(authorization => authorization.Id == ObjectId.Parse(identifier)).FirstOrDefaultAsync(cancellationToken);
         }
@@ -378,7 +378,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(authorization => authorization.Subject == subject).ToListAsync(cancellationToken));
         }
@@ -424,7 +424,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).FirstOrDefaultAsync(cancellationToken);
         }
@@ -570,12 +570,14 @@ namespace OpenIddict.MongoDb
 
             catch (MemberAccessException exception)
             {
-                return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new authorization instance.")
-                        .Append("Make sure that the authorization entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                var source = new TaskCompletionSource<TAuthorization>();
+                source.SetException(new InvalidOperationException(new StringBuilder()
+                    .AppendLine("An error occurred while trying to create a new authorization instance.")
+                    .Append("Make sure that the authorization entity is not abstract and has a public parameterless constructor ")
+                    .Append("or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.")
+                    .ToString(), exception));
+
+                return new ValueTask<TAuthorization>(source.Task);
             }
         }
 
@@ -593,7 +595,7 @@ namespace OpenIddict.MongoDb
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             var query = (IMongoQueryable<TAuthorization>) collection.AsQueryable().OrderBy(authorization => authorization.Id);
 
@@ -632,7 +634,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             return ImmutableArray.CreateRange(
                 await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).ToListAsync(cancellationToken));
@@ -648,7 +650,7 @@ namespace OpenIddict.MongoDb
         public virtual async Task PruneAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             // Note: directly deleting the resulting set of an aggregate query is not supported by MongoDB.
             // To work around this limitation, the authorization identifiers are stored in an intermediate
@@ -656,7 +658,7 @@ namespace OpenIddict.MongoDb
 
             var identifiers =
                 await (from authorization in collection.AsQueryable()
-                       join token in database.GetCollection<OpenIddictToken>(Options.CurrentValue.TokensCollectionName).AsQueryable()
+                       join token in database.GetCollection<OpenIddictToken>(Options.Value.TokensCollectionName).AsQueryable()
                                   on authorization.Id equals token.AuthorizationId into tokens
                        where authorization.Status != OpenIddictConstants.Statuses.Valid ||
                             (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
@@ -671,7 +673,7 @@ namespace OpenIddict.MongoDb
                 await collection.DeleteManyAsync(authorization => buffer.Contains(authorization.Id));
 
                 // Delete the tokens associated with the pruned authorizations.
-                await database.GetCollection<OpenIddictToken>(Options.CurrentValue.TokensCollectionName)
+                await database.GetCollection<OpenIddictToken>(Options.Value.TokensCollectionName)
                     .DeleteManyAsync(token => buffer.Contains(token.AuthorizationId), cancellationToken);
             }
 
@@ -730,7 +732,7 @@ namespace OpenIddict.MongoDb
                 authorization.ApplicationId = ObjectId.Empty;
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -753,12 +755,12 @@ namespace OpenIddict.MongoDb
             {
                 authorization.Properties = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             authorization.Properties = new BsonDocument(properties.ToObject<IDictionary<string, object>>());
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -782,12 +784,12 @@ namespace OpenIddict.MongoDb
             {
                 authorization.Scopes = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             authorization.Scopes = scopes.ToArray();
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -809,7 +811,7 @@ namespace OpenIddict.MongoDb
 
             authorization.Status = status;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -831,7 +833,7 @@ namespace OpenIddict.MongoDb
 
             authorization.Subject = subject;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -853,7 +855,7 @@ namespace OpenIddict.MongoDb
 
             authorization.Type = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -877,7 +879,7 @@ namespace OpenIddict.MongoDb
             authorization.ConcurrencyToken = Guid.NewGuid().ToString();
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            var collection = database.GetCollection<TAuthorization>(Options.Value.AuthorizationsCollectionName);
 
             if ((await collection.ReplaceOneAsync(entity =>
                 entity.Id == authorization.Id &&

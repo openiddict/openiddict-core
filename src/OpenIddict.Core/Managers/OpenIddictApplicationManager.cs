@@ -27,7 +27,7 @@ namespace OpenIddict.Core
         public OpenIddictApplicationManager(
             [NotNull] IOpenIddictApplicationStoreResolver resolver,
             [NotNull] ILogger<OpenIddictApplicationManager<TApplication>> logger,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+            [NotNull] IOptions<OpenIddictCoreOptions> options)
         {
             Store = resolver.Get<TApplication>();
             Logger = logger;
@@ -42,7 +42,7 @@ namespace OpenIddict.Core
         /// <summary>
         /// Gets the options associated with the current manager.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictCoreOptions> Options { get; }
+        protected IOptions<OpenIddictCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the store associated with the current manager.
@@ -146,6 +146,7 @@ namespace OpenIddict.Core
             {
                 throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, application);
             }
+
 
             await Store.CreateAsync(application, cancellationToken);
         }
@@ -418,7 +419,7 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client type of the application (by default, "public").
         /// </returns>
-        public virtual async ValueTask<string> GetClientTypeAsync(
+        public virtual ValueTask<string> GetClientTypeAsync(
             [NotNull] TApplication application, CancellationToken cancellationToken = default)
         {
             if (application == null)
@@ -426,18 +427,23 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var type = await Store.GetClientTypeAsync(application, cancellationToken);
-
-            // Ensure the application type returned by the store is supported by the manager.
-            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+            async Task<string> ResolveClientTypeAsync()
             {
-                throw new InvalidOperationException("Only 'confidential', 'hybrid' or 'public' applications are " +
-                                                    "supported by the default application manager.");
+                var type = await Store.GetClientTypeAsync(application, cancellationToken);
+
+                // Ensure the application type returned by the store is supported by the manager.
+                if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException("Only 'confidential', 'hybrid' or 'public' applications are " +
+                                                        "supported by the default application manager.");
+                }
+
+                return type;
             }
 
-            return type;
+            return new ValueTask<string>(ResolveClientTypeAsync());
         }
 
         /// <summary>
@@ -449,20 +455,25 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the consent type of the application (by default, "explicit").
         /// </returns>
-        public virtual async ValueTask<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var type = await Store.GetConsentTypeAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(type))
+            async Task<string> ResolveConsentTypeAsync()
             {
-                return OpenIddictConstants.ConsentTypes.Explicit;
+                var type = await Store.GetConsentTypeAsync(application, cancellationToken);
+                if (string.IsNullOrEmpty(type))
+                {
+                    return OpenIddictConstants.ConsentTypes.Explicit;
+                }
+
+                return type;
             }
 
-            return type;
+            return new ValueTask<string>(ResolveConsentTypeAsync());
         }
 
         /// <summary>
@@ -1201,8 +1212,8 @@ namespace OpenIddict.Core
 
             catch (Exception exception)
             {
-                Logger.LogWarning(exception, "An error occurred while trying to verify a client secret. " +
-                                             "This may indicate that the hashed entry is corrupted or malformed.");
+                Logger.LogWarning(0, exception, "An error occurred while trying to verify a client secret. " +
+                                                "This may indicate that the hashed entry is corrupted or malformed.");
 
                 return Task.FromResult(false);
             }

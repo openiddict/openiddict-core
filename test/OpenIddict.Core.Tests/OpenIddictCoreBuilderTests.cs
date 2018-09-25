@@ -436,7 +436,7 @@ namespace OpenIddict.Core.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(CustomApplication), options.DefaultApplicationType);
         }
@@ -486,7 +486,7 @@ namespace OpenIddict.Core.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(CustomAuthorization), options.DefaultAuthorizationType);
         }
@@ -536,7 +536,7 @@ namespace OpenIddict.Core.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(CustomScope), options.DefaultScopeType);
         }
@@ -586,7 +586,7 @@ namespace OpenIddict.Core.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(CustomToken), options.DefaultTokenType);
         }
@@ -612,7 +612,7 @@ namespace OpenIddict.Core.Tests
             public ClosedGenericApplicationManager(
                 IOpenIddictApplicationStoreResolver resolver,
                 ILogger<OpenIddictApplicationManager<CustomApplication>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
+                IOptions<OpenIddictCoreOptions> options)
                 : base(resolver, logger, options)
             {
             }
@@ -624,7 +624,7 @@ namespace OpenIddict.Core.Tests
             public OpenGenericApplicationManager(
                 IOpenIddictApplicationStoreResolver resolver,
                 ILogger<OpenIddictApplicationManager<TApplication>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
+                IOptions<OpenIddictCoreOptions> options)
                 : base(resolver, logger, options)
             {
             }
@@ -635,7 +635,7 @@ namespace OpenIddict.Core.Tests
             public ClosedGenericAuthorizationManager(
                 IOpenIddictAuthorizationStoreResolver resolver,
                 ILogger<OpenIddictAuthorizationManager<CustomAuthorization>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
+                IOptions<OpenIddictCoreOptions> options)
                 : base(resolver, logger, options)
             {
             }
@@ -647,7 +647,7 @@ namespace OpenIddict.Core.Tests
             public OpenGenericAuthorizationManager(
                 IOpenIddictAuthorizationStoreResolver resolver,
                 ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
+                IOptions<OpenIddictCoreOptions> options)
                 : base(resolver, logger, options)
             {
             }
@@ -658,7 +658,7 @@ namespace OpenIddict.Core.Tests
             public ClosedGenericScopeManager(
                 IOpenIddictScopeStoreResolver resolver,
                 ILogger<OpenIddictScopeManager<CustomScope>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
+                IOptions<OpenIddictCoreOptions> options)
                 : base(resolver, logger, options)
             {
             }
@@ -670,7 +670,7 @@ namespace OpenIddict.Core.Tests
             public OpenGenericScopeManager(
                 IOpenIddictScopeStoreResolver resolver,
                 ILogger<OpenIddictScopeManager<TScope>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
+                IOptions<OpenIddictCoreOptions> options)
                 : base(resolver, logger, options)
             {
             }
@@ -681,7 +681,7 @@ namespace OpenIddict.Core.Tests
             public ClosedGenericTokenManager(
                 IOpenIddictTokenStoreResolver resolver,
                 ILogger<OpenIddictTokenManager<CustomToken>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
+                IOptions<OpenIddictCoreOptions> options)
                 : base(resolver, logger, options)
             {
             }
@@ -693,7 +693,7 @@ namespace OpenIddict.Core.Tests
             public OpenGenericTokenManager(
                 IOpenIddictTokenStoreResolver resolver,
                 ILogger<OpenIddictTokenManager<TToken>> logger,
-                IOptionsMonitor<OpenIddictCoreOptions> options)
+                IOptions<OpenIddictCoreOptions> options)
                 : base(resolver, logger, options)
             {
             }

@@ -27,7 +27,7 @@ namespace OpenIddict.Core
         public OpenIddictAuthorizationManager(
             [NotNull] IOpenIddictAuthorizationStoreResolver resolver,
             [NotNull] ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+            [NotNull] IOptions<OpenIddictCoreOptions> options)
         {
             Store = resolver.Get<TAuthorization>();
             Logger = logger;
@@ -42,7 +42,7 @@ namespace OpenIddict.Core
         /// <summary>
         /// Gets the options associated with the current manager.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictCoreOptions> Options { get; }
+        protected IOptions<OpenIddictCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the store associated with the current manager.

@@ -14,7 +14,6 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server.Internal
@@ -26,36 +25,9 @@ namespace OpenIddict.Server.Internal
     /// </summary>
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
-        private readonly ILogger _logger;
-        private readonly IOpenIddictServerEventService _eventService;
-        private readonly IOpenIddictApplicationManager _applicationManager;
-        private readonly IOpenIddictAuthorizationManager _authorizationManager;
-        private readonly IOpenIddictScopeManager _scopeManager;
-        private readonly IOpenIddictTokenManager _tokenManager;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictServerProvider"/> class.
-        /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
-        /// directly from your code. This API may change or be removed in future minor releases.
-        /// </summary>
-        public OpenIddictServerProvider(
-            [NotNull] ILogger<OpenIddictServerProvider> logger,
-            [NotNull] IOpenIddictServerEventService eventService,
-            [NotNull] IOpenIddictApplicationManager applicationManager,
-            [NotNull] IOpenIddictAuthorizationManager authorizationManager,
-            [NotNull] IOpenIddictScopeManager scopeManager,
-            [NotNull] IOpenIddictTokenManager tokenManager)
-        {
-            _logger = logger;
-            _eventService = eventService;
-            _applicationManager = applicationManager;
-            _authorizationManager = authorizationManager;
-            _scopeManager = scopeManager;
-            _tokenManager = tokenManager;
-        }
-
         public override Task MatchEndpoint([NotNull] MatchEndpointContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.MatchEndpoint(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.MatchEndpoint(context));
 
         public override Task ProcessChallengeResponse([NotNull] ProcessChallengeResponseContext context)
         {
@@ -65,13 +37,14 @@ namespace OpenIddict.Server.Internal
 
             // Add the custom properties that are marked as public
             // as authorization or token response properties.
-            var parameters = GetParameters(context.Request, context.Properties);
-            foreach (var (property, parameter, value) in parameters)
+            var parameters = GetParameters(context.HttpContext, context.Request, context.Properties);
+            foreach (var parameter in parameters)
             {
-                context.Response.AddParameter(parameter, value);
+                context.Response.AddParameter(parameter.Item2, parameter.Item3);
             }
 
-            return _eventService.PublishAsync(new OpenIddictServerEvents.ProcessChallengeResponse(context));
+            return GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ProcessChallengeResponse(context));
         }
 
         public override async Task ProcessSigninResponse([NotNull] ProcessSigninResponseContext context)
@@ -157,7 +130,7 @@ namespace OpenIddict.Server.Internal
                     // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
                     if (options.UseRollingTokens || context.Request.IsAuthorizationCodeGrantType())
                     {
-                        if (!await TryRedeemTokenAsync(token))
+                        if (!await TryRedeemTokenAsync(token, context.HttpContext))
                         {
                             context.Reject(
                                 error: OpenIddictConstants.Errors.InvalidGrant,
@@ -177,7 +150,7 @@ namespace OpenIddict.Server.Internal
                         // this may indicate that one of the revoked tokens was modified by a concurrent request.
                         if (options.UseRollingTokens)
                         {
-                            await TryRevokeTokensAsync(context.Ticket);
+                            await TryRevokeTokensAsync(context.Ticket, context.HttpContext);
                         }
 
                         // When rolling tokens are disabled, try to extend the expiration date
@@ -188,7 +161,7 @@ namespace OpenIddict.Server.Internal
                         // already updated the expiration date associated with the refresh token.
                         if (!options.UseRollingTokens && options.UseSlidingExpiration)
                         {
-                            await TryExtendRefreshTokenAsync(token, context.Ticket, options);
+                            await TryExtendRefreshTokenAsync(token, context.Ticket, context.HttpContext, options);
                         }
                     }
                 }
@@ -201,7 +174,7 @@ namespace OpenIddict.Server.Internal
                 !context.Ticket.HasProperty(OpenIddictConstants.Properties.InternalAuthorizationId) &&
                 (context.IncludeAuthorizationCode || context.IncludeRefreshToken))
             {
-                await CreateAuthorizationAsync(context.Ticket, options, context.Request);
+                await CreateAuthorizationAsync(context.Ticket, options, context.HttpContext, context.Request);
             }
 
             // Add the custom properties that are marked as public as authorization or
@@ -209,14 +182,15 @@ namespace OpenIddict.Server.Internal
             // so they are not persisted in the authorization code/access/refresh token.
             // Note: make sure the foreach statement iterates on a copy of the ticket
             // as the property collection is modified when the property is removed.
-            var parameters = GetParameters(context.Request, context.Ticket.Properties);
-            foreach (var (property, parameter, value) in parameters.ToList())
+            var parameters = GetParameters(context.HttpContext, context.Request, context.Ticket.Properties);
+            foreach (var parameter in parameters.ToList())
             {
-                context.Response.AddParameter(parameter, value);
-                context.Ticket.RemoveProperty(property);
+                context.Response.AddParameter(parameter.Item2, parameter.Item3);
+                context.Ticket.RemoveProperty(parameter.Item1);
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ProcessSigninResponse(context));
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ProcessSigninResponse(context));
         }
 
         public override Task ProcessSignoutResponse([NotNull] ProcessSignoutResponseContext context)
@@ -224,13 +198,14 @@ namespace OpenIddict.Server.Internal
             Debug.Assert(context.Request.IsLogoutRequest(), "The request should be a logout request.");
 
             // Add the custom properties that are marked as public as logout response properties.
-            var parameters = GetParameters(context.Request, context.Properties);
-            foreach (var (property, parameter, value) in parameters)
+            var parameters = GetParameters(context.HttpContext, context.Request, context.Properties);
+            foreach (var parameter in parameters)
             {
-                context.Response.AddParameter(parameter, value);
+                context.Response.AddParameter(parameter.Item2, parameter.Item3);
             }
 
-            return _eventService.PublishAsync(new OpenIddictServerEvents.ProcessSignoutResponse(context));
+            return GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ProcessSignoutResponse(context));
         }
     }
 }

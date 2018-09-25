@@ -17,7 +17,7 @@ namespace OpenIddict.Server
         /// other event handlers registered in the dependency injection container.
         /// Using this value is recommended for event handlers that don't produce
         /// an immediate response (i.e that don't call context.HandleResponse(),
-        /// context.SkipHandler(), context.Validate() or context.Reject()).
+        /// context.SkipToNextMiddleware(), context.Validate() or context.Reject()).
         /// </summary>
         Unhandled = 0,
 
@@ -25,8 +25,8 @@ namespace OpenIddict.Server
         /// Marks the event as fully handled, preventing the event service from invoking
         /// other event handlers registered in the dependency injection container.
         /// Using this value is recommended for event handlers that produce an
-        /// immediate response (i.e that call context.HandleResponse(),
-        /// context.SkipHandler(), context.Validate() or context.Reject()).
+        /// immediate response (i.e that call context.SkipToNextMiddleware(),
+        /// context.HandleResponse(), context.Validate() or context.Reject()).
         /// </summary>
         Handled = 1
     }

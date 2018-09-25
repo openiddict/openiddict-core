@@ -6,6 +6,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Abstractions;
@@ -95,7 +96,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Note: managers can be either open generics (e.g OpenIddictApplicationStore<>)
             // or closed generics (e.g OpenIddictApplicationStore<OpenIddictApplication>).
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
@@ -152,7 +153,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Note: managers can be either open generics (e.g OpenIddictAuthorizationStore<>)
             // or closed generics (e.g OpenIddictAuthorizationStore<OpenIddictAuthorization>).
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
@@ -209,7 +210,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Note: managers can be either open generics (e.g OpenIddictScopeStore<>)
             // or closed generics (e.g OpenIddictScopeStore<OpenIddictScope>).
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
@@ -266,7 +267,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Note: managers can be either open generics (e.g OpenIddictTokenStore<>)
             // or closed generics (e.g OpenIddictTokenStore<OpenIddictToken>).
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
@@ -323,7 +324,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Note: managers can be either open generics (e.g OpenIddictApplicationManager<>)
             // or closed generics (e.g OpenIddictApplicationManager<OpenIddictApplication>).
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
@@ -420,7 +421,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Note: managers can be either open generics (e.g OpenIddictAuthorizationManager<>)
             // or closed generics (e.g OpenIddictAuthorizationManager<OpenIddictAuthorization>).
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
@@ -516,7 +517,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Note: managers can be either open generics (e.g OpenIddictScopeManager<>)
             // or closed generics (e.g OpenIddictScopeManager<OpenIddictScope>).
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
@@ -613,7 +614,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Note: managers can be either open generics (e.g OpenIddictTokenManager<>)
             // or closed generics (e.g OpenIddictTokenManager<OpenIddictToken>).
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
@@ -691,7 +692,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (type.IsValueType)
+            if (type.GetTypeInfo().IsValueType)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
@@ -718,7 +719,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (type.IsValueType)
+            if (type.GetTypeInfo().IsValueType)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
@@ -745,7 +746,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (type.IsValueType)
+            if (type.GetTypeInfo().IsValueType)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
@@ -772,7 +773,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (type.IsValueType)
+            if (type.GetTypeInfo().IsValueType)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }

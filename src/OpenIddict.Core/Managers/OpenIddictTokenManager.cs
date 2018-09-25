@@ -28,7 +28,7 @@ namespace OpenIddict.Core
         public OpenIddictTokenManager(
             [NotNull] IOpenIddictTokenStoreResolver resolver,
             [NotNull] ILogger<OpenIddictTokenManager<TToken>> logger,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+            [NotNull] IOptions<OpenIddictCoreOptions> options)
         {
             Store = resolver.Get<TToken>();
             Logger = logger;
@@ -43,7 +43,7 @@ namespace OpenIddict.Core
         /// <summary>
         /// Gets the options associated with the current manager.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictCoreOptions> Options { get; }
+        protected IOptions<OpenIddictCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the store associated with the current manager.

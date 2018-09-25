@@ -1,25 +1,26 @@
 <Project>
 
   <PropertyGroup Label="Package Versions">
-    <AspNetContribOpenIdExtensionsVersion>2.0.0</AspNetContribOpenIdExtensionsVersion>
-    <AspNetContribOpenIdServerVersion>2.0.0</AspNetContribOpenIdServerVersion>
-    <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
-    <CoreFxVersion>4.4.0</CoreFxVersion>
-    <CryptoHelperVersion>3.0.2</CryptoHelperVersion>
-    <DataAnnotationsVersion>4.4.0</DataAnnotationsVersion>
+    <AspNetCoreVersion>1.0.0</AspNetCoreVersion>
+    <AspNetContribOpenIdExtensionsVersion>1.1.0</AspNetContribOpenIdExtensionsVersion>
+    <AspNetContribOpenIdServerVersion>1.1.0</AspNetContribOpenIdServerVersion>
+    <ClaimsVersion>4.0.1</ClaimsVersion>
+    <CryptoHelperVersion>2.0.4</CryptoHelperVersion>
+    <DataAnnotationsVersion>4.1.0</DataAnnotationsVersion>
     <EntityFrameworkVersion>6.1.3</EntityFrameworkVersion>
+    <ImmutableCollectionsVersion>1.2.0</ImmutableCollectionsVersion>
     <JetBrainsVersion>2018.2.1</JetBrainsVersion>
-    <JsonNetVersion>10.0.2</JsonNetVersion>
-    <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
-    <ImmutableCollectionsVersion>1.5.0</ImmutableCollectionsVersion>
+    <JsonNetVersion>9.0.1</JsonNetVersion>
     <MongoDbVersion>2.7.0</MongoDbVersion>
+    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <MoqVersion>4.7.63</MoqVersion>
-    <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
-    <NetStandardLibraryNetFrameworkVersion>2.0.0</NetStandardLibraryNetFrameworkVersion>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
-    <TasksExtensionsVersion>4.4.0</TasksExtensionsVersion>
-    <TestSdkVersion>15.3.0</TestSdkVersion>
-    <XunitVersion>2.3.1</XunitVersion>
+    <QueryableVersion>4.0.1</QueryableVersion>
+    <RuntimeFrameworkVersion>1.0.0</RuntimeFrameworkVersion>
+    <TasksExtensionsVersion>4.0.0</TasksExtensionsVersion>
+    <TestSdkVersion>15.0.0</TestSdkVersion>
+    <TypeConverterVersion>4.1.0</TypeConverterVersion>
+    <TypeExtensionsVersion>4.1.0</TypeExtensionsVersion>
+    <XunitVersion>2.2.0</XunitVersion>
   </PropertyGroup>
 
 </Project>

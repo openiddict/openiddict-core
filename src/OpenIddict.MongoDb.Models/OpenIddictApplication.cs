@@ -63,13 +63,13 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the permissions associated with the current application.
         /// </summary>
         [BsonElement("permissions"), BsonIgnoreIfDefault]
-        public virtual string[] Permissions { get; set; } = Array.Empty<string>();
+        public virtual string[] Permissions { get; set; } = new string[0];
 
         /// <summary>
         /// Gets or sets the logout callback URLs associated with the current application.
         /// </summary>
         [BsonElement("post_logout_redirect_uris"), BsonIgnoreIfDefault]
-        public virtual string[] PostLogoutRedirectUris { get; set; } = Array.Empty<string>();
+        public virtual string[] PostLogoutRedirectUris { get; set; } = new string[0];
 
         /// <summary>
         /// Gets or sets the additional properties associated with the current application.
@@ -81,7 +81,7 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the callback URLs associated with the current application.
         /// </summary>
         [BsonElement("redirect_uris"), BsonIgnoreIfDefault]
-        public virtual string[] RedirectUris { get; set; } = Array.Empty<string>();
+        public virtual string[] RedirectUris { get; set; } = new string[0];
 
         /// <summary>
         /// Gets or sets the application type

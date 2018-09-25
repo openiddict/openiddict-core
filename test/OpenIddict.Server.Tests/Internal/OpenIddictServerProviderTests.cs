@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1064,138 +1065,6 @@ namespace OpenIddict.Server.Internal.Tests
         }
 
         [Fact]
-        public async Task ProcessSigninResponse_DoesNotUpdateExpirationDateWhenAlreadyNull()
-        {
-            // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                OpenIddictServerDefaults.AuthenticationScheme);
-
-            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "60FFF7EA-F98E-437B-937E-5073CC313103");
-            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
-            ticket.SetScopes(OpenIddictConstants.Scopes.OpenId, OpenIddictConstants.Scopes.OfflineAccess);
-
-            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
-
-            format.Setup(mock => mock.Protect(It.IsAny<AuthenticationTicket>()))
-                .Returns("8xLOxBtZp8");
-
-            format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
-                .Returns(ticket);
-
-            var token = new OpenIddictToken();
-
-            var manager = CreateTokenManager(instance =>
-            {
-                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                instance.Setup(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<DateTimeOffset?>(result: null));
-            });
-
-            var server = CreateAuthorizationServer(builder =>
-            {
-                builder.Services.AddSingleton(manager);
-
-                builder.Configure(options =>
-                {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow ==
-                        new DateTimeOffset(2017, 01, 05, 00, 00, 00, TimeSpan.Zero));
-                    options.RefreshTokenLifetime = null;
-                    options.RefreshTokenFormat = format.Object;
-                });
-            });
-
-            var client = new OpenIdConnectClient(server.CreateClient());
-
-            // Act
-            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
-            {
-                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Null(response.RefreshToken);
-
-            Mock.Get(manager).Verify(mock => mock.ExtendAsync(token, null, It.IsAny<CancellationToken>()), Times.Never());
-        }
-
-        [Fact]
-        public async Task ProcessSigninResponse_SetsExpirationDateToNullWhenLifetimeIsNull()
-        {
-            // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                OpenIddictServerDefaults.AuthenticationScheme);
-
-            ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, "60FFF7EA-F98E-437B-937E-5073CC313103");
-            ticket.SetTokenUsage(OpenIdConnectConstants.TokenUsages.RefreshToken);
-            ticket.SetScopes(OpenIddictConstants.Scopes.OpenId, OpenIddictConstants.Scopes.OfflineAccess);
-
-            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
-
-            format.Setup(mock => mock.Protect(It.IsAny<AuthenticationTicket>()))
-                .Returns("8xLOxBtZp8");
-
-            format.Setup(mock => mock.Unprotect("8xLOxBtZp8"))
-                .Returns(ticket);
-
-            var token = new OpenIddictToken();
-
-            var manager = CreateTokenManager(instance =>
-            {
-                instance.Setup(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                instance.Setup(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<DateTimeOffset?>(DateTimeOffset.Now + TimeSpan.FromDays(1)));
-            });
-
-            var server = CreateAuthorizationServer(builder =>
-            {
-                builder.Services.AddSingleton(manager);
-
-                builder.Configure(options =>
-                {
-                    options.SystemClock = Mock.Of<ISystemClock>(mock => mock.UtcNow ==
-                        new DateTimeOffset(2017, 01, 05, 00, 00, 00, TimeSpan.Zero));
-                    options.RefreshTokenLifetime = null;
-                    options.RefreshTokenFormat = format.Object;
-                });
-            });
-
-            var client = new OpenIdConnectClient(server.CreateClient());
-
-            // Act
-            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
-            {
-                GrantType = OpenIddictConstants.GrantTypes.RefreshToken,
-                RefreshToken = "8xLOxBtZp8"
-            });
-
-            // Assert
-            Assert.Null(response.RefreshToken);
-
-            Mock.Get(manager).Verify(mock => mock.ExtendAsync(token, null, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
         public async Task ProcessSigninResponse_IgnoresErrorWhenExtendingLifetimeOfExistingTokenFailed()
         {
             // Arrange
@@ -1535,8 +1404,8 @@ namespace OpenIddict.Server.Internal.Tests
 
             builder.ConfigureServices(services =>
             {
+                services.AddAuthentication();
                 services.AddOptions();
-                services.AddDistributedMemoryCache();
 
                 services.AddOpenIddict()
                     .AddCore(options =>
@@ -1621,14 +1490,14 @@ namespace OpenIddict.Server.Internal.Tests
                     return next(context);
                 });
 
-                app.UseAuthentication();
+                app.UseOpenIddictServer();
 
                 app.Run(context =>
                 {
                     var request = context.GetOpenIdConnectRequest();
                     if (request == null)
                     {
-                        return Task.CompletedTask;
+                        return Task.FromResult(0);
                     }
 
                     var identity = !request.HasParameter("use-null-authentication-type") ?
@@ -1666,7 +1535,7 @@ namespace OpenIddict.Server.Internal.Tests
                     {
                         if (request.HasParameter("deny-authorization"))
                         {
-                            return context.ForbidAsync(OpenIddictServerDefaults.AuthenticationScheme, ticket.Properties);
+                            return context.Authentication.ForbidAsync(OpenIddictServerDefaults.AuthenticationScheme, ticket.Properties);
                         }
 
                         if (request.HasParameter("do-not-flow-original-properties"))
@@ -1674,15 +1543,15 @@ namespace OpenIddict.Server.Internal.Tests
                             var properties = new AuthenticationProperties();
                             properties.SetProperty("custom_property_in_new_ticket", "new_value");
 
-                            return context.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, properties);
+                            return context.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, properties);
                         }
 
-                        return context.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
+                        return context.Authentication.SignInAsync(ticket.AuthenticationScheme, ticket.Principal, ticket.Properties);
                     }
 
                     else if (request.IsLogoutRequest())
                     {
-                        return context.SignOutAsync(OpenIddictServerDefaults.AuthenticationScheme, ticket.Properties);
+                        return context.Authentication.SignOutAsync(OpenIddictServerDefaults.AuthenticationScheme, ticket.Properties);
                     }
 
                     else if (request.IsUserinfoRequest())
@@ -1696,7 +1565,7 @@ namespace OpenIddict.Server.Internal.Tests
                         }));
                     }
 
-                    return Task.CompletedTask;
+                    return Task.FromResult(0);
                 });
             });
 
@@ -1709,7 +1578,7 @@ namespace OpenIddict.Server.Internal.Tests
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
                 Mock.Of<IOpenIddictApplicationStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictApplicationManager<OpenIddictApplication>>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptions<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
 
@@ -1722,7 +1591,7 @@ namespace OpenIddict.Server.Internal.Tests
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptions<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
 
@@ -1735,7 +1604,7 @@ namespace OpenIddict.Server.Internal.Tests
             var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
                 Mock.Of<IOpenIddictScopeStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictScopeManager<OpenIddictScope>>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptions<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
 
@@ -1748,7 +1617,7 @@ namespace OpenIddict.Server.Internal.Tests
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
                 Mock.Of<IOpenIddictTokenStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictTokenManager<OpenIddictToken>>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptions<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
 

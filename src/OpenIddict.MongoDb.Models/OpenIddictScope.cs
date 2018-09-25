@@ -61,6 +61,6 @@ namespace OpenIddict.MongoDb.Models
         /// Gets or sets the resources associated with the current scope.
         /// </summary>
         [BsonElement("resources"), BsonIgnoreIfDefault]
-        public virtual string[] Resources { get; set; } = Array.Empty<string>();
+        public virtual string[] Resources { get; set; } = new string[0];
     }
 }

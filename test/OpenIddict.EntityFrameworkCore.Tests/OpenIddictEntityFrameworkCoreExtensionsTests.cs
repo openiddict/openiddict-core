@@ -71,7 +71,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(OpenIddictApplication), options.DefaultApplicationType);
             Assert.Equal(typeof(OpenIddictAuthorization), options.DefaultAuthorizationType);
@@ -120,60 +120,48 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         public void UseOpenIddict_RegistersDefaultEntityConfigurations()
         {
             // Arrange
-            var builder = new Mock<ModelBuilder>(new ConventionSet());
+            var builder = new ModelBuilder(new ConventionSet());
 
             // Act
-            builder.Object.UseOpenIddict();
+            builder.UseOpenIddict();
 
             // Assert
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictApplicationConfiguration<OpenIddictApplication, OpenIddictAuthorization, OpenIddictToken, string>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictAuthorizationConfiguration<OpenIddictAuthorization, OpenIddictApplication, OpenIddictToken, string>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictScopeConfiguration<OpenIddictScope, string>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictTokenConfiguration<OpenIddictToken, OpenIddictApplication, OpenIddictAuthorization, string>>()), Times.Once());
+            Assert.NotNull(builder.Model.FindEntityType(typeof(OpenIddictApplication)));
+            Assert.NotNull(builder.Model.FindEntityType(typeof(OpenIddictAuthorization)));
+            Assert.NotNull(builder.Model.FindEntityType(typeof(OpenIddictScope)));
+            Assert.NotNull(builder.Model.FindEntityType(typeof(OpenIddictToken)));
         }
 
         [Fact]
         public void UseOpenIddict_RegistersDefaultEntityConfigurationsWithCustomKeyType()
         {
             // Arrange
-            var builder = new Mock<ModelBuilder>(new ConventionSet());
+            var builder = new ModelBuilder(new ConventionSet());
 
             // Act
-            builder.Object.UseOpenIddict<long>();
+            builder.UseOpenIddict<long>();
 
             // Assert
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictApplicationConfiguration<OpenIddictApplication<long>, OpenIddictAuthorization<long>, OpenIddictToken<long>, long>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictAuthorizationConfiguration<OpenIddictAuthorization<long>, OpenIddictApplication<long>, OpenIddictToken<long>, long>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictScopeConfiguration<OpenIddictScope<long>, long>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictTokenConfiguration<OpenIddictToken<long>, OpenIddictApplication<long>, OpenIddictAuthorization<long>, long>>()), Times.Once());
+            Assert.NotNull(builder.Model.FindEntityType(typeof(OpenIddictApplication<long>)));
+            Assert.NotNull(builder.Model.FindEntityType(typeof(OpenIddictAuthorization<long>)));
+            Assert.NotNull(builder.Model.FindEntityType(typeof(OpenIddictScope<long>)));
+            Assert.NotNull(builder.Model.FindEntityType(typeof(OpenIddictToken<long>)));
         }
 
         [Fact]
         public void UseOpenIddict_RegistersCustomEntityConfigurations()
         {
             // Arrange
-            var builder = new Mock<ModelBuilder>(new ConventionSet());
+            var builder = new ModelBuilder(new ConventionSet());
 
             // Act
-            builder.Object.UseOpenIddict<CustomApplication, CustomAuthorization, CustomScope, CustomToken, Guid>();
+            builder.UseOpenIddict<CustomApplication, CustomAuthorization, CustomScope, CustomToken, Guid>();
 
             // Assert
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictApplicationConfiguration<CustomApplication, CustomAuthorization, CustomToken, Guid>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictAuthorizationConfiguration<CustomAuthorization, CustomApplication, CustomToken, Guid>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictScopeConfiguration<CustomScope, Guid>>()), Times.Once());
-            builder.Verify(mock => mock.ApplyConfiguration(
-                It.IsAny<OpenIddictTokenConfiguration<CustomToken, CustomApplication, CustomAuthorization, Guid>>()), Times.Once());
+            Assert.NotNull(builder.Model.FindEntityType(typeof(CustomApplication)));
+            Assert.NotNull(builder.Model.FindEntityType(typeof(CustomAuthorization)));
+            Assert.NotNull(builder.Model.FindEntityType(typeof(CustomScope)));
+            Assert.NotNull(builder.Model.FindEntityType(typeof(CustomToken)));
         }
 
         public class CustomApplication : OpenIddictApplication<Guid, CustomAuthorization, CustomToken> { }

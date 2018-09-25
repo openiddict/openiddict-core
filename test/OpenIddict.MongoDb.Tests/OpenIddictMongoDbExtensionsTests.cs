@@ -68,7 +68,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(OpenIddictApplication), options.DefaultApplicationType);
             Assert.Equal(typeof(OpenIddictAuthorization), options.DefaultAuthorizationType);

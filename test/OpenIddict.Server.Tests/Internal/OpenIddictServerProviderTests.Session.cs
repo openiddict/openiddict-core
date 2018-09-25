@@ -6,12 +6,12 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -165,8 +165,7 @@ namespace OpenIddict.Server.Internal.Tests
                 It.IsAny<byte[]>(),
                 It.Is<DistributedCacheEntryOptions>(options =>
                     options.AbsoluteExpirationRelativeToNow == TimeSpan.FromDays(42) &&
-                    options.SlidingExpiration == TimeSpan.FromSeconds(42)),
-                It.IsAny<CancellationToken>()), Times.Once());
+                    options.SlidingExpiration == TimeSpan.FromSeconds(42))), Times.Once());
 
             generator.Verify(mock => mock.GetBytes(It.Is<byte[]>(bytes => bytes.Length == 256 / 8)), Times.Once());
         }
@@ -213,7 +212,7 @@ namespace OpenIddict.Server.Internal.Tests
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.SendAsync(HttpMethods.Put, LogoutEndpoint, new OpenIdConnectRequest());
+            var response = await client.SendAsync(HttpMethod.Put, LogoutEndpoint, new OpenIdConnectRequest());
 
             // Assert
             Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);

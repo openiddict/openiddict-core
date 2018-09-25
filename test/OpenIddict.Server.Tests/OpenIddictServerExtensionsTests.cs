@@ -5,22 +5,26 @@
  */
 
 using System;
+using System.Reflection;
 using System.Text;
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OpenIddict.Server.Internal;
+using Moq;
+using OpenIddict.Abstractions;
+using OpenIddict.Server.Internal.Tests;
 using Xunit;
 
 namespace OpenIddict.Server.Tests
 {
     public class OpenIddictServerExtensionsTests
     {
-        [Fact]
         public void AddServer_ThrowsAnExceptionForNullBuilder()
         {
             // Arrange
@@ -43,20 +47,6 @@ namespace OpenIddict.Server.Tests
             var exception = Assert.Throws<ArgumentNullException>(() => builder.AddServer(configuration: null));
 
             Assert.Equal("configuration", exception.ParamName);
-        }
-
-        [Fact]
-        public void AddServer_RegistersAuthenticationServices()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddServer();
-
-            // Assert
-            Assert.Contains(services, service => service.ServiceType == typeof(IAuthenticationService));
         }
 
         [Fact]
@@ -119,122 +109,6 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void AddServer_RegistersHandler()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddServer();
-
-            // Assert
-            Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                                 service.ServiceType == typeof(OpenIddictServerHandler) &&
-                                                 service.ImplementationType == typeof(OpenIddictServerHandler));
-        }
-
-        [Fact]
-        public void AddServer_RegistersProvider()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddServer();
-
-            // Assert
-            Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                                 service.ServiceType == typeof(OpenIddictServerProvider) &&
-                                                 service.ImplementationFactory != null);
-        }
-
-        [Fact]
-        public void AddServer_ResolvingProviderThrowsAnExceptionWhenCoreServicesAreNotRegistered()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddServer();
-
-            // Assert
-            var provider = services.BuildServiceProvider();
-
-            var exception = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredService<OpenIddictServerProvider>());
-
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server handler.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .ToString(), exception.Message);
-        }
-
-        [Theory]
-        [InlineData(typeof(IPostConfigureOptions<OpenIddictServerOptions>), typeof(OpenIddictServerConfiguration))]
-        [InlineData(typeof(IPostConfigureOptions<OpenIddictServerOptions>), typeof(OpenIdConnectServerInitializer))]
-        public void AddServer_RegistersInitializers(Type serviceType, Type implementationType)
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddServer();
-
-            // Assert
-            Assert.Contains(services, service => service.ServiceType == serviceType &&
-                                                 service.ImplementationType == implementationType);
-        }
-
-        [Fact]
-        public void AddServer_RegistersAuthenticationScheme()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddServer();
-
-            // Assert
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
-
-            Assert.Contains(options.Schemes, scheme => scheme.Name == OpenIddictServerDefaults.AuthenticationScheme &&
-                                                       scheme.HandlerType == typeof(OpenIddictServerHandler));
-        }
-
-        [Fact]
-        public void AddServer_ThrowsAnExceptionWhenSchemeIsAlreadyRegisteredWithDifferentHandlerType()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddAuthentication()
-                .AddOpenIdConnectServer();
-
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddServer();
-
-            // Assert
-            var provider = services.BuildServiceProvider();
-            var exception = Assert.Throws<InvalidOperationException>(delegate
-            {
-                return provider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
-            });
-
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The OpenIddict server handler cannot be registered as an authentication scheme.")
-                .AppendLine("This may indicate that an instance of the OpenID Connect server was registered.")
-                .Append("Make sure that 'services.AddAuthentication().AddOpenIdConnectServer()' is not used.")
-                .ToString(), exception.Message);
-        }
-
-        [Fact]
         public void AddServer_CanBeSafelyInvokedMultipleTimes()
         {
             // Arrange
@@ -246,5 +120,371 @@ namespace OpenIddict.Server.Tests
             builder.AddServer();
             builder.AddServer();
         }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenProviderIsNull()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .Configure(options => options.Provider = null);
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in server provider.")
+                .AppendLine("This error may indicate that 'OpenIddictServerOptions.Provider' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddServer().AddEventHandler()' method.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenProviderTypeIsIncompatible()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .Configure(options => options.Provider = new OpenIdConnectServerProvider());
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in server provider.")
+                .AppendLine("This error may indicate that 'OpenIddictServerOptions.Provider' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddServer().AddEventHandler()' method.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenNoFlowIsEnabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal("At least one OAuth2/OpenID Connect flow must be enabled.", exception.Message);
+        }
+
+        [Theory]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode)]
+        [InlineData(OpenIddictConstants.GrantTypes.Implicit)]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenAuthorizationEndpointIsDisabled(string flow)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .Configure(options => options.GrantTypes.Add(flow))
+                    .Configure(options => options.AuthorizationEndpointPath = PathString.Empty);
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal("The authorization endpoint must be enabled to use " +
+                         "the authorization code and implicit flows.", exception.Message);
+        }
+
+        [Theory]
+        [InlineData(OpenIddictConstants.GrantTypes.AuthorizationCode)]
+        [InlineData(OpenIddictConstants.GrantTypes.ClientCredentials)]
+        [InlineData(OpenIddictConstants.GrantTypes.Password)]
+        [InlineData(OpenIddictConstants.GrantTypes.RefreshToken)]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenTokenEndpointIsDisabled(string flow)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .EnableAuthorizationEndpoint("/connect/authorize")
+                    .Configure(options => options.GrantTypes.Add(flow))
+                    .Configure(options => options.TokenEndpointPath = PathString.Empty);
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal("The token endpoint must be enabled to use the authorization code, " +
+                         "client credentials, password and refresh token flows.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenCachingPolicyIsNullAndRequestCachingEnabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .EnableAuthorizationEndpoint("/connect/authorize")
+                    .AllowImplicitFlow()
+                    .EnableRequestCaching()
+                    .Configure(options => options.RequestCachingPolicy = null);
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal("A caching policy must be specified when enabling request caching.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenTokenStorageIsDisabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .EnableAuthorizationEndpoint("/connect/authorize")
+                    .EnableRevocationEndpoint("/connect/revocation")
+                    .AllowImplicitFlow()
+                    .DisableTokenStorage();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal("The revocation endpoint cannot be enabled when token storage is disabled.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenUsingReferenceTokensWithTokenStorageDisabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddDataProtection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .EnableAuthorizationEndpoint("/connect/authorize")
+                    .AllowImplicitFlow()
+                    .DisableTokenStorage()
+                    .UseReferenceTokens();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal("Reference tokens cannot be used when disabling token storage.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenUsingReferenceTokensIfAnAccessTokenHandlerIsSet()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddDataProtection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .EnableAuthorizationEndpoint("/connect/authorize")
+                    .AllowImplicitFlow()
+                    .UseReferenceTokens()
+                    .UseJsonWebTokens();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal("Reference tokens cannot be used when configuring JWT as the access token format.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenUsingSlidingExpirationWithoutRollingTokensAndWithTokenStorageDisabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddDataProtection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .EnableAuthorizationEndpoint("/connect/authorize")
+                    .AllowImplicitFlow()
+                    .DisableTokenStorage();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal("Sliding expiration must be disabled when turning off " +
+                         "token storage if rolling tokens are not used.", exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_ThrowsAnExceptionWhenNoSigningKeyIsRegisteredIfTheImplicitFlowIsEnabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .EnableAuthorizationEndpoint("/connect/authorize")
+                    .AllowImplicitFlow();
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictServer());
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("At least one asymmetric signing key must be registered when enabling the implicit flow.")
+                .Append("Consider registering a certificate using 'services.AddOpenIddict().AddServer().AddSigningCertificate()' ")
+                .Append("or 'services.AddOpenIddict().AddServer().AddDevelopmentSigningCertificate()' or call ")
+                .Append("'services.AddOpenIddict().AddServer().AddEphemeralSigningKey()' to use an ephemeral key.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictServer_OpenIdConnectServerMiddlewareIsRegistered()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.SetDefaultApplicationEntity<OpenIddictApplication>()
+                           .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                           .SetDefaultScopeEntity<OpenIddictScope>()
+                           .SetDefaultTokenEntity<OpenIddictToken>();
+                })
+
+                .AddServer()
+                    .AddSigningCertificate(
+                        assembly: typeof(OpenIddictServerProviderTests).GetTypeInfo().Assembly,
+                        resource: "OpenIddict.Server.Tests.Certificate.pfx",
+                        password: "OpenIddict")
+                    .AllowImplicitFlow()
+                    .EnableAuthorizationEndpoint("/connect/authorize");
+
+            var builder = new Mock<IApplicationBuilder>();
+            builder.SetupGet(mock => mock.ApplicationServices)
+                .Returns(services.BuildServiceProvider());
+
+            // Act
+            builder.Object.UseOpenIddictServer();
+
+            // Assert
+            builder.Verify(mock => mock.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()), Times.Once());
+        }
+
+        public class OpenIddictApplication { }
+        public class OpenIddictAuthorization { }
+        public class OpenIddictScope { }
+        public class OpenIddictToken { }
     }
 }

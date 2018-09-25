@@ -1,16 +1,30 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Mvc.Server
 {
     public static class Program
     {
-        public static void Main(string[] args) =>
-            BuildWebHost(args).Run();
+        public static void Main(string[] args)
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .AddCommandLine(args)
+                .Build();
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+            var host = new WebHostBuilder()
+                .ConfigureLogging(options => options.AddConsole())
+                .ConfigureLogging(options => options.AddDebug())
+                .UseConfiguration(configuration)
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseKestrel()
                 .UseStartup<Startup>()
                 .Build();
+
+            host.Run();
+        }
     }
 }

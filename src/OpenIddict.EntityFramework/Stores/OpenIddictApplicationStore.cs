@@ -37,7 +37,7 @@ namespace OpenIddict.EntityFramework
         public OpenIddictApplicationStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkOptions> options)
             : base(cache, context, options)
         {
         }
@@ -61,7 +61,7 @@ namespace OpenIddict.EntityFramework
         public OpenIddictApplicationStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -81,7 +81,7 @@ namespace OpenIddict.EntityFramework
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictEntityFrameworkOptions> Options { get; }
+        protected IOptions<OpenIddictEntityFrameworkOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TApplication"/> entity.
@@ -659,12 +659,14 @@ namespace OpenIddict.EntityFramework
 
             catch (MemberAccessException exception)
             {
-                return new ValueTask<TApplication>(Task.FromException<TApplication>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new application instance.")
-                        .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                var source = new TaskCompletionSource<TApplication>();
+                source.SetException(new InvalidOperationException(new StringBuilder()
+                    .AppendLine("An error occurred while trying to create a new application instance.")
+                    .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
+                    .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
+                    .ToString(), exception));
+
+                return new ValueTask<TApplication>(source.Task);
             }
         }
 
@@ -739,7 +741,7 @@ namespace OpenIddict.EntityFramework
 
             application.ClientId = identifier;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -763,7 +765,7 @@ namespace OpenIddict.EntityFramework
 
             application.ClientSecret = secret;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -785,7 +787,7 @@ namespace OpenIddict.EntityFramework
 
             application.Type = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -807,7 +809,7 @@ namespace OpenIddict.EntityFramework
 
             application.ConsentType = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -829,7 +831,7 @@ namespace OpenIddict.EntityFramework
 
             application.DisplayName = name;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -852,12 +854,12 @@ namespace OpenIddict.EntityFramework
             {
                 application.Permissions = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.Permissions = new JArray(permissions.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -881,12 +883,12 @@ namespace OpenIddict.EntityFramework
             {
                 application.PostLogoutRedirectUris = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.PostLogoutRedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -909,12 +911,12 @@ namespace OpenIddict.EntityFramework
             {
                 application.Properties = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.Properties = properties.ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -938,12 +940,12 @@ namespace OpenIddict.EntityFramework
             {
                 application.RedirectUris = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.RedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>

@@ -1,0 +1,9 @@
+<Project>
+
+  <Import Project="common.props" />
+
+  <PropertyGroup>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+</Project>

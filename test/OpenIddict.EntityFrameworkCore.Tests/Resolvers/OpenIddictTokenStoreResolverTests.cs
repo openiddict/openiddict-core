@@ -26,7 +26,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             var services = new ServiceCollection();
             services.AddSingleton(Mock.Of<IOpenIddictTokenStore<CustomToken>>());
 
-            var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions>>();
+            var options = Mock.Of<IOptions<OpenIddictEntityFrameworkCoreOptions>>();
             var provider = services.BuildServiceProvider();
             var resolver = new OpenIddictTokenStoreResolver(options, provider);
 
@@ -40,7 +40,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Arrange
             var services = new ServiceCollection();
 
-            var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions>>();
+            var options = Mock.Of<IOptions<OpenIddictEntityFrameworkCoreOptions>>();
             var provider = services.BuildServiceProvider();
             var resolver = new OpenIddictTokenStoreResolver(options, provider);
 
@@ -61,11 +61,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             // Arrange
             var services = new ServiceCollection();
 
-            var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions>>(
-                mock => mock.CurrentValue == new OpenIddictEntityFrameworkCoreOptions
-                {
-                    DbContextType = null
-                });
+            var options = Options.Create(new OpenIddictEntityFrameworkCoreOptions
+            {
+                DbContextType = null
+            });
 
             var provider = services.BuildServiceProvider();
             var resolver = new OpenIddictTokenStoreResolver(options, provider);
@@ -88,11 +87,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             services.AddSingleton(Mock.Of<IOpenIddictTokenStore<CustomToken>>());
             services.AddSingleton(CreateStore());
 
-            var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions>>(
-                mock => mock.CurrentValue == new OpenIddictEntityFrameworkCoreOptions
-                {
-                    DbContextType = typeof(DbContext)
-                });
+            var options = Options.Create(new OpenIddictEntityFrameworkCoreOptions
+            {
+                DbContextType = typeof(DbContext)
+            });
 
             var provider = services.BuildServiceProvider();
             var resolver = new OpenIddictTokenStoreResolver(options, provider);
@@ -105,7 +103,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             => new Mock<OpenIddictTokenStore<MyToken, MyApplication, MyAuthorization, DbContext, long>>(
                 Mock.Of<IMemoryCache>(),
                 Mock.Of<DbContext>(),
-                Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions>>()).Object;
+                Mock.Of<IOptions<OpenIddictEntityFrameworkCoreOptions>>()).Object;
 
         public class CustomToken { }
 

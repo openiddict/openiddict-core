@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Validation.Internal
@@ -21,21 +22,13 @@ namespace OpenIddict.Validation.Internal
     /// </summary>
     public sealed class OpenIddictValidationProvider : OAuthValidationEvents
     {
-        private readonly IOpenIddictValidationEventService _eventService;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictValidationProvider"/> class.
-        /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
-        /// directly from your code. This API may change or be removed in future minor releases.
-        /// </summary>
-        public OpenIddictValidationProvider([NotNull] IOpenIddictValidationEventService eventService)
-            => _eventService = eventService;
-
         public override Task ApplyChallenge([NotNull] ApplyChallengeContext context)
-            => _eventService.PublishAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
 
         public override Task CreateTicket([NotNull] CreateTicketContext context)
-            => _eventService.PublishAsync(new OpenIddictValidationEvents.CreateTicket(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictValidationEvents.CreateTicket(context));
 
         public override async Task DecryptToken([NotNull] DecryptTokenContext context)
         {
@@ -54,13 +47,16 @@ namespace OpenIddict.Validation.Internal
                         .ToString());
                 }
 
+                var logger = GetLogger(context.HttpContext.RequestServices);
+
                 // Retrieve the token entry from the database. If it
                 // cannot be found, assume the token is not valid.
                 var token = await manager.FindByReferenceIdAsync(context.Token);
                 if (token == null)
                 {
-                    context.Fail("Authentication failed because the access token cannot be found in the database.");
+                    logger.LogError("Authentication failed because the access token cannot be found in the database.");
 
+                    context.HandleResponse();
                     return;
                 }
 
@@ -69,25 +65,28 @@ namespace OpenIddict.Validation.Internal
                 var payload = await manager.GetPayloadAsync(token);
                 if (string.IsNullOrEmpty(payload))
                 {
-                    context.Fail("Authentication failed because the access token is not a reference token.");
+                    logger.LogError("Authentication failed because the access token is not a reference token.");
 
+                    context.HandleResponse();
                     return;
                 }
 
                 // Ensure the access token is still valid (i.e was not marked as revoked).
                 if (!await manager.IsValidAsync(token))
                 {
-                    context.Fail("Authentication failed because the access token was no longer valid.");
+                    logger.LogError("Authentication failed because the access token was no longer valid.");
 
+                    context.HandleResponse();
                     return;
                 }
 
                 var ticket = context.DataFormat.Unprotect(payload);
                 if (ticket == null)
                 {
-                    context.Fail("Authentication failed because the reference token cannot be decrypted. " +
-                                 "This may indicate that the token entry is corrupted or tampered.");
+                    logger.LogError("Authentication failed because the reference token cannot be decrypted. " +
+                                    "This may indicate that the token entry is corrupted or tampered.");
 
+                    context.HandleResponse();
                     return;
                 }
 
@@ -100,16 +99,17 @@ namespace OpenIddict.Validation.Internal
                 ticket.Properties.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId,
                     await manager.GetAuthorizationIdAsync(token));
 
-                context.Principal = ticket.Principal;
-                context.Properties = ticket.Properties;
-                context.Success();
+                context.Ticket = ticket;
+                context.HandleResponse();
             }
 
-            await _eventService.PublishAsync(new OpenIddictValidationEvents.DecryptToken(context));
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictValidationEvents.DecryptToken(context));
         }
 
         public override Task RetrieveToken([NotNull] RetrieveTokenContext context)
-            => _eventService.PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
 
         public override async Task ValidateToken([NotNull] ValidateTokenContext context)
         {
@@ -128,21 +128,31 @@ namespace OpenIddict.Validation.Internal
                         .ToString());
                 }
 
-                var identifier = context.Properties.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
+                var logger = GetLogger(context.HttpContext.RequestServices);
+
+                var identifier = context.Ticket.Properties.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
                 if (!string.IsNullOrEmpty(identifier))
                 {
                     var authorization = await manager.FindByIdAsync(identifier);
                     if (authorization == null || !await manager.IsValidAsync(authorization))
                     {
-                        context.Fail("Authentication failed because the authorization " +
-                                     "associated with the access token was not longer valid.");
+                        logger.LogError("Authentication failed because the authorization " +
+                                        "associated with the access token was not longer valid.");
 
+                        context.Ticket = null;
                         return;
                     }
                 }
             }
 
-            await _eventService.PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
         }
+
+        private static ILogger GetLogger(IServiceProvider provider)
+            => provider.GetRequiredService<ILogger<OpenIddictValidationProvider>>();
+
+        private static IOpenIddictValidationEventService GetEventService(IServiceProvider provider)
+            => provider.GetRequiredService<IOpenIddictValidationEventService>();
     }
 }

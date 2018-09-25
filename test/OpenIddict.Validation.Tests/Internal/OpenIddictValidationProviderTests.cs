@@ -21,9 +21,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -43,7 +44,13 @@ namespace OpenIddict.Validation.Internal.Tests
             // Arrange
             var server = CreateResourceServer(builder =>
             {
-                builder.Services.RemoveAll(typeof(IOpenIddictTokenManager));
+                foreach (var service in builder.Services.ToArray())
+                {
+                    if (service.ServiceType == typeof(IOpenIddictTokenManager))
+                    {
+                        builder.Services.Remove(service);
+                    }
+                }
             });
 
             var client = server.CreateClient();
@@ -232,6 +239,7 @@ namespace OpenIddict.Validation.Internal.Tests
 
                     return new AuthenticationTicket(
                         new ClaimsPrincipal(identity),
+                        new AuthenticationProperties(),
                         OpenIddictValidationDefaults.AuthenticationScheme);
                 });
 
@@ -305,12 +313,19 @@ namespace OpenIddict.Validation.Internal.Tests
 
                     return new AuthenticationTicket(
                         new ClaimsPrincipal(identity),
+                        new AuthenticationProperties(),
                         OpenIddictValidationDefaults.AuthenticationScheme);
                 });
 
             var server = CreateResourceServer(builder =>
             {
-                builder.Services.RemoveAll(typeof(IOpenIddictAuthorizationManager));
+                foreach (var service in builder.Services.ToArray())
+                {
+                    if (service.ServiceType == typeof(IOpenIddictAuthorizationManager))
+                    {
+                        builder.Services.Remove(service);
+                    }
+                }
 
                 builder.EnableAuthorizationValidation();
 
@@ -352,6 +367,7 @@ namespace OpenIddict.Validation.Internal.Tests
 
                     var ticket = new AuthenticationTicket(
                         new ClaimsPrincipal(identity),
+                        new AuthenticationProperties(),
                         OpenIddictValidationDefaults.AuthenticationScheme);
 
                     ticket.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId, "5230CBAD-89F9-4C3F-B48C-9253B6FB8620");
@@ -407,6 +423,7 @@ namespace OpenIddict.Validation.Internal.Tests
 
                     var ticket = new AuthenticationTicket(
                         new ClaimsPrincipal(identity),
+                        new AuthenticationProperties(),
                         OpenIddictValidationDefaults.AuthenticationScheme);
 
                     ticket.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId, "5230CBAD-89F9-4C3F-B48C-9253B6FB8620");
@@ -466,6 +483,7 @@ namespace OpenIddict.Validation.Internal.Tests
 
                     var ticket = new AuthenticationTicket(
                         new ClaimsPrincipal(identity),
+                        new AuthenticationProperties(),
                         OpenIddictValidationDefaults.AuthenticationScheme);
 
                     ticket.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId, "5230CBAD-89F9-4C3F-B48C-9253B6FB8620");
@@ -544,12 +562,16 @@ namespace OpenIddict.Validation.Internal.Tests
 
             builder.Configure(app =>
             {
+                app.UseOpenIddictValidation();
+
                 app.Map("/ticket", map => map.Run(async context =>
                 {
-                    var result = await context.AuthenticateAsync(OpenIddictValidationDefaults.AuthenticationScheme);
+                    var result = new AuthenticateContext(OpenIddictValidationDefaults.AuthenticationScheme);
+                    await context.Authentication.AuthenticateAsync(result);
+
                     if (result.Principal == null)
                     {
-                        await context.ChallengeAsync(OpenIddictValidationDefaults.AuthenticationScheme);
+                        await context.Authentication.ChallengeAsync(OpenIddictValidationDefaults.AuthenticationScheme);
 
                         return;
                     }
@@ -562,17 +584,19 @@ namespace OpenIddict.Validation.Internal.Tests
                         Claims = from claim in result.Principal.Claims
                                  select new { claim.Type, claim.Value },
 
-                        Properties = from property in result.Properties.Items
+                        Properties = from property in result.Properties
                                      select new { Name = property.Key, property.Value }
                     }));
                 }));
 
                 app.Run(async context =>
                 {
-                    var result = await context.AuthenticateAsync(OpenIddictValidationDefaults.AuthenticationScheme);
+                    var result = new AuthenticateContext(OpenIddictValidationDefaults.AuthenticationScheme);
+                    await context.Authentication.AuthenticateAsync(result);
+
                     if (result.Principal == null)
                     {
-                        await context.ChallengeAsync(OpenIddictValidationDefaults.AuthenticationScheme);
+                        await context.Authentication.ChallengeAsync(OpenIddictValidationDefaults.AuthenticationScheme);
 
                         return;
                     }
@@ -580,7 +604,7 @@ namespace OpenIddict.Validation.Internal.Tests
                     var subject = result.Principal.FindFirst(OAuthValidationConstants.Claims.Subject)?.Value;
                     if (string.IsNullOrEmpty(subject))
                     {
-                        await context.ChallengeAsync(OpenIddictValidationDefaults.AuthenticationScheme);
+                        await context.Authentication.ChallengeAsync(OpenIddictValidationDefaults.AuthenticationScheme);
 
                         return;
                     }
@@ -598,7 +622,7 @@ namespace OpenIddict.Validation.Internal.Tests
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptions<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
 
@@ -611,7 +635,7 @@ namespace OpenIddict.Validation.Internal.Tests
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
                 Mock.Of<IOpenIddictTokenStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictTokenManager<OpenIddictToken>>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptions<OpenIddictCoreOptions>>());
 
             configuration?.Invoke(manager);
 

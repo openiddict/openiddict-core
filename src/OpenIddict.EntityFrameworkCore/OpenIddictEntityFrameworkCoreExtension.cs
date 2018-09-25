@@ -5,41 +5,31 @@
  */
 
 using System;
+using System.ComponentModel;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFrameworkCore.Models;
 
 namespace OpenIddict.EntityFrameworkCore
 {
-    /// <summary>
-    /// Represents a model customizer able to register the entity sets
-    /// required by the OpenIddict stack in an Entity Framework Core context.
-    /// </summary>
-    public class OpenIddictEntityFrameworkCoreCustomizer<TApplication, TAuthorization, TScope, TToken, TKey> : ModelCustomizer
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public class OpenIddictEntityFrameworkCoreExtension<TApplication, TAuthorization, TScope, TToken, TKey> : IDbContextOptionsExtension
         where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
         where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
         where TScope : OpenIddictScope<TKey>
         where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
         where TKey : IEquatable<TKey>
     {
-        public override void Customize([NotNull] ModelBuilder builder, [NotNull] DbContext context)
+        public void ApplyServices([NotNull] IServiceCollection services)
         {
-            if (builder == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // Register the OpenIddict entity sets.
-            builder.UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>();
-
-            base.Customize(builder, context);
+            services.AddSingleton<IModelCustomizer, OpenIddictEntityFrameworkCoreCustomizer<
+                TApplication, TAuthorization, TScope, TToken, TKey>>();
         }
     }
 }

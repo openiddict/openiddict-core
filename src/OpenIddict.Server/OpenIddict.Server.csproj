@@ -3,7 +3,7 @@
   <Import Project="..\..\build\packages.props" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net451;netstandard1.4</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,7 +22,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Newtonsoft.Json.Bson" Version="$(JsonNetBsonVersion)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,7 +6,7 @@
 
 using System;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http.Authentication;
 
 namespace OpenIddict.Validation.Internal
 {

@@ -19,8 +19,7 @@ namespace OpenIddict.Validation
         /// </summary>
         public OpenIddictValidationOptions()
         {
-            Events = null;
-            EventsType = typeof(OpenIddictValidationProvider);
+            Events = new OpenIddictValidationProvider();
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ namespace Mvc.Server.Controllers
             _userManager = userManager;
         }
 
-        [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
+        [Authorize(ActiveAuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
         [HttpGet("message")]
         public async Task<IActionResult> GetMessage()
         {

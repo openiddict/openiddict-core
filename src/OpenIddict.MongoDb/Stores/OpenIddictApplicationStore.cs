@@ -33,7 +33,7 @@ namespace OpenIddict.MongoDb
         public OpenIddictApplicationStore(
             [NotNull] IMemoryCache cache,
             [NotNull] IOpenIddictMongoDbContext context,
-            [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options)
+            [NotNull] IOptions<OpenIddictMongoDbOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -53,7 +53,7 @@ namespace OpenIddict.MongoDb
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictMongoDbOptions> Options { get; }
+        protected IOptions<OpenIddictMongoDbOptions> Options { get; }
 
         /// <summary>
         /// Determines the number of applications that exist in the database.
@@ -66,7 +66,7 @@ namespace OpenIddict.MongoDb
         public virtual async Task<long> CountAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             return await collection.CountDocumentsAsync(FilterDefinition<TApplication>.Empty);
         }
@@ -89,7 +89,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             return await ((IMongoQueryable<TApplication>) query(collection.AsQueryable())).LongCountAsync();
         }
@@ -110,7 +110,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             await collection.InsertOneAsync(application, null, cancellationToken);
         }
@@ -131,7 +131,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             if ((await collection.DeleteOneAsync(entity =>
                 entity.Id == application.Id &&
@@ -144,11 +144,11 @@ namespace OpenIddict.MongoDb
             }
 
             // Delete the authorizations associated with the application.
-            await database.GetCollection<OpenIddictAuthorization>(Options.CurrentValue.AuthorizationsCollectionName)
+            await database.GetCollection<OpenIddictAuthorization>(Options.Value.AuthorizationsCollectionName)
                 .DeleteManyAsync(authorization => authorization.ApplicationId == application.Id, cancellationToken);
 
             // Delete the tokens associated with the application.
-            await database.GetCollection<OpenIddictToken>(Options.CurrentValue.TokensCollectionName)
+            await database.GetCollection<OpenIddictToken>(Options.Value.TokensCollectionName)
                 .DeleteManyAsync(token => token.ApplicationId == application.Id, cancellationToken);
         }
 
@@ -169,7 +169,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             return await collection.Find(application => application.ClientId == identifier).FirstOrDefaultAsync(cancellationToken);
         }
@@ -191,7 +191,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             return await collection.Find(application => application.Id == ObjectId.Parse(identifier)).FirstOrDefaultAsync(cancellationToken);
         }
@@ -213,7 +213,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(application =>
                 application.PostLogoutRedirectUris.Contains(address)).ToListAsync(cancellationToken));
@@ -236,7 +236,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             return ImmutableArray.CreateRange(await collection.Find(application =>
                 application.RedirectUris.Contains(address)).ToListAsync(cancellationToken));
@@ -264,7 +264,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             return await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).FirstOrDefaultAsync(cancellationToken);
         }
@@ -498,12 +498,14 @@ namespace OpenIddict.MongoDb
 
             catch (MemberAccessException exception)
             {
-                return new ValueTask<TApplication>(Task.FromException<TApplication>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new application instance.")
-                        .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                var source = new TaskCompletionSource<TApplication>();
+                source.SetException(new InvalidOperationException(new StringBuilder()
+                    .AppendLine("An error occurred while trying to create a new application instance.")
+                    .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
+                    .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
+                    .ToString(), exception));
+
+                return new ValueTask<TApplication>(source.Task);
             }
         }
 
@@ -521,7 +523,7 @@ namespace OpenIddict.MongoDb
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             var query = (IMongoQueryable<TApplication>) collection.AsQueryable().OrderBy(application => application.Id);
 
@@ -560,7 +562,7 @@ namespace OpenIddict.MongoDb
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             return ImmutableArray.CreateRange(
                 await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).ToListAsync(cancellationToken));
@@ -585,7 +587,7 @@ namespace OpenIddict.MongoDb
 
             application.ClientId = identifier;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -609,7 +611,7 @@ namespace OpenIddict.MongoDb
 
             application.ClientSecret = secret;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -631,7 +633,7 @@ namespace OpenIddict.MongoDb
 
             application.Type = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -653,7 +655,7 @@ namespace OpenIddict.MongoDb
 
             application.ConsentType = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -675,7 +677,7 @@ namespace OpenIddict.MongoDb
 
             application.DisplayName = name;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -698,12 +700,12 @@ namespace OpenIddict.MongoDb
             {
                 application.Permissions = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.Permissions = permissions.ToArray();
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -727,12 +729,12 @@ namespace OpenIddict.MongoDb
             {
                 application.PostLogoutRedirectUris = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.PostLogoutRedirectUris = addresses.ToArray();
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -755,12 +757,12 @@ namespace OpenIddict.MongoDb
             {
                 application.Properties = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.Properties = new BsonDocument(properties.ToObject<IDictionary<string, object>>());
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -784,12 +786,12 @@ namespace OpenIddict.MongoDb
             {
                 application.RedirectUris = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.RedirectUris = addresses.ToArray();
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -813,7 +815,7 @@ namespace OpenIddict.MongoDb
             application.ConcurrencyToken = Guid.NewGuid().ToString();
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            var collection = database.GetCollection<TApplication>(Options.Value.ApplicationsCollectionName);
 
             if ((await collection.ReplaceOneAsync(entity =>
                 entity.Id == application.Id &&

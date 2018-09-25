@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace OpenIddict.Mvc.Internal.Tests
@@ -30,8 +29,7 @@ namespace OpenIddict.Mvc.Internal.Tests
         public async Task BindModelAsync_ThrowsAnExceptionForUnsupportedTypes(Type type)
         {
             // Arrange
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMvcOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMvcOptions());
+            var options = Options.Create(new OpenIddictMvcOptions());
 
             var binder = new OpenIddictMvcBinder(options);
             var provider = new EmptyModelMetadataProvider();
@@ -54,8 +52,7 @@ namespace OpenIddict.Mvc.Internal.Tests
         public async Task BindModelAsync_ThrowsAnExceptionWhenRequestCannotBeFound()
         {
             // Arrange
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMvcOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMvcOptions());
+            var options = Options.Create(new OpenIddictMvcOptions());
 
             var binder = new OpenIddictMvcBinder(options);
             var provider = new EmptyModelMetadataProvider();
@@ -78,7 +75,7 @@ namespace OpenIddict.Mvc.Internal.Tests
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("The OpenID Connect request cannot be retrieved from the ASP.NET context.")
-                .Append("Make sure that 'app.UseAuthentication()' is called before 'app.UseMvc()' ")
+                .Append("Make sure that 'app.UseOpenIddictServer()' is called before 'app.UseMvc()' ")
                 .Append("and that the action route corresponds to the endpoint path registered via ")
                 .Append("'services.AddOpenIddict().AddServer().Enable[...]Endpoint(...)'.")
                 .ToString(), exception.Message);
@@ -88,11 +85,10 @@ namespace OpenIddict.Mvc.Internal.Tests
         public async Task BindModelAsync_ReturnsNullWhenRequestCannotBeFoundAndExceptionsAreDisabled()
         {
             // Arrange
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMvcOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMvcOptions
-                {
-                    DisableBindingExceptions = true
-                });
+            var options = Options.Create(new OpenIddictMvcOptions
+            {
+                DisableBindingExceptions = true
+            });
 
             var binder = new OpenIddictMvcBinder(options);
             var provider = new EmptyModelMetadataProvider();
@@ -113,15 +109,13 @@ namespace OpenIddict.Mvc.Internal.Tests
             // Assert
             Assert.True(context.Result.IsModelSet);
             Assert.Null(context.Result.Model);
-            Assert.Equal(BindingSource.Special, context.BindingSource);
         }
 
         [Fact]
         public async Task BindModelAsync_ReturnsNullWhenResponseCannotBeFound()
         {
             // Arrange
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMvcOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMvcOptions());
+            var options = Options.Create(new OpenIddictMvcOptions());
 
             var binder = new OpenIddictMvcBinder(options);
             var provider = new EmptyModelMetadataProvider();
@@ -144,15 +138,13 @@ namespace OpenIddict.Mvc.Internal.Tests
             // Assert
             Assert.True(context.Result.IsModelSet);
             Assert.Null(context.Result.Model);
-            Assert.Equal(BindingSource.Special, context.BindingSource);
         }
 
         [Fact]
         public async Task BindModelAsync_ReturnsAmbientRequest()
         {
             // Arrange
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMvcOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMvcOptions());
+            var options = Options.Create(new OpenIddictMvcOptions());
 
             var binder = new OpenIddictMvcBinder(options);
             var provider = new EmptyModelMetadataProvider();
@@ -184,15 +176,13 @@ namespace OpenIddict.Mvc.Internal.Tests
             Assert.True(context.Result.IsModelSet);
             Assert.Same(request, context.Result.Model);
             Assert.True(context.ValidationState[request].SuppressValidation);
-            Assert.Equal(BindingSource.Special, context.BindingSource);
         }
 
         [Fact]
         public async Task BindModelAsync_ReturnsAmbientResponse()
         {
             // Arrange
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMvcOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMvcOptions());
+            var options = Options.Create(new OpenIddictMvcOptions());
 
             var binder = new OpenIddictMvcBinder(options);
             var provider = new EmptyModelMetadataProvider();
@@ -224,7 +214,6 @@ namespace OpenIddict.Mvc.Internal.Tests
             Assert.True(context.Result.IsModelSet);
             Assert.Same(response, context.Result.Model);
             Assert.True(context.ValidationState[response].SuppressValidation);
-            Assert.Equal(BindingSource.Special, context.BindingSource);
         }
     }
 }

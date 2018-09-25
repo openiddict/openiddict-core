@@ -27,18 +27,22 @@ namespace OpenIddict.Server.Internal
 
             // Invoke the rest of the pipeline to allow
             // the user code to handle the userinfo request.
-            context.SkipHandler();
+            context.SkipToNextMiddleware();
 
-            return _eventService.PublishAsync(new OpenIddictServerEvents.ExtractUserinfoRequest(context));
+            return GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ExtractUserinfoRequest(context));
         }
 
         public override Task ValidateUserinfoRequest([NotNull] ValidateUserinfoRequestContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ValidateUserinfoRequest(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ValidateUserinfoRequest(context));
 
         public override Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.HandleUserinfoRequest(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.HandleUserinfoRequest(context));
 
         public override Task ApplyUserinfoResponse([NotNull] ApplyUserinfoResponseContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ApplyUserinfoResponse(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ApplyUserinfoResponse(context));
     }
 }

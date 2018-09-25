@@ -24,8 +24,7 @@ namespace OpenIddict.Server
         /// </summary>
         public OpenIddictServerOptions()
         {
-            Provider = null;
-            ProviderType = typeof(OpenIddictServerProvider);
+            Provider = new OpenIddictServerProvider();
         }
 
         /// <summary>

@@ -6,6 +6,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.Core;

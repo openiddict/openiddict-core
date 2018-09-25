@@ -33,7 +33,7 @@ namespace OpenIddict.EntityFramework
         public OpenIddictScopeStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkOptions> options)
             : base(cache, context, options)
         {
         }
@@ -53,7 +53,7 @@ namespace OpenIddict.EntityFramework
         public OpenIddictScopeStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -73,7 +73,7 @@ namespace OpenIddict.EntityFramework
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictEntityFrameworkOptions> Options { get; }
+        protected IOptions<OpenIddictEntityFrameworkOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TScope"/> entity.
@@ -447,12 +447,14 @@ namespace OpenIddict.EntityFramework
 
             catch (MemberAccessException exception)
             {
-                return new ValueTask<TScope>(Task.FromException<TScope>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new scope instance.")
-                        .Append("Make sure that the scope entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom scope store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                var source = new TaskCompletionSource<TScope>();
+                source.SetException(new InvalidOperationException(new StringBuilder()
+                    .AppendLine("An error occurred while trying to create a new scope instance.")
+                    .Append("Make sure that the scope entity is not abstract and has a public parameterless constructor ")
+                    .Append("or create a custom scope store that overrides 'InstantiateAsync()' to use a custom factory.")
+                    .ToString(), exception));
+
+                return new ValueTask<TScope>(source.Task);
             }
         }
 
@@ -526,7 +528,7 @@ namespace OpenIddict.EntityFramework
 
             scope.Description = description;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -547,7 +549,7 @@ namespace OpenIddict.EntityFramework
 
             scope.DisplayName = name;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -568,7 +570,7 @@ namespace OpenIddict.EntityFramework
 
             scope.Name = name;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -591,12 +593,12 @@ namespace OpenIddict.EntityFramework
             {
                 scope.Properties = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             scope.Properties = properties.ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -619,12 +621,12 @@ namespace OpenIddict.EntityFramework
             {
                 scope.Resources = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             scope.Resources = new JArray(resources.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>

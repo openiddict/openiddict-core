@@ -3,7 +3,7 @@
   <Import Project="..\..\build\packages.props" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,6 +21,13 @@
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.ComponentModel.TypeConverter" Version="$(TypeConverterVersion)" />
+    <PackageReference Include="System.Linq.Queryable" Version="$(QueryableVersion)" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="$(TypeExtensionsVersion)" />
+    <PackageReference Include="System.Security.Claims" Version="$(ClaimsVersion)" />
   </ItemGroup>
 
   <ItemGroup>

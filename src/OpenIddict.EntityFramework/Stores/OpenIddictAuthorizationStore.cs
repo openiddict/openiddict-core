@@ -37,7 +37,7 @@ namespace OpenIddict.EntityFramework
         public OpenIddictAuthorizationStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkOptions> options)
             : base(cache, context, options)
         {
         }
@@ -61,7 +61,7 @@ namespace OpenIddict.EntityFramework
         public OpenIddictAuthorizationStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -81,7 +81,7 @@ namespace OpenIddict.EntityFramework
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictEntityFrameworkOptions> Options { get; }
+        protected IOptions<OpenIddictEntityFrameworkOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TApplication"/> entity.
@@ -458,15 +458,19 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the authorization.
         /// </returns>
-        public virtual async ValueTask<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetApplicationIdAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            // If the application is not attached to the authorization, try to load it manually.
-            if (authorization.Application == null)
+            if (authorization.Application != null)
+            {
+                return new ValueTask<string>(ConvertIdentifierToString(authorization.Application.Id));
+            }
+
+            async Task<string> RetrieveApplicationIdAsync()
             {
                 var reference = Context.Entry(authorization).Reference(entry => entry.Application);
                 if (reference.EntityEntry.State == EntityState.Detached)
@@ -475,14 +479,16 @@ namespace OpenIddict.EntityFramework
                 }
 
                 await reference.LoadAsync(cancellationToken);
+
+                if (authorization.Application == null)
+                {
+                    return null;
+                }
+
+                return ConvertIdentifierToString(authorization.Application.Id);
             }
 
-            if (authorization.Application == null)
-            {
-                return null;
-            }
-
-            return ConvertIdentifierToString(authorization.Application.Id);
+            return new ValueTask<string>(RetrieveApplicationIdAsync());
         }
 
         /// <summary>
@@ -651,12 +657,14 @@ namespace OpenIddict.EntityFramework
 
             catch (MemberAccessException exception)
             {
-                return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new authorization instance.")
-                        .Append("Make sure that the authorization entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                var source = new TaskCompletionSource<TAuthorization>();
+                source.SetException(new InvalidOperationException(new StringBuilder()
+                    .AppendLine("An error occurred while trying to create a new authorization instance.")
+                    .Append("Make sure that the authorization entity is not abstract and has a public parameterless constructor ")
+                    .Append("or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.")
+                    .ToString(), exception));
+
+                return new ValueTask<TAuthorization>(source.Task);
             }
         }
 
@@ -867,12 +875,12 @@ namespace OpenIddict.EntityFramework
             {
                 authorization.Properties = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             authorization.Properties = properties.ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -896,12 +904,12 @@ namespace OpenIddict.EntityFramework
             {
                 authorization.Scopes = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             authorization.Scopes = new JArray(scopes.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -923,7 +931,7 @@ namespace OpenIddict.EntityFramework
 
             authorization.Status = status;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -945,7 +953,7 @@ namespace OpenIddict.EntityFramework
 
             authorization.Subject = subject;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -967,7 +975,7 @@ namespace OpenIddict.EntityFramework
 
             authorization.Type = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>

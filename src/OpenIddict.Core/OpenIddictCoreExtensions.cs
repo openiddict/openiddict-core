@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.TryAddScoped(provider =>
             {
-                var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+                var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
                 if (options.DefaultApplicationType == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.TryAddScoped(provider =>
             {
-                var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+                var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
                 if (options.DefaultAuthorizationType == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.TryAddScoped(provider =>
             {
-                var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+                var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
                 if (options.DefaultScopeType == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.TryAddScoped(provider =>
             {
-                var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+                var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
                 if (options.DefaultTokenType == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()

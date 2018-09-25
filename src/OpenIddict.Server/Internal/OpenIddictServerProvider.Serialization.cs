@@ -29,17 +29,17 @@ namespace OpenIddict.Server.Internal
 
             context.Ticket = await ReceiveTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AccessToken,
-                context.AccessToken, options,
+                context.AccessToken, options, context.HttpContext,
                 context.Request, context.DataFormat);
 
             // Prevent the OpenID Connect server middleware from using
             // its default logic to deserialize reference access tokens.
             if (options.UseReferenceTokens)
             {
-                context.HandleDeserialization();
+                context.HandleResponse();
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.DeserializeAccessToken(context));
+            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.DeserializeAccessToken(context));
         }
 
         public override async Task DeserializeAuthorizationCode([NotNull] DeserializeAuthorizationCodeContext context)
@@ -52,17 +52,17 @@ namespace OpenIddict.Server.Internal
 
             context.Ticket = await ReceiveTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AuthorizationCode,
-                context.AuthorizationCode, options,
+                context.AuthorizationCode, options, context.HttpContext,
                 context.Request, context.DataFormat);
 
             // Prevent the OpenID Connect server middleware from using its default logic.
-            context.HandleDeserialization();
+            context.HandleResponse();
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.DeserializeAuthorizationCode(context));
+            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.DeserializeAuthorizationCode(context));
         }
 
         public override Task DeserializeIdentityToken(DeserializeIdentityTokenContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.DeserializeIdentityToken(context));
+            => GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.DeserializeIdentityToken(context));
 
         public override async Task DeserializeRefreshToken([NotNull] DeserializeRefreshTokenContext context)
         {
@@ -74,13 +74,13 @@ namespace OpenIddict.Server.Internal
 
             context.Ticket = await ReceiveTokenAsync(
                 OpenIdConnectConstants.TokenUsages.RefreshToken,
-                context.RefreshToken, options,
+                context.RefreshToken, options, context.HttpContext,
                 context.Request, context.DataFormat);
 
             // Prevent the OpenID Connect server middleware from using its default logic.
-            context.HandleDeserialization();
+            context.HandleResponse();
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.DeserializeRefreshToken(context));
+            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.DeserializeRefreshToken(context));
         }
 
         public override async Task SerializeAccessToken([NotNull] SerializeAccessTokenContext context)
@@ -93,20 +93,21 @@ namespace OpenIddict.Server.Internal
 
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AccessToken,
-                context.Ticket, options, context.Request, context.DataFormat);
+                context.Ticket, options, context.HttpContext,
+                context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
             if (!string.IsNullOrEmpty(token))
             {
                 context.AccessToken = token;
-                context.HandleSerialization();
+                context.HandleResponse();
             }
 
             // Otherwise, let the OpenID Connect server middleware
             // serialize the token using its default internal logic.
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.SerializeAccessToken(context));
+            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.SerializeAccessToken(context));
         }
 
         public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context)
@@ -121,24 +122,25 @@ namespace OpenIddict.Server.Internal
 
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.AuthorizationCode,
-                context.Ticket, options, context.Request, context.DataFormat);
+                context.Ticket, options, context.HttpContext,
+                context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
             if (!string.IsNullOrEmpty(token))
             {
                 context.AuthorizationCode = token;
-                context.HandleSerialization();
+                context.HandleResponse();
             }
 
             // Otherwise, let the OpenID Connect server middleware
             // serialize the token using its default internal logic.
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.SerializeAuthorizationCode(context));
+            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.SerializeAuthorizationCode(context));
         }
 
         public override Task SerializeIdentityToken(SerializeIdentityTokenContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.SerializeIdentityToken(context));
+            => GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.SerializeIdentityToken(context));
 
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context)
         {
@@ -152,20 +154,21 @@ namespace OpenIddict.Server.Internal
 
             var token = await CreateTokenAsync(
                 OpenIdConnectConstants.TokenUsages.RefreshToken,
-                context.Ticket, options, context.Request, context.DataFormat);
+                context.Ticket, options, context.HttpContext,
+                context.Request, context.DataFormat);
 
             // If a reference token was returned by CreateTokenAsync(),
             // force the OpenID Connect server middleware to use it.
             if (!string.IsNullOrEmpty(token))
             {
                 context.RefreshToken = token;
-                context.HandleSerialization();
+                context.HandleResponse();
             }
 
             // Otherwise, let the OpenID Connect server middleware
             // serialize the token using its default internal logic.
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.SerializeRefreshToken(context));
+            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.SerializeRefreshToken(context));
         }
     }
 }

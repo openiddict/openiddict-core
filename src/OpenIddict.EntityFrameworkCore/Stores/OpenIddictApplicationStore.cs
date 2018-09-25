@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -39,7 +38,7 @@ namespace OpenIddict.EntityFrameworkCore
         public OpenIddictApplicationStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options)
             : base(cache, context, options)
         {
         }
@@ -59,7 +58,7 @@ namespace OpenIddict.EntityFrameworkCore
         public OpenIddictApplicationStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options)
             : base(cache, context, options)
         {
         }
@@ -83,7 +82,7 @@ namespace OpenIddict.EntityFrameworkCore
         public OpenIddictApplicationStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -103,7 +102,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> Options { get; }
+        protected IOptions<OpenIddictEntityFrameworkCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TApplication"/> entity.
@@ -274,13 +273,27 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Exposes a compiled query allowing to retrieve an application using its client identifier.
+        /// Retrieves an application using its unique identifier.
         /// </summary>
-        private static readonly Func<TContext, string, Task<TApplication>> FindByClientId =
-            EF.CompileAsyncQuery((TContext context, string identifier) =>
-                (from application in context.Set<TApplication>().AsTracking()
-                 where application.ClientId == identifier
-                 select application).FirstOrDefault());
+        /// <param name="identifier">The unique identifier associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
+        public virtual Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            var key = ConvertIdentifierFromString(identifier);
+
+            return (from application in Applications.AsTracking()
+                    where application.Id.Equals(key)
+                    select application).FirstOrDefaultAsync();
+        }
 
         /// <summary>
         /// Retrieves an application using its client identifier.
@@ -298,51 +311,10 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return FindByClientId(Context, identifier);
+            return (from application in Applications.AsTracking()
+                    where application.ClientId == identifier
+                    select application).FirstOrDefaultAsync();
         }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve an application using its unique identifier.
-        /// </summary>
-        private static readonly Func<TContext, TKey, Task<TApplication>> FindById =
-            EF.CompileAsyncQuery((TContext context, TKey identifier) =>
-                (from application in context.Set<TApplication>().AsTracking()
-                 where application.Id.Equals(identifier)
-                 select application).FirstOrDefault());
-
-        /// <summary>
-        /// Retrieves an application using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client application corresponding to the identifier.
-        /// </returns>
-        public virtual Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
-            }
-
-            return FindById(Context, ConvertIdentifierFromString(identifier));
-        }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve all the applications
-        /// associated with the specified post_logout_redirect_uri.
-        /// </summary>
-        private static readonly Func<TContext, string, AsyncEnumerable<TApplication>> FindByPostLogoutRedirectUri =
-            // To optimize the efficiency of the query a bit, only applications whose stringified
-            // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
-            // are retrieved, a second pass is made to ensure only valid elements are returned.
-            // Implementers that use this query in a hot path may want to override this method
-            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            EF.CompileAsyncQuery((TContext context, string address) =>
-                from application in context.Set<TApplication>().AsTracking()
-                where application.PostLogoutRedirectUris.Contains(address)
-                select application);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
@@ -359,9 +331,19 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
+
+            // To optimize the efficiency of the query a bit, only applications whose stringified
+            // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this method in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
+            var applications = await (from application in Applications.AsTracking()
+                                      where application.PostLogoutRedirectUris.Contains(address)
+                                      select application).ToListAsync(cancellationToken);
+
             var builder = ImmutableArray.CreateBuilder<TApplication>();
 
-            foreach (var application in await FindByPostLogoutRedirectUri(Context, address).ToListAsync(cancellationToken))
+            foreach (var application in applications)
             {
                 foreach (var uri in await GetPostLogoutRedirectUrisAsync(application, cancellationToken))
                 {
@@ -382,21 +364,6 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Exposes a compiled query allowing to retrieve all the
-        /// applications associated with the specified redirect_uri.
-        /// </summary>
-        private static readonly Func<TContext, string, AsyncEnumerable<TApplication>> FindByRedirectUri =
-            // To optimize the efficiency of the query a bit, only applications whose stringified
-            // RedirectUris property contains the specified URL are returned. Once the applications
-            // are retrieved, a second pass is made to ensure only valid elements are returned.
-            // Implementers that use this query in a hot path may want to override this method
-            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            EF.CompileAsyncQuery((TContext context, string address) =>
-                from application in context.Set<TApplication>().AsTracking()
-                where application.RedirectUris.Contains(address)
-                select application);
-
-        /// <summary>
         /// Retrieves all the applications associated with the specified redirect_uri.
         /// </summary>
         /// <param name="address">The redirect_uri associated with the applications.</param>
@@ -412,9 +379,18 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
+            // To optimize the efficiency of the query a bit, only applications whose stringified
+            // RedirectUris property contains the specified URL are returned. Once the applications
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this method in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
+            var applications = await (from application in Applications.AsTracking()
+                                      where application.RedirectUris.Contains(address)
+                                      select application).ToListAsync(cancellationToken);
+
             var builder = ImmutableArray.CreateBuilder<TApplication>();
 
-            foreach (var application in await FindByRedirectUri(Context, address).ToListAsync(cancellationToken))
+            foreach (var application in applications)
             {
                 foreach (var uri in await GetRedirectUrisAsync(application, cancellationToken))
                 {
@@ -726,12 +702,14 @@ namespace OpenIddict.EntityFrameworkCore
 
             catch (MemberAccessException exception)
             {
-                return new ValueTask<TApplication>(Task.FromException<TApplication>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new application instance.")
-                        .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                var source = new TaskCompletionSource<TApplication>();
+                source.SetException(new InvalidOperationException(new StringBuilder()
+                    .AppendLine("An error occurred while trying to create a new application instance.")
+                    .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
+                    .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
+                    .ToString(), exception));
+
+                return new ValueTask<TApplication>(source.Task);
             }
         }
 
@@ -806,7 +784,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             application.ClientId = identifier;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -830,7 +808,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             application.ClientSecret = secret;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -852,7 +830,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             application.Type = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -874,7 +852,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             application.ConsentType = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -896,7 +874,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             application.DisplayName = name;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -919,12 +897,12 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 application.Permissions = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.Permissions = new JArray(permissions.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -948,12 +926,12 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 application.PostLogoutRedirectUris = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.PostLogoutRedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -976,12 +954,12 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 application.Properties = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.Properties = properties.ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1005,12 +983,12 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 application.RedirectUris = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             application.RedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>

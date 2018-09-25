@@ -5,9 +5,11 @@
  */
 
 using System;
-using AspNet.Security.OAuth.Validation;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Validation;
@@ -41,17 +43,6 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddOptions();
 
             builder.Services.TryAddScoped<IOpenIddictValidationEventService, OpenIddictValidationEventService>();
-            builder.Services.TryAddScoped<OpenIddictValidationHandler>();
-            builder.Services.TryAddScoped<OpenIddictValidationProvider>();
-
-            // Register the options initializers used by the OAuth validation handler and OpenIddict.
-            // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
-            builder.Services.TryAddEnumerable(new[]
-            {
-                ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictValidationConfiguration>(),
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationConfiguration>(),
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OAuthValidationInitializer>()
-            });
 
             return new OpenIddictValidationBuilder(builder.Services);
         }
@@ -83,6 +74,47 @@ namespace Microsoft.Extensions.DependencyInjection
             configuration(builder.AddValidation());
 
             return builder;
+        }
+
+        /// <summary>
+        /// Registers the OpenIddict validation middleware in the ASP.NET Core pipeline.
+        /// </summary>
+        /// <param name="app">The application builder used to register middleware instances.</param>
+        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
+        public static IApplicationBuilder UseOpenIddictValidation([NotNull] this IApplicationBuilder app)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            var options = app.ApplicationServices.GetRequiredService<IOptions<OpenIddictValidationOptions>>().Value;
+            if (options.Events == null || options.Events.GetType() != typeof(OpenIddictValidationProvider))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("OpenIddict can only be used with its built-in validation provider.")
+                    .AppendLine("This error may indicate that 'OpenIddictValidationOptions.Events' was manually set.")
+                    .Append("To execute custom request handling logic, consider registering an event handler using ")
+                    .Append("the generic 'services.AddOpenIddict().AddValidation().AddEventHandler()' method.")
+                    .ToString());
+            }
+
+            if (options.DataProtectionProvider == null)
+            {
+                options.DataProtectionProvider = app.ApplicationServices.GetDataProtectionProvider();
+            }
+
+            if (options.UseReferenceTokens && options.AccessTokenFormat == null)
+            {
+                var protector = options.DataProtectionProvider.CreateProtector(
+                    "OpenIdConnectServerHandler",
+                    nameof(options.AccessTokenFormat),
+                    nameof(options.UseReferenceTokens), "ASOS");
+
+                options.AccessTokenFormat = new TicketDataFormat(protector);
+            }
+
+            return app.UseOAuthValidation(options);
         }
     }
 }

@@ -32,6 +32,8 @@ namespace OpenIddict.Server.Internal
         {
             var options = (OpenIddictServerOptions) context.Options;
 
+            var logger = GetLogger(context.HttpContext.RequestServices);
+
             // If a request_id parameter can be found in the logout request,
             // restore the complete logout request from the distributed cache.
             if (!string.IsNullOrEmpty(context.Request.RequestId))
@@ -39,7 +41,8 @@ namespace OpenIddict.Server.Internal
                 // Return an error if request caching support was not enabled.
                 if (!options.EnableRequestCaching)
                 {
-                    _logger.LogError("The logout request was rejected because request caching support was not enabled.");
+                    logger.LogError("The logout request was rejected because " +
+                                    "request caching support was not enabled.");
 
                     context.Reject(
                         error: OpenIddictConstants.Errors.InvalidRequest,
@@ -55,8 +58,8 @@ namespace OpenIddict.Server.Internal
                 var payload = await options.Cache.GetAsync(key);
                 if (payload == null)
                 {
-                    _logger.LogError("The logout request was rejected because an unknown " +
-                                     "or invalid request_id parameter was specified.");
+                    logger.LogError("The logout request was rejected because an unknown " +
+                                    "or invalid request_id parameter was specified.");
 
                     context.Reject(
                         error: OpenIddictConstants.Errors.InvalidRequest,
@@ -66,7 +69,7 @@ namespace OpenIddict.Server.Internal
                 }
 
                 // Restore the logout request parameters from the serialized payload.
-                using (var reader = new BsonDataReader(new MemoryStream(payload)))
+                using (var reader = new BsonReader(new MemoryStream(payload)))
                 {
                     foreach (var parameter in JObject.Load(reader))
                     {
@@ -81,20 +84,24 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ExtractLogoutRequest(context));
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ExtractLogoutRequest(context));
         }
 
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context)
         {
             var options = (OpenIddictServerOptions) context.Options;
 
+            var logger = GetLogger(context.HttpContext.RequestServices);
+            var applicationManager = GetApplicationManager(context.HttpContext.RequestServices);
+
             // If an optional post_logout_redirect_uri was provided, validate it.
             if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))
             {
                 if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
                 {
-                    _logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri was not " +
-                                     "a valid absolute URL: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                    logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri was not " +
+                                    "a valid absolute URL: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: OpenIddictConstants.Errors.InvalidRequest,
@@ -105,8 +112,8 @@ namespace OpenIddict.Server.Internal
 
                 if (!string.IsNullOrEmpty(uri.Fragment))
                 {
-                    _logger.LogError("The logout request was rejected because the 'post_logout_redirect_uri' contained " +
-                                     "a URL fragment: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                    logger.LogError("The logout request was rejected because the 'post_logout_redirect_uri' contained " +
+                                    "a URL fragment: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: OpenIddictConstants.Errors.InvalidRequest,
@@ -117,7 +124,7 @@ namespace OpenIddict.Server.Internal
 
                 async Task<bool> ValidatePostLogoutRedirectUriAsync(string address)
                 {
-                    var applications = await _applicationManager.FindByPostLogoutRedirectUriAsync(address);
+                    var applications = await applicationManager.FindByPostLogoutRedirectUriAsync(address);
                     if (applications.IsDefaultOrEmpty)
                     {
                         return false;
@@ -130,7 +137,7 @@ namespace OpenIddict.Server.Internal
 
                     foreach (var application in applications)
                     {
-                        if (await _applicationManager.HasPermissionAsync(
+                        if (await applicationManager.HasPermissionAsync(
                             application, OpenIddictConstants.Permissions.Endpoints.Logout))
                         {
                             return true;
@@ -142,8 +149,8 @@ namespace OpenIddict.Server.Internal
 
                 if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                 {
-                    _logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
-                                     "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                    logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
+                                    "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: OpenIddictConstants.Errors.InvalidRequest,
@@ -155,7 +162,8 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ValidateLogoutRequest(context));
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ValidateLogoutRequest(context));
         }
 
         public override async Task HandleLogoutRequest([NotNull] HandleLogoutRequestContext context)
@@ -174,7 +182,7 @@ namespace OpenIddict.Server.Internal
 
                 // Store the serialized logout request parameters in the distributed cache.
                 var stream = new MemoryStream();
-                using (var writer = new BsonDataWriter(stream))
+                using (var writer = new BsonWriter(stream))
                 {
                     writer.CloseOutput = false;
 
@@ -203,7 +211,8 @@ namespace OpenIddict.Server.Internal
                 return;
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.HandleLogoutRequest(context));
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.HandleLogoutRequest(context));
         }
 
         public override async Task ApplyLogoutResponse([NotNull] ApplyLogoutResponseContext context)
@@ -247,7 +256,8 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ApplyLogoutResponse(context));
+            await GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ApplyLogoutResponse(context));
         }
     }
 }

@@ -5,7 +5,7 @@
  */
 
 using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 
 namespace OpenIddict.Server
 {
@@ -15,7 +15,7 @@ namespace OpenIddict.Server
     public static class OpenIddictServerDefaults
     {
         /// <summary>
-        /// Default value for <see cref="AuthenticationScheme.Name"/>.
+        /// Default value for <see cref="AuthenticationOptions.AuthenticationScheme"/>.
         /// </summary>
         public const string AuthenticationScheme = OpenIdConnectServerDefaults.AuthenticationScheme;
     }

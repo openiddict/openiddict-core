@@ -8,6 +8,7 @@ using System;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.EntityFrameworkCore;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -123,8 +124,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.ReplaceService<IModelCustomizer, OpenIddictEntityFrameworkCoreCustomizer<
-                TApplication, TAuthorization, TScope, TToken, TKey>>();
+            var extension = new OpenIddictEntityFrameworkCoreExtension<TApplication, TAuthorization, TScope, TToken, TKey>();
+            ((IDbContextOptionsBuilderInfrastructure) builder).AddOrUpdateExtension(extension);
+
+            return builder;
         }
 
         /// <summary>
@@ -169,10 +172,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.ApplyConfiguration(new OpenIddictApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>());
-            builder.ApplyConfiguration(new OpenIddictAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>());
-            builder.ApplyConfiguration(new OpenIddictScopeConfiguration<TScope, TKey>());
-            builder.ApplyConfiguration(new OpenIddictTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
+            new OpenIddictApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>()
+                .Configure(builder.Entity<TApplication>());
+            new OpenIddictAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>()
+                .Configure(builder.Entity<TAuthorization>());
+            new OpenIddictScopeConfiguration<TScope, TKey>()
+                .Configure(builder.Entity<TScope>());
+            new OpenIddictTokenConfiguration<TToken, TApplication, TAuthorization, TKey>()
+                .Configure(builder.Entity<TToken>());
 
             return builder;
         }

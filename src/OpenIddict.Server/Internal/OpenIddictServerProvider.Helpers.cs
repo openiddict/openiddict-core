@@ -8,12 +8,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
@@ -28,9 +32,14 @@ namespace OpenIddict.Server.Internal
     /// </summary>
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
-        private async Task CreateAuthorizationAsync([NotNull] AuthenticationTicket ticket,
-            [NotNull] OpenIddictServerOptions options, [NotNull] OpenIdConnectRequest request)
+        private async Task CreateAuthorizationAsync(
+            [NotNull] AuthenticationTicket ticket, [NotNull] OpenIddictServerOptions options,
+            [NotNull] HttpContext context, [NotNull] OpenIdConnectRequest request)
         {
+            var logger = GetLogger(context.RequestServices);
+            var applicationManager = GetApplicationManager(context.RequestServices);
+            var authorizationManager = GetAuthorizationManager(context.RequestServices);
+
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
                 Principal = ticket.Principal,
@@ -55,25 +64,25 @@ namespace OpenIddict.Server.Internal
                 var application = request.GetProperty($"{OpenIddictConstants.Properties.Application}:{request.ClientId}");
                 Debug.Assert(application != null, "The client application shouldn't be null.");
 
-                descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
+                descriptor.ApplicationId = await applicationManager.GetIdAsync(application);
             }
 
-            var authorization = await _authorizationManager.CreateAsync(descriptor);
+            var authorization = await authorizationManager.CreateAsync(descriptor);
             if (authorization != null)
             {
-                var identifier = await _authorizationManager.GetIdAsync(authorization);
+                var identifier = await authorizationManager.GetIdAsync(authorization);
 
                 if (string.IsNullOrEmpty(request.ClientId))
                 {
-                    _logger.LogInformation("An ad hoc authorization was automatically created and " +
-                                           "associated with an unknown application: {Identifier}.", identifier);
+                    logger.LogInformation("An ad hoc authorization was automatically created and " +
+                                          "associated with an unknown application: {Identifier}.", identifier);
                 }
 
                 else
                 {
-                    _logger.LogInformation("An ad hoc authorization was automatically created and " +
-                                           "associated with the '{ClientId}' application: {Identifier}.",
-                                           request.ClientId, identifier);
+                    logger.LogInformation("An ad hoc authorization was automatically created and " +
+                                          "associated with the '{ClientId}' application: {Identifier}.",
+                                          request.ClientId, identifier);
                 }
 
                 // Attach the unique identifier of the ad hoc authorization to the authentication ticket
@@ -84,7 +93,7 @@ namespace OpenIddict.Server.Internal
 
         private async Task<string> CreateTokenAsync(
             [NotNull] string type, [NotNull] AuthenticationTicket ticket,
-            [NotNull] OpenIddictServerOptions options,
+            [NotNull] OpenIddictServerOptions options, [NotNull] HttpContext context,
             [NotNull] OpenIdConnectRequest request,
             [NotNull] ISecureDataFormat<AuthenticationTicket> format)
         {
@@ -95,6 +104,10 @@ namespace OpenIddict.Server.Internal
                          type == OpenIdConnectConstants.TokenUsages.AuthorizationCode ||
                          type == OpenIdConnectConstants.TokenUsages.RefreshToken,
                 "Only authorization codes, access and refresh tokens should be created using this method.");
+
+            var logger = GetLogger(context.RequestServices);
+            var applicationManager = GetApplicationManager(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
 
             // When sliding expiration is disabled, the expiration date of generated refresh tokens is fixed
             // and must exactly match the expiration date of the refresh token used in the token request.
@@ -158,7 +171,7 @@ namespace OpenIddict.Server.Internal
                 result = Base64UrlEncoder.Encode(bytes);
 
                 // Obfuscate the reference identifier so it can be safely stored in the databse.
-                descriptor.ReferenceId = await _tokenManager.ObfuscateReferenceIdAsync(result);
+                descriptor.ReferenceId = await tokenManager.ObfuscateReferenceIdAsync(result);
             }
 
             // Otherwise, only create a token metadata entry for authorization codes and refresh tokens.
@@ -174,21 +187,21 @@ namespace OpenIddict.Server.Internal
                 var application = request.GetProperty($"{OpenIddictConstants.Properties.Application}:{request.ClientId}");
                 Debug.Assert(application != null, "The client application shouldn't be null.");
 
-                descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
+                descriptor.ApplicationId = await applicationManager.GetIdAsync(application);
             }
 
             // If a null value was returned by CreateAsync(), return immediately.
 
             // Note: the request cancellation token is deliberately not used here to ensure the caller
             // cannot prevent this operation from being executed by resetting the TCP connection.
-            var token = await _tokenManager.CreateAsync(descriptor);
+            var token = await tokenManager.CreateAsync(descriptor);
             if (token == null)
             {
                 return null;
             }
 
             // Throw an exception if the token identifier can't be resolved.
-            var identifier = await _tokenManager.GetIdAsync(token);
+            var identifier = await tokenManager.GetIdAsync(token);
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new InvalidOperationException("The unique key associated with a refresh token cannot be null or empty.");
@@ -204,9 +217,9 @@ namespace OpenIddict.Server.Internal
 
             if (!string.IsNullOrEmpty(result))
             {
-                _logger.LogTrace("A new reference token was successfully generated and persisted " +
-                                 "in the database: {Token} ; {Claims} ; {Properties}.",
-                                 result, ticket.Principal.Claims, ticket.Properties.Items);
+                logger.LogTrace("A new reference token was successfully generated and persisted " +
+                                "in the database: {Token} ; {Claims} ; {Properties}.",
+                                result, ticket.Principal.Claims, ticket.Properties.Items);
             }
 
             return result;
@@ -214,10 +227,13 @@ namespace OpenIddict.Server.Internal
 
         private async Task<AuthenticationTicket> ReceiveTokenAsync(
             [NotNull] string type, [NotNull] string value,
-            [NotNull] OpenIddictServerOptions options,
+            [NotNull] OpenIddictServerOptions options, [NotNull] HttpContext context,
             [NotNull] OpenIdConnectRequest request,
             [NotNull] ISecureDataFormat<AuthenticationTicket> format)
         {
+            var logger = GetLogger(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
+
             Debug.Assert(!(options.DisableTokenStorage && options.UseReferenceTokens),
                 "Token revocation cannot be disabled when using reference tokens.");
 
@@ -246,7 +262,7 @@ namespace OpenIddict.Server.Internal
                 {
                     // Retrieve the token entry from the database. If it
                     // cannot be found, assume the token is not valid.
-                    token = await _tokenManager.FindByReferenceIdAsync(value);
+                    token = await tokenManager.FindByReferenceIdAsync(value);
 
                     // Store the token as a request property so it can be retrieved if this method is called another time.
                     request.AddProperty($"{OpenIddictConstants.Properties.ReferenceToken}:{value}", token);
@@ -254,28 +270,28 @@ namespace OpenIddict.Server.Internal
 
                 if (token == null)
                 {
-                    _logger.LogInformation("The reference token corresponding to the '{Identifier}' " +
-                                           "reference identifier cannot be found in the database.", value);
+                    logger.LogInformation("The reference token corresponding to the '{Identifier}' " +
+                                          "reference identifier cannot be found in the database.", value);
 
                     return null;
                 }
 
-                identifier = await _tokenManager.GetIdAsync(token);
+                identifier = await tokenManager.GetIdAsync(token);
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    _logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
-                                       "This may indicate that the token entry is corrupted.");
+                    logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
+                                      "This may indicate that the token entry is corrupted.");
 
                     return null;
                 }
 
                 // Extract the encrypted payload from the token. If it's null or empty,
                 // assume the token is not a reference token and consider it as invalid.
-                var payload = await _tokenManager.GetPayloadAsync(token);
+                var payload = await tokenManager.GetPayloadAsync(token);
                 if (string.IsNullOrEmpty(payload))
                 {
-                    _logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be retrieved. " +
-                                       "This may indicate that the token is not a reference token.", identifier);
+                    logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be retrieved. " +
+                                      "This may indicate that the token is not a reference token.", identifier);
 
                     return null;
                 }
@@ -283,9 +299,9 @@ namespace OpenIddict.Server.Internal
                 ticket = format.Unprotect(payload);
                 if (ticket == null)
                 {
-                    _logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be decrypted. " +
-                                       "This may indicate that the token entry is corrupted or tampered.",
-                                       await _tokenManager.GetIdAsync(token));
+                    logger.LogWarning("The ciphertext associated with the token '{Identifier}' cannot be decrypted. " +
+                                      "This may indicate that the token entry is corrupted or tampered.",
+                                      await tokenManager.GetIdAsync(token));
 
                     return null;
                 }
@@ -299,7 +315,7 @@ namespace OpenIddict.Server.Internal
                 ticket = format.Unprotect(value);
                 if (ticket == null)
                 {
-                    _logger.LogTrace("The received token was invalid or malformed: {Token}.", value);
+                    logger.LogTrace("The received token was invalid or malformed: {Token}.", value);
 
                     return null;
                 }
@@ -307,8 +323,8 @@ namespace OpenIddict.Server.Internal
                 identifier = ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    _logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
-                                       "This may indicate that the token entry is corrupted.");
+                    logger.LogWarning("The identifier associated with the received token cannot be retrieved. " +
+                                      "This may indicate that the token entry is corrupted.");
 
                     return null;
                 }
@@ -327,7 +343,7 @@ namespace OpenIddict.Server.Internal
                 // If it cannot be found, assume the authorization code/refresh token is not valid.
                 else
                 {
-                    token = await _tokenManager.FindByIdAsync(identifier);
+                    token = await tokenManager.FindByIdAsync(identifier);
 
                     // Store the token as a request property so it can be retrieved if this method is called another time.
                     request.AddProperty($"{OpenIddictConstants.Properties.Token}:{identifier}", token);
@@ -335,7 +351,7 @@ namespace OpenIddict.Server.Internal
 
                 if (token == null)
                 {
-                    _logger.LogInformation("The token '{Identifier}' cannot be found in the database.", identifier);
+                    logger.LogInformation("The token '{Identifier}' cannot be found in the database.", identifier);
 
                     return null;
                 }
@@ -347,23 +363,26 @@ namespace OpenIddict.Server.Internal
             }
 
             // Dynamically set the creation and expiration dates.
-            ticket.Properties.IssuedUtc = await _tokenManager.GetCreationDateAsync(token);
-            ticket.Properties.ExpiresUtc = await _tokenManager.GetExpirationDateAsync(token);
+            ticket.Properties.IssuedUtc = await tokenManager.GetCreationDateAsync(token);
+            ticket.Properties.ExpiresUtc = await tokenManager.GetExpirationDateAsync(token);
 
             // Restore the token/authorization identifiers using the identifiers attached with the database entry.
             ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, identifier);
             ticket.SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId,
-                await _tokenManager.GetAuthorizationIdAsync(token));
+                await tokenManager.GetAuthorizationIdAsync(token));
 
-            _logger.LogTrace("The token '{Identifier}' was successfully decrypted and " +
-                             "retrieved from the database: {Claims} ; {Properties}.",
-                             identifier, ticket.Principal.Claims, ticket.Properties.Items);
+            logger.LogTrace("The token '{Identifier}' was successfully decrypted and " +
+                            "retrieved from the database: {Claims} ; {Properties}.",
+                            identifier, ticket.Principal.Claims, ticket.Properties.Items);
 
             return ticket;
         }
 
-        private async Task<bool> TryRevokeAuthorizationAsync([NotNull] AuthenticationTicket ticket)
+        private async Task<bool> TryRevokeAuthorizationAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
         {
+            var logger = GetLogger(context.RequestServices);
+            var authorizationManager = GetAuthorizationManager(context.RequestServices);
+
             // Note: if the authorization identifier or the authorization itself
             // cannot be found, return true as the authorization doesn't need
             // to be revoked if it doesn't exist or is already invalid.
@@ -373,7 +392,7 @@ namespace OpenIddict.Server.Internal
                 return true;
             }
 
-            var authorization = await _authorizationManager.FindByIdAsync(identifier);
+            var authorization = await authorizationManager.FindByIdAsync(identifier);
             if (authorization == null)
             {
                 return true;
@@ -383,63 +402,68 @@ namespace OpenIddict.Server.Internal
             {
                 // Note: the request cancellation token is deliberately not used here to ensure the caller
                 // cannot prevent this operation from being executed by resetting the TCP connection.
-                await _authorizationManager.RevokeAsync(authorization);
+                await authorizationManager.RevokeAsync(authorization);
 
-                _logger.LogInformation("The authorization '{Identifier}' was automatically revoked.", identifier);
+                logger.LogInformation("The authorization '{Identifier}' was automatically revoked.", identifier);
 
                 return true;
             }
 
             catch (OpenIddictException exception) when (exception.Reason == OpenIddictConstants.Exceptions.ConcurrencyError)
             {
-                _logger.LogDebug(exception, "A concurrency exception occurred while trying to revoke the authorization " +
-                                            "associated with the token '{Identifier}'.", identifier);
+                logger.LogDebug(0, exception, "A concurrency exception occurred while trying to revoke the authorization " +
+                                              "associated with the token '{Identifier}'.", identifier);
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                _logger.LogWarning(exception, "An exception occurred while trying to revoke the authorization " +
-                                              "associated with the token '{Identifier}'.", identifier);
+                logger.LogWarning(0, exception, "An exception occurred while trying to revoke the authorization " +
+                                                "associated with the token '{Identifier}'.", identifier);
 
                 return false;
             }
         }
 
-        private async Task<bool> TryRevokeTokenAsync([NotNull] object token)
+        private async Task<bool> TryRevokeTokenAsync([NotNull] object token, [NotNull] HttpContext context)
         {
-            var identifier = await _tokenManager.GetIdAsync(token);
+            var logger = GetLogger(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
+
+            var identifier = await tokenManager.GetIdAsync(token);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
 
             try
             {
                 // Note: the request cancellation token is deliberately not used here to ensure the caller
                 // cannot prevent this operation from being executed by resetting the TCP connection.
-                await _tokenManager.RevokeAsync(token);
+                await tokenManager.RevokeAsync(token);
 
-                _logger.LogInformation("The token '{Identifier}' was automatically revoked.", identifier);
+                logger.LogInformation("The token '{Identifier}' was automatically revoked.", identifier);
 
                 return true;
             }
 
             catch (OpenIddictException exception) when (exception.Reason == OpenIddictConstants.Exceptions.ConcurrencyError)
             {
-                _logger.LogDebug(exception, "A concurrency exception occurred while trying to revoke the token '{Identifier}'.", identifier);
+                logger.LogDebug(0, exception, "A concurrency exception occurred while trying to revoke the token '{Identifier}'.", identifier);
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                _logger.LogWarning(exception, "An exception occurred while trying to revoke the token '{Identifier}'.", identifier);
+                logger.LogWarning(0, exception, "An exception occurred while trying to revoke the token '{Identifier}'.", identifier);
 
                 return false;
             }
         }
 
-        private async Task<bool> TryRevokeTokensAsync([NotNull] AuthenticationTicket ticket)
+        private async Task<bool> TryRevokeTokensAsync([NotNull] AuthenticationTicket ticket, [NotNull] HttpContext context)
         {
+            var tokenManager = GetTokenManager(context.RequestServices);
+
             // Note: if the authorization identifier is null, return true as no tokens need to be revoked.
             var identifier = ticket.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
             if (string.IsNullOrEmpty(identifier))
@@ -449,105 +473,103 @@ namespace OpenIddict.Server.Internal
 
             var result = true;
 
-            foreach (var token in await _tokenManager.FindByAuthorizationIdAsync(identifier))
+            foreach (var token in await tokenManager.FindByAuthorizationIdAsync(identifier))
             {
                 // Don't change the status of the token used in the token request.
                 if (string.Equals(ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId),
-                    await _tokenManager.GetIdAsync(token), StringComparison.Ordinal))
+                    await tokenManager.GetIdAsync(token), StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                result &= await TryRevokeTokenAsync(token);
+                result &= await TryRevokeTokenAsync(token, context);
             }
 
             return result;
         }
 
-        private async Task<bool> TryRedeemTokenAsync([NotNull] object token)
+        private async Task<bool> TryRedeemTokenAsync([NotNull] object token, [NotNull] HttpContext context)
         {
-            var identifier = await _tokenManager.GetIdAsync(token);
+            var logger = GetLogger(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
+
+            var identifier = await tokenManager.GetIdAsync(token);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
 
             try
             {
                 // Note: the request cancellation token is deliberately not used here to ensure the caller
                 // cannot prevent this operation from being executed by resetting the TCP connection.
-                await _tokenManager.RedeemAsync(token);
+                await tokenManager.RedeemAsync(token);
 
-                _logger.LogInformation("The token '{Identifier}' was automatically marked as redeemed.", identifier);
+                logger.LogInformation("The token '{Identifier}' was automatically marked as redeemed.", identifier);
 
                 return true;
             }
 
             catch (OpenIddictException exception) when (exception.Reason == OpenIddictConstants.Exceptions.ConcurrencyError)
             {
-                _logger.LogDebug(exception, "A concurrency exception occurred while trying to redeem with the token '{Identifier}'.", identifier);
+                logger.LogDebug(0, exception, "A concurrency exception occurred while trying to redeem with the token '{Identifier}'.", identifier);
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                _logger.LogWarning(exception, "An exception occurred while trying to redeem the token '{Identifier}'.", identifier);
+                logger.LogWarning(0, exception, "An exception occurred while trying to redeem the token '{Identifier}'.", identifier);
 
                 return false;
             }
         }
 
         private async Task<bool> TryExtendRefreshTokenAsync(
-            [NotNull] object token, [NotNull] AuthenticationTicket ticket, [NotNull] OpenIddictServerOptions options)
+            [NotNull] object token, [NotNull] AuthenticationTicket ticket,
+            [NotNull] HttpContext context, [NotNull] OpenIddictServerOptions options)
         {
+            var logger = GetLogger(context.RequestServices);
+            var tokenManager = GetTokenManager(context.RequestServices);
+
             var identifier = ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The token identifier shouldn't be null or empty.");
 
             try
             {
                 // Compute the new expiration date of the refresh token.
-                var lifetime = ticket.GetRefreshTokenLifetime() ?? options.RefreshTokenLifetime;
-                if (lifetime != null)
-                {
-                    // Note: the request cancellation token is deliberately not used here to ensure the caller
-                    // cannot prevent this operation from being executed by resetting the TCP connection.
-                    var date = options.SystemClock.UtcNow + lifetime.Value;
-                    await _tokenManager.ExtendAsync(token, date);
+                var date = options.SystemClock.UtcNow + (ticket.GetRefreshTokenLifetime() ?? options.RefreshTokenLifetime);
 
-                    _logger.LogInformation("The expiration date of the refresh token '{Identifier}' " +
-                                           "was automatically updated: {Date}.", identifier, date);
-                }
+                // Note: the request cancellation token is deliberately not used here to ensure the caller
+                // cannot prevent this operation from being executed by resetting the TCP connection.
+                await tokenManager.ExtendAsync(token, date);
 
-                else if (await _tokenManager.GetExpirationDateAsync(token) != null)
-                {
-                    // Note: the request cancellation token is deliberately not used here to ensure the caller
-                    // cannot prevent this operation from being executed by resetting the TCP connection.
-                    await _tokenManager.ExtendAsync(token, date: null);
-
-                    _logger.LogInformation("The expiration date of the refresh token '{Identifier}' was removed.", identifier);
-                }
+                logger.LogInformation("The expiration date of the refresh token '{Identifier}' " +
+                                      "was automatically updated: {Date}.", identifier, date);
 
                 return true;
             }
 
             catch (OpenIddictException exception) when (exception.Reason == OpenIddictConstants.Exceptions.ConcurrencyError)
             {
-                _logger.LogDebug(exception, "A concurrency exception occurred while trying to update the " +
-                                            "expiration date of the token '{Identifier}'.", identifier);
+                logger.LogDebug(0, exception, "A concurrency exception occurred while trying to update the " +
+                                              "expiration date of the token '{Identifier}'.", identifier);
 
                 return false;
             }
 
             catch (Exception exception)
             {
-                _logger.LogWarning(exception, "An exception occurred while trying to update the " +
-                                              "expiration date of the token '{Identifier}'.", identifier);
+                logger.LogWarning(0, exception, "An exception occurred while trying to update the " +
+                                                "expiration date of the token '{Identifier}'.", identifier);
 
                 return false;
             }
         }
 
-        private IEnumerable<(string property, string parameter, OpenIdConnectParameter value)> GetParameters(
-            OpenIdConnectRequest request, AuthenticationProperties properties)
+        private IEnumerable<Tuple<string, string, OpenIdConnectParameter>> GetParameters(
+            [NotNull] HttpContext context, [NotNull] OpenIdConnectRequest request,
+            [NotNull] AuthenticationProperties properties)
         {
+            var logger = GetLogger(context.RequestServices);
+
             Debug.Assert(properties != null, "The authentication properties shouldn't be null.");
 
             Debug.Assert(request != null, "The request shouldn't be null.");
@@ -581,13 +603,13 @@ namespace OpenIddict.Server.Internal
 
                     catch (Exception exception)
                     {
-                        _logger.LogWarning(exception, "An error occurred while parsing the public property " +
-                                                      "'{Name}' from the authentication ticket.", name);
+                        logger.LogWarning(0, exception, "An error occurred while parsing the public property " +
+                                                        "'{Name}' from the authentication ticket.", name);
 
                         continue;
                     }
 
-                    yield return (property.Key, name, value);
+                    yield return Tuple.Create(property.Key, name, new OpenIdConnectParameter(value));
                 }
 
                 else if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.Integer))
@@ -605,13 +627,13 @@ namespace OpenIddict.Server.Internal
 
                     catch (Exception exception)
                     {
-                        _logger.LogWarning(exception, "An error occurred while parsing the public property " +
-                                                      "'{Name}' from the authentication ticket.", name);
+                        logger.LogWarning(0, exception, "An error occurred while parsing the public property " +
+                                                        "'{Name}' from the authentication ticket.", name);
 
                         continue;
                     }
 
-                    yield return (property.Key, name, value);
+                    yield return Tuple.Create(property.Key, name, new OpenIdConnectParameter(value));
                 }
 
                 else if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.Json))
@@ -622,8 +644,8 @@ namespace OpenIddict.Server.Internal
 
                     if (request.IsAuthorizationRequest() || request.IsLogoutRequest())
                     {
-                        _logger.LogWarning("The JSON property '{Name}' was excluded as it was not " +
-                                           "compatible with the OpenID Connect response type.", name);
+                        logger.LogWarning("The JSON property '{Name}' was excluded as it was not " +
+                                          "compatible with the OpenID Connect response type.", name);
 
                         continue;
                     }
@@ -637,13 +659,13 @@ namespace OpenIddict.Server.Internal
 
                     catch (Exception exception)
                     {
-                        _logger.LogWarning(exception, "An error occurred while deserializing the public JSON " +
-                                                      "property '{Name}' from the authentication ticket.", name);
+                        logger.LogWarning(0, exception, "An error occurred while deserializing the public JSON " +
+                                                        "property '{Name}' from the authentication ticket.", name);
 
                         continue;
                     }
 
-                    yield return (property.Key, name, value);
+                    yield return Tuple.Create(property.Key, name, new OpenIdConnectParameter(value));
                 }
 
                 else if (property.Key.EndsWith(OpenIddictConstants.PropertyTypes.String))
@@ -652,11 +674,42 @@ namespace OpenIddict.Server.Internal
                         startIndex: 0,
                         length: property.Key.LastIndexOf(OpenIddictConstants.PropertyTypes.String));
 
-                    yield return (property.Key, name, property.Value);
+                    yield return Tuple.Create(property.Key, name, new OpenIdConnectParameter(property.Value));
                 }
 
                 continue;
             }
         }
+
+        private static ILogger GetLogger(IServiceProvider provider)
+            => provider.GetRequiredService<ILogger<OpenIddictServerProvider>>();
+
+        private static IOpenIddictServerEventService GetEventService(IServiceProvider provider)
+            => provider.GetRequiredService<IOpenIddictServerEventService>();
+
+        private static IOpenIddictApplicationManager GetApplicationManager(IServiceProvider provider)
+            => provider.GetService<IOpenIddictApplicationManager>() ?? throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the server handler.")
+                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .ToString());
+
+        private static IOpenIddictAuthorizationManager GetAuthorizationManager(IServiceProvider provider)
+            => provider.GetService<IOpenIddictAuthorizationManager>() ?? throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the server handler.")
+                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .ToString());
+
+        private static IOpenIddictScopeManager GetScopeManager(IServiceProvider provider)
+            => provider.GetService<IOpenIddictScopeManager>() ?? throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the server handler.")
+                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .ToString());
+
+        private static IOpenIddictTokenManager GetTokenManager(IServiceProvider provider)
+            => provider.GetService<IOpenIddictTokenManager>() ?? throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the server handler.")
+                .Append("To register the OpenIddict core services, use 'services.AddOpenIddict().AddCore()'.")
+                .ToString());
+
     }
 }

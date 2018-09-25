@@ -41,7 +41,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictMongoDbOptions>>().Value;
 
             Assert.True(options.DisableInitialization);
         }
@@ -58,7 +58,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(CustomApplication), options.DefaultApplicationType);
         }
@@ -75,7 +75,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(CustomAuthorization), options.DefaultAuthorizationType);
         }
@@ -92,7 +92,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(CustomScope), options.DefaultScopeType);
         }
@@ -109,7 +109,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(CustomToken), options.DefaultTokenType);
         }
@@ -142,7 +142,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictMongoDbOptions>>().Value;
 
             Assert.Equal("custom_collection", options.ApplicationsCollectionName);
         }
@@ -175,7 +175,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictMongoDbOptions>>().Value;
 
             Assert.Equal("custom_collection", options.AuthorizationsCollectionName);
         }
@@ -208,7 +208,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictMongoDbOptions>>().Value;
 
             Assert.Equal("custom_collection", options.ScopesCollectionName);
         }
@@ -225,7 +225,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictMongoDbOptions>>().Value;
 
             Assert.Equal(TimeSpan.FromDays(42), options.InitializationTimeout);
         }
@@ -258,7 +258,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictMongoDbOptions>>().Value;
 
             Assert.Equal("custom_collection", options.TokensCollectionName);
         }
@@ -292,7 +292,7 @@ namespace OpenIddict.MongoDb.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictMongoDbOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictMongoDbOptions>>().Value;
 
             Assert.Equal(database, options.Database);
         }

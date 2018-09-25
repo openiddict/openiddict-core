@@ -27,7 +27,7 @@ namespace OpenIddict.Core
         public OpenIddictScopeManager(
             [NotNull] IOpenIddictScopeStoreResolver resolver,
             [NotNull] ILogger<OpenIddictScopeManager<TScope>> logger,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+            [NotNull] IOptions<OpenIddictCoreOptions> options)
         {
             Store = resolver.Get<TScope>();
             Logger = logger;
@@ -42,7 +42,7 @@ namespace OpenIddict.Core
         /// <summary>
         /// Gets the options associated with the current manager.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictCoreOptions> Options { get; }
+        protected IOptions<OpenIddictCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the store associated with the current manager.

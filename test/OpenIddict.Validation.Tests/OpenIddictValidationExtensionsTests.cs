@@ -7,7 +7,7 @@
 using System;
 using System.Text;
 using AspNet.Security.OAuth.Validation;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -41,20 +41,6 @@ namespace OpenIddict.Validation.Tests
             var exception = Assert.Throws<ArgumentNullException>(() => builder.AddValidation(configuration: null));
 
             Assert.Equal("configuration", exception.ParamName);
-        }
-
-        [Fact]
-        public void AddValidation_RegistersAuthenticationServices()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddValidation();
-
-            // Assert
-            Assert.Contains(services, service => service.ServiceType == typeof(IAuthenticationService));
         }
 
         [Fact]
@@ -102,101 +88,6 @@ namespace OpenIddict.Validation.Tests
         }
 
         [Fact]
-        public void AddValidation_RegistersHandler()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddValidation();
-
-            // Assert
-            Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                                 service.ServiceType == typeof(OpenIddictValidationHandler) &&
-                                                 service.ImplementationType == typeof(OpenIddictValidationHandler));
-        }
-
-        [Fact]
-        public void AddValidation_RegistersProvider()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddValidation();
-
-            // Assert
-            Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                                 service.ServiceType == typeof(OpenIddictValidationProvider) &&
-                                                 service.ImplementationType == typeof(OpenIddictValidationProvider));
-        }
-
-        [Theory]
-        [InlineData(typeof(IPostConfigureOptions<OpenIddictValidationOptions>), typeof(OpenIddictValidationConfiguration))]
-        [InlineData(typeof(IPostConfigureOptions<OpenIddictValidationOptions>), typeof(OAuthValidationInitializer))]
-        public void AddValidation_RegistersInitializers(Type serviceType, Type implementationType)
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddValidation();
-
-            // Assert
-            Assert.Contains(services, service => service.ServiceType == serviceType &&
-                                                 service.ImplementationType == implementationType);
-        }
-
-        [Fact]
-        public void AddValidation_RegistersAuthenticationScheme()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddValidation();
-
-            // Assert
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
-
-            Assert.Contains(options.Schemes, scheme => scheme.Name == OpenIddictValidationDefaults.AuthenticationScheme &&
-                                                       scheme.HandlerType == typeof(OpenIddictValidationHandler));
-        }
-
-        [Fact]
-        public void AddValidation_ThrowsAnExceptionWhenSchemeIsAlreadyRegisteredWithDifferentHandlerType()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddAuthentication()
-                .AddOAuthValidation();
-
-            var builder = new OpenIddictBuilder(services);
-
-            // Act
-            builder.AddValidation();
-
-            // Assert
-            var provider = services.BuildServiceProvider();
-            var exception = Assert.Throws<InvalidOperationException>(delegate
-            {
-                return provider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
-            });
-
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The OpenIddict validation handler cannot be registered as an authentication scheme.")
-                .AppendLine("This may indicate that an instance of the OAuth validation or JWT bearer handler was registered.")
-                .Append("Make sure that neither 'services.AddAuthentication().AddOAuthValidation()' nor ")
-                .Append("'services.AddAuthentication().AddJwtBearer()' are called from 'ConfigureServices'.")
-                .ToString(), exception.Message);
-        }
-
-        [Fact]
         public void AddValidation_CanBeSafelyInvokedMultipleTimes()
         {
             // Arrange
@@ -207,6 +98,50 @@ namespace OpenIddict.Validation.Tests
             builder.AddValidation();
             builder.AddValidation();
             builder.AddValidation();
+        }
+
+        [Fact]
+        public void UseOpenIddictValidation_ThrowsAnExceptionWhenEventsAreNull()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOpenIddict()
+                .AddValidation()
+                    .Configure(options => options.Events = null);
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictValidation());
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in validation provider.")
+                .AppendLine("This error may indicate that 'OpenIddictValidationOptions.Events' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddValidation().AddEventHandler()' method.")
+                .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public void UseOpenIddictValidation_ThrowsAnExceptionWhenEventsTypeIsIncompatible()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddOpenIddict()
+                .AddValidation()
+                    .Configure(options => options.Events = new OAuthValidationEvents());
+
+            var builder = new ApplicationBuilder(services.BuildServiceProvider());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.UseOpenIddictValidation());
+
+            Assert.Equal(new StringBuilder()
+                .AppendLine("OpenIddict can only be used with its built-in validation provider.")
+                .AppendLine("This error may indicate that 'OpenIddictValidationOptions.Events' was manually set.")
+                .Append("To execute custom request handling logic, consider registering an event handler using ")
+                .Append("the generic 'services.AddOpenIddict().AddValidation().AddEventHandler()' method.")
+                .ToString(), exception.Message);
         }
     }
 }

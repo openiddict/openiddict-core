@@ -22,11 +22,11 @@ namespace OpenIddict.EntityFramework
     public class OpenIddictAuthorizationStoreResolver : IOpenIddictAuthorizationStoreResolver
     {
         private static readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
-        private readonly IOptionsMonitor<OpenIddictEntityFrameworkOptions> _options;
+        private readonly IOptions<OpenIddictEntityFrameworkOptions> _options;
         private readonly IServiceProvider _provider;
 
         public OpenIddictAuthorizationStoreResolver(
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options,
+            [NotNull] IOptions<OpenIddictEntityFrameworkOptions> options,
             [NotNull] IServiceProvider provider)
         {
             _options = options;
@@ -60,7 +60,7 @@ namespace OpenIddict.EntityFramework
                         .ToString());
                 }
 
-                var context = _options.CurrentValue.DbContextType;
+                var context = _options.Value.DbContextType;
                 if (context == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()

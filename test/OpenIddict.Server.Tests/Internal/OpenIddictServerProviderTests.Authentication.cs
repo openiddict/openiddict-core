@@ -7,12 +7,12 @@
 using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Client;
 using AspNet.Security.OpenIdConnect.Primitives;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -859,8 +859,7 @@ namespace OpenIddict.Server.Internal.Tests
                 It.IsAny<byte[]>(),
                 It.Is<DistributedCacheEntryOptions>(options =>
                     options.AbsoluteExpirationRelativeToNow == TimeSpan.FromDays(42) &&
-                    options.SlidingExpiration == TimeSpan.FromSeconds(42)),
-                It.IsAny<CancellationToken>()), Times.Once());
+                    options.SlidingExpiration == TimeSpan.FromSeconds(42))), Times.Once());
 
             generator.Verify(mock => mock.GetBytes(It.Is<byte[]>(bytes => bytes.Length == 256 / 8)), Times.Once());
         }
@@ -937,7 +936,7 @@ namespace OpenIddict.Server.Internal.Tests
             };
 
             var stream = new MemoryStream();
-            using (var writer = new BsonDataWriter(stream))
+            using (var writer = new BsonWriter(stream))
             {
                 writer.CloseOutput = false;
 
@@ -947,9 +946,8 @@ namespace OpenIddict.Server.Internal.Tests
 
             var cache = new Mock<IDistributedCache>();
 
-            cache.Setup(mock => mock.GetAsync(
-                OpenIddictConstants.Environment.AuthorizationRequest + "b2ee7815-5579-4ff7-86b0-ba671b939d96",
-                It.IsAny<CancellationToken>()))
+            cache.Setup(mock => mock.GetAsync(OpenIddictConstants.Environment.AuthorizationRequest +
+                                              "b2ee7815-5579-4ff7-86b0-ba671b939d96"))
                 .ReturnsAsync(stream.ToArray());
 
             var server = CreateAuthorizationServer(builder =>
@@ -985,8 +983,8 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.NotNull(response.AccessToken);
 
             cache.Verify(mock => mock.RemoveAsync(
-                OpenIddictConstants.Environment.AuthorizationRequest + "b2ee7815-5579-4ff7-86b0-ba671b939d96",
-                It.IsAny<CancellationToken>()), Times.Once());
+                OpenIddictConstants.Environment.AuthorizationRequest +
+                "b2ee7815-5579-4ff7-86b0-ba671b939d96"), Times.Once());
         }
 
         [Fact]
@@ -1005,7 +1003,7 @@ namespace OpenIddict.Server.Internal.Tests
             var client = new OpenIdConnectClient(server.CreateClient());
 
             // Act
-            var response = await client.SendAsync(HttpMethods.Put, AuthorizationEndpoint, new OpenIdConnectRequest());
+            var response = await client.SendAsync(HttpMethod.Put, AuthorizationEndpoint, new OpenIdConnectRequest());
 
             // Assert
             Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);

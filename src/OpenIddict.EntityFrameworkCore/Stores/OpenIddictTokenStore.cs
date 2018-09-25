@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -39,7 +38,7 @@ namespace OpenIddict.EntityFrameworkCore
         public OpenIddictTokenStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options)
             : base(cache, context, options)
         {
         }
@@ -59,7 +58,7 @@ namespace OpenIddict.EntityFrameworkCore
         public OpenIddictTokenStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options)
             : base(cache, context, options)
         {
         }
@@ -83,7 +82,7 @@ namespace OpenIddict.EntityFrameworkCore
         public OpenIddictTokenStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -103,7 +102,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> Options { get; }
+        protected IOptions<OpenIddictEntityFrameworkCoreOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TApplication"/> entity.
@@ -203,25 +202,6 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Exposes a compiled query allowing to retrieve the tokens corresponding
-        /// to the specified subject and associated with the application identifier.
-        /// </summary>
-        private static readonly Func<TContext, TKey, string, AsyncEnumerable<TToken>> FindBySubjectAndClient =
-            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
-            // filtered using token.Application.Id.Equals(key). To work around this issue,
-            // this compiled query uses an explicit join before applying the equality check.
-            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            EF.CompileAsyncQuery((TContext context, TKey identifier, string subject) =>
-                from token in context.Set<TToken>()
-                    .Include(token => token.Application)
-                    .Include(token => token.Authorization)
-                    .AsTracking()
-                where token.Subject == subject
-                join application in context.Set<TApplication>().AsTracking() on token.Application.Id equals application.Id
-                where application.Id.Equals(identifier)
-                select token);
-
-        /// <summary>
         /// Retrieves the tokens corresponding to the specified
         /// subject and associated with the application identifier.
         /// </summary>
@@ -245,27 +225,20 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubjectAndClient(Context,
-                ConvertIdentifierFromString(client), subject).ToListAsync(cancellationToken));
-        }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve the tokens matching the specified parameters.
-        /// </summary>
-        private static readonly Func<TContext, TKey, string, string, AsyncEnumerable<TToken>> FindBySubjectClientAndStatus =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            EF.CompileAsyncQuery((TContext context, TKey identifier, string subject, string status) =>
-                from token in context.Set<TToken>()
-                    .Include(token => token.Application)
-                    .Include(token => token.Authorization)
-                    .AsTracking()
-                where token.Subject == subject && token.Status == status
-                join application in context.Set<TApplication>().AsTracking() on token.Application.Id equals application.Id
-                where application.Id.Equals(identifier)
-                select token);
+
+            var key = ConvertIdentifierFromString(client);
+
+            return ImmutableArray.CreateRange(
+                await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                       where token.Subject == subject
+                       join application in Applications.AsTracking() on token.Application.Id equals application.Id
+                       where application.Id.Equals(key)
+                       select token).ToListAsync(cancellationToken));
+        }
 
         /// <summary>
         /// Retrieves the tokens matching the specified parameters.
@@ -297,29 +270,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubjectClientAndStatus(Context,
-                ConvertIdentifierFromString(client), subject, status).ToListAsync(cancellationToken));
-        }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve the tokens matching the specified parameters.
-        /// </summary>
-        private static readonly Func<TContext, TKey, string, string, string, AsyncEnumerable<TToken>> FindBySubjectClientStatusAndType =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            EF.CompileAsyncQuery((TContext context, TKey identifier, string subject, string status, string type) =>
-                from token in context.Set<TToken>()
-                    .Include(token => token.Application)
-                    .Include(token => token.Authorization)
-                    .AsTracking()
-                where token.Subject == subject &&
-                      token.Status == status &&
-                      token.Type == type
-                join application in context.Set<TApplication>().AsTracking() on token.Application.Id equals application.Id
-                where application.Id.Equals(identifier)
-                select token);
+
+            var key = ConvertIdentifierFromString(client);
+
+            return ImmutableArray.CreateRange(
+                await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                       where token.Subject == subject &&
+                             token.Status == status
+                       join application in Applications.AsTracking() on token.Application.Id equals application.Id
+                       where application.Id.Equals(key)
+                       select token).ToListAsync(cancellationToken));
+        }
 
         /// <summary>
         /// Retrieves the tokens matching the specified parameters.
@@ -357,27 +322,22 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubjectClientStatusAndType(Context,
-                ConvertIdentifierFromString(client), subject, status, type).ToListAsync(cancellationToken));
-        }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve the list of
-        /// tokens corresponding to the specified application identifier.
-        /// </summary>
-        private static readonly Func<TContext, TKey, AsyncEnumerable<TToken>> FindByApplicationId =
-            // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
+            // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            EF.CompileAsyncQuery((TContext context, TKey identifier) =>
-                from token in context.Set<TToken>()
-                    .Include(token => token.Application)
-                    .Include(token => token.Authorization)
-                    .AsTracking()
-                join application in context.Set<TApplication>().AsTracking() on token.Application.Id equals application.Id
-                where application.Id.Equals(identifier)
-                select token);
+
+            var key = ConvertIdentifierFromString(client);
+
+            return ImmutableArray.CreateRange(
+                await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                       where token.Subject == subject &&
+                             token.Status == status &&
+                             token.Type == type
+                       join application in Applications.AsTracking() on token.Application.Id equals application.Id
+                       where application.Id.Equals(key)
+                       select token).ToListAsync(cancellationToken));
+        }
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified application identifier.
@@ -395,27 +355,19 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return ImmutableArray.CreateRange(await FindByApplicationId(Context,
-                ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
-        }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve the list of
-        /// tokens corresponding to the specified authorization identifier.
-        /// </summary>
-        private static readonly Func<TContext, TKey, AsyncEnumerable<TToken>> FindByAuthorizationId =
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
-            // filtered using token.Authorization.Id.Equals(key). To work around this issue,
-            // this compiled query uses an explicit join before applying the equality check.
+            // filtered using token.Application.Id.Equals(key). To work around this issue,
+            // this method is overriden to use an explicit join before applying the equality check.
             // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
-            EF.CompileAsyncQuery((TContext context, TKey identifier) =>
-                from token in context.Set<TToken>()
-                    .Include(token => token.Application)
-                    .Include(token => token.Authorization)
-                    .AsTracking()
-                join authorization in context.Set<TAuthorization>().AsTracking() on token.Authorization.Id equals authorization.Id
-                where authorization.Id.Equals(identifier)
-                select token);
+
+            var key = ConvertIdentifierFromString(identifier);
+
+            return ImmutableArray.CreateRange(
+                await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                       join application in Applications.AsTracking() on token.Application.Id equals application.Id
+                       where application.Id.Equals(key)
+                       select token).ToListAsync(cancellationToken));
+        }
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified authorization identifier.
@@ -433,21 +385,19 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return ImmutableArray.CreateRange(await FindByAuthorizationId(Context,
-                ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
-        }
+            // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
+            // filtered using token.Authorization.Id.Equals(key). To work around this issue,
+            // this method is overriden to use an explicit join before applying the equality check.
+            // See https://github.com/openiddict/openiddict-core/issues/499 for more information.
 
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve a token using its unique identifier.
-        /// </summary>
-        private static readonly Func<TContext, TKey, Task<TToken>> FindById =
-            EF.CompileAsyncQuery((TContext context, TKey identifier) =>
-                (from token in context.Set<TToken>()
-                    .Include(token => token.Application)
-                    .Include(token => token.Authorization)
-                    .AsTracking()
-                 where token.Id.Equals(identifier)
-                 select token).FirstOrDefault());
+            var key = ConvertIdentifierFromString(identifier);
+
+            return ImmutableArray.CreateRange(
+                await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                       join authorization in Authorizations.AsTracking() on token.Authorization.Id equals authorization.Id
+                       where authorization.Id.Equals(key)
+                       select token).ToListAsync(cancellationToken));
+        }
 
         /// <summary>
         /// Retrieves a token using its unique identifier.
@@ -465,21 +415,12 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return FindById(Context, ConvertIdentifierFromString(identifier));
-        }
+            var key = ConvertIdentifierFromString(identifier);
 
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve the list of
-        /// tokens corresponding to the specified reference identifier.
-        /// </summary>
-        private static readonly Func<TContext, string, Task<TToken>> FindByReferenceId =
-            EF.CompileAsyncQuery((TContext context, string identifier) =>
-                (from token in context.Set<TToken>()
-                    .Include(token => token.Application)
-                    .Include(token => token.Authorization)
-                    .AsTracking()
-                 where token.ReferenceId == identifier
-                 select token).FirstOrDefault());
+            return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                    where token.Id.Equals(key)
+                    select token).FirstOrDefaultAsync(cancellationToken);
+        }
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified reference identifier.
@@ -498,21 +439,10 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return FindByReferenceId(Context, identifier);
+            return (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                    where token.ReferenceId == identifier
+                    select token).FirstOrDefaultAsync(cancellationToken);
         }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve the
-        /// list of tokens corresponding to the specified subject.
-        /// </summary>
-        private static readonly Func<TContext, string, AsyncEnumerable<TToken>> FindBySubject =
-            EF.CompileAsyncQuery((TContext context, string subject) =>
-                from token in context.Set<TToken>()
-                    .Include(token => token.Application)
-                    .Include(token => token.Authorization)
-                    .AsTracking()
-                where token.Subject == subject
-                select token);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified subject.
@@ -530,7 +460,10 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubject(Context, subject).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(
+                await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization).AsTracking()
+                       where token.Subject == subject
+                       select token).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -542,31 +475,29 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the token.
         /// </returns>
-        public virtual async ValueTask<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            // If the application is not attached to the token, try to load it manually.
-            if (token.Application == null)
+            if (token.Application != null)
             {
-                var reference = Context.Entry(token).Reference(entry => entry.Application);
-                if (reference.EntityEntry.State == EntityState.Detached)
-                {
-                    return null;
-                }
-
-                await reference.LoadAsync(cancellationToken);
+                return new ValueTask<string>(ConvertIdentifierToString(token.Application.Id));
             }
 
-            if (token.Application == null)
+            async Task<string> RetrieveApplicationIdAsync()
             {
-                return null;
+                var key = await (from element in Tokens.AsTracking()
+                                 where element.Id.Equals(token.Id) &&
+                                       element.Application != null
+                                 select element.Application.Id).FirstOrDefaultAsync(cancellationToken);
+
+                return ConvertIdentifierToString(key);
             }
 
-            return ConvertIdentifierToString(token.Application.Id);
+            return new ValueTask<string>(RetrieveApplicationIdAsync());
         }
 
         /// <summary>
@@ -605,31 +536,29 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization identifier associated with the token.
         /// </returns>
-        public virtual async ValueTask<string> GetAuthorizationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetAuthorizationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            // If the authorization is not attached to the token, try to load it manually.
-            if (token.Authorization == null)
+            if (token.Authorization != null)
             {
-                var reference = Context.Entry(token).Reference(entry => entry.Authorization);
-                if (reference.EntityEntry.State == EntityState.Detached)
-                {
-                    return null;
-                }
-
-                await reference.LoadAsync(cancellationToken);
+                return new ValueTask<string>(ConvertIdentifierToString(token.Authorization.Id));
             }
 
-            if (token.Authorization == null)
+            async Task<string> RetrieveAuthorizationIdAsync()
             {
-                return null;
+                var key = await (from element in Tokens.AsTracking()
+                                 where element.Id.Equals(token.Id) &&
+                                       element.Authorization != null
+                                 select element.Authorization.Id).FirstOrDefaultAsync(cancellationToken);
+
+                return ConvertIdentifierToString(key);
             }
 
-            return ConvertIdentifierToString(token.Authorization.Id);
+            return new ValueTask<string>(RetrieveAuthorizationIdAsync());
         }
 
         /// <summary>
@@ -827,12 +756,14 @@ namespace OpenIddict.EntityFrameworkCore
 
             catch (MemberAccessException exception)
             {
-                return new ValueTask<TToken>(Task.FromException<TToken>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new token instance.")
-                        .Append("Make sure that the token entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom token store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                var source = new TaskCompletionSource<TToken>();
+                source.SetException(new InvalidOperationException(new StringBuilder()
+                    .AppendLine("An error occurred while trying to create a new token instance.")
+                    .Append("Make sure that the token entity is not abstract and has a public parameterless constructor ")
+                    .Append("or create a custom token store that overrides 'InstantiateAsync()' to use a custom factory.")
+                    .ToString(), exception));
+
+                return new ValueTask<TToken>(source.Task);
             }
         }
 
@@ -1004,7 +935,9 @@ namespace OpenIddict.EntityFrameworkCore
 
             if (!string.IsNullOrEmpty(identifier))
             {
-                var application = await Applications.FindAsync(new object[] { ConvertIdentifierFromString(identifier) }, cancellationToken);
+                var key = ConvertIdentifierFromString(identifier);
+
+                var application = await Applications.SingleOrDefaultAsync(element => element.Id.Equals(key), cancellationToken);
                 if (application == null)
                 {
                     throw new InvalidOperationException("The application associated with the token cannot be found.");
@@ -1015,19 +948,15 @@ namespace OpenIddict.EntityFrameworkCore
 
             else
             {
-                // If the application is not attached to the token, try to load it manually.
-                if (token.Application == null)
+                var key = await GetIdAsync(token, cancellationToken);
+
+                // Try to retrieve the application associated with the token.
+                // If none can be found, assume that no application is attached.
+                var application = await Applications.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                if (application != null)
                 {
-                    var reference = Context.Entry(token).Reference(entry => entry.Application);
-                    if (reference.EntityEntry.State == EntityState.Detached)
-                    {
-                        return;
-                    }
-
-                    await reference.LoadAsync(cancellationToken);
+                    application.Tokens.Remove(token);
                 }
-
-                token.Application = null;
             }
         }
 
@@ -1050,7 +979,9 @@ namespace OpenIddict.EntityFrameworkCore
 
             if (!string.IsNullOrEmpty(identifier))
             {
-                var authorization = await Authorizations.FindAsync(new object[] { ConvertIdentifierFromString(identifier) }, cancellationToken);
+                var key = ConvertIdentifierFromString(identifier);
+
+                var authorization = await Authorizations.SingleOrDefaultAsync(element => element.Id.Equals(key), cancellationToken);
                 if (authorization == null)
                 {
                     throw new InvalidOperationException("The authorization associated with the token cannot be found.");
@@ -1061,19 +992,15 @@ namespace OpenIddict.EntityFrameworkCore
 
             else
             {
-                // If the authorization is not attached to the token, try to load it manually.
-                if (token.Authorization == null)
+                var key = await GetIdAsync(token, cancellationToken);
+
+                // Try to retrieve the authorization associated with the token.
+                // If none can be found, assume that no authorization is attached.
+                var authorization = await Authorizations.FirstOrDefaultAsync(element => element.Tokens.Any(t => t.Id.Equals(key)));
+                if (authorization != null)
                 {
-                    var reference = Context.Entry(token).Reference(entry => entry.Authorization);
-                    if (reference.EntityEntry.State == EntityState.Detached)
-                    {
-                        return;
-                    }
-
-                    await reference.LoadAsync(cancellationToken);
+                    authorization.Tokens.Remove(token);
                 }
-
-                token.Authorization = null;
             }
         }
 
@@ -1096,7 +1023,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             token.CreationDate = date;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1118,7 +1045,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             token.ExpirationDate = date;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1139,7 +1066,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             token.Payload = payload;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1162,12 +1089,12 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 token.Properties = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             token.Properties = properties.ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1190,7 +1117,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             token.ReferenceId = identifier;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1216,7 +1143,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             token.Status = status;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1242,7 +1169,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             token.Subject = subject;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1268,7 +1195,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             token.Type = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>

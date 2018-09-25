@@ -22,11 +22,11 @@ namespace OpenIddict.EntityFrameworkCore
     public class OpenIddictTokenStoreResolver : IOpenIddictTokenStoreResolver
     {
         private static readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
-        private readonly IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> _options;
+        private readonly IOptions<OpenIddictEntityFrameworkCoreOptions> _options;
         private readonly IServiceProvider _provider;
 
         public OpenIddictTokenStoreResolver(
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions> options,
+            [NotNull] IOptions<OpenIddictEntityFrameworkCoreOptions> options,
             [NotNull] IServiceProvider provider)
         {
             _options = options;
@@ -60,7 +60,7 @@ namespace OpenIddict.EntityFrameworkCore
                         .ToString());
                 }
 
-                var context = _options.CurrentValue.DbContextType;
+                var context = _options.Value.DbContextType;
                 if (context == null)
                 {
                     throw new InvalidOperationException(new StringBuilder()

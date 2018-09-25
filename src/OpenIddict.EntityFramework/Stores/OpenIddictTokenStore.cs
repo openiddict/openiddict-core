@@ -37,7 +37,7 @@ namespace OpenIddict.EntityFramework
         public OpenIddictTokenStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkOptions> options)
             : base(cache, context, options)
         {
         }
@@ -61,7 +61,7 @@ namespace OpenIddict.EntityFramework
         public OpenIddictTokenStore(
             [NotNull] IMemoryCache cache,
             [NotNull] TContext context,
-            [NotNull] IOptionsMonitor<OpenIddictEntityFrameworkOptions> options)
+            [NotNull] IOptions<OpenIddictEntityFrameworkOptions> options)
         {
             Cache = cache;
             Context = context;
@@ -81,7 +81,7 @@ namespace OpenIddict.EntityFramework
         /// <summary>
         /// Gets the options associated with the current store.
         /// </summary>
-        protected IOptionsMonitor<OpenIddictEntityFrameworkOptions> Options { get; }
+        protected IOptions<OpenIddictEntityFrameworkOptions> Options { get; }
 
         /// <summary>
         /// Gets the database set corresponding to the <typeparamref name="TApplication"/> entity.
@@ -429,15 +429,19 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the application identifier associated with the token.
         /// </returns>
-        public virtual async ValueTask<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetApplicationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            // If the application is not attached to the token, try to load it manually.
-            if (token.Application == null)
+            if (token.Application != null)
+            {
+                return new ValueTask<string>(ConvertIdentifierToString(token.Application.Id));
+            }
+
+            async Task<string> RetrieveApplicationIdAsync()
             {
                 var reference = Context.Entry(token).Reference(entry => entry.Application);
                 if (reference.EntityEntry.State == EntityState.Detached)
@@ -446,14 +450,16 @@ namespace OpenIddict.EntityFramework
                 }
 
                 await reference.LoadAsync(cancellationToken);
+
+                if (token.Application == null)
+                {
+                    return null;
+                }
+
+                return ConvertIdentifierToString(token.Application.Id);
             }
 
-            if (token.Application == null)
-            {
-                return null;
-            }
-
-            return ConvertIdentifierToString(token.Application.Id);
+            return new ValueTask<string>(RetrieveApplicationIdAsync());
         }
 
         /// <summary>
@@ -491,15 +497,19 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization identifier associated with the token.
         /// </returns>
-        public virtual async ValueTask<string> GetAuthorizationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetAuthorizationIdAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            // If the authorization is not attached to the token, try to load it manually.
-            if (token.Authorization == null)
+            if (token.Authorization != null)
+            {
+                return new ValueTask<string>(ConvertIdentifierToString(token.Authorization.Id));
+            }
+
+            async Task<string> RetrieveAuthorizationIdAsync()
             {
                 var reference = Context.Entry(token).Reference(entry => entry.Authorization);
                 if (reference.EntityEntry.State == EntityState.Detached)
@@ -508,14 +518,16 @@ namespace OpenIddict.EntityFramework
                 }
 
                 await reference.LoadAsync(cancellationToken);
+
+                if (token.Authorization == null)
+                {
+                    return null;
+                }
+
+                return ConvertIdentifierToString(token.Authorization.Id);
             }
 
-            if (token.Authorization == null)
-            {
-                return null;
-            }
-
-            return ConvertIdentifierToString(token.Authorization.Id);
+            return new ValueTask<string>(RetrieveAuthorizationIdAsync());
         }
 
         /// <summary>
@@ -713,12 +725,14 @@ namespace OpenIddict.EntityFramework
 
             catch (MemberAccessException exception)
             {
-                return new ValueTask<TToken>(Task.FromException<TToken>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new token instance.")
-                        .Append("Make sure that the token entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom token store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                var source = new TaskCompletionSource<TToken>();
+                source.SetException(new InvalidOperationException(new StringBuilder()
+                    .AppendLine("An error occurred while trying to create a new token instance.")
+                    .Append("Make sure that the token entity is not abstract and has a public parameterless constructor ")
+                    .Append("or create a custom token store that overrides 'InstantiateAsync()' to use a custom factory.")
+                    .ToString(), exception));
+
+                return new ValueTask<TToken>(source.Task);
             }
         }
 
@@ -971,7 +985,7 @@ namespace OpenIddict.EntityFramework
 
             token.CreationDate = date;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -993,7 +1007,7 @@ namespace OpenIddict.EntityFramework
 
             token.ExpirationDate = date;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1014,7 +1028,7 @@ namespace OpenIddict.EntityFramework
 
             token.Payload = payload;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1037,12 +1051,12 @@ namespace OpenIddict.EntityFramework
             {
                 token.Properties = null;
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             token.Properties = properties.ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1065,7 +1079,7 @@ namespace OpenIddict.EntityFramework
 
             token.ReferenceId = identifier;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1091,7 +1105,7 @@ namespace OpenIddict.EntityFramework
 
             token.Status = status;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1117,7 +1131,7 @@ namespace OpenIddict.EntityFramework
 
             token.Subject = subject;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -1143,7 +1157,7 @@ namespace OpenIddict.EntityFramework
 
             token.Type = type;
 
-            return Task.CompletedTask;
+            return Task.FromResult(0);
         }
 
         /// <summary>

@@ -19,10 +19,12 @@ namespace OpenIddict.Server.Internal
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task ExtractConfigurationRequest([NotNull] ExtractConfigurationRequestContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ExtractConfigurationRequest(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ExtractConfigurationRequest(context));
 
         public override Task ValidateConfigurationRequest([NotNull] ValidateConfigurationRequestContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ValidateConfigurationRequest(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ValidateConfigurationRequest(context));
 
         public override Task HandleConfigurationRequest([NotNull] HandleConfigurationRequestContext context)
         {
@@ -52,22 +54,27 @@ namespace OpenIddict.Server.Internal
             context.Metadata[OpenIdConnectConstants.Metadata.RequestParameterSupported] = false;
             context.Metadata[OpenIdConnectConstants.Metadata.RequestUriParameterSupported] = false;
 
-            return _eventService.PublishAsync(new OpenIddictServerEvents.HandleConfigurationRequest(context));
+            return GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.HandleConfigurationRequest(context));
         }
 
         public override Task ApplyConfigurationResponse([NotNull] ApplyConfigurationResponseContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ApplyConfigurationResponse(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ApplyConfigurationResponse(context));
 
         public override Task ExtractCryptographyRequest([NotNull] ExtractCryptographyRequestContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ExtractCryptographyRequest(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ExtractCryptographyRequest(context));
 
         public override Task ValidateCryptographyRequest([NotNull] ValidateCryptographyRequestContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ValidateCryptographyRequest(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ValidateCryptographyRequest(context));
 
         public override Task HandleCryptographyRequest([NotNull] HandleCryptographyRequestContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.HandleCryptographyRequest(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.HandleCryptographyRequest(context));
 
         public override Task ApplyCryptographyResponse([NotNull] ApplyCryptographyResponseContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ApplyCryptographyResponse(context));
+            => GetEventService(context.HttpContext.RequestServices)
+                .PublishAsync(new OpenIddictServerEvents.ApplyCryptographyResponse(context));
     }
 }

@@ -71,7 +71,7 @@ namespace OpenIddict.MongoDb.Tests
             => new Mock<OpenIddictApplicationStore<MyApplication>>(
                 Mock.Of<IMemoryCache>(),
                 Mock.Of<IOpenIddictMongoDbContext>(),
-                Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>()).Object;
+                Mock.Of<IOptions<OpenIddictMongoDbOptions>>()).Object;
 
         public class CustomApplication { }
 

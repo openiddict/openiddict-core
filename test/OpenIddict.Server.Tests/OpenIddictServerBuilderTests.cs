@@ -127,77 +127,27 @@ namespace OpenIddict.Server.Tests
         public void Configure_OptionsAreCorrectlyAmended()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
-            builder.Configure(configuration => configuration.AccessTokenLifetime = TimeSpan.FromDays(1));
+            builder.Configure(configuration => configuration.Description.DisplayName = "OpenIddict");
 
             var options = GetOptions(services);
 
             // Assert
-            Assert.Equal(TimeSpan.FromDays(1), options.AccessTokenLifetime);
+            Assert.Equal("OpenIddict", options.Description.DisplayName);
         }
-
-        [Fact]
-        public void AddDevelopmentSigningCertificate_ThrowsAnExceptionForNullSubject()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                builder.AddDevelopmentSigningCertificate(subject: null);
-            });
-
-            Assert.Equal("subject", exception.ParamName);
-        }
-
-#if SUPPORTS_CERTIFICATE_GENERATION
-        [Fact]
-        public void AddDevelopmentSigningCertificate_CanGenerateCertificate()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.AddDevelopmentSigningCertificate();
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Equal(1, options.SigningCredentials.Count);
-            Assert.Equal(SecurityAlgorithms.RsaSha256, options.SigningCredentials[0].Algorithm);
-            Assert.NotNull(options.SigningCredentials[0].Kid);
-        }
-#else
-        [Fact]
-        public void AddDevelopmentSigningCertificate_ThrowsAnExceptionOnUnsupportedPlatforms()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            builder.AddDevelopmentSigningCertificate();
-
-            // Act and assert
-            var exception = Assert.Throws<PlatformNotSupportedException>(delegate 
-            {
-                return GetOptions(services);
-            });
-
-            Assert.Equal("X.509 certificate generation is not supported on this platform.", exception.Message);
-        }
-#endif
 
         [Fact]
         public void AddEphemeralSigningKey_SigningKeyIsCorrectlyAdded()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -210,18 +160,20 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(SecurityAlgorithms.RsaSha256)]
-        [InlineData(SecurityAlgorithms.RsaSha384)]
-        [InlineData(SecurityAlgorithms.RsaSha512)]
+        [InlineData(SecurityAlgorithms.RsaSha256Signature)]
+        [InlineData(SecurityAlgorithms.RsaSha384Signature)]
+        [InlineData(SecurityAlgorithms.RsaSha512Signature)]
 #if SUPPORTS_ECDSA
-        [InlineData(SecurityAlgorithms.EcdsaSha256)]
-        [InlineData(SecurityAlgorithms.EcdsaSha384)]
-        [InlineData(SecurityAlgorithms.EcdsaSha512)]
+        [InlineData(SecurityAlgorithms.EcdsaSha256Signature)]
+        [InlineData(SecurityAlgorithms.EcdsaSha384Signature)]
+        [InlineData(SecurityAlgorithms.EcdsaSha512Signature)]
 #endif
         public void AddEphemeralSigningKey_SigningCredentialsUseSpecifiedAlgorithm(string algorithm)
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -234,39 +186,20 @@ namespace OpenIddict.Server.Tests
             Assert.Equal(algorithm, credentials.Algorithm);
         }
 
-        [Fact]
-        public void AddEncryptingKey_EncryptingKeyIsCorrectlyAdded()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            var factory = Mock.Of<CryptoProviderFactory>(mock =>
-                mock.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW, It.IsAny<SecurityKey>()));
-
-            var key = Mock.Of<SecurityKey>(mock => mock.CryptoProviderFactory == factory);
-
-            // Act
-            builder.AddEncryptingKey(key);
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Same(key, options.EncryptingCredentials[0].Key);
-        }
-
         [Theory]
-        [InlineData(SecurityAlgorithms.HmacSha256)]
-        [InlineData(SecurityAlgorithms.RsaSha256)]
+        [InlineData(SecurityAlgorithms.HmacSha256Signature)]
+        [InlineData(SecurityAlgorithms.RsaSha256Signature)]
 #if SUPPORTS_ECDSA
-        [InlineData(SecurityAlgorithms.EcdsaSha256)]
-        [InlineData(SecurityAlgorithms.EcdsaSha384)]
-        [InlineData(SecurityAlgorithms.EcdsaSha512)]
+        [InlineData(SecurityAlgorithms.EcdsaSha256Signature)]
+        [InlineData(SecurityAlgorithms.EcdsaSha384Signature)]
+        [InlineData(SecurityAlgorithms.EcdsaSha512Signature)]
 #endif
         public void AddSigningKey_SigningKeyIsCorrectlyAdded(string algorithm)
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             var factory = Mock.Of<CryptoProviderFactory>(mock =>
@@ -287,7 +220,9 @@ namespace OpenIddict.Server.Tests
         public void AddSigningCertificate_SigningKeyIsCorrectlyAdded()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -299,14 +234,16 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.IsType<X509SecurityKey>(options.SigningCredentials[0].Key);
+            Assert.IsType(typeof(X509SecurityKey), options.SigningCredentials[0].Key);
         }
 
         [Fact]
         public void AllowAuthorizationCodeFlow_CodeFlowIsAddedToGrantTypes()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -322,7 +259,9 @@ namespace OpenIddict.Server.Tests
         public void AllowClientCredentialsFlow_ClientCredentialsFlowIsAddedToGrantTypes()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -338,7 +277,9 @@ namespace OpenIddict.Server.Tests
         public void AllowCustomFlow_CustomFlowIsAddedToGrantTypes()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -354,7 +295,9 @@ namespace OpenIddict.Server.Tests
         public void AllowImplicitFlow_ImplicitFlowIsAddedToGrantTypes()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -370,7 +313,9 @@ namespace OpenIddict.Server.Tests
         public void AllowPasswordFlow_PasswordFlowIsAddedToGrantTypes()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -386,7 +331,9 @@ namespace OpenIddict.Server.Tests
         public void AllowRefreshTokenFlow_RefreshTokenFlowIsAddedToGrantTypes()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -418,7 +365,9 @@ namespace OpenIddict.Server.Tests
         public void DisableConfigurationEndpoint_ConfigurationEndpointIsDisabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -434,7 +383,9 @@ namespace OpenIddict.Server.Tests
         public void DisableCryptographyEndpoint_CryptographyEndpointIsDisabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -450,7 +401,9 @@ namespace OpenIddict.Server.Tests
         public void DisableSlidingExpiration_SlidingExpirationIsDisabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -466,7 +419,9 @@ namespace OpenIddict.Server.Tests
         public void DisableTokenStorage_TokenStorageIsDisabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -482,7 +437,9 @@ namespace OpenIddict.Server.Tests
         public void EnableAuthorizationEndpoint_AuthorizationEndpointIsEnabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -498,7 +455,9 @@ namespace OpenIddict.Server.Tests
         public void EnableIntrospectionEndpoint_IntrospectionEndpointIsEnabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -514,7 +473,9 @@ namespace OpenIddict.Server.Tests
         public void EnableLogoutEndpoint_LogoutEndpointIsEnabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -530,7 +491,9 @@ namespace OpenIddict.Server.Tests
         public void EnableRequestCaching_RequestCachingIsEnabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -546,7 +509,9 @@ namespace OpenIddict.Server.Tests
         public void EnableRevocationEndpoint_RevocationEndpointIsEnabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -562,7 +527,9 @@ namespace OpenIddict.Server.Tests
         public void DisableScopeValidation_ScopeValidationIsDisabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -578,7 +545,9 @@ namespace OpenIddict.Server.Tests
         public void EnableTokenEndpoint_TokenEndpointIsEnabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -594,7 +563,9 @@ namespace OpenIddict.Server.Tests
         public void EnableUserinfoEndpoint_UserinfoEndpointIsEnabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -610,7 +581,9 @@ namespace OpenIddict.Server.Tests
         public void AcceptAnonymousClients_ClientIdentificationIsOptional()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -626,7 +599,9 @@ namespace OpenIddict.Server.Tests
         public void SetAccessTokenLifetime_DefaultAccessTokenLifetimeIsReplaced()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -639,26 +614,12 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void SetAccessTokenLifetime_AccessTokenLifetimeCanBeSetToNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetAccessTokenLifetime(null);
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Null(options.AccessTokenLifetime);
-        }
-
-        [Fact]
         public void SetAuthorizationCodeLifetime_DefaultAuthorizationCodeLifetimeIsReplaced()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -671,26 +632,12 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void SetAuthorizationCodeLifetime_AuthorizationCodeLifetimeCanBeSetToNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetAuthorizationCodeLifetime(null);
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Null(options.AuthorizationCodeLifetime);
-        }
-
-        [Fact]
         public void SetIdentityTokenLifetime_DefaultIdentityTokenLifetimeIsReplaced()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -703,26 +650,12 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public void SetIdentityTokenLifetime_IdentityTokenLifetimeCanBeSetToNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetIdentityTokenLifetime(null);
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Null(options.IdentityTokenLifetime);
-        }
-
-        [Fact]
         public void SetRefreshTokenLifetime_DefaultRefreshTokenLifetimeIsReplaced()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -732,22 +665,6 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Equal(TimeSpan.FromMinutes(42), options.RefreshTokenLifetime);
-        }
-
-        [Fact]
-        public void SetRefreshTokenLifetime_RefreshTokenLifetimeCanBeSetToNull()
-        {
-            // Arrange
-            var services = CreateServices();
-            var builder = CreateBuilder(services);
-
-            // Act
-            builder.SetRefreshTokenLifetime(null);
-
-            var options = GetOptions(services);
-
-            // Assert
-            Assert.Null(options.RefreshTokenLifetime);
         }
 
         [Fact]
@@ -802,7 +719,9 @@ namespace OpenIddict.Server.Tests
         public void SetIssuer_AddressIsReplaced()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -818,7 +737,9 @@ namespace OpenIddict.Server.Tests
         public void RegisterClaims_ClaimsAreAdded()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -835,7 +756,9 @@ namespace OpenIddict.Server.Tests
         public void RegisterScopes_ScopesAreAdded()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -852,7 +775,9 @@ namespace OpenIddict.Server.Tests
         public void UseDataProtectionProvider_DefaultProviderIsReplaced()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -861,14 +786,16 @@ namespace OpenIddict.Server.Tests
             var options = GetOptions(services);
 
             // Assert
-            Assert.IsType<EphemeralDataProtectionProvider>(options.DataProtectionProvider);
+            Assert.IsType(typeof(EphemeralDataProtectionProvider), options.DataProtectionProvider);
         }
 
         [Fact]
         public void UseJsonWebTokens_AccessTokenHandlerIsCorrectlySet()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -884,7 +811,9 @@ namespace OpenIddict.Server.Tests
         public void UseReferenceTokens_ReferenceTokensAreEnabled()
         {
             // Arrange
-            var services = CreateServices();
+            var services = new ServiceCollection();
+            services.AddOptions();
+
             var builder = CreateBuilder(services);
 
             // Act
@@ -905,8 +834,8 @@ namespace OpenIddict.Server.Tests
         private static OpenIddictServerOptions GetOptions(IServiceCollection services)
         {
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>();
-            return options.Get(OpenIddictServerDefaults.AuthenticationScheme);
+            var options = provider.GetRequiredService<IOptions<OpenIddictServerOptions>>();
+            return options.Value;
         }
 
         public class CustomHandler : IOpenIddictServerEventHandler<ApplyAuthorizationResponse>,

@@ -22,7 +22,7 @@ namespace Mvc.Server.Controllers
 
         //
         // GET: /api/userinfo
-        [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
+        [Authorize(ActiveAuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
         [HttpGet("userinfo"), Produces("application/json")]
         public async Task<IActionResult> Userinfo()
         {

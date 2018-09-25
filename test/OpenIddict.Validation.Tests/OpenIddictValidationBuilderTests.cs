@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
@@ -238,8 +237,7 @@ namespace OpenIddict.Validation.Tests
         private static OpenIddictValidationOptions GetOptions(IServiceCollection services)
         {
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>();
-            return options.Get(OpenIddictValidationDefaults.AuthenticationScheme);
+            return provider.GetRequiredService<IOptions<OpenIddictValidationOptions>>().Value;
         }
 
         public class CustomHandler : IOpenIddictValidationEventHandler<ApplyChallenge>,

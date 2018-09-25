@@ -28,7 +28,7 @@ namespace OpenIddict.MongoDb.Tests
             var provider = services.BuildServiceProvider();
 
             var database = GetDatabase();
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>();
+            var options = Mock.Of<IOptions<OpenIddictMongoDbOptions>>();
 
             var context = new OpenIddictMongoDbContext(options, provider);
 
@@ -64,12 +64,11 @@ namespace OpenIddict.MongoDb.Tests
             database.Setup(mock => mock.GetCollection<OpenIddictApplication>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()))
                 .Returns(collection.Object);
 
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = database.Object,
-                    InitializationTimeout = TimeSpan.FromMilliseconds(50)
-                });
+            var options = Options.Create(new OpenIddictMongoDbOptions
+            {
+                Database = database.Object,
+                InitializationTimeout = TimeSpan.FromMilliseconds(50)
+            });
 
             var context = new OpenIddictMongoDbContext(options, provider);
 
@@ -100,11 +99,10 @@ namespace OpenIddict.MongoDb.Tests
             var provider = services.BuildServiceProvider();
 
             var database = GetDatabase();
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = database.Object
-                });
+            var options = Options.Create(new OpenIddictMongoDbOptions
+            {
+                Database = database.Object
+            });
 
             var context = new OpenIddictMongoDbContext(options, provider);
 
@@ -120,11 +118,10 @@ namespace OpenIddict.MongoDb.Tests
             var provider = services.BuildServiceProvider();
 
             var database = GetDatabase();
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = null
-                });
+            var options = Options.Create(new OpenIddictMongoDbOptions
+            {
+                Database = null
+            });
 
             var context = new OpenIddictMongoDbContext(options, provider);
 
@@ -154,11 +151,10 @@ namespace OpenIddict.MongoDb.Tests
 
             var provider = services.BuildServiceProvider();
 
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = null
-                });
+            var options = Options.Create(new OpenIddictMongoDbOptions
+            {
+                Database = null
+            });
 
             var context = new OpenIddictMongoDbContext(options, provider);
 
@@ -174,12 +170,11 @@ namespace OpenIddict.MongoDb.Tests
             var provider = services.BuildServiceProvider();
 
             var database = GetDatabase();
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = database.Object,
-                    DisableInitialization = true
-                });
+            var options = Options.Create(new OpenIddictMongoDbOptions
+            {
+                Database = database.Object,
+                DisableInitialization = true
+            });
 
             var context = new OpenIddictMongoDbContext(options, provider);
 
@@ -201,11 +196,10 @@ namespace OpenIddict.MongoDb.Tests
             var provider = services.BuildServiceProvider();
 
             var database = GetDatabase();
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = database.Object
-                });
+            var options = Options.Create(new OpenIddictMongoDbOptions
+            {
+                Database = database.Object
+            });
 
             var context = new OpenIddictMongoDbContext(options, provider);
 
@@ -245,11 +239,10 @@ namespace OpenIddict.MongoDb.Tests
                     return collection.Object;
                 });
 
-            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>(
-                mock => mock.CurrentValue == new OpenIddictMongoDbOptions
-                {
-                    Database = database.Object
-                });
+            var options = Options.Create(new OpenIddictMongoDbOptions
+            {
+                Database = database.Object
+            });
 
             var context = new OpenIddictMongoDbContext(options, provider);
 

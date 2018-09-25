@@ -50,7 +50,7 @@ namespace OpenIddict.Mvc.Tests
         private static OpenIddictMvcOptions GetOptions(IServiceCollection services)
         {
             var provider = services.BuildServiceProvider();
-            return provider.GetRequiredService<IOptionsMonitor<OpenIddictMvcOptions>>().CurrentValue;
+            return provider.GetRequiredService<IOptions<OpenIddictMvcOptions>>().Value;
         }
     }
 }

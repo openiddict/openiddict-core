@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
@@ -99,7 +100,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("Handlers cannot be registered as transient services.", nameof(lifetime));
             }
 
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
@@ -131,7 +132,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            Services.Configure(OpenIddictServerDefaults.AuthenticationScheme, configuration);
+            Services.Configure(configuration);
 
             return this;
         }
@@ -143,30 +144,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AcceptAnonymousClients()
             => Configure(options => options.AcceptAnonymousClients = true);
-
-        /// <summary>
-        /// Registers (and generates if necessary) a user-specific development
-        /// certificate used to sign the JWT tokens issued by OpenIddict.
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddDevelopmentSigningCertificate()
-            => Configure(options => options.SigningCredentials.AddDevelopmentCertificate());
-
-        /// <summary>
-        /// Registers (and generates if necessary) a user-specific development
-        /// certificate used to sign the JWT tokens issued by OpenIddict.
-        /// </summary>
-        /// <param name="subject">The subject name associated with the certificate.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddDevelopmentSigningCertificate([NotNull] X500DistinguishedName subject)
-        {
-            if (subject == null)
-            {
-                throw new ArgumentNullException(nameof(subject));
-            }
-
-            return Configure(options => options.SigningCredentials.AddDevelopmentCertificate(subject));
-        }
 
         /// <summary>
         /// Registers a new ephemeral key used to sign the JWT tokens issued by OpenIddict: the key
@@ -194,21 +171,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return Configure(options => options.SigningCredentials.AddEphemeralKey(algorithm));
-        }
-
-        /// <summary>
-        /// Registers a <see cref="SecurityKey"/> used to encrypt the JWT access tokens issued by OpenIddict.
-        /// </summary>
-        /// <param name="key">The security key.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder AddEncryptingKey([NotNull] SecurityKey key)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return Configure(options => options.EncryptingCredentials.AddKey(key));
         }
 
         /// <summary>
@@ -679,32 +641,29 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a new access token by making a grant_type=refresh_token token request
         /// or a prompt=none authorization request, depending on the selected flow.
         /// Using long-lived access tokens or tokens that never expire is not recommended.
-        /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
         /// </summary>
         /// <param name="lifetime">The access token lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAccessTokenLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetAccessTokenLifetime(TimeSpan lifetime)
             => Configure(options => options.AccessTokenLifetime = lifetime);
 
         /// <summary>
         /// Sets the authorization code lifetime, after which client applications
         /// are unable to send a grant_type=authorization_code token request.
         /// Using short-lived authorization codes is strongly recommended.
-        /// While discouraged, <c>null</c> can be specified to issue codes that never expire.
         /// </summary>
         /// <param name="lifetime">The authorization code lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetAuthorizationCodeLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetAuthorizationCodeLifetime(TimeSpan lifetime)
             => Configure(options => options.AuthorizationCodeLifetime = lifetime);
 
         /// <summary>
         /// Sets the identity token lifetime, after which client
         /// applications should refuse processing identity tokens.
-        /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
         /// </summary>
         /// <param name="lifetime">The identity token lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetIdentityTokenLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetIdentityTokenLifetime(TimeSpan lifetime)
             => Configure(options => options.IdentityTokenLifetime = lifetime);
 
         /// <summary>
@@ -712,11 +671,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a new authorization from the user. When sliding expiration is enabled,
         /// a new refresh token is always issued to the client application,
         /// which prolongs the validity period of the refresh token.
-        /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
         /// </summary>
         /// <param name="lifetime">The refresh token lifetime.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetRefreshTokenLifetime([CanBeNull] TimeSpan? lifetime)
+        public OpenIddictServerBuilder SetRefreshTokenLifetime(TimeSpan lifetime)
             => Configure(options => options.RefreshTokenLifetime = lifetime);
 
         /// <summary>

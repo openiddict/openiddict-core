@@ -7,6 +7,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
@@ -90,7 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("Handlers cannot be registered as transient services.", nameof(lifetime));
             }
 
-            if (type.IsGenericTypeDefinition)
+            if (type.GetTypeInfo().IsGenericTypeDefinition)
             {
                 throw new ArgumentException("The specified type is invalid.", nameof(type));
             }
@@ -122,7 +123,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            Services.Configure(OpenIddictValidationDefaults.AuthenticationScheme, configuration);
+            Services.Configure(configuration);
 
             return this;
         }

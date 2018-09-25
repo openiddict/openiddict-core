@@ -5,7 +5,7 @@
  */
 
 using AspNet.Security.OAuth.Validation;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 
 namespace OpenIddict.Validation
 {
@@ -15,7 +15,7 @@ namespace OpenIddict.Validation
     public static class OpenIddictValidationDefaults
     {
         /// <summary>
-        /// Default value for <see cref="AuthenticationScheme.Name"/>.
+        /// Default value for <see cref="AuthenticationOptions.AuthenticationScheme"/>.
         /// </summary>
         public const string AuthenticationScheme = OAuthValidationDefaults.AuthenticationScheme;
     }

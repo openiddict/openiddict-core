@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace OpenIddict.Extensions
 {
@@ -36,16 +37,16 @@ namespace OpenIddict.Extensions
                 throw new ArgumentNullException(nameof(definition));
             }
 
-            if (!definition.IsGenericTypeDefinition)
+            if (!definition.GetTypeInfo().IsGenericTypeDefinition)
             {
                 throw new ArgumentException("The second parameter must be a generic type definition.", nameof(definition));
             }
 
-            if (definition.IsInterface)
+            if (definition.GetTypeInfo().IsInterface)
             {
                 foreach (var contract in type.GetInterfaces())
                 {
-                    if (!contract.IsGenericType && !contract.IsConstructedGenericType)
+                    if (!contract.GetTypeInfo().IsGenericType && !contract.IsConstructedGenericType)
                     {
                         continue;
                     }
@@ -59,9 +60,9 @@ namespace OpenIddict.Extensions
 
             else
             {
-                for (var candidate = type; candidate != null; candidate = candidate.BaseType)
+                for (var candidate = type; candidate != null; candidate = candidate.GetTypeInfo().BaseType)
                 {
-                    if (!candidate.IsGenericType && !candidate.IsConstructedGenericType)
+                    if (!candidate.GetTypeInfo().IsGenericType && !candidate.IsConstructedGenericType)
                     {
                         continue;
                     }

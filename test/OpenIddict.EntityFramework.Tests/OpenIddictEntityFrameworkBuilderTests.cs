@@ -40,7 +40,7 @@ namespace OpenIddict.EntityFramework.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value;
 
             Assert.Equal(typeof(CustomApplication), options.DefaultApplicationType);
             Assert.Equal(typeof(CustomAuthorization), options.DefaultAuthorizationType);
@@ -109,7 +109,7 @@ namespace OpenIddict.EntityFramework.Tests
 
             // Assert
             var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictEntityFrameworkOptions>>().CurrentValue;
+            var options = provider.GetRequiredService<IOptions<OpenIddictEntityFrameworkOptions>>().Value;
 
             Assert.Equal(typeof(CustomDbContext), options.DbContextType);
         }

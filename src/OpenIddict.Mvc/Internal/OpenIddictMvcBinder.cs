@@ -9,9 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Mvc.Internal
@@ -24,7 +24,7 @@ namespace OpenIddict.Mvc.Internal
     /// </summary>
     public class OpenIddictMvcBinder : IModelBinder
     {
-        private readonly IOptionsMonitor<OpenIddictMvcOptions> _options;
+        private readonly IOptions<OpenIddictMvcOptions> _options;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictMvcBinder"/> class.
@@ -32,7 +32,7 @@ namespace OpenIddict.Mvc.Internal
         /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
         /// directly from your code. This API may change or be removed in future minor releases.
         /// </summary>
-        public OpenIddictMvcBinder([NotNull] IOptionsMonitor<OpenIddictMvcOptions> options)
+        public OpenIddictMvcBinder([NotNull] IOptions<OpenIddictMvcOptions> options)
         {
             _options = options;
         }
@@ -52,11 +52,11 @@ namespace OpenIddict.Mvc.Internal
             if (context.ModelType == typeof(OpenIdConnectRequest))
             {
                 var request = context.HttpContext.GetOpenIdConnectRequest();
-                if (request == null && !_options.CurrentValue.DisableBindingExceptions)
+                if (request == null && !_options.Value.DisableBindingExceptions)
                 {
                     throw new InvalidOperationException(new StringBuilder()
                         .AppendLine("The OpenID Connect request cannot be retrieved from the ASP.NET context.")
-                        .Append("Make sure that 'app.UseAuthentication()' is called before 'app.UseMvc()' ")
+                        .Append("Make sure that 'app.UseOpenIddictServer()' is called before 'app.UseMvc()' ")
                         .Append("and that the action route corresponds to the endpoint path registered via ")
                         .Append("'services.AddOpenIddict().AddServer().Enable[...]Endpoint(...)'.")
                         .ToString());
@@ -72,10 +72,9 @@ namespace OpenIddict.Mvc.Internal
                     });
                 }
 
-                context.BindingSource = BindingSource.Special;
                 context.Result = ModelBindingResult.Success(request);
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             else if (context.ModelType == typeof(OpenIdConnectResponse))
@@ -91,10 +90,9 @@ namespace OpenIddict.Mvc.Internal
                     });
                 }
 
-                context.BindingSource = BindingSource.Special;
                 context.Result = ModelBindingResult.Success(response);
 
-                return Task.CompletedTask;
+                return Task.FromResult(0);
             }
 
             throw new InvalidOperationException("The specified model type is not supported by this binder.");
