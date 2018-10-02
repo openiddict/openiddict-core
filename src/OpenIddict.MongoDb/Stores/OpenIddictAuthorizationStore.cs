@@ -137,7 +137,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == authorization.Id &&
                 entity.ConcurrencyToken == authorization.ConcurrencyToken)).DeletedCount == 0)
             {
-                throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
                     .Append("Reload the authorization from the database and retry the operation.")
                     .ToString());
@@ -883,7 +883,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == authorization.Id &&
                 entity.ConcurrencyToken == timestamp, authorization, null, cancellationToken)).MatchedCount == 0)
             {
-                throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
                     .Append("Reload the authorization from the database and retry the operation.")
                     .ToString());

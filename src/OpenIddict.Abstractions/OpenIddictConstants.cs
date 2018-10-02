@@ -118,11 +118,6 @@ namespace OpenIddict.Abstractions
             public const string UnsupportedTokenType = "unsupported_token_type";
         }
 
-        public static class Exceptions
-        {
-            public const string ConcurrencyError = "concurrency_error";
-        }
-
         public static class GrantTypes
         {
             public const string AuthorizationCode = "authorization_code";

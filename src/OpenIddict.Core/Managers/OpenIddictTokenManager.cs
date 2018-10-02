@@ -106,7 +106,16 @@ namespace OpenIddict.Core
             var results = await ValidateAsync(token, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
-                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, token);
+                var builder = new StringBuilder();
+                builder.AppendLine("One or more validation error(s) occurred while trying to create a new token:");
+                builder.AppendLine();
+
+                foreach (var result in results)
+                {
+                    builder.AppendLine(result.ErrorMessage);
+                }
+
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.CreateAsync(token, cancellationToken);
@@ -1035,7 +1044,16 @@ namespace OpenIddict.Core
             var results = await ValidateAsync(token, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
-                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, token);
+                var builder = new StringBuilder();
+                builder.AppendLine("One or more validation error(s) occurred while trying to update an existing token:");
+                builder.AppendLine();
+
+                foreach (var result in results)
+                {
+                    builder.AppendLine(result.ErrorMessage);
+                }
+
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.UpdateAsync(token, cancellationToken);

@@ -137,7 +137,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == token.Id &&
                 entity.ConcurrencyToken == token.ConcurrencyToken)).DeletedCount == 0)
             {
-                throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The token was concurrently updated and cannot be persisted in its current state.")
                     .Append("Reload the token from the database and retry the operation.")
                     .ToString());
@@ -997,7 +997,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == token.Id &&
                 entity.ConcurrencyToken == timestamp, token, null, cancellationToken)).MatchedCount == 0)
             {
-                throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The token was concurrently updated and cannot be persisted in its current state.")
                     .Append("Reload the token from the database and retry the operation.")
                     .ToString());

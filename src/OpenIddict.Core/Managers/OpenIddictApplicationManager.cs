@@ -8,6 +8,7 @@ using System;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CryptoHelper;
@@ -126,14 +127,6 @@ namespace OpenIddict.Core
                     OpenIddictConstants.ClientTypes.Confidential, cancellationToken);
             }
 
-            // If the client is not a public application, throw an
-            // exception as the client secret is required in this case.
-            if (string.IsNullOrEmpty(secret) && !await IsPublicAsync(application, cancellationToken))
-            {
-                throw new InvalidOperationException("A client secret must be provided when creating " +
-                                                    "a confidential or hybrid application.");
-            }
-
             // If a client secret was provided, obfuscate it.
             if (!string.IsNullOrEmpty(secret))
             {
@@ -144,7 +137,16 @@ namespace OpenIddict.Core
             var results = await ValidateAsync(application, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
-                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, application);
+                var builder = new StringBuilder();
+                builder.AppendLine("One or more validation error(s) occurred while trying to create a new application:");
+                builder.AppendLine();
+
+                foreach (var result in results)
+                {
+                    builder.AppendLine(result.ErrorMessage);
+                }
+
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.CreateAsync(application, cancellationToken);
@@ -418,7 +420,7 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client type of the application (by default, "public").
         /// </returns>
-        public virtual async ValueTask<string> GetClientTypeAsync(
+        public virtual ValueTask<string> GetClientTypeAsync(
             [NotNull] TApplication application, CancellationToken cancellationToken = default)
         {
             if (application == null)
@@ -426,18 +428,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var type = await Store.GetClientTypeAsync(application, cancellationToken);
-
-            // Ensure the application type returned by the store is supported by the manager.
-            if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("Only 'confidential', 'hybrid' or 'public' applications are " +
-                                                    "supported by the default application manager.");
-            }
-
-            return type;
+            return Store.GetClientTypeAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -829,7 +820,16 @@ namespace OpenIddict.Core
             var results = await ValidateAsync(application, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
-                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, application);
+                var builder = new StringBuilder();
+                builder.AppendLine("One or more validation error(s) occurred while trying to update an existing application:");
+                builder.AppendLine();
+
+                foreach (var result in results)
+                {
+                    builder.AppendLine(result.ErrorMessage);
+                }
+
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.UpdateAsync(application, cancellationToken);
@@ -1009,56 +1009,6 @@ namespace OpenIddict.Core
 
                     break;
                 }
-            }
-
-            var permissions = await Store.GetPermissionsAsync(application, cancellationToken);
-            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode))
-            {
-                if (!permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Authorization) &&
-                     permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
-                {
-                    builder.Add(new ValidationResult(
-                        "The authorization code flow permission requires adding the authorization endpoint permission."));
-                }
-
-                if (!permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
-                     permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
-                {
-                    builder.Add(new ValidationResult(
-                        "The authorization code flow permission requires adding the token endpoint permission."));
-                }
-            }
-
-            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.ClientCredentials) &&
-               !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
-                permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
-            {
-                builder.Add(new ValidationResult(
-                    "The client credentials flow permission requires adding the token endpoint permission."));
-            }
-
-            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.Implicit) &&
-               !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Authorization) &&
-                permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
-            {
-                builder.Add(new ValidationResult(
-                    "The implicit flow permission requires adding the authorization endpoint permission."));
-            }
-
-            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.Password) &&
-               !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
-                permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
-            {
-                builder.Add(new ValidationResult(
-                    "The password flow permission requires adding the token endpoint permission."));
-            }
-
-            if (permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.RefreshToken) &&
-               !permissions.Contains(OpenIddictConstants.Permissions.Endpoints.Token) &&
-                permissions.Any(permission => permission.StartsWith(OpenIddictConstants.Permissions.Prefixes.Endpoint)))
-            {
-                builder.Add(new ValidationResult(
-                    "The refresh token flow permission requires adding the token endpoint permission."));
             }
 
             return builder.Count == builder.Capacity ?

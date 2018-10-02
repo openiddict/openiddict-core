@@ -137,7 +137,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == application.Id &&
                 entity.ConcurrencyToken == application.ConcurrencyToken)).DeletedCount == 0)
             {
-                throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
                     .Append("Reload the application from the database and retry the operation.")
                     .ToString());
@@ -819,7 +819,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == application.Id &&
                 entity.ConcurrencyToken == timestamp, application, null, cancellationToken)).MatchedCount == 0)
             {
-                throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
                     .Append("Reload the application from the database and retry the operation.")
                     .ToString());

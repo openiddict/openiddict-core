@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -99,7 +100,16 @@ namespace OpenIddict.Core
             var results = await ValidateAsync(scope, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
-                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, scope);
+                var builder = new StringBuilder();
+                builder.AppendLine("One or more validation error(s) occurred while trying to create a new scope:");
+                builder.AppendLine();
+
+                foreach (var result in results)
+                {
+                    builder.AppendLine(result.ErrorMessage);
+                }
+
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.CreateAsync(scope, cancellationToken);
@@ -592,7 +602,16 @@ namespace OpenIddict.Core
             var results = await ValidateAsync(scope, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
-                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, scope);
+                var builder = new StringBuilder();
+                builder.AppendLine("One or more validation error(s) occurred while trying to update an existing scope:");
+                builder.AppendLine();
+
+                foreach (var result in results)
+                {
+                    builder.AppendLine(result.ErrorMessage);
+                }
+
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.UpdateAsync(scope, cancellationToken);
