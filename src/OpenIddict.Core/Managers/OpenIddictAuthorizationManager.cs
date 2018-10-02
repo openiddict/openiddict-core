@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -105,7 +106,16 @@ namespace OpenIddict.Core
             var results = await ValidateAsync(authorization, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
-                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, authorization);
+                var builder = new StringBuilder();
+                builder.AppendLine("One or more validation error(s) occurred while trying to create a new authorization:");
+                builder.AppendLine();
+
+                foreach (var result in results)
+                {
+                    builder.AppendLine(result.ErrorMessage);
+                }
+
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.CreateAsync(authorization, cancellationToken);
@@ -976,7 +986,16 @@ namespace OpenIddict.Core
             var results = await ValidateAsync(authorization, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
-                throw new ValidationException(results.FirstOrDefault(result => result != ValidationResult.Success), null, authorization);
+                var builder = new StringBuilder();
+                builder.AppendLine("One or more validation error(s) occurred while trying to update an existing authorization:");
+                builder.AppendLine();
+
+                foreach (var result in results)
+                {
+                    builder.AppendLine(result.ErrorMessage);
+                }
+
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.UpdateAsync(authorization, cancellationToken);

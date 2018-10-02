@@ -264,7 +264,7 @@ namespace OpenIddict.EntityFrameworkCore
 
                 catch (DbUpdateConcurrencyException exception)
                 {
-                    throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                    throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                         .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
                         .Append("Reload the application from the database and retry the operation.")
                         .ToString(), exception);
@@ -1021,7 +1021,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             catch (DbUpdateConcurrencyException exception)
             {
-                throw new OpenIddictException(OpenIddictConstants.Exceptions.ConcurrencyError, new StringBuilder()
+                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
                     .Append("Reload the application from the database and retry the operation.")
                     .ToString(), exception);

@@ -409,7 +409,7 @@ namespace OpenIddict.Server.Internal
                 return true;
             }
 
-            catch (OpenIddictException exception) when (exception.Reason == OpenIddictConstants.Exceptions.ConcurrencyError)
+            catch (OpenIddictExceptions.ConcurrencyException exception)
             {
                 logger.LogDebug(0, exception, "A concurrency exception occurred while trying to revoke the authorization " +
                                               "associated with the token '{Identifier}'.", identifier);
@@ -445,7 +445,7 @@ namespace OpenIddict.Server.Internal
                 return true;
             }
 
-            catch (OpenIddictException exception) when (exception.Reason == OpenIddictConstants.Exceptions.ConcurrencyError)
+            catch (OpenIddictExceptions.ConcurrencyException exception)
             {
                 logger.LogDebug(0, exception, "A concurrency exception occurred while trying to revoke the token '{Identifier}'.", identifier);
 
@@ -507,7 +507,7 @@ namespace OpenIddict.Server.Internal
                 return true;
             }
 
-            catch (OpenIddictException exception) when (exception.Reason == OpenIddictConstants.Exceptions.ConcurrencyError)
+            catch (OpenIddictExceptions.ConcurrencyException exception)
             {
                 logger.LogDebug(0, exception, "A concurrency exception occurred while trying to redeem with the token '{Identifier}'.", identifier);
 
@@ -547,7 +547,7 @@ namespace OpenIddict.Server.Internal
                 return true;
             }
 
-            catch (OpenIddictException exception) when (exception.Reason == OpenIddictConstants.Exceptions.ConcurrencyError)
+            catch (OpenIddictExceptions.ConcurrencyException exception)
             {
                 logger.LogDebug(0, exception, "A concurrency exception occurred while trying to update the " +
                                               "expiration date of the token '{Identifier}'.", identifier);
