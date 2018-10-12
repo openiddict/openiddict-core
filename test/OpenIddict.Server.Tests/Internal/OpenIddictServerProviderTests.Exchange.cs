@@ -990,7 +990,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified authorization code has already been redeemed.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -1056,7 +1056,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified refresh token has already been redeemed.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -1314,7 +1314,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified authorization code has already been redeemed.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.IsRedeemedAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[1], It.IsAny<CancellationToken>()), Times.Once());
@@ -1407,7 +1407,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified refresh token has already been redeemed.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.IsRedeemedAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[1], It.IsAny<CancellationToken>()), Times.Once());
@@ -1482,7 +1482,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified authorization code is no longer valid.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.IsRedeemedAsync(token, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -1552,7 +1552,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified refresh token is no longer valid.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
 

@@ -49,6 +49,8 @@ namespace OpenIddict.Abstractions
 
         /// <summary>
         /// Gets or sets the reference identifier associated with the token.
+        /// Note: depending on the application manager used when creating it,
+        /// this property may be hashed or encrypted for security reasons.
         /// </summary>
         public string ReferenceId { get; set; }
 

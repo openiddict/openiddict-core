@@ -14,9 +14,7 @@ namespace OpenIddict.Core
         private readonly IServiceProvider _provider;
 
         public OpenIddictTokenStoreResolver([NotNull] IServiceProvider provider)
-        {
-            _provider = provider;
-        }
+            => _provider = provider;
 
         /// <summary>
         /// Returns a token store compatible with the specified token type or throws an

@@ -97,10 +97,6 @@ namespace OpenIddict.Server.Internal
                 return;
             }
 
-            // Store the application entity as a request property to make it accessible
-            // from the other provider methods without having to call the store twice.
-            context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
-
             // Reject the request if the application is not allowed to use the revocation endpoint.
             if (!options.IgnoreEndpointPermissions &&
                 !await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Revocation))
@@ -206,11 +202,8 @@ namespace OpenIddict.Server.Internal
             var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
             Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
-            // Retrieve the token from the request properties. If it's already marked as revoked, directly return a 200 response.
-            var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
-            Debug.Assert(token != null, "The token shouldn't be null.");
-
-            if (await _tokenManager.IsRevokedAsync(token))
+            var token = await _tokenManager.FindByIdAsync(identifier);
+            if (token == null || await _tokenManager.IsRevokedAsync(token))
             {
                 _logger.LogInformation("The token '{Identifier}' was not revoked because " +
                                        "it was already marked as invalid.", identifier);

@@ -318,7 +318,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token type associated with the specified token.
         /// </returns>
-        ValueTask<string> GetTokenTypeAsync([NotNull] object token, CancellationToken cancellationToken = default);
+        ValueTask<string> GetTypeAsync([NotNull] object token, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines whether a given token has already been redemeed.
@@ -381,17 +381,6 @@ namespace OpenIddict.Abstractions
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
         Task<ImmutableArray<TResult>> ListAsync<TState, TResult>([NotNull] Func<IQueryable<object>, TState, IQueryable<TResult>> query, [CanBeNull] TState state, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Obfuscates the specified reference identifier so it can be safely stored in a database.
-        /// By default, this method returns a simple hashed representation computed using SHA256.
-        /// </summary>
-        /// <param name="identifier">The client identifier.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task<string> ObfuscateReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Populates the specified descriptor using the properties exposed by the token.

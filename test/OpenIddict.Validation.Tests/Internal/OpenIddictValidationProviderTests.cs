@@ -94,6 +94,76 @@ namespace OpenIddict.Validation.Internal.Tests
         }
 
         [Fact]
+        public async Task DecryptToken_ReturnsFailedResultForMissingTokenType()
+        {
+            // Arrange
+            var token = new OpenIddictToken();
+
+            var manager = CreateTokenManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>(result: null));
+            });
+
+            var server = CreateResourceServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+            });
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-reference-token-id");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task DecryptToken_ReturnsFailedResultForIncompatibleTokenType()
+        {
+            // Arrange
+            var token = new OpenIddictToken();
+
+            var manager = CreateTokenManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>(OpenIddictConstants.TokenTypes.RefreshToken));
+            });
+
+            var server = CreateResourceServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+            });
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-reference-token-id");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
         public async Task DecryptToken_ReturnsFailedResultForNonReferenceToken()
         {
             // Arrange
@@ -103,6 +173,9 @@ namespace OpenIddict.Validation.Internal.Tests
             {
                 instance.Setup(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>(OpenIddictConstants.TokenTypes.AccessToken));
 
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .Returns(new ValueTask<string>(result: null));
@@ -129,50 +202,6 @@ namespace OpenIddict.Validation.Internal.Tests
         }
 
         [Fact]
-        public async Task DecryptToken_ReturnsFailedResultForReferenceTokenWithInvalidStatus()
-        {
-            // Arrange
-            var token = new OpenIddictToken();
-
-            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
-            format.Setup(mock => mock.Unprotect("valid-reference-token-payload"))
-                .Returns(value: null);
-
-            var manager = CreateTokenManager(instance =>
-            {
-                instance.Setup(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(token);
-
-                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<string>("valid-reference-token-payload"));
-
-                instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-            });
-
-            var server = CreateResourceServer(builder =>
-            {
-                builder.Services.AddSingleton(manager);
-            });
-
-            var client = server.CreateClient();
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "/");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-reference-token-id");
-
-            // Act
-            var response = await client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-
-            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()), Times.Once());
-            format.Verify(mock => mock.Unprotect("valid-reference-token-payload"), Times.Never());
-        }
-
-        [Fact]
         public async Task DecryptToken_ReturnsFailedResultForInvalidReferenceTokenPayload()
         {
             // Arrange
@@ -187,11 +216,11 @@ namespace OpenIddict.Validation.Internal.Tests
                 instance.Setup(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
+                instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>(OpenIddictConstants.TokenTypes.AccessToken));
+
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .Returns(new ValueTask<string>("invalid-reference-token-payload"));
-
-                instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
             });
 
             var server = CreateResourceServer(builder =>
@@ -213,12 +242,11 @@ namespace OpenIddict.Validation.Internal.Tests
 
             Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()), Times.Once());
             format.Verify(mock => mock.Unprotect("invalid-reference-token-payload"), Times.Once());
         }
 
         [Fact]
-        public async Task DecryptToken_ReturnsValidResultForValidReferenceToken()
+        public async Task ValidateToken_ReturnsFailedResultForInvalidReferenceToken()
         {
             // Arrange
             var token = new OpenIddictToken();
@@ -240,17 +268,97 @@ namespace OpenIddict.Validation.Internal.Tests
                 instance.Setup(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
 
+                instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>(OpenIddictConstants.TokenTypes.AccessToken));
+
                 instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
                     .Returns(new ValueTask<string>("valid-reference-token-payload"));
-
-                instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
 
                 instance.Setup(mock => mock.GetCreationDateAsync(token, It.IsAny<CancellationToken>()))
                     .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2018, 01, 01, 00, 00, 00, TimeSpan.Zero)));
 
                 instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
                     .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2918, 01, 01, 00, 00, 00, TimeSpan.Zero)));
+
+                instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>("4392E01A-1BC4-4776-8450-EC267C2B708A"));
+
+                instance.Setup(mock => mock.FindByIdAsync("4392E01A-1BC4-4776-8450-EC267C2B708A", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var server = CreateResourceServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+                builder.Configure(options => options.AccessTokenFormat = format.Object);
+            });
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/ticket");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-reference-token-id");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetCreationDateAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+            format.Verify(mock => mock.Unprotect("valid-reference-token-payload"), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateToken_ReturnsValidResultForValidReferenceToken()
+        {
+            // Arrange
+            var token = new OpenIddictToken();
+
+            var format = new Mock<ISecureDataFormat<AuthenticationTicket>>();
+            format.Setup(mock => mock.Unprotect("valid-reference-token-payload"))
+                .Returns(delegate
+                {
+                    var identity = new ClaimsIdentity(OpenIddictValidationDefaults.AuthenticationScheme);
+                    identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
+
+                    return new AuthenticationTicket(
+                        new ClaimsPrincipal(identity),
+                        OpenIddictValidationDefaults.AuthenticationScheme);
+                });
+
+            var manager = CreateTokenManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByReferenceIdAsync("valid-reference-token-id", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>(OpenIddictConstants.TokenTypes.AccessToken));
+
+                instance.Setup(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>("valid-reference-token-payload"));
+
+                instance.Setup(mock => mock.GetCreationDateAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2018, 01, 01, 00, 00, 00, TimeSpan.Zero)));
+
+                instance.Setup(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<DateTimeOffset?>(new DateTimeOffset(2918, 01, 01, 00, 00, 00, TimeSpan.Zero)));
+
+                instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>("4392E01A-1BC4-4776-8450-EC267C2B708A"));
+
+                instance.Setup(mock => mock.FindByIdAsync("4392E01A-1BC4-4776-8450-EC267C2B708A", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.IsValidAsync(token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
             });
 
             var server = CreateResourceServer(builder =>
@@ -289,6 +397,7 @@ namespace OpenIddict.Validation.Internal.Tests
             Mock.Get(manager).Verify(mock => mock.GetPayloadAsync(token, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetCreationDateAsync(token, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()), Times.Once());
             format.Verify(mock => mock.Unprotect("valid-reference-token-payload"), Times.Once());
         }
 
@@ -596,9 +705,11 @@ namespace OpenIddict.Validation.Internal.Tests
             Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> configuration = null)
         {
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
+                Mock.Of<IOpenIddictAuthorizationCache<OpenIddictAuthorization>>(),
                 Mock.Of<IOpenIddictAuthorizationStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(mock =>
+                    mock.CurrentValue == new OpenIddictCoreOptions()));
 
             configuration?.Invoke(manager);
 
@@ -609,9 +720,11 @@ namespace OpenIddict.Validation.Internal.Tests
             Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> configuration = null)
         {
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
+                Mock.Of<IOpenIddictTokenCache<OpenIddictToken>>(),
                 Mock.Of<IOpenIddictTokenStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictTokenManager<OpenIddictToken>>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(mock =>
+                    mock.CurrentValue == new OpenIddictCoreOptions()));
 
             configuration?.Invoke(manager);
 

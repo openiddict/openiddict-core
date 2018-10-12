@@ -26,14 +26,21 @@ namespace OpenIddict.Core
     public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthorizationManager where TAuthorization : class
     {
         public OpenIddictAuthorizationManager(
+            [NotNull] IOpenIddictAuthorizationCache<TAuthorization> cache,
             [NotNull] IOpenIddictAuthorizationStoreResolver resolver,
             [NotNull] ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
             [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
         {
+            Cache = cache;
             Store = resolver.Get<TAuthorization>();
             Logger = logger;
             Options = options;
         }
+
+        /// <summary>
+        /// Gets the cache associated with the current manager.
+        /// </summary>
+        protected IOpenIddictAuthorizationCache<TAuthorization> Cache { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -217,14 +224,19 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return Store.DeleteAsync(authorization, cancellationToken);
+            if (!Options.CurrentValue.DisableEntityCaching)
+            {
+                await Cache.RemoveAsync(authorization, cancellationToken);
+            }
+
+            await Store.DeleteAsync(authorization, cancellationToken);
         }
 
         /// <summary>
@@ -251,14 +263,22 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
             }
 
+            var authorizations = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindAsync(subject, client, cancellationToken) :
+                await Cache.FindAsync(subject, client, cancellationToken);
+
+            if (authorizations.IsEmpty)
+            {
+                return ImmutableArray.Create<TAuthorization>();
+            }
+
             // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            var authorizations = await Store.FindAsync(subject, client, cancellationToken);
-            if (authorizations.IsEmpty)
+            if (Options.CurrentValue.DisableAdditionalFiltering)
             {
-                return ImmutableArray.Create<TAuthorization>();
+                return authorizations;
             }
 
             var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
@@ -306,15 +326,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var authorizations = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindAsync(subject, client, status, cancellationToken) :
+                await Cache.FindAsync(subject, client, status, cancellationToken);
 
-            var authorizations = await Store.FindAsync(subject, client, status, cancellationToken);
             if (authorizations.IsEmpty)
             {
                 return ImmutableArray.Create<TAuthorization>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return authorizations;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
 
@@ -367,15 +395,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var authorizations = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindAsync(subject, client, status, type, cancellationToken) :
+                await Cache.FindAsync(subject, client, status, type, cancellationToken);
 
-            var authorizations = await Store.FindAsync(subject, client, status, type, cancellationToken);
             if (authorizations.IsEmpty)
             {
                 return ImmutableArray.Create<TAuthorization>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return authorizations;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
 
@@ -430,15 +466,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var authorizations = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindAsync(subject, client, status, type, scopes, cancellationToken) :
+                await Cache.FindAsync(subject, client, status, type, scopes, cancellationToken);
 
-            var authorizations = await Store.FindAsync(subject, client, status, type, scopes, cancellationToken);
             if (authorizations.IsEmpty)
             {
                 return ImmutableArray.Create<TAuthorization>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return authorizations;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
 
@@ -465,7 +509,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorizations corresponding to the specified application.
         /// </returns>
-        public virtual Task<ImmutableArray<TAuthorization>> FindByApplicationIdAsync(
+        public virtual async Task<ImmutableArray<TAuthorization>> FindByApplicationIdAsync(
             [NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
@@ -473,7 +517,37 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Store.FindByApplicationIdAsync(identifier, cancellationToken);
+            var authorizations = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByApplicationIdAsync(identifier, cancellationToken) :
+                await Cache.FindByApplicationIdAsync(identifier, cancellationToken);
+
+            if (authorizations.IsEmpty)
+            {
+                return ImmutableArray.Create<TAuthorization>();
+            }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return authorizations;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
+
+            foreach (var authorization in authorizations)
+            {
+                if (string.Equals(await Store.GetApplicationIdAsync(authorization, cancellationToken), identifier, StringComparison.Ordinal))
+                {
+                    builder.Add(authorization);
+                }
+            }
+
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
@@ -485,14 +559,32 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        public virtual Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
+        public virtual async Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Store.FindByIdAsync(identifier, cancellationToken);
+            var authorization = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByIdAsync(identifier, cancellationToken) :
+                await Cache.FindByIdAsync(identifier, cancellationToken);
+
+            if (authorization == null)
+            {
+                return null;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            if (!Options.CurrentValue.DisableAdditionalFiltering &&
+                !string.Equals(await Store.GetIdAsync(authorization, cancellationToken), identifier, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return authorization;
         }
 
         /// <summary>
@@ -512,15 +604,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var authorizations = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindBySubjectAsync(subject, cancellationToken) :
+                await Cache.FindBySubjectAsync(subject, cancellationToken);
 
-            var authorizations = await Store.FindBySubjectAsync(subject, cancellationToken);
             if (authorizations.IsEmpty)
             {
                 return ImmutableArray.Create<TAuthorization>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return authorizations;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
 
@@ -570,6 +670,11 @@ namespace OpenIddict.Core
         public virtual Task<TResult> GetAsync<TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return GetAsync((authorizations, state) => state(authorizations), query, cancellationToken);
         }
 
@@ -625,7 +730,8 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scopes associated with the specified authorization.
         /// </returns>
-        public virtual ValueTask<ImmutableArray<string>> GetScopesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -644,7 +750,8 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the status associated with the specified authorization.
         /// </returns>
-        public virtual ValueTask<string> GetStatusAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetStatusAsync(
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -663,7 +770,8 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the subject associated with the specified authorization.
         /// </returns>
-        public virtual ValueTask<string> GetSubjectAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetSubjectAsync(
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -682,7 +790,8 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the type associated with the specified authorization.
         /// </returns>
-        public virtual ValueTask<string> GetTypeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetTypeAsync(
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -740,7 +849,8 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization is permanent, <c>false</c> otherwise.</returns>
-        public async Task<bool> IsPermanentAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public async Task<bool> IsPermanentAsync(
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -762,7 +872,8 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization has been revoked, <c>false</c> otherwise.</returns>
-        public virtual async Task<bool> IsRevokedAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> IsRevokedAsync(
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -784,7 +895,8 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization is valid, <c>false</c> otherwise.</returns>
-        public virtual async Task<bool> IsValidAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> IsValidAsync(
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -829,6 +941,11 @@ namespace OpenIddict.Core
         public virtual Task<ImmutableArray<TResult>> ListAsync<TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return ListAsync((authorizations, state) => state(authorizations), query, cancellationToken);
         }
 
@@ -996,6 +1113,11 @@ namespace OpenIddict.Core
                 }
 
                 throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+            }
+
+            if (!Options.CurrentValue.DisableEntityCaching)
+            {
+                await Cache.RemoveAsync(authorization, cancellationToken);
             }
 
             await Store.UpdateAsync(authorization, cancellationToken);

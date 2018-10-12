@@ -297,7 +297,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token type associated with the specified token.
         /// </returns>
-        ValueTask<string> GetTokenTypeAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<string> GetTypeAsync([NotNull] TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Instantiates a new token.

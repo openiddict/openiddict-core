@@ -301,10 +301,6 @@ namespace OpenIddict.Server.Internal
                 return;
             }
 
-            // Store the application entity as a request property to make it accessible
-            // from the other provider methods without having to call the store twice.
-            context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
-
             // To prevent downgrade attacks, ensure that authorization requests returning an access token directly
             // from the authorization endpoint are rejected if the client_id corresponds to a confidential application.
             // Note: when using the authorization code grant, ValidateTokenRequest is responsible of rejecting

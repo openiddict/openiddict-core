@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -31,19 +30,12 @@ namespace OpenIddict.MongoDb
         where TAuthorization : OpenIddictAuthorization
     {
         public OpenIddictAuthorizationStore(
-            [NotNull] IMemoryCache cache,
             [NotNull] IOpenIddictMongoDbContext context,
             [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options)
         {
-            Cache = cache;
             Context = context;
             Options = options;
         }
-
-        /// <summary>
-        /// Gets the memory cached associated with the current store.
-        /// </summary>
-        protected IMemoryCache Cache { get; }
 
         /// <summary>
         /// Gets the database context associated with the current store.
@@ -81,7 +73,8 @@ namespace OpenIddict.MongoDb
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations that match the specified query.
         /// </returns>
-        public virtual async Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual async Task<long> CountAsync<TResult>(
+            [NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -357,7 +350,8 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-            return await collection.Find(authorization => authorization.Id == ObjectId.Parse(identifier)).FirstOrDefaultAsync(cancellationToken);
+            return await collection.Find(authorization => authorization.Id == ObjectId.Parse(identifier))
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -380,7 +374,8 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-            return ImmutableArray.CreateRange(await collection.Find(authorization => authorization.Subject == subject).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await collection.Find(authorization =>
+                authorization.Subject == subject).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -481,7 +476,8 @@ namespace OpenIddict.MongoDb
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scopes associated with the specified authorization.
         /// </returns>
-        public virtual ValueTask<ImmutableArray<string>> GetScopesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableArray<string>> GetScopesAsync(
+            [NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {

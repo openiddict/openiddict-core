@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -31,19 +30,12 @@ namespace OpenIddict.MongoDb
         where TToken : OpenIddictToken
     {
         public OpenIddictTokenStore(
-            [NotNull] IMemoryCache cache,
             [NotNull] IOpenIddictMongoDbContext context,
             [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options)
         {
-            Cache = cache;
             Context = context;
             Options = options;
         }
-
-        /// <summary>
-        /// Gets the memory cached associated with the current store.
-        /// </summary>
-        protected IMemoryCache Cache { get; }
 
         /// <summary>
         /// Gets the database context associated with the current store.
@@ -81,7 +73,8 @@ namespace OpenIddict.MongoDb
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of tokens that match the specified query.
         /// </returns>
-        public virtual async Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual async Task<long> CountAsync<TResult>(
+            [NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -270,7 +263,8 @@ namespace OpenIddict.MongoDb
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified application.
         /// </returns>
-        public virtual async Task<ImmutableArray<TToken>> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async Task<ImmutableArray<TToken>> FindByApplicationIdAsync(
+            [NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -280,7 +274,8 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
 
-            return ImmutableArray.CreateRange(await collection.Find(token => token.ApplicationId == ObjectId.Parse(identifier)).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await collection.Find(token =>
+                token.ApplicationId == ObjectId.Parse(identifier)).ToListAsync(cancellationToken));
         }
 
         /// <summary>
@@ -292,7 +287,8 @@ namespace OpenIddict.MongoDb
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified authorization.
         /// </returns>
-        public virtual async Task<ImmutableArray<TToken>> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async Task<ImmutableArray<TToken>> FindByAuthorizationIdAsync(
+            [NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -605,7 +601,7 @@ namespace OpenIddict.MongoDb
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token type associated with the specified token.
         /// </returns>
-        public virtual ValueTask<string> GetTokenTypeAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetTypeAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {

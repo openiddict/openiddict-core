@@ -7,7 +7,6 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
-using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -55,10 +54,6 @@ namespace OpenIddict.Server.Internal
 
                 return;
             }
-
-            // Store the application entity as a request property to make it accessible
-            // from the other provider methods without having to call the store twice.
-            context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
 
             // Reject the request if the application is not allowed to use the introspection endpoint.
             if (!options.IgnoreEndpointPermissions &&
@@ -171,13 +166,11 @@ namespace OpenIddict.Server.Internal
             // which an entry exists in the database - ensure it is still valid.
             if (options.UseReferenceTokens)
             {
-                // Retrieve the token from the request properties. If it's marked as invalid, return active = false.
-                var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
-                Debug.Assert(token != null, "The token shouldn't be null.");
-
-                if (!await _tokenManager.IsValidAsync(token))
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token == null || !await _tokenManager.IsValidAsync(token))
                 {
-                    _logger.LogInformation("The token '{Identifier}' was declared as inactive because it was revoked.", identifier);
+                    _logger.LogInformation("The token '{Identifier}' was declared as inactive because it was " +
+                                           "not found in the database or was no longer valid.", identifier);
 
                     context.Active = false;
 

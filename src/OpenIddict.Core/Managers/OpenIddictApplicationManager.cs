@@ -26,14 +26,21 @@ namespace OpenIddict.Core
     public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplicationManager where TApplication : class
     {
         public OpenIddictApplicationManager(
+            [NotNull] IOpenIddictApplicationCache<TApplication> cache,
             [NotNull] IOpenIddictApplicationStoreResolver resolver,
             [NotNull] ILogger<OpenIddictApplicationManager<TApplication>> logger,
             [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
         {
+            Cache = cache;
             Store = resolver.Get<TApplication>();
             Logger = logger;
             Options = options;
         }
+
+        /// <summary>
+        /// Gets the cache associated with the current manager.
+        /// </summary>
+        protected IOpenIddictApplicationCache<TApplication> Cache { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -115,7 +122,7 @@ namespace OpenIddict.Core
 
             if (!string.IsNullOrEmpty(await Store.GetClientSecretAsync(application, cancellationToken)))
             {
-                throw new ArgumentException("The client secret hash cannot be directly set on the application entity.");
+                throw new ArgumentException("The client secret hash cannot be set on the application entity.", nameof(application));
             }
 
             // If no client type was specified, assume it's a public application if no secret was provided.
@@ -174,7 +181,7 @@ namespace OpenIddict.Core
             var application = await Store.InstantiateAsync(cancellationToken);
             if (application == null)
             {
-                throw new InvalidOperationException("An error occurred while trying to create a new application");
+                throw new InvalidOperationException("An error occurred while trying to create a new application.");
             }
 
             await PopulateAsync(application, descriptor, cancellationToken);
@@ -201,33 +208,19 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            return Store.DeleteAsync(application, cancellationToken);
-        }
-
-        /// <summary>
-        /// Retrieves an application using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client application corresponding to the identifier.
-        /// </returns>
-        public virtual Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrEmpty(identifier))
+            if (!Options.CurrentValue.DisableEntityCaching)
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                await Cache.RemoveAsync(application, cancellationToken);
             }
 
-            return Store.FindByIdAsync(identifier, cancellationToken);
+            await Store.DeleteAsync(application, cancellationToken);
         }
 
         /// <summary>
@@ -239,20 +232,65 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual async Task<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
+        public virtual async Task<TApplication> FindByClientIdAsync(
+            [NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
+            var application = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByClientIdAsync(identifier, cancellationToken) :
+                await Cache.FindByClientIdAsync(identifier, cancellationToken);
+
+            if (application == null)
+            {
+                return null;
+            }
+
             // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
-
-            var application = await Store.FindByClientIdAsync(identifier, cancellationToken);
-            if (application == null ||
+            if (!Options.CurrentValue.DisableAdditionalFiltering &&
                 !string.Equals(await Store.GetClientIdAsync(application, cancellationToken), identifier, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return application;
+        }
+
+        /// <summary>
+        /// Retrieves an application using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the client application corresponding to the identifier.
+        /// </returns>
+        public virtual async Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            var application = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByIdAsync(identifier, cancellationToken) :
+                await Cache.FindByIdAsync(identifier, cancellationToken);
+
+            if (application == null)
+            {
+                return null;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            if (!Options.CurrentValue.DisableAdditionalFiltering &&
+                !string.Equals(await Store.GetIdAsync(application, cancellationToken), identifier, StringComparison.Ordinal))
             {
                 return null;
             }
@@ -277,15 +315,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var applications = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken) :
+                await Cache.FindByPostLogoutRedirectUriAsync(address, cancellationToken);
 
-            var applications = await Store.FindByPostLogoutRedirectUriAsync(address, cancellationToken);
             if (applications.IsEmpty)
             {
                 return ImmutableArray.Create<TApplication>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return applications;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TApplication>(applications.Length);
 
@@ -323,15 +369,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var applications = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByRedirectUriAsync(address, cancellationToken) :
+                await Cache.FindByRedirectUriAsync(address, cancellationToken);
 
-            var applications = await Store.FindByRedirectUriAsync(address, cancellationToken);
             if (applications.IsEmpty)
             {
                 return ImmutableArray.Create<TApplication>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return applications;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TApplication>(applications.Length);
 
@@ -365,6 +419,11 @@ namespace OpenIddict.Core
         public virtual Task<TResult> GetAsync<TResult>(
             [NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return GetAsync((applications, state) => state(applications), query, cancellationToken);
         }
 
@@ -401,7 +460,8 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client identifier associated with the application.
         /// </returns>
-        public virtual ValueTask<string> GetClientIdAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetClientIdAsync(
+            [NotNull] TApplication application, CancellationToken cancellationToken = default)
         {
             if (application == null)
             {
@@ -440,7 +500,8 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the consent type of the application (by default, "explicit").
         /// </returns>
-        public virtual async ValueTask<string> GetConsentTypeAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual async ValueTask<string> GetConsentTypeAsync(
+            [NotNull] TApplication application, CancellationToken cancellationToken = default)
         {
             if (application == null)
             {
@@ -465,7 +526,8 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the display name associated with the application.
         /// </returns>
-        public virtual ValueTask<string> GetDisplayNameAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetDisplayNameAsync(
+            [NotNull] TApplication application, CancellationToken cancellationToken = default)
         {
             if (application == null)
             {
@@ -673,6 +735,11 @@ namespace OpenIddict.Core
         public virtual Task<ImmutableArray<TResult>> ListAsync<TResult>(
             [NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return ListAsync((applications, state) => state(applications), query, cancellationToken);
         }
 
@@ -832,6 +899,11 @@ namespace OpenIddict.Core
                 throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
+            if (!Options.CurrentValue.DisableEntityCaching)
+            {
+                await Cache.RemoveAsync(application, cancellationToken);
+            }
+
             await Store.UpdateAsync(application, cancellationToken);
         }
 
@@ -894,7 +966,7 @@ namespace OpenIddict.Core
             var comparand = await Store.GetClientSecretAsync(application, cancellationToken);
             await PopulateAsync(application, descriptor, cancellationToken);
 
-            // If the client secret was updated, re-obfuscate it before persisting the changes.
+            // If the client secret was updated, use the overload accepting a secret parameter.
             var secret = await Store.GetClientSecretAsync(application, cancellationToken);
             if (!string.Equals(secret, comparand, StringComparison.Ordinal))
             {

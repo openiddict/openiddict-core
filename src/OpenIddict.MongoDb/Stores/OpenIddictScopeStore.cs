@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -31,19 +30,12 @@ namespace OpenIddict.MongoDb
         where TScope : OpenIddictScope
     {
         public OpenIddictScopeStore(
-            [NotNull] IMemoryCache cache,
             [NotNull] IOpenIddictMongoDbContext context,
             [NotNull] IOptionsMonitor<OpenIddictMongoDbOptions> options)
         {
-            Cache = cache;
             Context = context;
             Options = options;
         }
-
-        /// <summary>
-        /// Gets the memory cached associated with the current store.
-        /// </summary>
-        protected IMemoryCache Cache { get; }
 
         /// <summary>
         /// Gets the database context associated with the current store.
@@ -81,7 +73,8 @@ namespace OpenIddict.MongoDb
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes that match the specified query.
         /// </returns>
-        public virtual async Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual async Task<long> CountAsync<TResult>(
+            [NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -231,7 +224,8 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-            return ImmutableArray.CreateRange(await collection.Find(scope => scope.Resources.Contains(resource)).ToListAsync(cancellationToken));
+            return ImmutableArray.CreateRange(await collection.Find(scope =>
+                scope.Resources.Contains(resource)).ToListAsync(cancellationToken));
         }
 
         /// <summary>

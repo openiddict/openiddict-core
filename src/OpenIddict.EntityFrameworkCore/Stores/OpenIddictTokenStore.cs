@@ -91,7 +91,7 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Gets the memory cached associated with the current store.
+        /// Gets the memory cache associated with the current store.
         /// </summary>
         protected IMemoryCache Cache { get; }
 
@@ -729,7 +729,18 @@ namespace OpenIddict.EntityFrameworkCore
                 return new ValueTask<JObject>(new JObject());
             }
 
-            return new ValueTask<JObject>(JObject.Parse(token.Properties));
+            // Note: parsing the stringified properties is an expensive operation.
+            // To mitigate that, the resulting object is stored in the memory cache.
+            var key = string.Concat("d0509397-1bbf-40e7-97e1-5e6d7bc2536c", "\x1e", token.Properties);
+            var properties = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JObject.Parse(token.Properties);
+            });
+
+            return new ValueTask<JObject>((JObject) properties.DeepClone());
         }
 
         /// <summary>
@@ -800,7 +811,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token type associated with the specified token.
         /// </returns>
-        public virtual ValueTask<string> GetTokenTypeAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<string> GetTypeAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {

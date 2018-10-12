@@ -34,6 +34,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.AddMemoryCache();
 
+            // Since Entity Framework 6.x may be used with databases performing case-insensitive
+            // or culture-sensitive comparisons, ensure the additional filtering logic is enforced
+            // in case case-sensitive stores were registered before this extension was called.
+            builder.Configure(options => options.DisableAdditionalFiltering = false);
+
             builder.SetDefaultApplicationEntity<OpenIddictApplication>()
                    .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
                    .SetDefaultScopeEntity<OpenIddictScope>()

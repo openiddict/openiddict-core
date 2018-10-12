@@ -91,7 +91,7 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Gets the memory cached associated with the current store.
+        /// Gets the memory cache associated with the current store.
         /// </summary>
         protected IMemoryCache Cache { get; }
 
@@ -651,7 +651,18 @@ namespace OpenIddict.EntityFrameworkCore
                 return new ValueTask<JObject>(new JObject());
             }
 
-            return new ValueTask<JObject>(JObject.Parse(authorization.Properties));
+            // Note: parsing the stringified properties is an expensive operation.
+            // To mitigate that, the resulting object is stored in the memory cache.
+            var key = string.Concat("68056e1a-dbcf-412b-9a6a-d791c7dbe726", "\x1e", authorization.Properties);
+            var properties = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JObject.Parse(authorization.Properties);
+            });
+
+            return new ValueTask<JObject>((JObject) properties.DeepClone());
         }
 
         /// <summary>
@@ -675,7 +686,20 @@ namespace OpenIddict.EntityFrameworkCore
                 return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
             }
 
-            return new ValueTask<ImmutableArray<string>>(JArray.Parse(authorization.Scopes).Select(element => (string) element).ToImmutableArray());
+            // Note: parsing the stringified scopes is an expensive operation.
+            // To mitigate that, the resulting array is stored in the memory cache.
+            var key = string.Concat("2ba4ab0f-e2ec-4d48-b3bd-28e2bb660c75", "\x1e", authorization.Scopes);
+            var scopes = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JArray.Parse(authorization.Scopes)
+                    .Select(element => (string) element)
+                    .ToImmutableArray();
+            });
+
+            return new ValueTask<ImmutableArray<string>>(scopes);
         }
 
         /// <summary>

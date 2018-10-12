@@ -473,7 +473,7 @@ namespace OpenIddict.Server.Internal.Tests
             });
 
             // Assert
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.RedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -548,7 +548,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified authorization code is no longer valid.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.RedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -614,7 +614,7 @@ namespace OpenIddict.Server.Internal.Tests
             // Assert
             Assert.NotNull(response.RefreshToken);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.RedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -684,7 +684,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.Equal(OpenIddictConstants.Errors.InvalidGrant, response.Error);
             Assert.Equal("The specified refresh token is no longer valid.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.RedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -742,7 +742,7 @@ namespace OpenIddict.Server.Internal.Tests
             // Assert
             Assert.Null(response.RefreshToken);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.RedeemAsync(token, It.IsAny<CancellationToken>()), Times.Never());
         }
 
@@ -834,7 +834,7 @@ namespace OpenIddict.Server.Internal.Tests
             // Assert
             Assert.NotNull(response.RefreshToken);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[1], It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[2], It.IsAny<CancellationToken>()), Times.Once());
@@ -922,7 +922,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.NotNull(response.AccessToken);
             Assert.Null(response.RefreshToken);
 
-            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[0], It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[1], It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(mock => mock.RevokeAsync(tokens[2], It.IsAny<CancellationToken>()), Times.Never());
@@ -1707,6 +1707,7 @@ namespace OpenIddict.Server.Internal.Tests
             Action<Mock<OpenIddictApplicationManager<OpenIddictApplication>>> configuration = null)
         {
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
+                Mock.Of<IOpenIddictApplicationCache<OpenIddictApplication>>(),
                 Mock.Of<IOpenIddictApplicationStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictApplicationManager<OpenIddictApplication>>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
@@ -1720,6 +1721,7 @@ namespace OpenIddict.Server.Internal.Tests
             Action<Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>> configuration = null)
         {
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
+                Mock.Of<IOpenIddictAuthorizationCache<OpenIddictAuthorization>>(),
                 Mock.Of<IOpenIddictAuthorizationStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
@@ -1733,6 +1735,7 @@ namespace OpenIddict.Server.Internal.Tests
             Action<Mock<OpenIddictScopeManager<OpenIddictScope>>> configuration = null)
         {
             var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
+                Mock.Of<IOpenIddictScopeCache<OpenIddictScope>>(),
                 Mock.Of<IOpenIddictScopeStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictScopeManager<OpenIddictScope>>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
@@ -1746,6 +1749,7 @@ namespace OpenIddict.Server.Internal.Tests
             Action<Mock<OpenIddictTokenManager<OpenIddictToken>>> configuration = null)
         {
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
+                Mock.Of<IOpenIddictTokenCache<OpenIddictToken>>(),
                 Mock.Of<IOpenIddictTokenStoreResolver>(),
                 Mock.Of<ILogger<OpenIddictTokenManager<OpenIddictToken>>>(),
                 Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());

@@ -169,10 +169,6 @@ namespace OpenIddict.Server.Internal
                 return;
             }
 
-            // Store the application entity as a request property to make it accessible
-            // from the other provider methods without having to call the store twice.
-            context.Request.SetProperty($"{OpenIddictConstants.Properties.Application}:{context.ClientId}", application);
-
             // Reject the request if the application is not allowed to use the token endpoint.
             if (!options.IgnoreEndpointPermissions &&
                 !await _applicationManager.HasPermissionAsync(application, OpenIddictConstants.Permissions.Endpoints.Token))
@@ -348,16 +344,16 @@ namespace OpenIddict.Server.Internal
                 var identifier = context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
                 Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
 
-                // Retrieve the authorization code/refresh token from the request properties.
-                var token = context.Request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
-                Debug.Assert(token != null, "The token shouldn't be null.");
-
                 // If the authorization code/refresh token is already marked as redeemed, this may indicate that
                 // it was compromised. In this case, revoke the authorization and all the associated tokens. 
                 // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
-                if (await _tokenManager.IsRedeemedAsync(token))
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token == null || await _tokenManager.IsRedeemedAsync(token))
                 {
-                    await TryRevokeTokenAsync(token);
+                    if (token != null)
+                    {
+                        await TryRevokeTokenAsync(token);
+                    }
 
                     // Try to revoke the authorization and the associated tokens.
                     // If the operation fails, the helpers will automatically log

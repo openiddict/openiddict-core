@@ -412,7 +412,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.False((bool) response[OpenIddictConstants.Claims.Active]);
 
 
-            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
 
         [Fact]
@@ -464,6 +464,9 @@ namespace OpenIddict.Server.Internal.Tests
 
                     instance.Setup(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(token);
+
+                    instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>(OpenIdConnectConstants.TokenUsages.AccessToken));
 
                     instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
@@ -555,6 +558,9 @@ namespace OpenIddict.Server.Internal.Tests
 
                     instance.Setup(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(token);
+
+                    instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>(OpenIdConnectConstants.TokenUsages.AccessToken));
 
                     instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
@@ -651,6 +657,9 @@ namespace OpenIddict.Server.Internal.Tests
                     instance.Setup(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(token);
 
+                    instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask<string>(OpenIdConnectConstants.TokenUsages.AccessToken));
+
                     instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                         .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));
 
@@ -719,6 +728,9 @@ namespace OpenIddict.Server.Internal.Tests
             {
                 instance.Setup(mock => mock.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(token);
+
+                instance.Setup(mock => mock.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>(OpenIdConnectConstants.TokenUsages.AccessToken));
 
                 instance.Setup(mock => mock.GetIdAsync(token, It.IsAny<CancellationToken>()))
                     .Returns(new ValueTask<string>("3E228451-1555-46F7-A471-951EFBA23A56"));

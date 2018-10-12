@@ -392,6 +392,40 @@ namespace OpenIddict.Core.Tests
         }
 
         [Fact]
+        public void DisableAdditionalFiltering_FilteringIsCorrectlyDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableAdditionalFiltering();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
+            Assert.True(options.DisableAdditionalFiltering);
+        }
+
+        [Fact]
+        public void DisableEntityCaching_CachingIsCorrectlyDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.DisableEntityCaching();
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
+            Assert.True(options.DisableEntityCaching);
+        }
+
+        [Fact]
         public void SetDefaultApplicationEntity_ThrowsAnExceptionForNullType()
         {
             // Arrange
@@ -591,6 +625,40 @@ namespace OpenIddict.Core.Tests
             Assert.Equal(typeof(CustomToken), options.DefaultTokenType);
         }
 
+        [Theory]
+        [InlineData(-10)]
+        [InlineData(0)]
+        [InlineData(9)]
+        public void SetEntityCacheLimit_ThrowsAnExceptionForInvalidLimit(int limit)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => builder.SetEntityCacheLimit(limit));
+
+            Assert.Equal("limit", exception.ParamName);
+            Assert.StartsWith("The cache size cannot be less than 10.", exception.Message);
+        }
+
+        [Fact]
+        public void SetEntityCacheLimit_LimitIsCorrectlyDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetEntityCacheLimit(42);
+
+            // Assert
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
+
+            Assert.Equal(42, options.EntityCacheLimit);
+        }
+
         private static OpenIddictCoreBuilder CreateBuilder(IServiceCollection services)
             => services.AddOpenIddict().AddCore();
 
@@ -610,10 +678,11 @@ namespace OpenIddict.Core.Tests
         private class ClosedGenericApplicationManager : OpenIddictApplicationManager<CustomApplication>
         {
             public ClosedGenericApplicationManager(
+                IOpenIddictApplicationCache<CustomApplication> cache,
                 IOpenIddictApplicationStoreResolver resolver,
                 ILogger<OpenIddictApplicationManager<CustomApplication>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(resolver, logger, options)
+                : base(cache, resolver, logger, options)
             {
             }
         }
@@ -622,10 +691,11 @@ namespace OpenIddict.Core.Tests
             where TApplication : class
         {
             public OpenGenericApplicationManager(
+                IOpenIddictApplicationCache<TApplication> cache,
                 IOpenIddictApplicationStoreResolver resolver,
                 ILogger<OpenIddictApplicationManager<TApplication>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(resolver, logger, options)
+                : base(cache, resolver, logger, options)
             {
             }
         }
@@ -633,10 +703,11 @@ namespace OpenIddict.Core.Tests
         private class ClosedGenericAuthorizationManager : OpenIddictAuthorizationManager<CustomAuthorization>
         {
             public ClosedGenericAuthorizationManager(
+                IOpenIddictAuthorizationCache<CustomAuthorization> cache,
                 IOpenIddictAuthorizationStoreResolver resolver,
                 ILogger<OpenIddictAuthorizationManager<CustomAuthorization>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(resolver, logger, options)
+                : base(cache, resolver, logger, options)
             {
             }
         }
@@ -645,10 +716,11 @@ namespace OpenIddict.Core.Tests
             where TAuthorization : class
         {
             public OpenGenericAuthorizationManager(
+                IOpenIddictAuthorizationCache<TAuthorization> cache,
                 IOpenIddictAuthorizationStoreResolver resolver,
                 ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(resolver, logger, options)
+                : base(cache, resolver, logger, options)
             {
             }
         }
@@ -656,10 +728,11 @@ namespace OpenIddict.Core.Tests
         private class ClosedGenericScopeManager : OpenIddictScopeManager<CustomScope>
         {
             public ClosedGenericScopeManager(
+                IOpenIddictScopeCache<CustomScope> cache,
                 IOpenIddictScopeStoreResolver resolver,
                 ILogger<OpenIddictScopeManager<CustomScope>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(resolver, logger, options)
+                : base(cache, resolver, logger, options)
             {
             }
         }
@@ -668,10 +741,11 @@ namespace OpenIddict.Core.Tests
             where TScope : class
         {
             public OpenGenericScopeManager(
+                IOpenIddictScopeCache<TScope> cache,
                 IOpenIddictScopeStoreResolver resolver,
                 ILogger<OpenIddictScopeManager<TScope>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(resolver, logger, options)
+                : base(cache, resolver, logger, options)
             {
             }
         }
@@ -679,10 +753,11 @@ namespace OpenIddict.Core.Tests
         private class ClosedGenericTokenManager : OpenIddictTokenManager<CustomToken>
         {
             public ClosedGenericTokenManager(
+                IOpenIddictTokenCache<CustomToken> cache,
                 IOpenIddictTokenStoreResolver resolver,
                 ILogger<OpenIddictTokenManager<CustomToken>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(resolver, logger, options)
+                : base(cache, resolver, logger, options)
             {
             }
         }
@@ -691,10 +766,11 @@ namespace OpenIddict.Core.Tests
             where TToken : class
         {
             public OpenGenericTokenManager(
+                IOpenIddictTokenCache<TToken> cache,
                 IOpenIddictTokenStoreResolver resolver,
                 ILogger<OpenIddictTokenManager<TToken>> logger,
                 IOptionsMonitor<OpenIddictCoreOptions> options)
-                : base(resolver, logger, options)
+                : base(cache, resolver, logger, options)
             {
             }
         }

@@ -26,14 +26,21 @@ namespace OpenIddict.Core
     public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TToken : class
     {
         public OpenIddictTokenManager(
+            [NotNull] IOpenIddictTokenCache<TToken> cache,
             [NotNull] IOpenIddictTokenStoreResolver resolver,
             [NotNull] ILogger<OpenIddictTokenManager<TToken>> logger,
             [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
         {
+            Cache = cache;
             Store = resolver.Get<TToken>();
             Logger = logger;
             Options = options;
         }
+
+        /// <summary>
+        /// Gets the cache associated with the current manager.
+        /// </summary>
+        protected IOpenIddictTokenCache<TToken> Cache { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -103,6 +110,14 @@ namespace OpenIddict.Core
                 await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Valid, cancellationToken);
             }
 
+            // If a reference identifier was set, obfuscate it.
+            var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
+            if (!string.IsNullOrEmpty(identifier))
+            {
+                identifier = await ObfuscateReferenceIdAsync(identifier, cancellationToken);
+                await Store.SetReferenceIdAsync(token, identifier, cancellationToken);
+            }
+
             var results = await ValidateAsync(token, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
@@ -157,14 +172,19 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            return Store.DeleteAsync(token, cancellationToken);
+            if (!Options.CurrentValue.DisableEntityCaching)
+            {
+                await Cache.RemoveAsync(token, cancellationToken);
+            }
+
+            await Store.DeleteAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -212,15 +232,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var tokens = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindAsync(subject, client, cancellationToken) :
+                await Cache.FindAsync(subject, client, cancellationToken);
 
-            var tokens = await Store.FindAsync(subject, client, cancellationToken);
             if (tokens.IsEmpty)
             {
                 return ImmutableArray.Create<TToken>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return tokens;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TToken>(tokens.Length);
 
@@ -267,15 +295,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var tokens = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindAsync(subject, client, status, cancellationToken) :
+                await Cache.FindAsync(subject, client, status, cancellationToken);
 
-            var tokens = await Store.FindAsync(subject, client, status, cancellationToken);
             if (tokens.IsEmpty)
             {
                 return ImmutableArray.Create<TToken>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return tokens;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TToken>(tokens.Length);
 
@@ -328,15 +364,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var tokens = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindAsync(subject, client, status, type, cancellationToken) :
+                await Cache.FindAsync(subject, client, status, type, cancellationToken);
 
-            var tokens = await Store.FindAsync(subject, client, status, type, cancellationToken);
             if (tokens.IsEmpty)
             {
                 return ImmutableArray.Create<TToken>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return tokens;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TToken>(tokens.Length);
 
@@ -362,7 +406,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified application.
         /// </returns>
-        public virtual Task<ImmutableArray<TToken>> FindByApplicationIdAsync(
+        public virtual async Task<ImmutableArray<TToken>> FindByApplicationIdAsync(
             [NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
@@ -370,7 +414,37 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Store.FindByApplicationIdAsync(identifier, cancellationToken);
+            var tokens = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByApplicationIdAsync(identifier, cancellationToken) :
+                await Cache.FindByApplicationIdAsync(identifier, cancellationToken);
+
+            if (tokens.IsEmpty)
+            {
+                return ImmutableArray.Create<TToken>();
+            }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return tokens;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var builder = ImmutableArray.CreateBuilder<TToken>(tokens.Length);
+
+            foreach (var token in tokens)
+            {
+                if (string.Equals(await Store.GetApplicationIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
+                {
+                    builder.Add(token);
+                }
+            }
+
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
         }
 
         /// <summary>
@@ -382,7 +456,7 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified authorization.
         /// </returns>
-        public virtual Task<ImmutableArray<TToken>> FindByAuthorizationIdAsync(
+        public virtual async Task<ImmutableArray<TToken>> FindByAuthorizationIdAsync(
             [NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
@@ -390,7 +464,74 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Store.FindByAuthorizationIdAsync(identifier, cancellationToken);
+            var tokens = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByAuthorizationIdAsync(identifier, cancellationToken) :
+                await Cache.FindByAuthorizationIdAsync(identifier, cancellationToken);
+
+            if (tokens.IsEmpty)
+            {
+                return ImmutableArray.Create<TToken>();
+            }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return tokens;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            var builder = ImmutableArray.CreateBuilder<TToken>(tokens.Length);
+
+            foreach (var token in tokens)
+            {
+                if (string.Equals(await Store.GetAuthorizationIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
+                {
+                    builder.Add(token);
+                }
+            }
+
+            return builder.Count == builder.Capacity ?
+                builder.MoveToImmutable() :
+                builder.ToImmutable();
+        }
+
+        /// <summary>
+        /// Retrieves a token using its unique identifier.
+        /// </summary>
+        /// <param name="identifier">The unique identifier associated with the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns the token corresponding to the unique identifier.
+        /// </returns>
+        public virtual async Task<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            var token = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByIdAsync(identifier, cancellationToken) :
+                await Cache.FindByIdAsync(identifier, cancellationToken);
+
+            if (token == null)
+            {
+                return null;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            if (!Options.CurrentValue.DisableAdditionalFiltering &&
+                !string.Equals(await Store.GetIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return token;
         }
 
         /// <summary>
@@ -410,39 +551,28 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
+            identifier = await ObfuscateReferenceIdAsync(identifier, cancellationToken);
+
+            var token = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByReferenceIdAsync(identifier, cancellationToken) :
+                await Cache.FindByReferenceIdAsync(identifier, cancellationToken);
+
+            if (token == null)
+            {
+                return null;
+            }
+
             // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            identifier = await ObfuscateReferenceIdAsync(identifier, cancellationToken);
-
-            var token = await Store.FindByReferenceIdAsync(identifier, cancellationToken);
-            if (token == null ||
+            if (!Options.CurrentValue.DisableAdditionalFiltering &&
                 !string.Equals(await Store.GetReferenceIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
             {
                 return null;
             }
 
             return token;
-        }
-
-        /// <summary>
-        /// Retrieves a token using its unique identifier.
-        /// </summary>
-        /// <param name="identifier">The unique identifier associated with the token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the token corresponding to the unique identifier.
-        /// </returns>
-        public virtual Task<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
-            }
-
-            return Store.FindByIdAsync(identifier, cancellationToken);
         }
 
         /// <summary>
@@ -462,15 +592,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var tokens = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindBySubjectAsync(subject, cancellationToken) :
+                await Cache.FindBySubjectAsync(subject, cancellationToken);
 
-            var tokens = await Store.FindBySubjectAsync(subject, cancellationToken);
             if (tokens.IsEmpty)
             {
                 return ImmutableArray.Create<TToken>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return tokens;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TToken>(tokens.Length);
 
@@ -519,6 +657,11 @@ namespace OpenIddict.Core
         public virtual Task<TResult> GetAsync<TResult>(
             [NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return GetAsync((tokens, state) => state(tokens), query, cancellationToken);
         }
 
@@ -709,14 +852,14 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token type associated with the specified token.
         /// </returns>
-        public virtual ValueTask<string> GetTokenTypeAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
+        public virtual ValueTask<string> GetTypeAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            return Store.GetTokenTypeAsync(token, cancellationToken);
+            return Store.GetTypeAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -814,6 +957,11 @@ namespace OpenIddict.Core
         public virtual Task<ImmutableArray<TResult>> ListAsync<TResult>(
             [NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return ListAsync((tokens, state) => state(tokens), query, cancellationToken);
         }
 
@@ -839,30 +987,6 @@ namespace OpenIddict.Core
             }
 
             return Store.ListAsync(query, state, cancellationToken);
-        }
-
-        /// <summary>
-        /// Obfuscates the specified reference identifier so it can be safely stored in a database.
-        /// By default, this method returns a simple hashed representation computed using SHA256.
-        /// </summary>
-        /// <param name="identifier">The client identifier.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task<string> ObfuscateReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
-            }
-
-            using (var algorithm = SHA256.Create())
-            {
-                // Compute the digest of the generated identifier and use it as the hashed identifier of the reference token.
-                // Doing that prevents token identifiers stolen from the database from being used as valid reference tokens.
-                return Task.FromResult(Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(identifier))));
-            }
         }
 
         /// <summary>
@@ -929,7 +1053,7 @@ namespace OpenIddict.Core
             descriptor.ReferenceId = await Store.GetReferenceIdAsync(token, cancellationToken);
             descriptor.Status = await Store.GetStatusAsync(token, cancellationToken);
             descriptor.Subject = await Store.GetSubjectAsync(token, cancellationToken);
-            descriptor.Type = await Store.GetTokenTypeAsync(token, cancellationToken);
+            descriptor.Type = await Store.GetTypeAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -1056,6 +1180,11 @@ namespace OpenIddict.Core
                 throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
+            if (!Options.CurrentValue.DisableEntityCaching)
+            {
+                await Cache.RemoveAsync(token, cancellationToken);
+            }
+
             await Store.UpdateAsync(token, cancellationToken);
         }
 
@@ -1081,7 +1210,18 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
+            // Store the original reference identifier for later comparison.
+            var comparand = await Store.GetReferenceIdAsync(token, cancellationToken);
             await PopulateAsync(token, descriptor, cancellationToken);
+
+            // If the reference identifier was updated, re-obfuscate it before persisting the changes.
+            var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
+            if (!string.Equals(identifier, comparand, StringComparison.Ordinal))
+            {
+                identifier = await ObfuscateReferenceIdAsync(identifier, cancellationToken);
+                await Store.SetReferenceIdAsync(token, identifier, cancellationToken);
+            }
+
             await UpdateAsync(token, cancellationToken);
         }
 
@@ -1122,7 +1262,7 @@ namespace OpenIddict.Core
                 }
             }
 
-            var type = await Store.GetTokenTypeAsync(token, cancellationToken);
+            var type = await Store.GetTypeAsync(token, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
                 builder.Add(new ValidationResult("The token type cannot be null or empty."));
@@ -1148,6 +1288,30 @@ namespace OpenIddict.Core
             return builder.Count == builder.Capacity ?
                 builder.MoveToImmutable() :
                 builder.ToImmutable();
+        }
+
+        /// <summary>
+        /// Obfuscates the specified reference identifier so it can be safely stored in a database.
+        /// By default, this method returns a simple hashed representation computed using SHA256.
+        /// </summary>
+        /// <param name="identifier">The client identifier.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        protected virtual Task<string> ObfuscateReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            using (var algorithm = SHA256.Create())
+            {
+                // Compute the digest of the generated identifier and use it as the hashed identifier of the reference token.
+                // Doing that prevents token identifiers stolen from the database from being used as valid reference tokens.
+                return Task.FromResult(Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(identifier))));
+            }
         }
 
         Task<long> IOpenIddictTokenManager.CountAsync(CancellationToken cancellationToken)
@@ -1225,8 +1389,8 @@ namespace OpenIddict.Core
         ValueTask<string> IOpenIddictTokenManager.GetSubjectAsync(object token, CancellationToken cancellationToken)
             => GetSubjectAsync((TToken) token, cancellationToken);
 
-        ValueTask<string> IOpenIddictTokenManager.GetTokenTypeAsync(object token, CancellationToken cancellationToken)
-            => GetTokenTypeAsync((TToken) token, cancellationToken);
+        ValueTask<string> IOpenIddictTokenManager.GetTypeAsync(object token, CancellationToken cancellationToken)
+            => GetTypeAsync((TToken) token, cancellationToken);
 
         Task<bool> IOpenIddictTokenManager.IsRedeemedAsync(object token, CancellationToken cancellationToken)
             => IsRedeemedAsync((TToken) token, cancellationToken);
@@ -1245,9 +1409,6 @@ namespace OpenIddict.Core
 
         Task<ImmutableArray<TResult>> IOpenIddictTokenManager.ListAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
             => ListAsync(query, state, cancellationToken);
-
-        Task<string> IOpenIddictTokenManager.ObfuscateReferenceIdAsync(string identifier, CancellationToken cancellationToken)
-            => ObfuscateReferenceIdAsync(identifier, cancellationToken);
 
         Task IOpenIddictTokenManager.PopulateAsync(OpenIddictTokenDescriptor descriptor, object token, CancellationToken cancellationToken)
             => PopulateAsync(descriptor, (TToken) token, cancellationToken);

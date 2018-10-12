@@ -26,14 +26,21 @@ namespace OpenIddict.Core
     public class OpenIddictScopeManager<TScope> : IOpenIddictScopeManager where TScope : class
     {
         public OpenIddictScopeManager(
+            [NotNull] IOpenIddictScopeCache<TScope> cache,
             [NotNull] IOpenIddictScopeStoreResolver resolver,
             [NotNull] ILogger<OpenIddictScopeManager<TScope>> logger,
             [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
         {
+            Cache = cache;
             Store = resolver.Get<TScope>();
             Logger = logger;
             Options = options;
         }
+
+        /// <summary>
+        /// Gets the cache associated with the current manager.
+        /// </summary>
+        protected IOpenIddictScopeCache<TScope> Cache { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -151,14 +158,19 @@ namespace OpenIddict.Core
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken = default)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            return Store.DeleteAsync(scope, cancellationToken);
+            if (!Options.CurrentValue.DisableEntityCaching)
+            {
+                await Cache.RemoveAsync(scope, cancellationToken);
+            }
+
+            await Store.DeleteAsync(scope, cancellationToken);
         }
 
         /// <summary>
@@ -170,14 +182,32 @@ namespace OpenIddict.Core
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the identifier.
         /// </returns>
-        public virtual Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
+        public virtual async Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return Store.FindByIdAsync(identifier, cancellationToken);
+            var scope = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByIdAsync(identifier, cancellationToken) :
+                await Cache.FindByIdAsync(identifier, cancellationToken);
+
+            if (scope == null)
+            {
+                return null;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            if (!Options.CurrentValue.DisableAdditionalFiltering &&
+                !string.Equals(await Store.GetIdAsync(scope, cancellationToken), identifier, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return scope;
         }
 
         /// <summary>
@@ -196,12 +226,21 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
             }
 
+            var scope = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByNameAsync(name, cancellationToken) :
+                await Cache.FindByNameAsync(name, cancellationToken);
+
+            if (scope == null)
+            {
+                return null;
+            }
+
             // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            var scope = await Store.FindByNameAsync(name, cancellationToken);
-            if (scope == null || !string.Equals(await Store.GetNameAsync(scope, cancellationToken), name, StringComparison.Ordinal))
+            if (!Options.CurrentValue.DisableAdditionalFiltering &&
+                !string.Equals(await Store.GetNameAsync(scope, cancellationToken), name, StringComparison.Ordinal))
             {
                 return null;
             }
@@ -231,15 +270,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var scopes = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByNamesAsync(names, cancellationToken) :
+                await Cache.FindByNamesAsync(names, cancellationToken);
 
-            var scopes = await Store.FindByNamesAsync(names, cancellationToken);
             if (scopes.IsEmpty)
             {
                 return ImmutableArray.Create<TScope>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return scopes;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TScope>(scopes.Length);
 
@@ -273,15 +320,23 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+            var scopes = Options.CurrentValue.DisableEntityCaching ?
+                await Store.FindByResourceAsync(resource, cancellationToken) :
+                await Cache.FindByResourceAsync(resource, cancellationToken);
 
-            var scopes = await Store.FindByResourceAsync(resource, cancellationToken);
             if (scopes.IsEmpty)
             {
                 return ImmutableArray.Create<TScope>();
             }
+
+            if (Options.CurrentValue.DisableAdditionalFiltering)
+            {
+                return scopes;
+            }
+
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
             var builder = ImmutableArray.CreateBuilder<TScope>(scopes.Length);
 
@@ -314,6 +369,11 @@ namespace OpenIddict.Core
         public virtual Task<TResult> GetAsync<TResult>(
             [NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return GetAsync((scopes, state) => state(scopes), query, cancellationToken);
         }
 
@@ -466,6 +526,11 @@ namespace OpenIddict.Core
         public virtual Task<ImmutableArray<TResult>> ListAsync<TResult>(
             [NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
             return ListAsync((scopes, state) => state(scopes), query, cancellationToken);
         }
 
@@ -612,6 +677,11 @@ namespace OpenIddict.Core
                 }
 
                 throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+            }
+
+            if (!Options.CurrentValue.DisableEntityCaching)
+            {
+                await Cache.RemoveAsync(scope, cancellationToken);
             }
 
             await Store.UpdateAsync(scope, cancellationToken);

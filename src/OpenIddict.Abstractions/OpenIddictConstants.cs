@@ -272,15 +272,12 @@ namespace OpenIddict.Abstractions
 
         public static class Properties
         {
-            public const string Application = ".application";
             public const string AuthenticationTicket = ".authentication_ticket";
             public const string Error = ".error";
             public const string ErrorDescription = ".error_description";
             public const string ErrorUri = ".error_uri";
             public const string InternalAuthorizationId = ".internal_authorization_id";
             public const string InternalTokenId = ".internal_token_id";
-            public const string ReferenceToken = ".reference_token";
-            public const string Token = ".token";
         }
 
         public static class PropertyTypes
