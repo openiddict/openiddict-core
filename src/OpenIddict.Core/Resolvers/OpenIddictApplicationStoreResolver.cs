@@ -14,9 +14,7 @@ namespace OpenIddict.Core
         private readonly IServiceProvider _provider;
 
         public OpenIddictApplicationStoreResolver([NotNull] IServiceProvider provider)
-        {
-            _provider = provider;
-        }
+            => _provider = provider;
 
         /// <summary>
         /// Returns an application store compatible with the specified application type or throws an

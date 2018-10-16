@@ -43,20 +43,6 @@ namespace OpenIddict.MongoDb.Tests
         }
 
         [Fact]
-        public void UseMongoDb_RegistersCachingServices()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictCoreBuilder(services);
-
-            // Act
-            builder.UseMongoDb();
-
-            // Assert
-            Assert.Contains(services, service => service.ServiceType == typeof(IMemoryCache));
-        }
-
-        [Fact]
         public void UseMongoDb_RegistersDefaultEntities()
         {
             // Arrange

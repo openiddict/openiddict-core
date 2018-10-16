@@ -14,9 +14,7 @@ namespace OpenIddict.Core
         private readonly IServiceProvider _provider;
 
         public OpenIddictAuthorizationStoreResolver([NotNull] IServiceProvider provider)
-        {
-            _provider = provider;
-        }
+            => _provider = provider;
 
         /// <summary>
         /// Returns an authorization store compatible with the specified authorization type or throws an

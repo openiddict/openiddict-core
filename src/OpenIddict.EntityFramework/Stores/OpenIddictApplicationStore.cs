@@ -69,7 +69,7 @@ namespace OpenIddict.EntityFramework
         }
 
         /// <summary>
-        /// Gets the memory cached associated with the current store.
+        /// Gets the memory cache associated with the current store.
         /// </summary>
         protected IMemoryCache Cache { get; }
 
@@ -282,7 +282,8 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified post_logout_redirect_uri.
         /// </returns>
-        public virtual async Task<ImmutableArray<TApplication>> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
+        public virtual async Task<ImmutableArray<TApplication>> FindByPostLogoutRedirectUriAsync(
+            [NotNull] string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -298,7 +299,7 @@ namespace OpenIddict.EntityFramework
                                       where application.PostLogoutRedirectUris.Contains(address)
                                       select application).ToListAsync(cancellationToken);
 
-            var builder = ImmutableArray.CreateBuilder<TApplication>();
+            var builder = ImmutableArray.CreateBuilder<TApplication>(applications.Count);
 
             foreach (var application in applications)
             {
@@ -329,7 +330,8 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
         /// returns the client applications corresponding to the specified redirect_uri.
         /// </returns>
-        public virtual async Task<ImmutableArray<TApplication>> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken)
+        public virtual async Task<ImmutableArray<TApplication>> FindByRedirectUriAsync(
+            [NotNull] string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -345,7 +347,7 @@ namespace OpenIddict.EntityFramework
                                       where application.RedirectUris.Contains(address)
                                       select application).ToListAsync(cancellationToken);
 
-            var builder = ImmutableArray.CreateBuilder<TApplication>();
+            var builder = ImmutableArray.CreateBuilder<TApplication>(applications.Count);
 
             foreach (var application in applications)
             {
@@ -602,7 +604,18 @@ namespace OpenIddict.EntityFramework
                 return new ValueTask<JObject>(new JObject());
             }
 
-            return new ValueTask<JObject>(JObject.Parse(application.Properties));
+            // Note: parsing the stringified properties is an expensive operation.
+            // To mitigate that, the resulting object is stored in the memory cache.
+            var key = string.Concat("2e3e9680-5654-48d8-a27d-b8bb4f0f1d50", "\x1e", application.Properties);
+            var properties = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JObject.Parse(application.Properties);
+            });
+
+            return new ValueTask<JObject>((JObject) properties.DeepClone());
         }
 
         /// <summary>

@@ -61,8 +61,11 @@ namespace OpenIddict.Server.Internal
             // If the client application is known, bind it to the authorization.
             if (!string.IsNullOrEmpty(request.ClientId))
             {
-                var application = request.GetProperty($"{OpenIddictConstants.Properties.Application}:{request.ClientId}");
-                Debug.Assert(application != null, "The client application shouldn't be null.");
+                var application = await applicationManager.FindByClientIdAsync(request.ClientId);
+                if (application == null)
+                {
+                    throw new InvalidOperationException("The application entry cannot be found in the database.");
+                }
 
                 descriptor.ApplicationId = await applicationManager.GetIdAsync(application);
             }
@@ -142,8 +145,6 @@ namespace OpenIddict.Server.Internal
                 descriptor.Properties.Add(property);
             }
 
-            string result = null;
-
             // When reference tokens are enabled or when the token is an authorization code or a
             // refresh token, remove the unnecessary properties from the authentication ticket.
             if (options.UseReferenceTokens ||
@@ -168,10 +169,10 @@ namespace OpenIddict.Server.Internal
                 // substituted to the ciphertext returned by the data format.
                 var bytes = new byte[256 / 8];
                 options.RandomNumberGenerator.GetBytes(bytes);
-                result = Base64UrlEncoder.Encode(bytes);
 
-                // Obfuscate the reference identifier so it can be safely stored in the databse.
-                descriptor.ReferenceId = await tokenManager.ObfuscateReferenceIdAsync(result);
+                // Note: the default token manager automatically obfuscates the
+                // reference identifier so it can be safely stored in the databse.
+                descriptor.ReferenceId = Base64UrlEncoder.Encode(bytes);
             }
 
             // Otherwise, only create a token metadata entry for authorization codes and refresh tokens.
@@ -184,8 +185,11 @@ namespace OpenIddict.Server.Internal
             // If the client application is known, associate it with the token.
             if (!string.IsNullOrEmpty(request.ClientId))
             {
-                var application = request.GetProperty($"{OpenIddictConstants.Properties.Application}:{request.ClientId}");
-                Debug.Assert(application != null, "The client application shouldn't be null.");
+                var application = await applicationManager.FindByClientIdAsync(request.ClientId);
+                if (application == null)
+                {
+                    throw new InvalidOperationException("The application entry cannot be found in the database.");
+                }
 
                 descriptor.ApplicationId = await applicationManager.GetIdAsync(application);
             }
@@ -215,14 +219,16 @@ namespace OpenIddict.Server.Internal
             ticket.SetProperty(OpenIddictConstants.Properties.InternalTokenId, identifier)
                   .SetProperty(OpenIddictConstants.Properties.InternalAuthorizationId, descriptor.AuthorizationId);
 
-            if (!string.IsNullOrEmpty(result))
+            if (options.UseReferenceTokens)
             {
                 logger.LogTrace("A new reference token was successfully generated and persisted " +
                                 "in the database: {Token} ; {Claims} ; {Properties}.",
-                                result, ticket.Principal.Claims, ticket.Properties.Items);
+                                descriptor.ReferenceId, ticket.Principal.Claims, ticket.Properties.Items);
+
+                return descriptor.ReferenceId;
             }
 
-            return result;
+            return null;
         }
 
         private async Task<AuthenticationTicket> ReceiveTokenAsync(
@@ -248,30 +254,31 @@ namespace OpenIddict.Server.Internal
 
             if (options.UseReferenceTokens)
             {
-                // For introspection or revocation requests, this method may be called more than once.
-                // For reference tokens, this may result in multiple database calls being made.
-                // To optimize that, the token is added to the request properties to indicate that
-                // a database lookup was already made with the same identifier. If the marker exists,
-                // the property value (that may be null) is used instead of making a database call.
-                if (request.HasProperty($"{OpenIddictConstants.Properties.ReferenceToken}:{value}"))
-                {
-                    token = request.GetProperty($"{OpenIddictConstants.Properties.ReferenceToken}:{value}");
-                }
-
-                else
-                {
-                    // Retrieve the token entry from the database. If it
-                    // cannot be found, assume the token is not valid.
-                    token = await tokenManager.FindByReferenceIdAsync(value);
-
-                    // Store the token as a request property so it can be retrieved if this method is called another time.
-                    request.AddProperty($"{OpenIddictConstants.Properties.ReferenceToken}:{value}", token);
-                }
-
+                token = await tokenManager.FindByReferenceIdAsync(value);
                 if (token == null)
                 {
                     logger.LogInformation("The reference token corresponding to the '{Identifier}' " +
                                           "reference identifier cannot be found in the database.", value);
+
+                    return null;
+                }
+
+                // Optimization: avoid extracting/decrypting the token payload
+                // (that relies on a format specific to the token type requested)
+                // if the token type associated with the token entry isn't valid.
+                var usage = await tokenManager.GetTypeAsync(token);
+                if (string.IsNullOrEmpty(usage))
+                {
+                    logger.LogWarning("The token type associated with the received token cannot be retrieved. " +
+                                      "This may indicate that the token entry is corrupted.");
+
+                    return null;
+                }
+
+                if (!string.Equals(usage, type, StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogWarning("The token type '{ActualType}' associated with the database entry doesn't match " +
+                                      "the expected type: {ExpectedType}.", await tokenManager.GetTypeAsync(token), type);
 
                     return null;
                 }
@@ -305,8 +312,6 @@ namespace OpenIddict.Server.Internal
 
                     return null;
                 }
-
-                request.SetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}", token);
             }
 
             else if (type == OpenIdConnectConstants.TokenUsages.AuthorizationCode ||
@@ -329,26 +334,7 @@ namespace OpenIddict.Server.Internal
                     return null;
                 }
 
-                // For introspection or revocation requests, this method may be called more than once.
-                // For codes/refresh tokens, this may result in multiple database calls being made.
-                // To optimize that, the token is added to the request properties to indicate that
-                // a database lookup was already made with the same identifier. If the marker exists,
-                // the property value (that may be null) is used instead of making a database call.
-                if (request.HasProperty($"{OpenIddictConstants.Properties.Token}:{identifier}"))
-                {
-                    token = request.GetProperty($"{OpenIddictConstants.Properties.Token}:{identifier}");
-                }
-
-                // Otherwise, retrieve the authorization code/refresh token entry from the database.
-                // If it cannot be found, assume the authorization code/refresh token is not valid.
-                else
-                {
-                    token = await tokenManager.FindByIdAsync(identifier);
-
-                    // Store the token as a request property so it can be retrieved if this method is called another time.
-                    request.AddProperty($"{OpenIddictConstants.Properties.Token}:{identifier}", token);
-                }
-
+                token = await tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
                     logger.LogInformation("The token '{Identifier}' cannot be found in the database.", identifier);

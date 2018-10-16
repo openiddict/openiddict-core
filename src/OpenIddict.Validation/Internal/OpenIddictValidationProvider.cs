@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using AspNet.Security.OAuth.Validation;
@@ -60,21 +61,30 @@ namespace OpenIddict.Validation.Internal
                     return;
                 }
 
+                // Optimization: avoid extracting/decrypting the token payload if the token is not an access token.
+                var type = await manager.GetTypeAsync(token);
+                if (string.IsNullOrEmpty(type))
+                {
+                    logger.LogError("Authentication failed because the token type associated with the entry is missing.");
+
+                    context.HandleResponse();
+                    return;
+                }
+
+                if (!string.Equals(type, OpenIddictConstants.TokenTypes.AccessToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogError("Authentication failed because the specified token is not an access token.");
+
+                    context.HandleResponse();
+                    return;
+                }
+
                 // Extract the encrypted payload from the token. If it's null or empty,
                 // assume the token is not a reference token and consider it as invalid.
                 var payload = await manager.GetPayloadAsync(token);
                 if (string.IsNullOrEmpty(payload))
                 {
                     logger.LogError("Authentication failed because the access token is not a reference token.");
-
-                    context.HandleResponse();
-                    return;
-                }
-
-                // Ensure the access token is still valid (i.e was not marked as revoked).
-                if (!await manager.IsValidAsync(token))
-                {
-                    logger.LogError("Authentication failed because the access token was no longer valid.");
 
                     context.HandleResponse();
                     return;
@@ -113,7 +123,37 @@ namespace OpenIddict.Validation.Internal
 
         public override async Task ValidateToken([NotNull] ValidateTokenContext context)
         {
+            var logger = GetLogger(context.HttpContext.RequestServices);
+
             var options = (OpenIddictValidationOptions) context.Options;
+            if (options.UseReferenceTokens)
+            {
+                // Note: the token manager is deliberately not injected using constructor injection
+                // to allow using the validation handler without having to register the core services.
+                var manager = context.HttpContext.RequestServices.GetService<IOpenIddictTokenManager>();
+                if (manager == null)
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The core services must be registered when enabling reference tokens support.")
+                        .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                        .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                        .ToString());
+                }
+
+                var identifier = context.Ticket.Properties.GetProperty(OpenIddictConstants.Properties.InternalTokenId);
+                Debug.Assert(!string.IsNullOrEmpty(identifier), "The authentication ticket should contain a token identifier.");
+
+                // Ensure the access token is still valid (i.e was not marked as revoked).
+                var token = await manager.FindByIdAsync(identifier);
+                if (token == null || !await manager.IsValidAsync(token))
+                {
+                    logger.LogError("Authentication failed because the access token was no longer valid.");
+
+                    context.Ticket = null;
+                    return;
+                }
+            }
+
             if (options.EnableAuthorizationValidation)
             {
                 // Note: the authorization manager is deliberately not injected using constructor injection
@@ -127,8 +167,6 @@ namespace OpenIddict.Validation.Internal
                         .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
                         .ToString());
                 }
-
-                var logger = GetLogger(context.HttpContext.RequestServices);
 
                 var identifier = context.Ticket.Properties.GetProperty(OpenIddictConstants.Properties.InternalAuthorizationId);
                 if (!string.IsNullOrEmpty(identifier))

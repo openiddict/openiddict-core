@@ -51,6 +51,8 @@ namespace OpenIddict.Server.Internal
         {
             var options = (OpenIddictServerOptions) context.Options;
 
+            var tokenManager = GetTokenManager(context.HttpContext.RequestServices);
+
             Debug.Assert(context.Request.IsAuthorizationRequest() ||
                          context.Request.IsTokenRequest(),
                 "The request should be an authorization or token request.");
@@ -120,9 +122,17 @@ namespace OpenIddict.Server.Internal
                 // If token revocation was explicitly disabled, none of the following security routines apply.
                 if (!options.DisableTokenStorage)
                 {
-                    var token = context.Request.GetProperty(OpenIddictConstants.Properties.Token + ":" +
-                        context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId));
-                    Debug.Assert(token != null, "The token shouldn't be null.");
+                    var token = await tokenManager.FindByIdAsync(context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId));
+                    if (token == null)
+                    {
+                        context.Reject(
+                            error: OpenIddictConstants.Errors.InvalidGrant,
+                            description: context.Request.IsAuthorizationCodeGrantType() ?
+                                "The specified authorization code is no longer valid." :
+                                "The specified refresh token is no longer valid.");
+
+                        return;
+                    }
 
                     // If rolling tokens are enabled or if the request is a grant_type=authorization_code request,
                     // mark the authorization code or the refresh token as redeemed to prevent future reuses.

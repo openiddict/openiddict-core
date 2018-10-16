@@ -22,9 +22,7 @@ namespace OpenIddict.MongoDb
         private readonly IServiceProvider _provider;
 
         public OpenIddictScopeStoreResolver([NotNull] IServiceProvider provider)
-        {
-            _provider = provider;
-        }
+            => _provider = provider;
 
         /// <summary>
         /// Returns a scope store compatible with the specified scope type or throws an

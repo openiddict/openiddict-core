@@ -31,7 +31,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.AddMemoryCache();
+            // Note: Mongo uses simple binary comparison checks by default so the additional
+            // query filtering applied by the default OpenIddict managers can be safely disabled.
+            builder.DisableAdditionalFiltering();
 
             builder.SetDefaultApplicationEntity<OpenIddictApplication>()
                    .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
