@@ -24,7 +24,6 @@ namespace OpenIddict.Core
     {
         private readonly IMemoryCache _cache;
         private readonly IOpenIddictScopeStore<TScope> _store;
-        private readonly IOptionsMonitor<OpenIddictCoreOptions> _options;
 
         public OpenIddictScopeCache(
             [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options,
@@ -35,7 +34,6 @@ namespace OpenIddict.Core
                 SizeLimit = options.CurrentValue.EntityCacheLimit
             });
 
-            _options = options;
             _store = resolver.Get<TScope>();
         }
 

@@ -23,7 +23,6 @@ namespace OpenIddict.Core
     {
         private readonly IMemoryCache _cache;
         private readonly IOpenIddictApplicationStore<TApplication> _store;
-        private readonly IOptionsMonitor<OpenIddictCoreOptions> _options;
 
         public OpenIddictApplicationCache(
             [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options,
@@ -34,7 +33,6 @@ namespace OpenIddict.Core
                 SizeLimit = options.CurrentValue.EntityCacheLimit
             });
 
-            _options = options;
             _store = resolver.Get<TApplication>();
         }
 
