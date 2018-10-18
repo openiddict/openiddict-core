@@ -48,16 +48,26 @@ namespace OpenIddict.EntityFramework
             HasKey(token => token.Id);
 
             Property(token => token.ConcurrencyToken)
+                .HasMaxLength(50)
                 .IsConcurrencyToken();
 
+            // Warning: the index on the ReferenceId property MUST NOT be declared as
+            // a unique index, as Entity Framework 6.x doesn't support creating indexes
+            // with null-friendly WHERE conditions, unlike Entity Framework Core 1.x/2.x.
             Property(token => token.ReferenceId)
-                .HasMaxLength(450)
+                .HasMaxLength(100)
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
 
+            Property(token => token.Status)
+                .HasMaxLength(25)
+                .IsRequired();
+
             Property(token => token.Subject)
+                .HasMaxLength(450)
                 .IsRequired();
 
             Property(token => token.Type)
+                .HasMaxLength(25)
                 .IsRequired();
 
             ToTable("OpenIddictTokens");
