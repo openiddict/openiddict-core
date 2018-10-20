@@ -33,9 +33,7 @@ namespace OpenIddict.Mvc.Internal
         /// directly from your code. This API may change or be removed in future minor releases.
         /// </summary>
         public OpenIddictMvcBinder([NotNull] IOptionsMonitor<OpenIddictMvcOptions> options)
-        {
-            _options = options;
-        }
+            => _options = options;
 
         /// <summary>
         /// Tries to bind a model from the request.

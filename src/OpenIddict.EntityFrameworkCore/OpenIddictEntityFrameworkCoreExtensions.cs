@@ -33,8 +33,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.AddMemoryCache();
-
             // Since Entity Framework Core may be used with databases performing case-insensitive
             // or culture-sensitive comparisons, ensure the additional filtering logic is enforced
             // in case case-sensitive stores were registered before this extension was called.

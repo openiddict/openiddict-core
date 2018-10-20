@@ -33,6 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.AddLogging();
+            builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
 
             builder.Services.TryAddScoped(typeof(OpenIddictApplicationManager<>));
