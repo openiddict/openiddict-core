@@ -19,7 +19,7 @@ namespace OpenIddict.MongoDb
     /// <summary>
     /// Exposes the MongoDB database used by the OpenIddict stores.
     /// </summary>
-    public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext
+    public class OpenIddictMongoDbContext : IOpenIddictMongoDbContext, IDisposable
     {
         private readonly IOptionsMonitor<OpenIddictMongoDbOptions> _options;
         private readonly IServiceProvider _provider;
@@ -36,6 +36,11 @@ namespace OpenIddict.MongoDb
         }
 
         /// <summary>
+        /// Disposes the semaphore held by this instance.
+        /// </summary>
+        public void Dispose() => _semaphore.Dispose();
+
+        /// <summary>
         /// Gets the <see cref="IMongoDatabase"/>.
         /// </summary>
         /// <returns>
@@ -47,6 +52,11 @@ namespace OpenIddict.MongoDb
             if (_database != null)
             {
                 return new ValueTask<IMongoDatabase>(_database);
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return new ValueTask<IMongoDatabase>(Task.FromCanceled<IMongoDatabase>(cancellationToken));
             }
 
             async Task<IMongoDatabase> ExecuteAsync()

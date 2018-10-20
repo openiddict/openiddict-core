@@ -21,6 +21,27 @@ namespace OpenIddict.MongoDb.Tests
     public class OpenIddictMongoDbContextTests
     {
         [Fact]
+        public async Task GetDatabaseAsync_ThrowsAnExceptionForCanceledToken()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var provider = services.BuildServiceProvider();
+
+            var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>();
+            var token = new CancellationToken(canceled: true);
+
+            var context = new OpenIddictMongoDbContext(options, provider);
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<TaskCanceledException>(async delegate
+            {
+                await context.GetDatabaseAsync(token);
+            });
+
+            Assert.Equal(token, exception.CancellationToken);
+        }
+
+        [Fact]
         public async Task GetDatabaseAsync_ThrowsAnExceptionForNullOptions()
         {
             // Arrange

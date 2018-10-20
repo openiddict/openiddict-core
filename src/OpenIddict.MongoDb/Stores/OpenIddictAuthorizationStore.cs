@@ -299,6 +299,8 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
+            // Note: Enumerable.All() is deliberately used without the extension method syntax to ensure
+            // ImmutableArrayExtensions.All() (which is not supported by MongoDB) is not used instead.
             return ImmutableArray.CreateRange(await collection.Find(authorization =>
                 authorization.Subject == subject &&
                 authorization.ApplicationId == ObjectId.Parse(client) &&
