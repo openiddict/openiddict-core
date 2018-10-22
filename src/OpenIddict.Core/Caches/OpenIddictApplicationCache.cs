@@ -5,12 +5,14 @@
  */
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Core
@@ -21,7 +23,8 @@ namespace OpenIddict.Core
     /// <typeparam name="TApplication">The type of the Application entity.</typeparam>
     public class OpenIddictApplicationCache<TApplication> : IOpenIddictApplicationCache<TApplication>, IDisposable where TApplication : class
     {
-        private readonly IMemoryCache _cache;
+        private readonly MemoryCache _cache;
+        private readonly ConcurrentDictionary<string, Lazy<CancellationTokenSource>> _signals;
         private readonly IOpenIddictApplicationStore<TApplication> _store;
 
         public OpenIddictApplicationCache(
@@ -33,6 +36,7 @@ namespace OpenIddict.Core
                 SizeLimit = options.CurrentValue.EntityCacheLimit
             });
 
+            _signals = new ConcurrentDictionary<string, Lazy<CancellationTokenSource>>(StringComparer.Ordinal);
             _store = resolver.Get<TApplication>();
         }
 
@@ -51,14 +55,51 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
+            _cache.Remove(new
+            {
+                Method = nameof(FindByClientIdAsync),
+                Identifier = await _store.GetClientIdAsync(application, cancellationToken)
+            });
+
+            _cache.Remove(new
+            {
+                Method = nameof(FindByIdAsync),
+                Identifier = await _store.GetIdAsync(application, cancellationToken)
+            });
+
+            foreach (var address in await _store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
+            {
+                _cache.Remove(new
+                {
+                    Method = nameof(FindByPostLogoutRedirectUriAsync),
+                    Address = address
+                });
+            }
+
+            foreach (var address in await _store.GetRedirectUrisAsync(application, cancellationToken))
+            {
+                _cache.Remove(new
+                {
+                    Method = nameof(FindByRedirectUriAsync),
+                    Address = address
+                });
+            }
+
+            var signal = await CreateExpirationSignalAsync(application, cancellationToken);
+            if (signal == null)
+            {
+                throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+            }
+
             using (var entry = _cache.CreateEntry(new
             {
                 Method = nameof(FindByIdAsync),
                 Identifier = await _store.GetIdAsync(application, cancellationToken)
             }))
             {
-                entry.SetSize(1L);
-                entry.SetValue(application);
+                entry.AddExpirationToken(signal)
+                     .SetSize(1L)
+                     .SetValue(application);
             }
 
             using (var entry = _cache.CreateEntry(new
@@ -67,15 +108,24 @@ namespace OpenIddict.Core
                 Identifier = await _store.GetClientIdAsync(application, cancellationToken)
             }))
             {
-                entry.SetSize(1L);
-                entry.SetValue(application);
+                entry.AddExpirationToken(signal)
+                     .SetSize(1L)
+                     .SetValue(application);
             }
         }
 
         /// <summary>
-        /// Disposes the cache held by this instance.
+        /// Disposes the resources held by this instance.
         /// </summary>
-        public void Dispose() => _cache.Dispose();
+        public void Dispose()
+        {
+            foreach (var signal in _signals)
+            {
+                signal.Value.Value.Dispose();
+            }
+
+            _cache.Dispose();
+        }
 
         /// <summary>
         /// Retrieves an application using its client identifier.
@@ -113,6 +163,17 @@ namespace OpenIddict.Core
 
                 using (var entry = _cache.CreateEntry(parameters))
                 {
+                    if (application != null)
+                    {
+                        var signal = await CreateExpirationSignalAsync(application, cancellationToken);
+                        if (signal == null)
+                        {
+                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                        }
+
+                        entry.AddExpirationToken(signal);
+                    }
+
                     entry.SetSize(1L);
                     entry.SetValue(application);
                 }
@@ -159,6 +220,17 @@ namespace OpenIddict.Core
 
                 using (var entry = _cache.CreateEntry(parameters))
                 {
+                    if (application != null)
+                    {
+                        var signal = await CreateExpirationSignalAsync(application, cancellationToken);
+                        if (signal == null)
+                        {
+                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                        }
+
+                        entry.AddExpirationToken(signal);
+                    }
+
                     entry.SetSize(1L);
                     entry.SetValue(application);
                 }
@@ -206,6 +278,17 @@ namespace OpenIddict.Core
 
                 using (var entry = _cache.CreateEntry(parameters))
                 {
+                    foreach (var application in applications)
+                    {
+                        var signal = await CreateExpirationSignalAsync(application, cancellationToken);
+                        if (signal == null)
+                        {
+                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                        }
+
+                        entry.AddExpirationToken(signal);
+                    }
+
                     entry.SetSize(applications.Length);
                     entry.SetValue(applications);
                 }
@@ -253,6 +336,17 @@ namespace OpenIddict.Core
 
                 using (var entry = _cache.CreateEntry(parameters))
                 {
+                    foreach (var application in applications)
+                    {
+                        var signal = await CreateExpirationSignalAsync(application, cancellationToken);
+                        if (signal == null)
+                        {
+                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                        }
+
+                        entry.AddExpirationToken(signal);
+                    }
+
                     entry.SetSize(applications.Length);
                     entry.SetValue(applications);
                 }
@@ -278,35 +372,53 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            _cache.Remove(new
+            var identifier = await _store.GetIdAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(identifier))
             {
-                Method = nameof(FindByClientIdAsync),
-                Identifier = await _store.GetClientIdAsync(application, cancellationToken)
-            });
-
-            _cache.Remove(new
-            {
-                Method = nameof(FindByIdAsync),
-                Identifier = await _store.GetIdAsync(application, cancellationToken)
-            });
-
-            foreach (var address in await _store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
-            {
-                _cache.Remove(new
-                {
-                    Method = nameof(FindByPostLogoutRedirectUriAsync),
-                    Address = address
-                });
+                throw new InvalidOperationException("The application identifier cannot be extracted.");
             }
 
-            foreach (var address in await _store.GetRedirectUrisAsync(application, cancellationToken))
+            if (_signals.TryGetValue(identifier, out Lazy<CancellationTokenSource> signal))
             {
-                _cache.Remove(new
-                {
-                    Method = nameof(FindByRedirectUriAsync),
-                    Address = address
-                });
+                signal.Value.Cancel();
+
+                _signals.TryRemove(identifier, out signal);
             }
+        }
+
+        /// <summary>
+        /// Creates an expiration signal allowing to invalidate all the
+        /// cache entries associated with the specified application.
+        /// </summary>
+        /// <param name="application">The application associated with the expiration signal.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns an expiration signal for the specified application.
+        /// </returns>
+        protected virtual async Task<IChangeToken> CreateExpirationSignalAsync(
+            [NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var identifier = await _store.GetIdAsync(application, cancellationToken);
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new InvalidOperationException("The application identifier cannot be extracted.");
+            }
+
+            var signal = _signals.GetOrAdd(identifier, delegate
+            {
+                // Note: a Lazy<CancellationTokenSource> is used here to ensure only one CancellationTokenSource
+                // can be created. Not doing so would result in expiration signals being potentially linked to
+                // multiple sources, with a single one of them being eventually tracked and thus, cancelable.
+                return new Lazy<CancellationTokenSource>(() => new CancellationTokenSource());
+            });
+
+            return new CancellationChangeToken(signal.Value.Token);
         }
     }
 }

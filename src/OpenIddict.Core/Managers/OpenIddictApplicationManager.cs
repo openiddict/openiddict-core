@@ -157,6 +157,11 @@ namespace OpenIddict.Core
             }
 
             await Store.CreateAsync(application, cancellationToken);
+
+            if (!Options.CurrentValue.DisableEntityCaching)
+            {
+                await Cache.AddAsync(application, cancellationToken);
+            }
         }
 
         /// <summary>
@@ -899,12 +904,13 @@ namespace OpenIddict.Core
                 throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
+            await Store.UpdateAsync(application, cancellationToken);
+
             if (!Options.CurrentValue.DisableEntityCaching)
             {
                 await Cache.RemoveAsync(application, cancellationToken);
+                await Cache.AddAsync(application, cancellationToken);
             }
-
-            await Store.UpdateAsync(application, cancellationToken);
         }
 
         /// <summary>

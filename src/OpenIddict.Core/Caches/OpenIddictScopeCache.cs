@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Core
@@ -22,7 +24,8 @@ namespace OpenIddict.Core
     /// <typeparam name="TScope">The type of the Scope entity.</typeparam>
     public class OpenIddictScopeCache<TScope> : IOpenIddictScopeCache<TScope>, IDisposable where TScope : class
     {
-        private readonly IMemoryCache _cache;
+        private readonly MemoryCache _cache;
+        private readonly ConcurrentDictionary<string, Lazy<CancellationTokenSource>> _signals;
         private readonly IOpenIddictScopeStore<TScope> _store;
 
         public OpenIddictScopeCache(
@@ -34,6 +37,7 @@ namespace OpenIddict.Core
                 SizeLimit = options.CurrentValue.EntityCacheLimit
             });
 
+            _signals = new ConcurrentDictionary<string, Lazy<CancellationTokenSource>>(StringComparer.Ordinal);
             _store = resolver.Get<TScope>();
         }
 
@@ -52,14 +56,42 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(scope));
             }
 
+            _cache.Remove(new
+            {
+                Method = nameof(FindByIdAsync),
+                Identifier = await _store.GetIdAsync(scope, cancellationToken)
+            });
+
+            _cache.Remove(new
+            {
+                Method = nameof(FindByNameAsync),
+                Name = await _store.GetNameAsync(scope, cancellationToken)
+            });
+
+            foreach (var resource in await _store.GetResourcesAsync(scope, cancellationToken))
+            {
+                _cache.Remove(new
+                {
+                    Method = nameof(FindByResourceAsync),
+                    Resource = resource
+                });
+            }
+
+            var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
+            if (signal == null)
+            {
+                throw new InvalidOperationException("An error occurred while creating an expiration token.");
+            }
+
             using (var entry = _cache.CreateEntry(new
             {
                 Method = nameof(FindByIdAsync),
                 Identifier = await _store.GetIdAsync(scope, cancellationToken)
             }))
             {
-                entry.SetSize(1L);
-                entry.SetValue(scope);
+                entry.AddExpirationToken(signal)
+                     .SetSize(1L)
+                     .SetValue(scope);
             }
 
             using (var entry = _cache.CreateEntry(new
@@ -68,15 +100,24 @@ namespace OpenIddict.Core
                 Name = await _store.GetNameAsync(scope, cancellationToken)
             }))
             {
-                entry.SetSize(1L);
-                entry.SetValue(scope);
+                entry.AddExpirationToken(signal)
+                     .SetSize(1L)
+                     .SetValue(scope);
             }
         }
 
         /// <summary>
-        /// Disposes the cache held by this instance.
+        /// Disposes the resources held by this instance.
         /// </summary>
-        public void Dispose() => _cache.Dispose();
+        public void Dispose()
+        {
+            foreach (var signal in _signals)
+            {
+                signal.Value.Value.Dispose();
+            }
+
+            _cache.Dispose();
+        }
 
         /// <summary>
         /// Retrieves a scope using its unique identifier.
@@ -114,6 +155,17 @@ namespace OpenIddict.Core
 
                 using (var entry = _cache.CreateEntry(parameters))
                 {
+                    if (scope != null)
+                    {
+                        var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
+                        if (signal == null)
+                        {
+                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                        }
+
+                        entry.AddExpirationToken(signal);
+                    }
+
                     entry.SetSize(1L);
                     entry.SetValue(scope);
                 }
@@ -160,6 +212,17 @@ namespace OpenIddict.Core
 
                 using (var entry = _cache.CreateEntry(parameters))
                 {
+                    if (scope != null)
+                    {
+                        var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
+                        if (signal == null)
+                        {
+                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                        }
+
+                        entry.AddExpirationToken(signal);
+                    }
+
                     entry.SetSize(1L);
                     entry.SetValue(scope);
                 }
@@ -244,6 +307,17 @@ namespace OpenIddict.Core
 
                 using (var entry = _cache.CreateEntry(parameters))
                 {
+                    foreach (var scope in scopes)
+                    {
+                        var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
+                        if (signal == null)
+                        {
+                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                        }
+
+                        entry.AddExpirationToken(signal);
+                    }
+
                     entry.SetSize(scopes.Length);
                     entry.SetValue(scopes);
                 }
@@ -269,26 +343,52 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            _cache.Remove(new
+            var identifier = await _store.GetIdAsync(scope, cancellationToken);
+            if (string.IsNullOrEmpty(identifier))
             {
-                Method = nameof(FindByIdAsync),
-                Identifier = await _store.GetIdAsync(scope, cancellationToken)
-            });
-
-            _cache.Remove(new
-            {
-                Method = nameof(FindByNameAsync),
-                Name = await _store.GetNameAsync(scope, cancellationToken)
-            });
-
-            foreach (var resource in await _store.GetResourcesAsync(scope, cancellationToken))
-            {
-                _cache.Remove(new
-                {
-                    Method = nameof(FindByResourceAsync),
-                    Resource = resource
-                });
+                throw new InvalidOperationException("The application identifier cannot be extracted.");
             }
+
+            if (_signals.TryGetValue(identifier, out Lazy<CancellationTokenSource> signal))
+            {
+                signal.Value.Cancel();
+
+                _signals.TryRemove(identifier, out signal);
+            }
+        }
+
+        /// <summary>
+        /// Creates an expiration signal allowing to invalidate all the
+        /// cache entries associated with the specified scope.
+        /// </summary>
+        /// <param name="scope">The scope associated with the expiration signal.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns an expiration signal for the specified scope.
+        /// </returns>
+        protected virtual async Task<IChangeToken> CreateExpirationSignalAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        {
+            if (scope == null)
+            {
+                throw new ArgumentNullException(nameof(scope));
+            }
+
+            var identifier = await _store.GetIdAsync(scope, cancellationToken);
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new InvalidOperationException("The scope identifier cannot be extracted.");
+            }
+
+            var signal = _signals.GetOrAdd(identifier, delegate
+            {
+                // Note: a Lazy<CancellationTokenSource> is used here to ensure only one CancellationTokenSource
+                // can be created. Not doing so would result in expiration signals being potentially linked to
+                // multiple sources, with a single one of them being eventually tracked and thus, cancelable.
+                return new Lazy<CancellationTokenSource>(() => new CancellationTokenSource());
+            });
+
+            return new CancellationChangeToken(signal.Value.Token);
         }
     }
 }
