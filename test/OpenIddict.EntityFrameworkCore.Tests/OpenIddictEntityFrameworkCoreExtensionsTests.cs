@@ -46,20 +46,6 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public void UseEntityFrameworkCore_RegistersCachingServices()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = new OpenIddictCoreBuilder(services);
-
-            // Act
-            builder.UseEntityFrameworkCore();
-
-            // Assert
-            Assert.Contains(services, service => service.ServiceType == typeof(IMemoryCache));
-        }
-
-        [Fact]
         public void UseEntityFrameworkCore_RegistersDefaultEntities()
         {
             // Arrange
