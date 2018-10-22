@@ -48,14 +48,19 @@ namespace OpenIddict.EntityFramework
             HasKey(application => application.Id);
 
             Property(application => application.ClientId)
+                .HasMaxLength(100)
                 .IsRequired()
-                .HasMaxLength(450)
-                .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
+                .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute
+                {
+                    IsUnique = true
+                }));
 
             Property(application => application.ConcurrencyToken)
+                .HasMaxLength(50)
                 .IsConcurrencyToken();
 
             Property(application => application.Type)
+                .HasMaxLength(25)
                 .IsRequired();
 
             HasMany(application => application.Authorizations)

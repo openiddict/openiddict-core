@@ -44,12 +44,16 @@ namespace OpenIddict.EntityFramework
             HasKey(scope => scope.Id);
 
             Property(scope => scope.ConcurrencyToken)
+                .HasMaxLength(50)
                 .IsConcurrencyToken();
 
             Property(scope => scope.Name)
+                .HasMaxLength(200)
                 .IsRequired()
-                .HasMaxLength(450)
-                .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
+                .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute
+                {
+                    IsUnique = true
+                }));
 
             ToTable("OpenIddictScopes");
         }
