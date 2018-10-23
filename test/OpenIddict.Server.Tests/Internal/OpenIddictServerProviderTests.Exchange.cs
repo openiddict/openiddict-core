@@ -473,6 +473,68 @@ namespace OpenIddict.Server.Internal.Tests
         }
 
         [Fact]
+        public async Task ValidateTokenRequest_RequestIsRejectedWhenScopePermissionIsNotGranted()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Public));
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Prefixes.Scope +
+                    OpenIddictConstants.Scopes.Profile, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Prefixes.Scope +
+                    OpenIddictConstants.Scopes.Email, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+                builder.RegisterScopes(OpenIddictConstants.Scopes.Email, OpenIddictConstants.Scopes.Profile);
+                builder.Configure(options => options.IgnoreScopePermissions = false);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                GrantType = OpenIddictConstants.GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w",
+                Scope = "openid offline_access profile email"
+            });
+
+            // Assert
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Prefixes.Scope +
+                OpenIddictConstants.Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Prefixes.Scope +
+                OpenIddictConstants.Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Prefixes.Scope +
+                OpenIddictConstants.Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Prefixes.Scope +
+                OpenIddictConstants.Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
         public async Task ValidateTokenRequest_ClientSecretCannotBeUsedByPublicClients()
         {
             // Arrange
@@ -634,75 +696,6 @@ namespace OpenIddict.Server.Internal.Tests
             Mock.Get(manager).Verify(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ValidateTokenRequest_RequestIsRejectedWhenScopePermissionIsNotGranted()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(instance =>
-            {
-                instance.Setup(mock => mock.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                instance.Setup(mock => mock.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<string>(OpenIddictConstants.ClientTypes.Confidential));
-
-                instance.Setup(mock => mock.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                instance.Setup(mock => mock.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.Prefixes.Scope +
-                    OpenIddictConstants.Scopes.Profile, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                instance.Setup(mock => mock.HasPermissionAsync(application,
-                    OpenIddictConstants.Permissions.Prefixes.Scope +
-                    OpenIddictConstants.Scopes.Email, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-                instance.Setup(mock => mock.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-            });
-
-            var server = CreateAuthorizationServer(builder =>
-            {
-                builder.Services.AddSingleton(manager);
-                builder.RegisterScopes(OpenIddictConstants.Scopes.Email, OpenIddictConstants.Scopes.Profile);
-                builder.Configure(options => options.IgnoreScopePermissions = false);
-            });
-
-            var client = new OpenIdConnectClient(server.CreateClient());
-
-            // Act
-            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                GrantType = OpenIddictConstants.GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w",
-                Scope = "openid offline_access profile email"
-            });
-
-            // Assert
-            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
-            Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
-
-            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIddictConstants.Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
-            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIddictConstants.Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
-            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIddictConstants.Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
-                OpenIddictConstants.Permissions.Prefixes.Scope +
-                OpenIddictConstants.Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
