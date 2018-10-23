@@ -221,6 +221,35 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
+            // Unless permission enforcement was explicitly disabled, ensure
+            // the client application is allowed to use the specified scopes.
+            if (!options.IgnoreScopePermissions)
+            {
+                foreach (var scope in context.Request.GetScopes())
+                {
+                    // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
+                    if (string.Equals(scope, OpenIddictConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
+                        string.Equals(scope, OpenIddictConstants.Scopes.OpenId, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    // Reject the request if the application is not allowed to use the iterated scope.
+                    if (!await applicationManager.HasPermissionAsync(application,
+                        OpenIddictConstants.Permissions.Prefixes.Scope + scope))
+                    {
+                        logger.LogError("The token request was rejected because the application '{ClientId}' " +
+                                        "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+
+                        context.Reject(
+                            error: OpenIddictConstants.Errors.InvalidRequest,
+                            description: "This client application is not allowed to use the specified scope.");
+
+                        return;
+                    }
+                }
+            }
+
             if (await applicationManager.IsPublicAsync(application))
             {
                 // Note: public applications are not allowed to use the client credentials grant.
@@ -283,35 +312,6 @@ namespace OpenIddict.Server.Internal
                     description: "The specified client credentials are invalid.");
 
                 return;
-            }
-
-            // Unless permission enforcement was explicitly disabled, ensure
-            // the client application is allowed to use the specified scopes.
-            if (!options.IgnoreScopePermissions)
-            {
-                foreach (var scope in context.Request.GetScopes())
-                {
-                    // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
-                    if (string.Equals(scope, OpenIddictConstants.Scopes.OfflineAccess, StringComparison.Ordinal) ||
-                        string.Equals(scope, OpenIddictConstants.Scopes.OpenId, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    // Reject the request if the application is not allowed to use the iterated scope.
-                    if (!await applicationManager.HasPermissionAsync(application,
-                        OpenIddictConstants.Permissions.Prefixes.Scope + scope))
-                    {
-                        logger.LogError("The token request was rejected because the application '{ClientId}' " +
-                                        "was not allowed to use the scope {Scope}.", context.ClientId, scope);
-
-                        context.Reject(
-                            error: OpenIddictConstants.Errors.InvalidRequest,
-                            description: "This client application is not allowed to use the specified scope.");
-
-                        return;
-                    }
-                }
             }
 
             context.Validate();
