@@ -456,7 +456,7 @@ namespace OpenIddict.Abstractions
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task SetTokenTypeAsync([NotNull] TToken token, [CanBeNull] string type, CancellationToken cancellationToken);
+        Task SetTypeAsync([NotNull] TToken token, [CanBeNull] string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing token.
