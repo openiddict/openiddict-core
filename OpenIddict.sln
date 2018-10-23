@@ -65,7 +65,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.MongoDb.Tests", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{D8075F1F-6257-463B-B481-BDC7C5ABA292}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Extensions", "shared\OpenIddict.Extensions\OpenIddict.Extensions.csproj", "{B90761B9-7582-44CB-AB0D-3C4058693227}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Extensions", "shared\OpenIddict.Extensions\OpenIddict.Extensions.csproj", "{B90761B9-7582-44CB-AB0D-3C4058693227}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

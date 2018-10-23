@@ -80,7 +80,7 @@ namespace OpenIddict.Server.Internal
                 // This scenario is deliberately not supported in OpenIddict and all the tickets
                 // must be linked. To ensure the properties are flowed from the authorization code
                 // or the refresh token to the new ticket, they are manually restored if necessary.
-                if (!context.Ticket.Properties.HasProperty(OpenIddictConstants.Properties.InternalTokenId))
+                if (string.IsNullOrEmpty(context.Ticket.GetInternalTokenId()))
                 {
                     // Retrieve the original authentication ticket from the request properties.
                     var ticket = context.Request.GetProperty<AuthenticationTicket>(
@@ -122,7 +122,7 @@ namespace OpenIddict.Server.Internal
                 // If token revocation was explicitly disabled, none of the following security routines apply.
                 if (!options.DisableTokenStorage)
                 {
-                    var token = await tokenManager.FindByIdAsync(context.Ticket.GetProperty(OpenIddictConstants.Properties.InternalTokenId));
+                    var token = await tokenManager.FindByIdAsync(context.Ticket.GetInternalTokenId());
                     if (token == null)
                     {
                         context.Reject(
@@ -181,7 +181,7 @@ namespace OpenIddict.Server.Internal
             // create an ad hoc authorization if an authorization code or a refresh token
             // is going to be returned to the client application as part of the response.
             if (!options.DisableAuthorizationStorage &&
-                !context.Ticket.HasProperty(OpenIddictConstants.Properties.InternalAuthorizationId) &&
+                string.IsNullOrEmpty(context.Ticket.GetInternalAuthorizationId()) &&
                 (context.IncludeAuthorizationCode || context.IncludeRefreshToken))
             {
                 await CreateAuthorizationAsync(context.Ticket, options, context.HttpContext, context.Request);
