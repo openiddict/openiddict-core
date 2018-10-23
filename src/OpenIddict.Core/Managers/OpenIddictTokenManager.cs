@@ -1024,7 +1024,7 @@ namespace OpenIddict.Core
             await Store.SetReferenceIdAsync(token, descriptor.ReferenceId, cancellationToken);
             await Store.SetStatusAsync(token, descriptor.Status, cancellationToken);
             await Store.SetSubjectAsync(token, descriptor.Subject, cancellationToken);
-            await Store.SetTokenTypeAsync(token, descriptor.Type, cancellationToken);
+            await Store.SetTypeAsync(token, descriptor.Type, cancellationToken);
         }
 
         /// <summary>

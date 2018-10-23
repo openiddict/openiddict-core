@@ -1140,7 +1140,7 @@ namespace OpenIddict.EntityFramework
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task SetTokenTypeAsync([NotNull] TToken token, [CanBeNull] string type, CancellationToken cancellationToken)
+        public virtual Task SetTypeAsync([NotNull] TToken token, [CanBeNull] string type, CancellationToken cancellationToken)
         {
             if (token == null)
             {
