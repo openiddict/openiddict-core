@@ -39,7 +39,8 @@ namespace OpenIddict.Server.Internal
                 context.HandleResponse();
             }
 
-            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.DeserializeAccessToken(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.DeserializeAccessToken(context));
         }
 
         public override async Task DeserializeAuthorizationCode([NotNull] DeserializeAuthorizationCodeContext context)
@@ -58,11 +59,13 @@ namespace OpenIddict.Server.Internal
             // Prevent the OpenID Connect server middleware from using its default logic.
             context.HandleResponse();
 
-            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.DeserializeAuthorizationCode(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.DeserializeAuthorizationCode(context));
         }
 
         public override Task DeserializeIdentityToken(DeserializeIdentityTokenContext context)
-            => GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.DeserializeIdentityToken(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.DeserializeIdentityToken(context));
 
         public override async Task DeserializeRefreshToken([NotNull] DeserializeRefreshTokenContext context)
         {
@@ -80,7 +83,8 @@ namespace OpenIddict.Server.Internal
             // Prevent the OpenID Connect server middleware from using its default logic.
             context.HandleResponse();
 
-            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.DeserializeRefreshToken(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.DeserializeRefreshToken(context));
         }
 
         public override async Task SerializeAccessToken([NotNull] SerializeAccessTokenContext context)
@@ -107,7 +111,8 @@ namespace OpenIddict.Server.Internal
             // Otherwise, let the OpenID Connect server middleware
             // serialize the token using its default internal logic.
 
-            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.SerializeAccessToken(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.SerializeAccessToken(context));
         }
 
         public override async Task SerializeAuthorizationCode([NotNull] SerializeAuthorizationCodeContext context)
@@ -136,11 +141,13 @@ namespace OpenIddict.Server.Internal
             // Otherwise, let the OpenID Connect server middleware
             // serialize the token using its default internal logic.
 
-            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.SerializeAuthorizationCode(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.SerializeAuthorizationCode(context));
         }
 
         public override Task SerializeIdentityToken(SerializeIdentityTokenContext context)
-            => GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.SerializeIdentityToken(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.SerializeIdentityToken(context));
 
         public override async Task SerializeRefreshToken([NotNull] SerializeRefreshTokenContext context)
         {
@@ -168,7 +175,8 @@ namespace OpenIddict.Server.Internal
             // Otherwise, let the OpenID Connect server middleware
             // serialize the token using its default internal logic.
 
-            await GetEventService(context.HttpContext.RequestServices).PublishAsync(new OpenIddictServerEvents.SerializeRefreshToken(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.SerializeRefreshToken(context));
         }
     }
 }

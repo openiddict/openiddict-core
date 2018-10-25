@@ -26,8 +26,8 @@ namespace OpenIddict.Server.Internal
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task MatchEndpoint([NotNull] MatchEndpointContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.MatchEndpoint(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.MatchEndpoint(context));
 
         public override Task ProcessChallengeResponse([NotNull] ProcessChallengeResponseContext context)
         {
@@ -43,8 +43,8 @@ namespace OpenIddict.Server.Internal
                 context.Response.AddParameter(parameter.Item2, parameter.Item3);
             }
 
-            return GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ProcessChallengeResponse(context));
+            return GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ProcessChallengeResponse(context));
         }
 
         public override async Task ProcessSigninResponse([NotNull] ProcessSigninResponseContext context)
@@ -199,8 +199,8 @@ namespace OpenIddict.Server.Internal
                 context.Ticket.RemoveProperty(parameter.Item1);
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ProcessSigninResponse(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ProcessSigninResponse(context));
         }
 
         public override Task ProcessSignoutResponse([NotNull] ProcessSignoutResponseContext context)
@@ -214,8 +214,8 @@ namespace OpenIddict.Server.Internal
                 context.Response.AddParameter(parameter.Item2, parameter.Item3);
             }
 
-            return GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ProcessSignoutResponse(context));
+            return GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ProcessSignoutResponse(context));
         }
     }
 }

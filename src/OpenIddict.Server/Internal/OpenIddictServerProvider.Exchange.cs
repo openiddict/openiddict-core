@@ -27,8 +27,8 @@ namespace OpenIddict.Server.Internal
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task ExtractTokenRequest([NotNull] ExtractTokenRequestContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ExtractTokenRequest(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ExtractTokenRequest(context));
 
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context)
         {
@@ -316,8 +316,8 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ValidateTokenRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ValidateTokenRequest(context));
         }
 
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context)
@@ -340,8 +340,8 @@ namespace OpenIddict.Server.Internal
                 // the user code to handle the token request.
                 context.SkipToNextMiddleware();
 
-                await GetEventService(context.HttpContext.RequestServices)
-                    .PublishAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
+                await GetEventDispatcher(context.HttpContext.RequestServices)
+                    .DispatchAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
 
                 return;
             }
@@ -433,12 +433,12 @@ namespace OpenIddict.Server.Internal
             // the user code to handle the token request.
             context.SkipToNextMiddleware();
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
         }
 
         public override Task ApplyTokenResponse([NotNull] ApplyTokenResponseContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-            .PublishAsync(new OpenIddictServerEvents.ApplyTokenResponse(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+            .DispatchAsync(new OpenIddictServerEvents.ApplyTokenResponse(context));
     }
 }

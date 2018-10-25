@@ -113,8 +113,8 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ExtractAuthorizationRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ExtractAuthorizationRequest(context));
         }
 
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context)
@@ -441,8 +441,8 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ValidateAuthorizationRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ValidateAuthorizationRequest(context));
         }
 
         public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context)
@@ -490,8 +490,8 @@ namespace OpenIddict.Server.Internal
                 return;
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.HandleAuthorizationRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.HandleAuthorizationRequest(context));
         }
 
         public override async Task ApplyAuthorizationResponse([NotNull] ApplyAuthorizationResponseContext context)
@@ -535,8 +535,8 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ApplyAuthorizationResponse(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ApplyAuthorizationResponse(context));
         }
     }
 }

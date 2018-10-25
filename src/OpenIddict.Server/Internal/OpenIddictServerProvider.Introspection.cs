@@ -23,8 +23,8 @@ namespace OpenIddict.Server.Internal
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task ExtractIntrospectionRequest([NotNull] ExtractIntrospectionRequestContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ExtractIntrospectionRequest(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ExtractIntrospectionRequest(context));
 
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context)
         {
@@ -102,8 +102,8 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ValidateIntrospectionRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ValidateIntrospectionRequest(context));
         }
 
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context)
@@ -185,12 +185,12 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.HandleIntrospectionRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.HandleIntrospectionRequest(context));
         }
 
         public override Task ApplyIntrospectionResponse([NotNull] ApplyIntrospectionResponseContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ApplyIntrospectionResponse(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ApplyIntrospectionResponse(context));
     }
 }

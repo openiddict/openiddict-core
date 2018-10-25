@@ -29,20 +29,20 @@ namespace OpenIddict.Server.Internal
             // the user code to handle the userinfo request.
             context.SkipToNextMiddleware();
 
-            return GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ExtractUserinfoRequest(context));
+            return GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ExtractUserinfoRequest(context));
         }
 
         public override Task ValidateUserinfoRequest([NotNull] ValidateUserinfoRequestContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ValidateUserinfoRequest(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ValidateUserinfoRequest(context));
 
         public override Task HandleUserinfoRequest([NotNull] HandleUserinfoRequestContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.HandleUserinfoRequest(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.HandleUserinfoRequest(context));
 
         public override Task ApplyUserinfoResponse([NotNull] ApplyUserinfoResponseContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ApplyUserinfoResponse(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ApplyUserinfoResponse(context));
     }
 }

@@ -14,14 +14,14 @@ namespace OpenIddict.Server
     /// <summary>
     /// Dispatches events by invoking the corresponding notification handlers.
     /// </summary>
-    public class OpenIddictServerEventService : IOpenIddictServerEventService
+    public class OpenIddictServerEventDispatcher : IOpenIddictServerEventDispatcher
     {
         private readonly IServiceProvider _provider;
 
         /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictServerEventService"/> class.
+        /// Creates a new instance of the <see cref="OpenIddictServerEventDispatcher"/> class.
         /// </summary>
-        public OpenIddictServerEventService([NotNull] IServiceProvider provider)
+        public OpenIddictServerEventDispatcher([NotNull] IServiceProvider provider)
             => _provider = provider;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace OpenIddict.Server
         /// <typeparam name="TEvent">The type of the event to publish.</typeparam>
         /// <param name="notification">The event to publish.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public async Task PublishAsync<TEvent>([NotNull] TEvent notification) where TEvent : class, IOpenIddictServerEvent
+        public async Task DispatchAsync<TEvent>([NotNull] TEvent notification) where TEvent : class, IOpenIddictServerEvent
         {
             if (notification == null)
             {

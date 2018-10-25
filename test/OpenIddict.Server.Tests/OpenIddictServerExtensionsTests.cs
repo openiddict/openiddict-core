@@ -104,8 +104,8 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                                 service.ServiceType == typeof(IOpenIddictServerEventService) &&
-                                                 service.ImplementationType == typeof(OpenIddictServerEventService));
+                                                 service.ServiceType == typeof(IOpenIddictServerEventDispatcher) &&
+                                                 service.ImplementationType == typeof(OpenIddictServerEventDispatcher));
         }
 
         [Fact]

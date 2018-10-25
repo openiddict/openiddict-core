@@ -4,16 +4,15 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Validation
 {
     /// <summary>
     /// Dispatches events by invoking the corresponding handlers.
     /// </summary>
-    public interface IOpenIddictServerEventService
+    public interface IOpenIddictValidationEventDispatcher
     {
         /// <summary>
         /// Publishes a new event.
@@ -21,6 +20,6 @@ namespace OpenIddict.Server
         /// <typeparam name="TEvent">The type of the event to publish.</typeparam>
         /// <param name="notification">The event to publish.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        Task PublishAsync<TEvent>([NotNull] TEvent notification) where TEvent : class, IOpenIddictServerEvent;
+        Task DispatchAsync<TEvent>([NotNull] TEvent notification) where TEvent : class, IOpenIddictValidationEvent;
     }
 }

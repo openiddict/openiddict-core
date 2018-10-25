@@ -25,8 +25,8 @@ namespace OpenIddict.Server.Internal
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task ExtractRevocationRequest([NotNull] ExtractRevocationRequestContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ExtractRevocationRequest(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ExtractRevocationRequest(context));
 
         public override async Task ValidateRevocationRequest([NotNull] ValidateRevocationRequestContext context)
         {
@@ -169,8 +169,8 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ValidateRevocationRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ValidateRevocationRequest(context));
         }
 
         public override async Task HandleRevocationRequest([NotNull] HandleRevocationRequestContext context)
@@ -242,12 +242,12 @@ namespace OpenIddict.Server.Internal
 
             context.Revoked = true;
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.HandleRevocationRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.HandleRevocationRequest(context));
         }
 
         public override Task ApplyRevocationResponse([NotNull] ApplyRevocationResponseContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ApplyRevocationResponse(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ApplyRevocationResponse(context));
     }
 }

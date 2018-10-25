@@ -24,12 +24,12 @@ namespace OpenIddict.Validation.Internal
     public sealed class OpenIddictValidationProvider : OAuthValidationEvents
     {
         public override Task ApplyChallenge([NotNull] ApplyChallengeContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
 
         public override Task CreateTicket([NotNull] CreateTicketContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictValidationEvents.CreateTicket(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictValidationEvents.CreateTicket(context));
 
         public override async Task DecryptToken([NotNull] DecryptTokenContext context)
         {
@@ -113,13 +113,13 @@ namespace OpenIddict.Validation.Internal
                 context.HandleResponse();
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictValidationEvents.DecryptToken(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictValidationEvents.DecryptToken(context));
         }
 
         public override Task RetrieveToken([NotNull] RetrieveTokenContext context)
-            => GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
+            => GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictValidationEvents.RetrieveToken(context));
 
         public override async Task ValidateToken([NotNull] ValidateTokenContext context)
         {
@@ -183,14 +183,14 @@ namespace OpenIddict.Validation.Internal
                 }
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictValidationEvents.ValidateToken(context));
         }
 
         private static ILogger GetLogger(IServiceProvider provider)
             => provider.GetRequiredService<ILogger<OpenIddictValidationProvider>>();
 
-        private static IOpenIddictValidationEventService GetEventService(IServiceProvider provider)
-            => provider.GetRequiredService<IOpenIddictValidationEventService>();
+        private static IOpenIddictValidationEventDispatcher GetEventDispatcher(IServiceProvider provider)
+            => provider.GetRequiredService<IOpenIddictValidationEventDispatcher>();
     }
 }

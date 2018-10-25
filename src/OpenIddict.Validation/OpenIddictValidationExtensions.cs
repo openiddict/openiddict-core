@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddLogging();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<IOpenIddictValidationEventService, OpenIddictValidationEventService>();
+            builder.Services.TryAddScoped<IOpenIddictValidationEventDispatcher, OpenIddictValidationEventDispatcher>();
 
             return new OpenIddictValidationBuilder(builder.Services);
         }

@@ -84,8 +84,8 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ExtractLogoutRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ExtractLogoutRequest(context));
         }
 
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context)
@@ -162,8 +162,8 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ValidateLogoutRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ValidateLogoutRequest(context));
         }
 
         public override async Task HandleLogoutRequest([NotNull] HandleLogoutRequestContext context)
@@ -211,8 +211,8 @@ namespace OpenIddict.Server.Internal
                 return;
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.HandleLogoutRequest(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.HandleLogoutRequest(context));
         }
 
         public override async Task ApplyLogoutResponse([NotNull] ApplyLogoutResponseContext context)
@@ -256,8 +256,8 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await GetEventService(context.HttpContext.RequestServices)
-                .PublishAsync(new OpenIddictServerEvents.ApplyLogoutResponse(context));
+            await GetEventDispatcher(context.HttpContext.RequestServices)
+                .DispatchAsync(new OpenIddictServerEvents.ApplyLogoutResponse(context));
         }
     }
 }
