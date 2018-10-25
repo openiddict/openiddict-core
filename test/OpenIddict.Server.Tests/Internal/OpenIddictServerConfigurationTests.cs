@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
 using Xunit;
@@ -36,17 +37,55 @@ namespace OpenIddict.Server.Internal.Tests
                 builder.HandlerType = typeof(OpenIdConnectServerHandler);
             });
 
-            var initializer = new OpenIddictServerConfiguration(
+            var configuration = new OpenIddictServerConfiguration(
                 Mock.Of<IDistributedCache>(),
                 Mock.Of<IDataProtectionProvider>());
 
             // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => initializer.Configure(options));
+            var exception = Assert.Throws<InvalidOperationException>(() => configuration.Configure(options));
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("The OpenIddict server handler cannot be registered as an authentication scheme.")
                 .AppendLine("This may indicate that an instance of the OpenID Connect server was registered.")
                 .Append("Make sure that 'services.AddAuthentication().AddOpenIdConnectServer()' is not used.")
+                .ToString(), exception.Message);
+        }
+
+        [Theory]
+        [InlineData(new object[] { new string[] { OpenIddictServerDefaults.AuthenticationScheme, null, null, null, null, null } })]
+        [InlineData(new object[] { new string[] { null, OpenIddictServerDefaults.AuthenticationScheme, null, null, null, null } })]
+        [InlineData(new object[] { new string[] { null, null, OpenIddictServerDefaults.AuthenticationScheme, null, null, null } })]
+        [InlineData(new object[] { new string[] { null, null, null, OpenIddictServerDefaults.AuthenticationScheme, null, null } })]
+        [InlineData(new object[] { new string[] { null, null, null, null, OpenIddictServerDefaults.AuthenticationScheme, null } })]
+        [InlineData(new object[] { new string[] { null, null, null, null, null, OpenIddictServerDefaults.AuthenticationScheme } })]
+        public void PostConfigure_ThrowsAnExceptionWhenDefaultSchemesPointToServerHandler(string[] schemes)
+        {
+            // Arrange
+            var options = new AuthenticationOptions
+            {
+                DefaultAuthenticateScheme = schemes[0],
+                DefaultChallengeScheme = schemes[1],
+                DefaultForbidScheme = schemes[2],
+                DefaultScheme = schemes[3],
+                DefaultSignInScheme = schemes[4],
+                DefaultSignOutScheme = schemes[5]
+            };
+
+            options.AddScheme<OpenIddictServerHandler>(OpenIddictServerDefaults.AuthenticationScheme, displayName: null);
+
+            var configuration = new OpenIddictServerConfiguration(
+                Mock.Of<IDistributedCache>(),
+                Mock.Of<IDataProtectionProvider>());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => configuration.PostConfigure(Options.DefaultName, options));
+
+            // Assert
+            Assert.Equal(new StringBuilder()
+                .AppendLine("The OpenIddict server handler cannot be used as the default scheme handler.")
+                .Append("Make sure that neither DefaultAuthenticateScheme, DefaultChallengeScheme, ")
+                .Append("DefaultForbidScheme, DefaultSignInScheme, DefaultSignOutScheme nor DefaultScheme ")
+                .Append("point to an instance of the OpenIddict server handler.")
                 .ToString(), exception.Message);
         }
 

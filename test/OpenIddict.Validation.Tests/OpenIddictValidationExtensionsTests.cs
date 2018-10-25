@@ -97,8 +97,8 @@ namespace OpenIddict.Validation.Tests
 
             // Assert
             Assert.Contains(services, service => service.Lifetime == ServiceLifetime.Scoped &&
-                                                 service.ServiceType == typeof(IOpenIddictValidationEventService) &&
-                                                 service.ImplementationType == typeof(OpenIddictValidationEventService));
+                                                 service.ServiceType == typeof(IOpenIddictValidationEventDispatcher) &&
+                                                 service.ImplementationType == typeof(OpenIddictValidationEventDispatcher));
         }
 
         [Fact]

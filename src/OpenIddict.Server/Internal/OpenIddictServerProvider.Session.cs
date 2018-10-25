@@ -81,7 +81,7 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ExtractLogoutRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ExtractLogoutRequest(context));
         }
 
         public override async Task ValidateLogoutRequest([NotNull] ValidateLogoutRequestContext context)
@@ -155,7 +155,7 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ValidateLogoutRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ValidateLogoutRequest(context));
         }
 
         public override async Task HandleLogoutRequest([NotNull] HandleLogoutRequestContext context)
@@ -203,7 +203,7 @@ namespace OpenIddict.Server.Internal
                 return;
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.HandleLogoutRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.HandleLogoutRequest(context));
         }
 
         public override async Task ApplyLogoutResponse([NotNull] ApplyLogoutResponseContext context)
@@ -247,7 +247,7 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ApplyLogoutResponse(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ApplyLogoutResponse(context));
         }
     }
 }

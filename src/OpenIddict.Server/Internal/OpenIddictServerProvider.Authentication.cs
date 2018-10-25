@@ -111,7 +111,7 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ExtractAuthorizationRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ExtractAuthorizationRequest(context));
         }
 
         public override async Task ValidateAuthorizationRequest([NotNull] ValidateAuthorizationRequestContext context)
@@ -433,7 +433,7 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ValidateAuthorizationRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ValidateAuthorizationRequest(context));
         }
 
         public override async Task HandleAuthorizationRequest([NotNull] HandleAuthorizationRequestContext context)
@@ -481,7 +481,7 @@ namespace OpenIddict.Server.Internal
                 return;
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.HandleAuthorizationRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.HandleAuthorizationRequest(context));
         }
 
         public override async Task ApplyAuthorizationResponse([NotNull] ApplyAuthorizationResponseContext context)
@@ -525,7 +525,7 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ApplyAuthorizationResponse(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ApplyAuthorizationResponse(context));
         }
     }
 }

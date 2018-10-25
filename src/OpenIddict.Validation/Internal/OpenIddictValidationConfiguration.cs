@@ -53,7 +53,7 @@ namespace OpenIddict.Validation.Internal
         }
 
         /// <summary>
-        /// Populates the default OpenIddict validation options and ensure
+        /// Populates the default OpenIddict validation options and ensures
         /// that the configuration is in a consistent and valid state.
         /// </summary>
         /// <param name="name">The authentication scheme associated with the handler instance.</param>

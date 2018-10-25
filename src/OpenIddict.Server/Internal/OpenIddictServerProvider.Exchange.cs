@@ -26,7 +26,7 @@ namespace OpenIddict.Server.Internal
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task ExtractTokenRequest([NotNull] ExtractTokenRequestContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ExtractTokenRequest(context));
+            => _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ExtractTokenRequest(context));
 
         public override async Task ValidateTokenRequest([NotNull] ValidateTokenRequestContext context)
         {
@@ -310,7 +310,7 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ValidateTokenRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ValidateTokenRequest(context));
         }
 
         public override async Task HandleTokenRequest([NotNull] HandleTokenRequestContext context)
@@ -329,7 +329,7 @@ namespace OpenIddict.Server.Internal
                 // the user code to handle the token request.
                 context.SkipHandler();
 
-                await _eventService.PublishAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
+                await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
 
                 return;
             }
@@ -421,10 +421,10 @@ namespace OpenIddict.Server.Internal
             // the user code to handle the token request.
             context.SkipHandler();
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.HandleTokenRequest(context));
         }
 
         public override Task ApplyTokenResponse([NotNull] ApplyTokenResponseContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ApplyTokenResponse(context));
+            => _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ApplyTokenResponse(context));
     }
 }

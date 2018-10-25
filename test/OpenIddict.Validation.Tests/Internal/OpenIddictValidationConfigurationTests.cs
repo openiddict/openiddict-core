@@ -32,10 +32,10 @@ namespace OpenIddict.Validation.Internal.Tests
                 builder.HandlerType = typeof(OAuthValidationHandler);
             });
 
-            var initializer = new OpenIddictValidationConfiguration(Mock.Of<IDataProtectionProvider>());
+            var configuration = new OpenIddictValidationConfiguration(Mock.Of<IDataProtectionProvider>());
 
             // Act and assert
-            var exception = Assert.Throws<InvalidOperationException>(() => initializer.Configure(options));
+            var exception = Assert.Throws<InvalidOperationException>(() => configuration.Configure(options));
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("The OpenIddict validation handler cannot be registered as an authentication scheme.")

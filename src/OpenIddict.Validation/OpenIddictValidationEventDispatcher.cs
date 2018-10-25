@@ -14,14 +14,14 @@ namespace OpenIddict.Validation
     /// <summary>
     /// Dispatches events by invoking the corresponding notification handlers.
     /// </summary>
-    public class OpenIddictValidationEventService : IOpenIddictValidationEventService
+    public class OpenIddictValidationEventDispatcher : IOpenIddictValidationEventDispatcher
     {
         private readonly IServiceProvider _provider;
 
         /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictValidationEventService"/> class.
+        /// Creates a new instance of the <see cref="OpenIddictValidationEventDispatcher"/> class.
         /// </summary>
-        public OpenIddictValidationEventService([NotNull] IServiceProvider provider)
+        public OpenIddictValidationEventDispatcher([NotNull] IServiceProvider provider)
             => _provider = provider;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace OpenIddict.Validation
         /// <typeparam name="TEvent">The type of the event to publish.</typeparam>
         /// <param name="notification">The event to publish.</param>
         /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public async Task PublishAsync<TEvent>([NotNull] TEvent notification) where TEvent : class, IOpenIddictValidationEvent
+        public async Task DispatchAsync<TEvent>([NotNull] TEvent notification) where TEvent : class, IOpenIddictValidationEvent
         {
             if (notification == null)
             {

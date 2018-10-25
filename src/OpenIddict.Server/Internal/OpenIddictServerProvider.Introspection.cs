@@ -22,7 +22,7 @@ namespace OpenIddict.Server.Internal
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         public override Task ExtractIntrospectionRequest([NotNull] ExtractIntrospectionRequestContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ExtractIntrospectionRequest(context));
+            => _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ExtractIntrospectionRequest(context));
 
         public override async Task ValidateIntrospectionRequest([NotNull] ValidateIntrospectionRequestContext context)
         {
@@ -97,7 +97,7 @@ namespace OpenIddict.Server.Internal
 
             context.Validate();
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ValidateIntrospectionRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ValidateIntrospectionRequest(context));
         }
 
         public override async Task HandleIntrospectionRequest([NotNull] HandleIntrospectionRequestContext context)
@@ -175,10 +175,10 @@ namespace OpenIddict.Server.Internal
                 }
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.HandleIntrospectionRequest(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.HandleIntrospectionRequest(context));
         }
 
         public override Task ApplyIntrospectionResponse([NotNull] ApplyIntrospectionResponseContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.ApplyIntrospectionResponse(context));
+            => _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ApplyIntrospectionResponse(context));
     }
 }

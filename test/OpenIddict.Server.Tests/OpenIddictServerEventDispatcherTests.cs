@@ -12,24 +12,24 @@ using Xunit;
 
 namespace OpenIddict.Server.Tests
 {
-    public class OpenIddictServerEventServiceTests
+    public class OpenIddictServerEventDispatcherTests
     {
         [Fact]
-        public async Task PublishAsync_ThrowsAnExceptionForNullNotification()
+        public async Task DispatchAsync_ThrowsAnExceptionForNullNotification()
         {
             // Arrange
             var provider = Mock.Of<IServiceProvider>();
-            var service = new OpenIddictServerEventService(provider);
+            var dispatcher = new OpenIddictServerEventDispatcher(provider);
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(()
-                => service.PublishAsync<Event>(notification: null));
+                => dispatcher.DispatchAsync<Event>(notification: null));
 
             Assert.Equal("notification", exception.ParamName);
         }
 
         [Fact]
-        public async Task PublishAsync_InvokesHandlers()
+        public async Task DispatchAsync_InvokesHandlers()
         {
             // Arrange
             var handlers = new List<IOpenIddictServerEventHandler<Event>>
@@ -42,12 +42,12 @@ namespace OpenIddict.Server.Tests
             provider.Setup(mock => mock.GetService(typeof(IEnumerable<IOpenIddictServerEventHandler<Event>>)))
                 .Returns(handlers);
 
-            var service = new OpenIddictServerEventService(provider.Object);
+            var dispatcher = new OpenIddictServerEventDispatcher(provider.Object);
 
             var notification = new Event();
 
             // Act
-            await service.PublishAsync(notification);
+            await dispatcher.DispatchAsync(notification);
 
             // Assert
             Mock.Get(handlers[0]).Verify(mock => mock.HandleAsync(notification), Times.Once());
@@ -55,7 +55,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
-        public async Task PublishAsync_StopsInvokingHandlersWhenHandledIsReturned()
+        public async Task DispatchAsync_StopsInvokingHandlersWhenHandledIsReturned()
         {
             // Arrange
             var handlers = new List<IOpenIddictServerEventHandler<Event>>
@@ -73,12 +73,12 @@ namespace OpenIddict.Server.Tests
             provider.Setup(mock => mock.GetService(typeof(IEnumerable<IOpenIddictServerEventHandler<Event>>)))
                 .Returns(handlers);
 
-            var service = new OpenIddictServerEventService(provider.Object);
+            var dispatcher = new OpenIddictServerEventDispatcher(provider.Object);
 
             var notification = new Event();
 
             // Act
-            await service.PublishAsync(notification);
+            await dispatcher.DispatchAsync(notification);
 
             // Assert
             Mock.Get(handlers[0]).Verify(mock => mock.HandleAsync(notification), Times.Once());

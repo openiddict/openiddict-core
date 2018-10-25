@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<IOpenIddictServerEventService, OpenIddictServerEventService>();
+            builder.Services.TryAddScoped<IOpenIddictServerEventDispatcher, OpenIddictServerEventDispatcher>();
             builder.Services.TryAddScoped<OpenIddictServerHandler>();
             builder.Services.TryAddScoped(provider =>
             {
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 return new OpenIddictServerProvider(
                     provider.GetRequiredService<ILogger<OpenIddictServerProvider>>(),
-                    provider.GetRequiredService<IOpenIddictServerEventService>(),
+                    provider.GetRequiredService<IOpenIddictServerEventDispatcher>(),
                     provider.GetService<IOpenIddictApplicationManager>() ?? throw CreateException(),
                     provider.GetService<IOpenIddictAuthorizationManager>() ?? throw CreateException(),
                     provider.GetService<IOpenIddictScopeManager>() ?? throw CreateException(),
@@ -66,6 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddEnumerable(new[]
             {
                 ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictServerConfiguration>(),
+                ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationOptions>, OpenIddictServerConfiguration>(),
                 ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOptions>, OpenIddictServerConfiguration>(),
                 ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOptions>, OpenIdConnectServerInitializer>()
             });

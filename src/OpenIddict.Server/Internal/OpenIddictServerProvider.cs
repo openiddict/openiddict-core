@@ -27,7 +27,7 @@ namespace OpenIddict.Server.Internal
     public sealed partial class OpenIddictServerProvider : OpenIdConnectServerProvider
     {
         private readonly ILogger _logger;
-        private readonly IOpenIddictServerEventService _eventService;
+        private readonly IOpenIddictServerEventDispatcher _eventDispatcher;
         private readonly IOpenIddictApplicationManager _applicationManager;
         private readonly IOpenIddictAuthorizationManager _authorizationManager;
         private readonly IOpenIddictScopeManager _scopeManager;
@@ -40,14 +40,14 @@ namespace OpenIddict.Server.Internal
         /// </summary>
         public OpenIddictServerProvider(
             [NotNull] ILogger<OpenIddictServerProvider> logger,
-            [NotNull] IOpenIddictServerEventService eventService,
+            [NotNull] IOpenIddictServerEventDispatcher eventDispatcher,
             [NotNull] IOpenIddictApplicationManager applicationManager,
             [NotNull] IOpenIddictAuthorizationManager authorizationManager,
             [NotNull] IOpenIddictScopeManager scopeManager,
             [NotNull] IOpenIddictTokenManager tokenManager)
         {
             _logger = logger;
-            _eventService = eventService;
+            _eventDispatcher = eventDispatcher;
             _applicationManager = applicationManager;
             _authorizationManager = authorizationManager;
             _scopeManager = scopeManager;
@@ -55,7 +55,7 @@ namespace OpenIddict.Server.Internal
         }
 
         public override Task MatchEndpoint([NotNull] MatchEndpointContext context)
-            => _eventService.PublishAsync(new OpenIddictServerEvents.MatchEndpoint(context));
+            => _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.MatchEndpoint(context));
 
         public override Task ProcessChallengeResponse([NotNull] ProcessChallengeResponseContext context)
         {
@@ -71,7 +71,7 @@ namespace OpenIddict.Server.Internal
                 context.Response.AddParameter(parameter, value);
             }
 
-            return _eventService.PublishAsync(new OpenIddictServerEvents.ProcessChallengeResponse(context));
+            return _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ProcessChallengeResponse(context));
         }
 
         public override async Task ProcessSigninResponse([NotNull] ProcessSigninResponseContext context)
@@ -224,7 +224,7 @@ namespace OpenIddict.Server.Internal
                 context.Ticket.RemoveProperty(property);
             }
 
-            await _eventService.PublishAsync(new OpenIddictServerEvents.ProcessSigninResponse(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ProcessSigninResponse(context));
         }
 
         public override Task ProcessSignoutResponse([NotNull] ProcessSignoutResponseContext context)
@@ -238,7 +238,7 @@ namespace OpenIddict.Server.Internal
                 context.Response.AddParameter(parameter, value);
             }
 
-            return _eventService.PublishAsync(new OpenIddictServerEvents.ProcessSignoutResponse(context));
+            return _eventDispatcher.DispatchAsync(new OpenIddictServerEvents.ProcessSignoutResponse(context));
         }
     }
 }

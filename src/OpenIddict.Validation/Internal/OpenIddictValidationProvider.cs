@@ -22,21 +22,21 @@ namespace OpenIddict.Validation.Internal
     /// </summary>
     public sealed class OpenIddictValidationProvider : OAuthValidationEvents
     {
-        private readonly IOpenIddictValidationEventService _eventService;
+        private readonly IOpenIddictValidationEventDispatcher _eventDispatcher;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictValidationProvider"/> class.
         /// Note: this API supports the OpenIddict infrastructure and is not intended to be used
         /// directly from your code. This API may change or be removed in future minor releases.
         /// </summary>
-        public OpenIddictValidationProvider([NotNull] IOpenIddictValidationEventService eventService)
-            => _eventService = eventService;
+        public OpenIddictValidationProvider([NotNull] IOpenIddictValidationEventDispatcher eventDispatcher)
+            => _eventDispatcher = eventDispatcher;
 
         public override Task ApplyChallenge([NotNull] ApplyChallengeContext context)
-            => _eventService.PublishAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
+            => _eventDispatcher.DispatchAsync(new OpenIddictValidationEvents.ApplyChallenge(context));
 
         public override Task CreateTicket([NotNull] CreateTicketContext context)
-            => _eventService.PublishAsync(new OpenIddictValidationEvents.CreateTicket(context));
+            => _eventDispatcher.DispatchAsync(new OpenIddictValidationEvents.CreateTicket(context));
 
         public override async Task DecryptToken([NotNull] DecryptTokenContext context)
         {
@@ -114,11 +114,11 @@ namespace OpenIddict.Validation.Internal
                 context.Success();
             }
 
-            await _eventService.PublishAsync(new OpenIddictValidationEvents.DecryptToken(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictValidationEvents.DecryptToken(context));
         }
 
         public override Task RetrieveToken([NotNull] RetrieveTokenContext context)
-            => _eventService.PublishAsync(new OpenIddictValidationEvents.RetrieveToken(context));
+            => _eventDispatcher.DispatchAsync(new OpenIddictValidationEvents.RetrieveToken(context));
 
         public override async Task ValidateToken([NotNull] ValidateTokenContext context)
         {
@@ -178,7 +178,7 @@ namespace OpenIddict.Validation.Internal
                 }
             }
 
-            await _eventService.PublishAsync(new OpenIddictValidationEvents.ValidateToken(context));
+            await _eventDispatcher.DispatchAsync(new OpenIddictValidationEvents.ValidateToken(context));
         }
     }
 }
