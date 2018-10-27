@@ -308,6 +308,9 @@ namespace OpenIddict.Server.Internal
             if (await _applicationManager.IsConfidentialAsync(application) &&
                 context.Request.HasResponseType(OpenIddictConstants.ResponseTypes.Token))
             {
+                _logger.LogError("The authorization request was rejected because the confidential application '{ClientId}' " +
+                                 "was not allowed to retrieve an access token from the authorization endpoint.", context.ClientId);
+
                 context.Reject(
                     error: OpenIddictConstants.Errors.UnauthorizedClient,
                     description: "The specified 'response_type' parameter is not valid for this client application.");
