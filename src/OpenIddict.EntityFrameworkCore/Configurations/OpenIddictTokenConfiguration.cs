@@ -38,22 +38,6 @@ namespace OpenIddict.EntityFrameworkCore
             // Entity Framework would throw an exception due to the TKey generic parameter
             // being non-nullable when using value types like short, int, long or Guid.
 
-
-            // If primary/foreign keys are strings, limit their length to ensure
-            // they can be safely used in indexes, specially when the underlying
-            // provider is known to not restrict the default length (e.g MySQL).
-            if (typeof(TKey) == typeof(string))
-            {
-                builder.Property(nameof(OpenIddictToken.Application) + nameof(OpenIddictApplication.Id))
-                       .HasMaxLength(50);
-
-                builder.Property(nameof(OpenIddictToken.Authorization) + nameof(OpenIddictApplication.Id))
-                       .HasMaxLength(50);
-
-                builder.Property(token => token.Id)
-                       .HasMaxLength(50);
-            }
-
             builder.HasKey(token => token.Id);
 
             builder.HasIndex(token => token.ReferenceId)
