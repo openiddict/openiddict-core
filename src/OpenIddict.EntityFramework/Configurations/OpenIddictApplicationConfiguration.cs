@@ -65,11 +65,17 @@ namespace OpenIddict.EntityFramework
 
             HasMany(application => application.Authorizations)
                 .WithOptional(authorization => authorization.Application)
-                .Map(association => association.MapKey("ApplicationId"));
+                .Map(association =>
+                {
+                    association.MapKey(nameof(OpenIddictAuthorization.Application) + nameof(OpenIddictApplication.Id));
+                });
 
             HasMany(application => application.Tokens)
                 .WithOptional(token => token.Application)
-                .Map(association => association.MapKey("ApplicationId"));
+                .Map(association =>
+                {
+                    association.MapKey(nameof(OpenIddictToken.Application) + nameof(OpenIddictApplication.Id));
+                });
 
             ToTable("OpenIddictApplications");
         }

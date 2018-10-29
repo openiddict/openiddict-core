@@ -63,7 +63,7 @@ namespace OpenIddict.EntityFramework
 
             HasMany(authorization => authorization.Tokens)
                 .WithOptional(token => token.Authorization)
-                .Map(association => association.MapKey("AuthorizationId"))
+                .Map(association => association.MapKey(nameof(OpenIddictToken.Authorization) + nameof(OpenIddictAuthorization.Id)))
                 .WillCascadeOnDelete();
 
             ToTable("OpenIddictAuthorizations");
