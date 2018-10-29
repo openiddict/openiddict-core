@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Concurrent;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     public class OpenIddictApplicationStoreResolver : IOpenIddictApplicationStoreResolver
     {
+        private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
         private readonly IServiceProvider _provider;
 
         public OpenIddictApplicationStoreResolver([NotNull] IServiceProvider provider)
@@ -37,18 +39,22 @@ namespace OpenIddict.MongoDb
                 return store;
             }
 
-            if (!typeof(OpenIddictApplication).IsAssignableFrom(typeof(TApplication)))
+            var type = _cache.GetOrAdd(typeof(TApplication), key =>
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The specified application type is not compatible with the MongoDB stores.")
-                    .Append("When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictApplication' ")
-                    .Append("entity (from the 'OpenIddict.MongoDb.Models' package) or a custom entity ")
-                    .Append("that inherits from the 'OpenIddictApplication' entity.")
-                    .ToString());
-            }
+                if (!typeof(OpenIddictApplication).IsAssignableFrom(key))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The specified application type is not compatible with the MongoDB stores.")
+                        .Append("When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictApplication' ")
+                        .Append("entity (from the 'OpenIddict.MongoDb.Models' package) or a custom entity ")
+                        .Append("that inherits from the 'OpenIddictApplication' entity.")
+                        .ToString());
+                }
 
-            return (IOpenIddictApplicationStore<TApplication>) _provider.GetRequiredService(
-                typeof(OpenIddictApplicationStore<>).MakeGenericType(typeof(TApplication)));
+                return typeof(OpenIddictApplicationStore<>).MakeGenericType(key);
+            });
+
+            return (IOpenIddictApplicationStore<TApplication>) _provider.GetRequiredService(type);
         }
     }
 }

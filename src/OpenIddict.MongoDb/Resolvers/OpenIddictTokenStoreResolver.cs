@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Concurrent;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     public class OpenIddictTokenStoreResolver : IOpenIddictTokenStoreResolver
     {
+        private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
         private readonly IServiceProvider _provider;
 
         public OpenIddictTokenStoreResolver([NotNull] IServiceProvider provider)
@@ -37,18 +39,22 @@ namespace OpenIddict.MongoDb
                 return store;
             }
 
-            if (!typeof(OpenIddictToken).IsAssignableFrom(typeof(TToken)))
+            var type = _cache.GetOrAdd(typeof(TToken), key =>
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The specified token type is not compatible with the MongoDB stores.")
-                    .Append("When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictToken' ")
-                    .Append("entity (from the 'OpenIddict.MongoDb.Models' package) or a custom entity ")
-                    .Append("that inherits from the 'OpenIddictToken' entity.")
-                    .ToString());
-            }
+                if (!typeof(OpenIddictToken).IsAssignableFrom(key))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The specified token type is not compatible with the MongoDB stores.")
+                        .Append("When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictToken' ")
+                        .Append("entity (from the 'OpenIddict.MongoDb.Models' package) or a custom entity ")
+                        .Append("that inherits from the 'OpenIddictToken' entity.")
+                        .ToString());
+                }
 
-            return (IOpenIddictTokenStore<TToken>) _provider.GetRequiredService(
-                typeof(OpenIddictTokenStore<>).MakeGenericType(typeof(TToken)));
+                return typeof(OpenIddictTokenStore<>).MakeGenericType(key);
+            });
+
+            return (IOpenIddictTokenStore<TToken>) _provider.GetRequiredService(type);
         }
     }
 }

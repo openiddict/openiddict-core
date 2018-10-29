@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Concurrent;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     public class OpenIddictScopeStoreResolver : IOpenIddictScopeStoreResolver
     {
+        private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
         private readonly IServiceProvider _provider;
 
         public OpenIddictScopeStoreResolver([NotNull] IServiceProvider provider)
@@ -37,18 +39,22 @@ namespace OpenIddict.MongoDb
                 return store;
             }
 
-            if (!typeof(OpenIddictScope).IsAssignableFrom(typeof(TScope)))
+            var type = _cache.GetOrAdd(typeof(TScope), key =>
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The specified scope type is not compatible with the MongoDB stores.")
-                    .Append("When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictScope' ")
-                    .Append("entity (from the 'OpenIddict.MongoDb.Models' package) or a custom entity ")
-                    .Append("that inherits from the 'OpenIddictScope' entity.")
-                    .ToString());
-            }
+                if (!typeof(OpenIddictScope).IsAssignableFrom(key))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The specified scope type is not compatible with the MongoDB stores.")
+                        .Append("When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictScope' ")
+                        .Append("entity (from the 'OpenIddict.MongoDb.Models' package) or a custom entity ")
+                        .Append("that inherits from the 'OpenIddictScope' entity.")
+                        .ToString());
+                }
 
-            return (IOpenIddictScopeStore<TScope>) _provider.GetRequiredService(
-                typeof(OpenIddictScopeStore<>).MakeGenericType(typeof(TScope)));
+                return typeof(OpenIddictScopeStore<>).MakeGenericType(key);
+            });
+
+            return (IOpenIddictScopeStore<TScope>) _provider.GetRequiredService(type);
         }
     }
 }

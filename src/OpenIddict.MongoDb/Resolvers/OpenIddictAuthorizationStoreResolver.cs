@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Concurrent;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ namespace OpenIddict.MongoDb
     /// </summary>
     public class OpenIddictAuthorizationStoreResolver : IOpenIddictAuthorizationStoreResolver
     {
+        private readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
         private readonly IServiceProvider _provider;
 
         public OpenIddictAuthorizationStoreResolver([NotNull] IServiceProvider provider)
@@ -37,18 +39,22 @@ namespace OpenIddict.MongoDb
                 return store;
             }
 
-            if (!typeof(OpenIddictAuthorization).IsAssignableFrom(typeof(TAuthorization)))
+            var type = _cache.GetOrAdd(typeof(TAuthorization), key =>
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The specified authorization type is not compatible with the MongoDB stores.")
-                    .Append("When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictAuthorization' ")
-                    .Append("entity (from the 'OpenIddict.MongoDb.Models' package) or a custom entity ")
-                    .Append("that inherits from the 'OpenIddictAuthorization' entity.")
-                    .ToString());
-            }
+                if (!typeof(OpenIddictAuthorization).IsAssignableFrom(key))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The specified authorization type is not compatible with the MongoDB stores.")
+                        .Append("When enabling the MongoDB stores, make sure you use the built-in 'OpenIddictAuthorization' ")
+                        .Append("entity (from the 'OpenIddict.MongoDb.Models' package) or a custom entity ")
+                        .Append("that inherits from the 'OpenIddictAuthorization' entity.")
+                        .ToString());
+                }
 
-            return (IOpenIddictAuthorizationStore<TAuthorization>) _provider.GetRequiredService(
-                typeof(OpenIddictAuthorizationStore<>).MakeGenericType(typeof(TAuthorization)));
+                return typeof(OpenIddictAuthorizationStore<>).MakeGenericType(key);
+            });
+
+            return (IOpenIddictAuthorizationStore<TAuthorization>) _provider.GetRequiredService(type);
         }
     }
 }
