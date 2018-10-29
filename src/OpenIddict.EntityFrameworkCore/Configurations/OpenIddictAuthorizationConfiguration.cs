@@ -64,7 +64,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             builder.HasMany(authorization => authorization.Tokens)
                    .WithOne(token => token.Authorization)
-                   .HasForeignKey("AuthorizationId")
+                   .HasForeignKey(nameof(OpenIddictToken.Authorization) + nameof(OpenIddictAuthorization.Id))
                    .IsRequired(required: false);
 
             builder.ToTable("OpenIddictAuthorizations");

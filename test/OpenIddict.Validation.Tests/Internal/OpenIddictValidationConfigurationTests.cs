@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -22,6 +23,33 @@ namespace OpenIddict.Validation.Internal.Tests
 {
     public class OpenIddictValidationConfigurationTests
     {
+        [Theory]
+        [InlineData(new object[] { new string[] { OpenIddictValidationDefaults.AuthenticationScheme, null } })]
+        [InlineData(new object[] { new string[] { null, OpenIddictValidationDefaults.AuthenticationScheme } })]
+        public void PostConfigure_ThrowsAnExceptionWhenDefaultSchemesPointToValidationHandler(string[] schemes)
+        {
+            // Arrange
+            var options = new AuthenticationOptions
+            {
+                DefaultSignInScheme = schemes[0],
+                DefaultSignOutScheme = schemes[1]
+            };
+
+            options.AddScheme<OpenIddictValidationHandler>(OpenIddictValidationDefaults.AuthenticationScheme, displayName: null);
+
+            var configuration = new OpenIddictValidationConfiguration(Mock.Of<IDataProtectionProvider>());
+
+            // Act and assert
+            var exception = Assert.Throws<InvalidOperationException>(() => configuration.PostConfigure(Options.DefaultName, options));
+
+            // Assert
+            Assert.Equal(new StringBuilder()
+                .AppendLine("The OpenIddict validation handler cannot be used as the default sign-in/out scheme handler.")
+                .Append("Make sure that neither DefaultSignInScheme nor DefaultSignOutScheme ")
+                .Append("point to an instance of the OpenIddict validation handler.")
+                .ToString(), exception.Message);
+        }
+
         [Fact]
         public void Configure_ThrowsAnExceptionWhenSchemeIsAlreadyRegisteredWithDifferentHandlerType()
         {

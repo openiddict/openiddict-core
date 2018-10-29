@@ -49,6 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddEnumerable(new[]
             {
                 ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictValidationConfiguration>(),
+                ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationOptions>, OpenIddictValidationConfiguration>(),
                 ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationConfiguration>(),
                 ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OAuthValidationInitializer>()
             });

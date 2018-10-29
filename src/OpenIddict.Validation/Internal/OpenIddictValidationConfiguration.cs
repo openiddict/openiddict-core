@@ -19,6 +19,7 @@ namespace OpenIddict.Validation.Internal
     /// directly from your code. This API may change or be removed in future minor releases.
     /// </summary>
     public class OpenIddictValidationConfiguration : IConfigureOptions<AuthenticationOptions>,
+                                                     IPostConfigureOptions<AuthenticationOptions>,
                                                      IPostConfigureOptions<OpenIddictValidationOptions>
     {
         private readonly IDataProtectionProvider _dataProtectionProvider;
@@ -50,6 +51,39 @@ namespace OpenIddict.Validation.Internal
             }
 
             options.AddScheme<OpenIddictValidationHandler>(OpenIddictValidationDefaults.AuthenticationScheme, displayName: null);
+        }
+
+        /// <summary>
+        /// Ensures that the authentication configuration is in a consistent and valid state.
+        /// </summary>
+        /// <param name="name">The authentication scheme associated with the handler instance.</param>
+        /// <param name="options">The options instance to initialize.</param>
+        public void PostConfigure([CanBeNull] string name, [NotNull] AuthenticationOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            bool TryValidate(string scheme)
+            {
+                // If the scheme was not set or if it cannot be found in the map, return true.
+                if (string.IsNullOrEmpty(scheme) || !options.SchemeMap.TryGetValue(scheme, out var builder))
+                {
+                    return true;
+                }
+
+                return builder.HandlerType != typeof(OpenIddictValidationHandler);
+            }
+
+            if (!TryValidate(options.DefaultSignInScheme) || !TryValidate(options.DefaultSignOutScheme))
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The OpenIddict validation handler cannot be used as the default sign-in/out scheme handler.")
+                    .Append("Make sure that neither DefaultSignInScheme nor DefaultSignOutScheme ")
+                    .Append("point to an instance of the OpenIddict validation handler.")
+                    .ToString());
+            }
         }
 
         /// <summary>
