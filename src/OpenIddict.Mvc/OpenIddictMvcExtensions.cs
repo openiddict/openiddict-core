@@ -7,6 +7,8 @@
 using System;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using OpenIddict.Mvc.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -29,20 +31,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.Configure<MvcOptions>(options =>
-            {
-                // Skip the binder registration if it was already added to the providers collection.
-                for (var index = 0; index < options.ModelBinderProviders.Count; index++)
-                {
-                    var provider = options.ModelBinderProviders[index];
-                    if (provider is OpenIddictMvcBinderProvider)
-                    {
-                        return;
-                    }
-                }
-
-                options.ModelBinderProviders.Insert(0, new OpenIddictMvcBinderProvider());
-            });
+            // Register the options initializer used by the OpenIddict MVC binding/validation components.
+            // Note: TryAddEnumerable() is used here to ensure the initializer is only registered once.
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<MvcOptions>, OpenIddictMvcConfiguration>());
 
             return new OpenIddictMvcBuilder(builder.Services);
         }

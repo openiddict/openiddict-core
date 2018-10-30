@@ -41,7 +41,7 @@ namespace OpenIddict.Mvc.Tests
         }
 
         [Fact]
-        public void UseMvc_RegistersModelBinderProvider()
+        public void UseMvc_RegistersConfiguration()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -52,11 +52,9 @@ namespace OpenIddict.Mvc.Tests
             // Act
             builder.UseMvc();
 
-            var provider = services.BuildServiceProvider();
-            var options = provider.GetRequiredService<IOptions<MvcOptions>>();
-
             // Assert
-            Assert.Contains(options.Value.ModelBinderProviders, binder => binder is OpenIddictMvcBinderProvider);
+            Assert.Contains(services, service => service.ServiceType == typeof(IConfigureOptions<MvcOptions>) &&
+                                                 service.ImplementationType == typeof(OpenIddictMvcConfiguration));
         }
     }
 }
