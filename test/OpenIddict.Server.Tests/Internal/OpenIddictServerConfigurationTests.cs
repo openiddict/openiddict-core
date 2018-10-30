@@ -28,6 +28,20 @@ namespace OpenIddict.Server.Internal.Tests
     public class OpenIddictServerConfigurationTests
     {
         [Fact]
+        public void Configure_ThrowsAnExceptionForNullOptions()
+        {
+            // Arrange
+            var configuration = new OpenIddictServerConfiguration(
+                Mock.Of<IDistributedCache>(),
+                Mock.Of<IDataProtectionProvider>());
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => configuration.Configure(null));
+
+            Assert.Equal("options", exception.ParamName);
+        }
+
+        [Fact]
         public void Configure_ThrowsAnExceptionWhenSchemeIsAlreadyRegisteredWithDifferentHandlerType()
         {
             // Arrange

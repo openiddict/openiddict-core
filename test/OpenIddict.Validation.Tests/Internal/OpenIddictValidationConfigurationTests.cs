@@ -23,6 +23,18 @@ namespace OpenIddict.Validation.Internal.Tests
 {
     public class OpenIddictValidationConfigurationTests
     {
+        [Fact]
+        public void Configure_ThrowsAnExceptionForNullOptions()
+        {
+            // Arrange
+            var configuration = new OpenIddictValidationConfiguration(Mock.Of<IDataProtectionProvider>());
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => configuration.Configure(null));
+
+            Assert.Equal("options", exception.ParamName);
+        }
+
         [Theory]
         [InlineData(new object[] { new string[] { OpenIddictValidationDefaults.AuthenticationScheme, null } })]
         [InlineData(new object[] { new string[] { null, OpenIddictValidationDefaults.AuthenticationScheme } })]

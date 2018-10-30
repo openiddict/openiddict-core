@@ -175,7 +175,7 @@ namespace OpenIddict.Server.Tests
         [Theory]
         [InlineData(typeof(IPostConfigureOptions<OpenIddictServerOptions>), typeof(OpenIddictServerConfiguration))]
         [InlineData(typeof(IPostConfigureOptions<OpenIddictServerOptions>), typeof(OpenIdConnectServerInitializer))]
-        public void AddServer_RegistersInitializers(Type serviceType, Type implementationType)
+        public void AddServer_RegistersConfiguration(Type serviceType, Type implementationType)
         {
             // Arrange
             var services = new ServiceCollection();

@@ -47,8 +47,13 @@ namespace OpenIddict.Server.Internal
         /// Registers the OpenIddict server handler in the global authentication options.
         /// </summary>
         /// <param name="options">The options instance to initialize.</param>
-        public void Configure(AuthenticationOptions options)
+        public void Configure([NotNull] AuthenticationOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             // If a handler was already registered and the type doesn't correspond to the OpenIddict handler, throw an exception.
             if (options.SchemeMap.TryGetValue(OpenIddictServerDefaults.AuthenticationScheme, out var builder) &&
                 builder.HandlerType != typeof(OpenIddictServerHandler))
