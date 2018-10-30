@@ -203,7 +203,8 @@ namespace OpenIddict.Abstractions
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        Task<TResult> GetAsync<TResult>([NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
+        Task<TResult> GetAsync<TResult>(
+            [NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns the first element.
@@ -217,7 +218,9 @@ namespace OpenIddict.Abstractions
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        Task<TResult> GetAsync<TState, TResult>([NotNull] Func<IQueryable<object>, TState, IQueryable<TResult>> query, [CanBeNull] TState state, CancellationToken cancellationToken = default);
+        Task<TResult> GetAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<object>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the optional authorization identifier associated with a token.
@@ -354,7 +357,8 @@ namespace OpenIddict.Abstractions
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        Task<ImmutableArray<object>> ListAsync([CanBeNull] int? count = null, [CanBeNull] int? offset = null, CancellationToken cancellationToken = default);
+        Task<ImmutableArray<object>> ListAsync(
+            [CanBeNull] int? count = null, [CanBeNull] int? offset = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
@@ -366,7 +370,8 @@ namespace OpenIddict.Abstractions
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        Task<ImmutableArray<TResult>> ListAsync<TResult>([NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
+        Task<ImmutableArray<TResult>> ListAsync<TResult>(
+            [NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
@@ -380,7 +385,9 @@ namespace OpenIddict.Abstractions
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the elements returned when executing the specified query.
         /// </returns>
-        Task<ImmutableArray<TResult>> ListAsync<TState, TResult>([NotNull] Func<IQueryable<object>, TState, IQueryable<TResult>> query, [CanBeNull] TState state, CancellationToken cancellationToken = default);
+        Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+            [NotNull] Func<IQueryable<object>, TState, IQueryable<TResult>> query,
+            [CanBeNull] TState state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Populates the specified descriptor using the properties exposed by the token.

@@ -33,7 +33,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Register the options initializer used by the OpenIddict MVC binding/validation components.
             // Note: TryAddEnumerable() is used here to ensure the initializer is only registered once.
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<MvcOptions>, OpenIddictMvcConfiguration>());
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IConfigureOptions<MvcOptions>, OpenIddictMvcConfiguration>());
 
             return new OpenIddictMvcBuilder(builder.Services);
         }

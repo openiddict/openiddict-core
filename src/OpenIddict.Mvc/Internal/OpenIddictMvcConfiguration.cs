@@ -9,6 +9,7 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Mvc.Internal
@@ -32,8 +33,16 @@ namespace OpenIddict.Mvc.Internal
             }
 
             options.ModelBinderProviders.Insert(0, new OpenIddictMvcBinderProvider());
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(OpenIdConnectRequest)));
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(OpenIdConnectResponse)));
+
+            options.ModelMetadataDetailsProviders.Add(
+                new BindingSourceMetadataProvider(typeof(OpenIdConnectRequest), BindingSource.Special));
+            options.ModelMetadataDetailsProviders.Add(
+                new BindingSourceMetadataProvider(typeof(OpenIdConnectResponse), BindingSource.Special));
+
+            options.ModelMetadataDetailsProviders.Add(
+                new SuppressChildValidationMetadataProvider(typeof(OpenIdConnectRequest)));
+            options.ModelMetadataDetailsProviders.Add(
+                new SuppressChildValidationMetadataProvider(typeof(OpenIdConnectResponse)));
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Linq;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Mvc.Internal;
@@ -63,9 +64,21 @@ namespace OpenIddict.Mvc.Tests
             var options = services.BuildServiceProvider().GetRequiredService<IOptions<MvcOptions>>();
 
             // Assert
-            var providers = options.Value.ModelMetadataDetailsProviders.OfType<SuppressChildValidationMetadataProvider>();
-            Assert.Contains(providers, provider => provider.Type == typeof(OpenIdConnectRequest));
-            Assert.Contains(providers, provider => provider.Type == typeof(OpenIdConnectResponse));
+            Assert.Contains(
+                options.Value.ModelMetadataDetailsProviders.OfType<BindingSourceMetadataProvider>(),
+                provider => provider.Type == typeof(OpenIdConnectRequest) &&
+                            provider.BindingSource == BindingSource.Special);
+            Assert.Contains(
+                options.Value.ModelMetadataDetailsProviders.OfType<BindingSourceMetadataProvider>(),
+                provider => provider.Type == typeof(OpenIdConnectResponse) &&
+                            provider.BindingSource == BindingSource.Special);
+
+            Assert.Contains(
+                options.Value.ModelMetadataDetailsProviders.OfType<SuppressChildValidationMetadataProvider>(),
+                provider => provider.Type == typeof(OpenIdConnectRequest));
+            Assert.Contains(
+                options.Value.ModelMetadataDetailsProviders.OfType<SuppressChildValidationMetadataProvider>(),
+                provider => provider.Type == typeof(OpenIdConnectResponse));
         }
     }
 }
