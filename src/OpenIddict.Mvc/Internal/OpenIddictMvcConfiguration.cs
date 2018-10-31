@@ -32,8 +32,11 @@ namespace OpenIddict.Mvc.Internal
             }
 
             options.ModelBinderProviders.Insert(0, new OpenIddictMvcBinderProvider());
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(OpenIdConnectRequest)));
-            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(OpenIdConnectResponse)));
+
+            options.ModelMetadataDetailsProviders.Add(
+                new SuppressChildValidationMetadataProvider(typeof(OpenIdConnectRequest)));
+            options.ModelMetadataDetailsProviders.Add(
+                new SuppressChildValidationMetadataProvider(typeof(OpenIdConnectResponse)));
         }
     }
 }
