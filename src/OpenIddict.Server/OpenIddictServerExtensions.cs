@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
-using OpenIddict.Server.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

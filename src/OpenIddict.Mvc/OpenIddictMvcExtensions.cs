@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using OpenIddict.Mvc.Internal;
+using OpenIddict.Mvc;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

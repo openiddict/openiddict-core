@@ -8,7 +8,6 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using OpenIddict.Mvc.Internal;
 using Xunit;
 
 namespace OpenIddict.Mvc.Tests
