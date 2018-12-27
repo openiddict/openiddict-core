@@ -1525,7 +1525,7 @@ namespace OpenIddict.Server.Internal.Tests
             Assert.Equal("value", (string) response["custom_string_parameter"]);
         }
 
-        private static TestServer CreateAuthorizationServer(Action<OpenIddictServerBuilder> configuration = null)
+        private static TestServer CreateAuthorizationServer(Action<OpenIddictServerBuilder> configuration = null, bool ignoreEndpointPermission = true)
         {
             var builder = new WebHostBuilder();
 
@@ -1558,10 +1558,14 @@ namespace OpenIddict.Server.Internal.Tests
                         options.AcceptAnonymousClients();
 
                         // Disable permission enforcement by default.
-                        options.IgnoreEndpointPermissions()
-                               .IgnoreGrantTypePermissions()
+                        if (ignoreEndpointPermission)
+                        {
+                            options.IgnoreEndpointPermissions();
+                        }
+                        
+                        options.IgnoreGrantTypePermissions()
                                .IgnoreScopePermissions();
-
+                        
                         // Disable the transport security requirement during testing.
                         options.DisableHttpsRequirement();
 
