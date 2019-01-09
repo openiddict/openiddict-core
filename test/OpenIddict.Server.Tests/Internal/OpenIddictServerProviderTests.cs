@@ -1561,7 +1561,7 @@ namespace OpenIddict.Server.Internal.Tests
                         options.IgnoreEndpointPermissions()
                                .IgnoreGrantTypePermissions()
                                .IgnoreScopePermissions();
-                        
+
                         // Disable the transport security requirement during testing.
                         options.DisableHttpsRequirement();
 
