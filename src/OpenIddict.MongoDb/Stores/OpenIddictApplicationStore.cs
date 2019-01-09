@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
@@ -757,7 +758,7 @@ namespace OpenIddict.MongoDb
                 return Task.CompletedTask;
             }
 
-            application.Properties = new BsonDocument(properties.ToObject<IDictionary<string, object>>());
+            application.Properties = BsonDocument.Parse(properties.ToString(Formatting.None));
 
             return Task.CompletedTask;
         }
