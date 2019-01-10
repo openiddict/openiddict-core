@@ -11,6 +11,9 @@
     <DebugType>full</DebugType>
     <DebugType Condition=" '$(Configuration)' != 'Debug' ">pdbonly</DebugType>
     <DebugType Condition=" '$(OS)' != 'Windows_NT' ">portable</DebugType>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
   </PropertyGroup>
 
   <Target Name="WorkaroundAppConfigPathTooLong" BeforeTargets="GenerateBindingRedirects">

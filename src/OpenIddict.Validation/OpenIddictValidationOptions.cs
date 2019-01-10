@@ -5,7 +5,6 @@
  */
 
 using AspNet.Security.OAuth.Validation;
-using OpenIddict.Validation.Internal;
 
 namespace OpenIddict.Validation
 {

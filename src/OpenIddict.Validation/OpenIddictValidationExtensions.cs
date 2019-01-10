@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Validation;
-using OpenIddict.Validation.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
