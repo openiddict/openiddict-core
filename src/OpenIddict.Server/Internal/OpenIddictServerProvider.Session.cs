@@ -120,8 +120,6 @@ namespace OpenIddict.Server.Internal
                     var applications = await _applicationManager.FindByPostLogoutRedirectUriAsync(address);
                     if (applications.IsDefaultOrEmpty)
                     {
-                        _logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
-                                         "was unknown: {address}.", address);
                         return false;
                     }
 
@@ -138,13 +136,13 @@ namespace OpenIddict.Server.Internal
                             return true;
                         }
                     }
-
-                    _logger.LogError("The logout request was rejected because the specified application has no logout permission: {address}.", address);
                     return false;
                 }
 
                 if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                 {
+                    _logger.LogError("The logout request was rejected because no application with the specified post_logout_redirect_uri " +
+                                     "and with a logout endpoint permission was found: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
                     context.Reject(
                         error: OpenIddictConstants.Errors.InvalidRequest,
                         description: "The specified 'post_logout_redirect_uri' parameter is not valid.");
