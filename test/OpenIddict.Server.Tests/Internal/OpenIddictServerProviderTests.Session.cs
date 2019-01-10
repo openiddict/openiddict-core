@@ -119,6 +119,45 @@ namespace OpenIddict.Server.Internal.Tests
         }
 
         [Fact]
+        public async Task ValidateLogoutRequest_RequestIsRejectedWhenApplicationHasNoLogoutPermission()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(instance =>
+            {
+                instance.Setup(mock => mock.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableArray.Create(application));
+
+                instance.Setup(mock => mock.HasPermissionAsync(application,
+                    OpenIddictConstants.Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var server = CreateAuthorizationServer(builder =>
+            {
+                builder.Services.AddSingleton(manager);
+
+                builder.Configure(options => options.IgnoreEndpointPermissions = false);
+            });
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(LogoutEndpoint, new OpenIdConnectRequest
+            {
+                PostLogoutRedirectUri = "http://www.fabrikam.com/path"
+            });
+
+            // Assert
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("The specified 'post_logout_redirect_uri' parameter is not valid.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(mock => mock.HasPermissionAsync(application,
+                OpenIddictConstants.Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
         public async Task HandleLogoutRequest_RequestIsPersistedInDistributedCache()
         {
             // Arrange

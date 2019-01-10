@@ -142,8 +142,9 @@ namespace OpenIddict.Server.Internal
 
                 if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                 {
-                    _logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
-                                     "was unknown: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
+                    _logger.LogError("The logout request was rejected because no application with the specified " +
+                                     "post_logout_redirect_uri and with a logout endpoint permission was found: " +
+                                     "{PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
 
                     context.Reject(
                         error: OpenIddictConstants.Errors.InvalidRequest,
