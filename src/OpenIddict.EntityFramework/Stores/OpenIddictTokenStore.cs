@@ -1095,11 +1095,6 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (string.IsNullOrEmpty(status))
-            {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
-            }
-
             token.Status = status;
 
             return Task.CompletedTask;
@@ -1121,11 +1116,6 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (string.IsNullOrEmpty(subject))
-            {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
-            }
-
             token.Subject = subject;
 
             return Task.CompletedTask;
@@ -1145,11 +1135,6 @@ namespace OpenIddict.EntityFramework
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
-            }
-
-            if (string.IsNullOrEmpty(type))
-            {
-                throw new ArgumentException("The token type cannot be null or empty.", nameof(type));
             }
 
             token.Type = type;
