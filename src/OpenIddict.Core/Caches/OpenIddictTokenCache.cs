@@ -24,7 +24,7 @@ namespace OpenIddict.Core
     public class OpenIddictTokenCache<TToken> : IOpenIddictTokenCache<TToken>, IDisposable where TToken : class
     {
         private readonly MemoryCache _cache;
-        private readonly ConcurrentDictionary<string, Lazy<CancellationTokenSource>> _signals;
+        private readonly ConcurrentDictionary<string, CancellationTokenSource> _signals;
         private readonly IOpenIddictTokenStore<TToken> _store;
 
         public OpenIddictTokenCache(
@@ -36,7 +36,7 @@ namespace OpenIddict.Core
                 SizeLimit = options.CurrentValue.EntityCacheLimit
             });
 
-            _signals = new ConcurrentDictionary<string, Lazy<CancellationTokenSource>>(StringComparer.Ordinal);
+            _signals = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
             _store = resolver.Get<TToken>();
         }
 
@@ -145,7 +145,7 @@ namespace OpenIddict.Core
         {
             foreach (var signal in _signals)
             {
-                signal.Value.Value.Dispose();
+                signal.Value.Dispose();
             }
 
             _cache.Dispose();
@@ -679,9 +679,9 @@ namespace OpenIddict.Core
                 throw new InvalidOperationException("The application identifier cannot be extracted.");
             }
 
-            if (_signals.TryGetValue(identifier, out Lazy<CancellationTokenSource> signal))
+            if (_signals.TryGetValue(identifier, out CancellationTokenSource signal))
             {
-                signal.Value.Cancel();
+                signal.Cancel();
 
                 _signals.TryRemove(identifier, out signal);
             }
@@ -710,15 +710,9 @@ namespace OpenIddict.Core
                 throw new InvalidOperationException("The token identifier cannot be extracted.");
             }
 
-            var signal = _signals.GetOrAdd(identifier, delegate
-            {
-                // Note: a Lazy<CancellationTokenSource> is used here to ensure only one CancellationTokenSource
-                // can be created. Not doing so would result in expiration signals being potentially linked to
-                // multiple sources, with a single one of them being eventually tracked and thus, cancelable.
-                return new Lazy<CancellationTokenSource>(() => new CancellationTokenSource());
-            });
+            var signal = _signals.GetOrAdd(identifier, _ => new CancellationTokenSource());
 
-            return new CancellationChangeToken(signal.Value.Token);
+            return new CancellationChangeToken(signal.Token);
         }
     }
 }
