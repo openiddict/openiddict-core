@@ -393,6 +393,28 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenPkceIsRequiredAndCodeChallengeIsMissing()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder => builder.RequireProofKeyForCodeExchange());
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(AuthorizationEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = null,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = OpenIddictConstants.ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("The mandatory 'code_challenge' parameter is missing.", response.ErrorDescription);
+        }
+
+        [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsMissing()
         {
             // Arrange

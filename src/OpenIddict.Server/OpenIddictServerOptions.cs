@@ -123,6 +123,14 @@ namespace OpenIddict.Server
         };
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether PKCE must be used by client applications
+        /// when requesting an authorization code (e.g when using the code or hybrid flows).
+        /// If this property is set to <c>true</c>, authorization requests that lack the
+        /// code_challenge/code_challenge_method parameters will be automatically rejected.
+        /// </summary>
+        public bool RequireProofKeyForCodeExchange { get; set; }
+
+        /// <summary>
         /// Gets the OAuth2/OpenID Connect scopes enabled for this application.
         /// </summary>
         public ISet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal)
