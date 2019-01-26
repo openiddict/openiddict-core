@@ -67,6 +67,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{D8075F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Extensions", "shared\OpenIddict.Extensions\OpenIddict.Extensions.csproj", "{B90761B9-7582-44CB-AB0D-3C4058693227}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.NHibernate", "src\OpenIddict.NHibernate\OpenIddict.NHibernate.csproj", "{17BFF448-F11F-40D6-B658-BD81B306D2CA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.NHibernate.Models", "src\OpenIddict.NHibernate.Models\OpenIddict.NHibernate.Models.csproj", "{22882DA6-6A5F-4E48-8BDC-7248B1DE5D14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.NHibernate.Tests", "test\OpenIddict.NHibernate.Tests\OpenIddict.NHibernate.Tests.csproj", "{B99BCBEC-9771-4C68-96E2-1A54E9BC432D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +171,18 @@ Global
 		{B90761B9-7582-44CB-AB0D-3C4058693227}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B90761B9-7582-44CB-AB0D-3C4058693227}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B90761B9-7582-44CB-AB0D-3C4058693227}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17BFF448-F11F-40D6-B658-BD81B306D2CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17BFF448-F11F-40D6-B658-BD81B306D2CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17BFF448-F11F-40D6-B658-BD81B306D2CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17BFF448-F11F-40D6-B658-BD81B306D2CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22882DA6-6A5F-4E48-8BDC-7248B1DE5D14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22882DA6-6A5F-4E48-8BDC-7248B1DE5D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22882DA6-6A5F-4E48-8BDC-7248B1DE5D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22882DA6-6A5F-4E48-8BDC-7248B1DE5D14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B99BCBEC-9771-4C68-96E2-1A54E9BC432D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B99BCBEC-9771-4C68-96E2-1A54E9BC432D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B99BCBEC-9771-4C68-96E2-1A54E9BC432D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B99BCBEC-9771-4C68-96E2-1A54E9BC432D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -193,6 +211,9 @@ Global
 		{8FACE85E-EF8F-4AB1-85DD-4010D5E2165D} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 		{27F603EF-D335-445B-9443-6B5A6CA3C110} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 		{B90761B9-7582-44CB-AB0D-3C4058693227} = {D8075F1F-6257-463B-B481-BDC7C5ABA292}
+		{17BFF448-F11F-40D6-B658-BD81B306D2CA} = {D544447C-D701-46BB-9A5B-C76C612A596B}
+		{22882DA6-6A5F-4E48-8BDC-7248B1DE5D14} = {D544447C-D701-46BB-9A5B-C76C612A596B}
+		{B99BCBEC-9771-4C68-96E2-1A54E9BC432D} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A710059F-0466-4D48-9B3A-0EF4F840B616}
