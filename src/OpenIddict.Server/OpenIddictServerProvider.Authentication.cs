@@ -239,6 +239,21 @@ namespace OpenIddict.Server
                 return;
             }
 
+            // If OpenIddict was configured to require PKCE, reject the request if the code challenge
+            // is missing and if an authorization code was requested by the client application.
+            if (options.RequireProofKeyForCodeExchange && string.IsNullOrEmpty(context.Request.CodeChallenge) &&
+                context.Request.HasResponseType(OpenIddictConstants.ResponseTypes.Code))
+            {
+                _logger.LogError("The authorization request was rejected because the " +
+                                 "required 'code_challenge' parameter was missing.");
+
+                context.Reject(
+                    error: OpenIddictConstants.Errors.InvalidRequest,
+                    description: "The mandatory 'code_challenge' parameter is missing.");
+
+                return;
+            }
+
             // Note: the OpenID Connect server middleware always ensures a
             // code_challenge_method can't be specified without code_challenge.
             if (!string.IsNullOrEmpty(context.Request.CodeChallenge))

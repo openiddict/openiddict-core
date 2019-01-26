@@ -54,18 +54,36 @@ namespace OpenIddict.Server
                 return;
             }
 
-            // Optimization: the OpenID Connect server middleware automatically rejects grant_type=authorization_code
-            // requests missing the redirect_uri parameter if one was specified in the initial authorization request.
-            // Since OpenIddict doesn't allow redirect_uri-less authorization requests, an earlier check can be made here,
-            // which saves the OpenID Connect server middleware from having to deserialize the authorization code ticket.
-            // See http://openid.net/specs/openid-connect-core-1_0.html#TokenRequestValidation for more information.
-            if (context.Request.IsAuthorizationCodeGrantType() && string.IsNullOrEmpty(context.Request.RedirectUri))
+            if (context.Request.IsAuthorizationCodeGrantType())
             {
-                context.Reject(
-                    error: OpenIddictConstants.Errors.InvalidRequest,
-                    description: "The mandatory 'redirect_uri' parameter is missing.");
+                // Optimization: the OpenID Connect server middleware automatically rejects grant_type=authorization_code
+                // requests missing the redirect_uri parameter if one was specified in the initial authorization request.
+                // Since OpenIddict doesn't allow redirect_uri-less authorization requests, an earlier check can be made here,
+                // which saves the OpenID Connect server middleware from having to deserialize the authorization code ticket.
+                // See http://openid.net/specs/openid-connect-core-1_0.html#TokenRequestValidation for more information.
+                if (string.IsNullOrEmpty(context.Request.RedirectUri))
+                {
+                    context.Reject(
+                        error: OpenIddictConstants.Errors.InvalidRequest,
+                        description: "The mandatory 'redirect_uri' parameter is missing.");
 
-                return;
+                    return;
+                }
+
+                // Optimization: the OpenID Connect server middleware automatically rejects grant_type=authorization_code
+                // requests missing the code_verifier parameter when a challenge was specified in the authorization request.
+                // That check requires decrypting the authorization code and determining whether a code challenge was set.
+                // If OpenIddict was configured to require PKCE, this can be potentially avoided by making an early check here.
+                if (options.RequireProofKeyForCodeExchange && string.IsNullOrEmpty(context.Request.CodeVerifier))
+                {
+                    _logger.LogError("The token request was rejected because the required 'code_verifier' parameter was missing.");
+
+                    context.Reject(
+                        error: OpenIddictConstants.Errors.InvalidRequest,
+                        description: "The mandatory 'code_verifier' parameter is missing.");
+
+                    return;
+                }
             }
 
             // Note: the OpenID Connect server middleware allows returning a refresh token with grant_type=client_credentials,

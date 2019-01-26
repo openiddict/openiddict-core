@@ -100,6 +100,29 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public async Task ValidateTokenRequest_AuthorizationCodeRequestIsRejectedWhenCodeVerifierIsMissing()
+        {
+            // Arrange
+            var server = CreateAuthorizationServer(builder => builder.RequireProofKeyForCodeExchange());
+
+            var client = new OpenIdConnectClient(server.CreateClient());
+
+            // Act
+            var response = await client.PostAsync(TokenEndpoint, new OpenIdConnectRequest
+            {
+                ClientId = "Fabrikam",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                CodeVerifier = null,
+                GrantType = OpenIddictConstants.GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
+            });
+
+            // Assert
+            Assert.Equal(OpenIddictConstants.Errors.InvalidRequest, response.Error);
+            Assert.Equal("The mandatory 'code_verifier' parameter is missing.", response.ErrorDescription);
+        }
+
+        [Fact]
         public async Task ValidateTokenRequest_RequestIsRejectedWhenUnregisteredScopeIsSpecified()
         {
             // Arrange
