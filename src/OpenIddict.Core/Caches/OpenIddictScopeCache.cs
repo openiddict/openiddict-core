@@ -349,11 +349,9 @@ namespace OpenIddict.Core
                 throw new InvalidOperationException("The application identifier cannot be extracted.");
             }
 
-            if (_signals.TryGetValue(identifier, out CancellationTokenSource signal))
+            if (_signals.TryRemove(identifier, out CancellationTokenSource signal))
             {
                 signal.Cancel();
-
-                _signals.TryRemove(identifier, out signal);
             }
         }
 
