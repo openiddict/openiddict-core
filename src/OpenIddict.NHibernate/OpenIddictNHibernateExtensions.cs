@@ -46,6 +46,11 @@ namespace Microsoft.Extensions.DependencyInjection
                    .ReplaceScopeStoreResolver<OpenIddictScopeStoreResolver>()
                    .ReplaceTokenStoreResolver<OpenIddictTokenStoreResolver>();
 
+            builder.Services.TryAddSingleton<OpenIddictApplicationStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictAuthorizationStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictScopeStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictTokenStoreResolver.TypeResolutionCache>();
+
             builder.Services.TryAddScoped(typeof(OpenIddictApplicationStore<,,,>));
             builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationStore<,,,>));
             builder.Services.TryAddScoped(typeof(OpenIddictScopeStore<,>));

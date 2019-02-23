@@ -13,6 +13,7 @@ using Moq;
 using OpenIddict.Abstractions;
 using OpenIddict.NHibernate.Models;
 using Xunit;
+using static OpenIddict.NHibernate.OpenIddictTokenStoreResolver;
 
 namespace OpenIddict.NHibernate.Tests
 {
@@ -26,7 +27,7 @@ namespace OpenIddict.NHibernate.Tests
             services.AddSingleton(Mock.Of<IOpenIddictTokenStore<CustomToken>>());
 
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictTokenStoreResolver(provider);
+            var resolver = new OpenIddictTokenStoreResolver(new TypeResolutionCache(), provider);
 
             // Act and assert
             Assert.NotNull(resolver.Get<CustomToken>());
@@ -39,7 +40,7 @@ namespace OpenIddict.NHibernate.Tests
             var services = new ServiceCollection();
 
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictTokenStoreResolver(provider);
+            var resolver = new OpenIddictTokenStoreResolver(new TypeResolutionCache(), provider);
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomToken>());
@@ -61,7 +62,7 @@ namespace OpenIddict.NHibernate.Tests
             services.AddSingleton(CreateStore());
 
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictTokenStoreResolver(provider);
+            var resolver = new OpenIddictTokenStoreResolver(new TypeResolutionCache(), provider);
 
             // Act and assert
             Assert.NotNull(resolver.Get<MyToken>());

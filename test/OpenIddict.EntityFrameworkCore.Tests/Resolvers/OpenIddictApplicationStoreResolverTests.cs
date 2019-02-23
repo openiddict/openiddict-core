@@ -14,6 +14,7 @@ using Moq;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore.Models;
 using Xunit;
+using static OpenIddict.EntityFrameworkCore.OpenIddictApplicationStoreResolver;
 
 namespace OpenIddict.EntityFrameworkCore.Tests
 {
@@ -28,7 +29,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
 
             var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions>>();
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictApplicationStoreResolver(options, provider);
+            var resolver = new OpenIddictApplicationStoreResolver(new TypeResolutionCache(), options, provider);
 
             // Act and assert
             Assert.NotNull(resolver.Get<CustomApplication>());
@@ -42,7 +43,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
 
             var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions>>();
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictApplicationStoreResolver(options, provider);
+            var resolver = new OpenIddictApplicationStoreResolver(new TypeResolutionCache(), options, provider);
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomApplication>());
@@ -68,7 +69,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
                 });
 
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictApplicationStoreResolver(options, provider);
+            var resolver = new OpenIddictApplicationStoreResolver(new TypeResolutionCache(), options, provider);
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictApplication>());
@@ -95,7 +96,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
                 });
 
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictApplicationStoreResolver(options, provider);
+            var resolver = new OpenIddictApplicationStoreResolver(new TypeResolutionCache(), options, provider);
 
             // Act and assert
             Assert.NotNull(resolver.Get<MyApplication>());

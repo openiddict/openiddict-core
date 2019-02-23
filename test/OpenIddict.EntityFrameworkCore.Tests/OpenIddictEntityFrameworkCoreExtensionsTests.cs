@@ -81,6 +81,25 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         }
 
         [Theory]
+        [InlineData(typeof(OpenIddictApplicationStoreResolver.TypeResolutionCache))]
+        [InlineData(typeof(OpenIddictAuthorizationStoreResolver.TypeResolutionCache))]
+        [InlineData(typeof(OpenIddictScopeStoreResolver.TypeResolutionCache))]
+        [InlineData(typeof(OpenIddictTokenStoreResolver.TypeResolutionCache))]
+        public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolverCaches(Type type)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new OpenIddictCoreBuilder(services);
+
+            // Act
+            builder.UseEntityFrameworkCore();
+
+            // Assert
+            Assert.Contains(services, service => service.ServiceType == type &&
+                                                 service.ImplementationType == type);
+        }
+
+        [Theory]
         [InlineData(typeof(OpenIddictApplicationStore<,,,,>))]
         [InlineData(typeof(OpenIddictAuthorizationStore<,,,,>))]
         [InlineData(typeof(OpenIddictScopeStore<,,>))]
