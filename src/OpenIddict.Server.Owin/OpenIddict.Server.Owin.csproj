@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;net472</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>OWIN/ASP.NET 4.x integration package for the OpenIddict server services.</Description>
+    <PackageTags>$(PackageTags);server;aspnet;katana;owin</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(ExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(ExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Owin.Security" Version="$(OwinVersion)" />
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="$(JsonNetBsonVersion)" />
+  </ItemGroup>
+
+</Project>

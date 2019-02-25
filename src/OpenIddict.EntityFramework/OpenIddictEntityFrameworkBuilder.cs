@@ -25,14 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The services collection.</param>
         public OpenIddictEntityFrameworkBuilder([NotNull] IServiceCollection services)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            Services = services;
-        }
+            => Services = services ?? throw new ArgumentNullException(nameof(services));
 
         /// <summary>
         /// Gets the services collection.

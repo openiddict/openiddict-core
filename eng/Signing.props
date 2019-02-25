@@ -1,0 +1,13 @@
+<Project>
+
+  <PropertyGroup>
+    <AllowEmptySignList>true</AllowEmptySignList>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ItemsToSign Remove="@(ItemsToSign)" />
+    <StrongNameSignInfo Remove="@(StrongNameSignInfo)" />
+    <FileExtensionSignInfo Remove="@(FileExtensionSignInfo)" />
+  </ItemGroup>
+
+</Project>

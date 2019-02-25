@@ -14,6 +14,22 @@ namespace OpenIddict.Abstractions
             public const string Permanent = "permanent";
         }
 
+        public static class Algorithms
+        {
+            public const string EcdsaSha256 = "ES256";
+            public const string EcdsaSha384 = "ES384";
+            public const string EcdsaSha512 = "ES512";
+            public const string HmacSha256 = "HS256";
+            public const string HmacSha384 = "HS384";
+            public const string HmacSha512 = "HS512";
+            public const string RsaSha256 = "RS256";
+            public const string RsaSha384 = "RS384";
+            public const string RsaSha512 = "RS512";
+            public const string RsaSsaPssSha256 = "PS256";
+            public const string RsaSsaPssSha384 = "PS384";
+            public const string RsaSsaPssSha512 = "PS512";
+        }
+
         public static class Claims
         {
             public const string AccessTokenHash = "at_hash";
@@ -27,7 +43,6 @@ namespace OpenIddict.Abstractions
             public const string Birthdate = "birthdate";
             public const string ClientId = "client_id";
             public const string CodeHash = "c_hash";
-            public const string ConfidentialityLevel = "cfd_lvl";
             public const string Country = "country";
             public const string Email = "email";
             public const string EmailVerified = "email_verified";
@@ -54,17 +69,40 @@ namespace OpenIddict.Abstractions
             public const string PreferredUsername = "preferred_username";
             public const string Profile = "profile";
             public const string Region = "region";
+            public const string Resource = "resource";
             public const string Role = "role";
-            public const string Roles = "roles";
             public const string Scope = "scope";
             public const string StreetAddress = "street_address";
             public const string Subject = "sub";
             public const string TokenType = "token_type";
-            public const string TokenUsage = "token_usage";
             public const string UpdatedAt = "updated_at";
             public const string Username = "username";
             public const string Website = "website";
             public const string Zoneinfo = "zoneinfo";
+
+            public static class Prefixes
+            {
+                public const string Private = "oi_";
+            }
+
+            public static class Private
+            {
+                public const string AccessTokenLifetime = "oi_act_lft";
+                public const string AuthorizationCodeLifetime = "oi_auc_lft";
+                public const string ClaimDestinations = "oi_cl_dstn";
+                public const string CodeChallenge = "oi_cd_chlg";
+                public const string CodeChallengeMethod = "oi_cd_chlg_meth";
+                public const string IdentityTokenLifetime = "oi_idt_lft";
+                public const string OriginalRedirectUri = "oi_reduri";
+                public const string RefreshTokenLifetime = "oi_reft_lft";
+                public const string TokenUsage = "oi_tkn_use";
+            }
+        }
+
+        public static class ClientAuthenticationMethods
+        {
+            public const string ClientSecretBasic = "client_secret_basic";
+            public const string ClientSecretPost = "client_secret_post";
         }
 
         public static class ClientTypes
@@ -72,6 +110,12 @@ namespace OpenIddict.Abstractions
             public const string Confidential = "confidential";
             public const string Hybrid = "hybrid";
             public const string Public = "public";
+        }
+
+        public static class CodeChallengeMethods
+        {
+            public const string Plain = "plain";
+            public const string Sha256 = "S256";
         }
 
         public static class ConsentTypes
@@ -85,12 +129,6 @@ namespace OpenIddict.Abstractions
         {
             public const string AccessToken = "access_token";
             public const string IdentityToken = "id_token";
-        }
-
-        public static class Environment
-        {
-            public const string AuthorizationRequest = "openiddict-authorization-request:";
-            public const string LogoutRequest = "openiddict-logout-request:";
         }
 
         public static class Errors
@@ -272,20 +310,29 @@ namespace OpenIddict.Abstractions
 
         public static class Properties
         {
-            public const string AuthenticationTicket = ".authentication_ticket";
+            public const string AccessTokenLifetime = ".access_token_lifetime";
+            public const string AuthorizationCodeLifetime = ".authorization_code_lifetime";
+            public const string Audiences = ".audiences";
+            public const string CodeChallenge = ".code_challenge";
+            public const string CodeChallengeMethod = ".code_challenge_method";
+            public const string Destinations = ".destinations";
             public const string Error = ".error";
             public const string ErrorDescription = ".error_description";
             public const string ErrorUri = ".error_uri";
-            public const string InternalAuthorizationId = ".internal_authorization_id";
-            public const string InternalTokenId = ".internal_token_id";
-        }
-
-        public static class PropertyTypes
-        {
-            public const string Boolean = "#public_boolean";
-            public const string Integer = "#public_integer";
-            public const string Json = "#public_json";
-            public const string String = "#public_string";
+            public const string Expires = ".expires";
+            public const string IdentityTokenLifetime = ".identity_token_lifetime";
+            public const string Issued = ".issued";
+            public const string Nonce = ".nonce";
+            public const string OriginalPrincipal = ".original_principal";
+            public const string OriginalRedirectUri = ".original_redirect_uri";
+            public const string PostLogoutRedirectUri = ".post_logout_redirect_uri";
+            public const string Presenters = ".presenters";
+            public const string RefreshTokenLifetime = ".refresh_token_lifetime";
+            public const string Resources = ".resources";
+            public const string Scopes = ".scopes";
+            public const string TokenId = ".token_id";
+            public const string TokenUsage = ".token_usage";
+            public const string ValidatedRedirectUri = ".validated_redirect_uri";
         }
 
         public static class ResponseModes
@@ -305,7 +352,14 @@ namespace OpenIddict.Abstractions
 
         public static class Separators
         {
-            public const string Space = " ";
+            public static readonly char[] Ampersand = { '&' };
+            public static readonly char[] Space = { ' ' };
+        }
+
+        public static class Schemes
+        {
+            public const string Basic = "Basic";
+            public const string Bearer = "Bearer";
         }
 
         public static class Scopes
@@ -326,7 +380,26 @@ namespace OpenIddict.Abstractions
             public const string Valid = "valid";
         }
 
+        public static class SubjectTypes
+        {
+            public const string Pairwise = "pairwise";
+            public const string Public = "public";
+        }
+
+        public static class TokenTypeHints
+        {
+            public const string AccessToken = "access_token";
+            public const string AuthorizationCode = "authorization_code";
+            public const string IdToken = "id_token";
+            public const string RefreshToken = "refresh_token";
+        }
+
         public static class TokenTypes
+        {
+            public const string Bearer = "Bearer";
+        }
+
+        public static class TokenUsages
         {
             public const string AccessToken = "access_token";
             public const string AuthorizationCode = "authorization_code";

@@ -4,6 +4,9 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/46ofo2eusje0hcw2?svg=true)](https://ci.appveyor.com/project/openiddict/openiddict-core)
 [![Build status](https://travis-ci.org/openiddict/openiddict-core.svg)](https://travis-ci.org/openiddict/openiddict-core)
 
+> **Warning: this branch contains the OpenIddict 3.0 source code, which is still a work in progress. The 3.0 packages are still experimental and no official binaries are available yet**.
+**These packages currently lack many features and haven't been heavily tested: don't use them in any production application**.
+
 ### What's OpenIddict?
 
 OpenIddict aims at providing a **simple and easy-to-use solution** to implement an **OpenID Connect server in any ASP.NET Core 1.x or 2.x application**.
@@ -40,11 +43,6 @@ with the power to control who can access your API and the information that is ex
   - [Refresh flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/RefreshFlow)
 
 > **Samples for ASP.NET Core 1.x can be found [in the master branch of the samples repository](https://github.com/openiddict/openiddict-samples/tree/master)**.
-
-## Migrating to OpenIddict RC3?
-
-**Before updating your application, read [the migration guide](https://openiddict.github.io/openiddict-documentation/guide/migration.html)**.
-
 --------------
 
 ## Getting started
@@ -58,8 +56,8 @@ To use OpenIddict, you need to:
   - **Update your `.csproj` file** to reference the `OpenIddict` packages:
 
 ```xml
-<PackageReference Include="OpenIddict" Version="2.0.0-rc3-final" />
-<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="2.0.0-rc3-final" />
+<PackageReference Include="OpenIddict" Version="2.0.0" />
+<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="2.0.0" />
 ```
 
   - **Configure the OpenIddict services** in `Startup.ConfigureServices`:

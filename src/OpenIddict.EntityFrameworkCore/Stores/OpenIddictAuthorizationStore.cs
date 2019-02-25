@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -253,7 +252,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the authorizations corresponding
         /// to the specified subject and associated with the application identifier.
         /// </summary>
-        private static readonly Func<TContext, TKey, string, AsyncEnumerable<TAuthorization>> FindBySubjectAndClient =
+        private static readonly Func<TContext, TKey, string, IAsyncEnumerable<TAuthorization>> FindBySubjectAndClient =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -291,14 +290,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubjectAndClient(Context,
-                ConvertIdentifierFromString(client), subject).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+            await foreach (var authorization in FindBySubjectAndClient(Context,
+                ConvertIdentifierFromString(client), subject))
+            {
+                builder.Add(authorization);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the authorizations matching the specified parameters.
         /// </summary>
-        private static readonly Func<TContext, TKey, string, string, AsyncEnumerable<TAuthorization>> FindBySubjectClientAndStatus =
+        private static readonly Func<TContext, TKey, string, string, IAsyncEnumerable<TAuthorization>> FindBySubjectClientAndStatus =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -342,14 +348,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubjectClientAndStatus(Context,
-                ConvertIdentifierFromString(client), subject, status).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+            await foreach (var authorization in FindBySubjectClientAndStatus(Context,
+                ConvertIdentifierFromString(client), subject, status))
+            {
+                builder.Add(authorization);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the authorizations matching the specified parameters.
         /// </summary>
-        private static readonly Func<TContext, TKey, string, string, string, AsyncEnumerable<TAuthorization>> FindBySubjectClientStatusAndType =
+        private static readonly Func<TContext, TKey, string, string, string, IAsyncEnumerable<TAuthorization>> FindBySubjectClientStatusAndType =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -401,8 +414,15 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubjectClientStatusAndType(Context,
-                ConvertIdentifierFromString(client), subject, status, type).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+            await foreach (var authorization in FindBySubjectClientStatusAndType(Context,
+                ConvertIdentifierFromString(client), subject, status, type))
+            {
+                builder.Add(authorization);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
@@ -453,7 +473,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the list of
         /// authorizations corresponding to the specified application identifier.
         /// </summary>
-        private static readonly Func<TContext, TKey, AsyncEnumerable<TAuthorization>> FindByApplicationId =
+        private static readonly Func<TContext, TKey, IAsyncEnumerable<TAuthorization>> FindByApplicationId =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -483,8 +503,15 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return ImmutableArray.CreateRange(await FindByApplicationId(Context,
-                ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+            await foreach (var authorization in FindByApplicationId(Context,
+                ConvertIdentifierFromString(identifier)))
+            {
+                builder.Add(authorization);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
@@ -521,7 +548,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve all the
         /// authorizations corresponding to the specified subject.
         /// </summary>
-        private static readonly Func<TContext, string, AsyncEnumerable<TAuthorization>> FindBySubject =
+        private static readonly Func<TContext, string, IAsyncEnumerable<TAuthorization>> FindBySubject =
             EF.CompileAsyncQuery((TContext context, string subject) =>
                 from authorization in context.Set<TAuthorization>()
                     .Include(authorization => authorization.Application)
@@ -546,7 +573,14 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubject(Context, subject).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+            await foreach (var authorization in FindBySubject(Context, subject))
+            {
+                builder.Add(authorization);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>

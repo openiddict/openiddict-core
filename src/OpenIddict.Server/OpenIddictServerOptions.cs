@@ -6,9 +6,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using AspNet.Security.OpenIdConnect.Server;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
@@ -16,16 +15,148 @@ namespace OpenIddict.Server
     /// <summary>
     /// Provides various settings needed to configure the OpenIddict server handler.
     /// </summary>
-    public class OpenIddictServerOptions : OpenIdConnectServerOptions
+    public class OpenIddictServerOptions
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictServerOptions"/> class.
+        /// Gets or sets the optional base address used to uniquely identify the authorization server.
+        /// The URI must be absolute and may contain a path, but no query string or fragment part.
         /// </summary>
-        public OpenIddictServerOptions()
+        public Uri Issuer { get; set; }
+
+        /// <summary>
+        /// Gets the list of credentials used to encrypt the tokens issued by the
+        /// OpenIddict server services. Note: only symmetric credentials are supported.
+        /// </summary>
+        public IList<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
+
+        /// <summary>
+        /// Gets the list of credentials used to sign the tokens issued by the OpenIddict server services.
+        /// Both asymmetric and symmetric keys are supported, but only asymmetric keys can be used to sign identity tokens.
+        /// Note that only asymmetric RSA and ECDSA keys can be exposed by the JWKS metadata endpoint.
+        /// </summary>
+        public IList<SigningCredentials> SigningCredentials { get; } = new List<SigningCredentials>();
+
+        /// <summary>
+        /// Gets the absolute and relative URIs associated to the authorization endpoint.
+        /// </summary>
+        public IList<Uri> AuthorizationEndpointUris { get; } = new List<Uri>();
+
+        /// <summary>
+        /// Gets the absolute and relative URIs associated to the configuration endpoint.
+        /// </summary>
+        public IList<Uri> ConfigurationEndpointUris { get; } = new List<Uri>
         {
-            Provider = null;
-            ProviderType = typeof(OpenIddictServerProvider);
-        }
+            new Uri("/.well-known/openid-configuration", UriKind.Relative),
+            new Uri("/.well-known/oauth-authorization-server", UriKind.Relative)
+        };
+
+        /// <summary>
+        /// Gets the absolute and relative URIs associated to the cryptography endpoint.
+        /// </summary>
+        public IList<Uri> CryptographyEndpointUris { get; } = new List<Uri>
+        {
+            new Uri("/.well-known/jwks", UriKind.Relative)
+        };
+
+        /// <summary>
+        /// Gets the absolute and relative URIs associated to the introspection endpoint.
+        /// </summary>
+        public IList<Uri> IntrospectionEndpointUris { get; } = new List<Uri>();
+
+        /// <summary>
+        /// Gets the absolute and relative URIs associated to the logout endpoint.
+        /// </summary>
+        public IList<Uri> LogoutEndpointUris { get; } = new List<Uri>();
+
+        /// <summary>
+        /// Gets the absolute and relative URIs associated to the revocation endpoint.
+        /// </summary>
+        public IList<Uri> RevocationEndpointUris { get; } = new List<Uri>();
+
+        /// <summary>
+        /// Gets the absolute and relative URIs associated to the token endpoint.
+        /// </summary>
+        public IList<Uri> TokenEndpointUris { get; } = new List<Uri>();
+
+        /// <summary>
+        /// Gets the absolute and relative URIs associated to the userinfo endpoint.
+        /// </summary>
+        public IList<Uri> UserinfoEndpointUris { get; } = new List<Uri>();
+
+        /// <summary>
+        /// Gets or sets the security token handler used to protect and unprotect authorization codes.
+        /// </summary>
+        public JsonWebTokenHandler AuthorizationCodeHandler { get; set; } = new JsonWebTokenHandler();
+
+        /// <summary>
+        /// Gets or sets the security token handler used to protect and unprotect access tokens.
+        /// </summary>
+        public JsonWebTokenHandler AccessTokenHandler { get; set; } = new JsonWebTokenHandler();
+
+        /// <summary>
+        /// Gets or sets the security token handler used to protect and unprotect identity tokens.
+        /// </summary>
+        public JsonWebTokenHandler IdentityTokenHandler { get; set; } = new JsonWebTokenHandler();
+
+        /// <summary>
+        /// Gets or sets the security token handler used to protect and unprotect refresh tokens.
+        /// </summary>
+        public JsonWebTokenHandler RefreshTokenHandler { get; set; } = new JsonWebTokenHandler();
+
+        /// <summary>
+        /// Gets or sets the period of time the authorization codes remain valid after being issued.
+        /// While not recommended, this property can be set to <c>null</c> to issue codes that never expire.
+        /// </summary>
+        public TimeSpan? AuthorizationCodeLifetime { get; set; } = TimeSpan.FromMinutes(5);
+
+        /// <summary>
+        /// Gets or sets the period of time access tokens remain valid after being issued. The default value is 1 hour.
+        /// The client application is expected to refresh or acquire a new access token after the token has expired.
+        /// While not recommended, this property can be set to <c>null</c> to issue access tokens that never expire.
+        /// </summary>
+        public TimeSpan? AccessTokenLifetime { get; set; } = TimeSpan.FromHours(1);
+
+        /// <summary>
+        /// Gets or sets the period of time identity tokens remain valid after being issued. The default value is 20 minutes.
+        /// The client application is expected to refresh or acquire a new identity token after the token has expired.
+        /// While not recommended, this property can be set to <c>null</c> to issue identity tokens that never expire.
+        /// </summary>
+        public TimeSpan? IdentityTokenLifetime { get; set; } = TimeSpan.FromMinutes(20);
+
+        /// <summary>
+        /// Gets or sets the period of time refresh tokens remain valid after being issued. The default value is 14 days.
+        /// The client application is expected to start a whole new authentication flow after the refresh token has expired.
+        /// While not recommended, this property can be set to <c>null</c> to issue refresh tokens that never expire.
+        /// </summary>
+        public TimeSpan? RefreshTokenLifetime { get; set; } = TimeSpan.FromDays(14);
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the degraded mode is enabled. When this degraded mode
+        /// is enabled, all the security checks that depend on the OpenIddict core managers are disabled.
+        /// This option MUST be enabled with extreme caution and custom handlers MUST be registered to
+        /// properly validate OpenID Connect requests.
+        /// </summary>
+        public bool EnableDegradedMode { get; set; }
+
+        /// <summary>
+        /// Gets the list of the user-defined/custom handlers responsible of processing the OpenIddict server requests.
+        /// Note: the handlers added to this list must be also registered in the DI container using an appropriate lifetime.
+        /// </summary>
+        public IList<OpenIddictServerHandlerDescriptor> CustomHandlers { get; } =
+            new List<OpenIddictServerHandlerDescriptor>();
+
+        /// <summary>
+        /// Gets the list of the built-in handlers responsible of processing the OpenIddict server requests
+        /// </summary>
+        public IList<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
+            new List<OpenIddictServerHandlerDescriptor>(OpenIddictServerHandlers.DefaultHandlers);
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether new refresh tokens should be issued during a refresh token request.
+        /// Set this property to <c>true</c> to issue a new refresh token, <c>false</c> to prevent the OpenID Connect
+        /// server middleware from issuing new refresh tokens when receiving a grant_type=refresh_token request.
+        /// </summary>
+        public bool UseSlidingExpiration { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a boolean determining whether client identification is optional.
@@ -35,13 +166,7 @@ namespace OpenIddict.Server
         public bool AcceptAnonymousClients { get; set; }
 
         /// <summary>
-        /// Gets or sets the distributed cache used by OpenIddict. If no cache is explicitly
-        /// provided, the cache registered in the dependency injection container is used.
-        /// </summary>
-        public IDistributedCache Cache { get; set; }
-
-        /// <summary>
-        /// Gets the OAuth2/OpenID Connect claims supported by this application.
+        /// Gets the OAuth 2.0/OpenID Connect claims supported by this application.
         /// </summary>
         public ISet<string> Claims { get; } = new HashSet<string>(StringComparer.Ordinal)
         {
@@ -68,21 +193,12 @@ namespace OpenIddict.Server
         public bool DisableTokenStorage { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether request caching should be enabled.
-        /// When enabled, both authorization and logout requests are automatically stored
-        /// in the distributed cache, which allows flowing large payloads across requests.
-        /// Enabling this option is recommended when using external authentication providers
-        /// or when large GET or POST OpenID Connect authorization requests support is required.
-        /// </summary>
-        public bool EnableRequestCaching { get; set; }
-
-        /// <summary>
         /// Gets or sets a boolean indicating whether scope validation is disabled.
         /// </summary>
         public bool DisableScopeValidation { get; set; }
 
         /// <summary>
-        /// Gets the OAuth2/OpenID Connect flows enabled for this application.
+        /// Gets the OAuth 2.0/OpenID Connect flows enabled for this application.
         /// </summary>
         public ISet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
@@ -108,30 +224,7 @@ namespace OpenIddict.Server
         public bool IgnoreScopePermissions { get; set; }
 
         /// <summary>
-        /// Gets or sets the random number generator used to generate crypto-secure identifiers.
-        /// </summary>
-        public RandomNumberGenerator RandomNumberGenerator { get; set; } = RandomNumberGenerator.Create();
-
-        /// <summary>
-        /// Gets or sets the caching policy used to determine how long the authorization
-        /// and end session requests should be cached by the distributed cache implementation.
-        /// </summary>
-        public DistributedCacheEntryOptions RequestCachingPolicy { get; set; } = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
-            SlidingExpiration = TimeSpan.FromMinutes(30)
-        };
-
-        /// <summary>
-        /// Gets or sets a boolean indicating whether PKCE must be used by client applications
-        /// when requesting an authorization code (e.g when using the code or hybrid flows).
-        /// If this property is set to <c>true</c>, authorization requests that lack the
-        /// code_challenge/code_challenge_method parameters will be automatically rejected.
-        /// </summary>
-        public bool RequireProofKeyForCodeExchange { get; set; }
-
-        /// <summary>
-        /// Gets the OAuth2/OpenID Connect scopes enabled for this application.
+        /// Gets the OAuth 2.0/OpenID Connect scopes enabled for this application.
         /// </summary>
         public ISet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal)
         {

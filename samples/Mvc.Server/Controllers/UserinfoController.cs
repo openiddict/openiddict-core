@@ -1,12 +1,9 @@
 ﻿using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Primitives;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Models;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
-using OpenIddict.Validation;
 
 namespace Mvc.Server.Controllers
 {
@@ -22,18 +19,14 @@ namespace Mvc.Server.Controllers
 
         //
         // GET: /api/userinfo
-        [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
         [HttpGet("userinfo"), Produces("application/json")]
         public async Task<IActionResult> Userinfo()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return BadRequest(new OpenIdConnectResponse
-                {
-                    Error = OpenIddictConstants.Errors.InvalidGrant,
-                    ErrorDescription = "The user profile is no longer available."
-                });
+                return Challenge();
             }
 
             var claims = new JObject();
@@ -53,9 +46,9 @@ namespace Mvc.Server.Controllers
                 claims[OpenIddictConstants.Claims.PhoneNumberVerified] = await _userManager.IsPhoneNumberConfirmedAsync(user);
             }
 
-            if (User.HasClaim(OpenIddictConstants.Claims.Scope, OpenIddictConstants.Scopes.Roles))
+            if (User.HasClaim(OpenIddictConstants.Claims.Scope, "roles"))
             {
-                claims[OpenIddictConstants.Claims.Roles] = JArray.FromObject(await _userManager.GetRolesAsync(user));
+                claims["roles"] = JArray.FromObject(await _userManager.GetRolesAsync(user));
             }
 
             // Note: the complete list of standard claims supported by the OpenID Connect specification

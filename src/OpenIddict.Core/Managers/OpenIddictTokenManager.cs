@@ -1274,9 +1274,9 @@ namespace OpenIddict.Core
                 builder.Add(new ValidationResult("The token type cannot be null or empty."));
             }
 
-            else if (!string.Equals(type, OpenIddictConstants.TokenTypes.AccessToken, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, OpenIddictConstants.TokenTypes.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, OpenIddictConstants.TokenTypes.RefreshToken, StringComparison.OrdinalIgnoreCase))
+            else if (!string.Equals(type, OpenIddictConstants.TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, OpenIddictConstants.TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, OpenIddictConstants.TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase))
             {
                 builder.Add(new ValidationResult("The specified token type is not supported by the default token manager."));
             }

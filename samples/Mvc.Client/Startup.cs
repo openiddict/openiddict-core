@@ -32,7 +32,7 @@ namespace Mvc.Client
                 options.ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654";
 
                 options.RequireHttpsMetadata = false;
-                options.GetClaimsFromUserInfoEndpoint = true;
+                options.GetClaimsFromUserInfoEndpoint = false;
                 options.SaveTokens = true;
 
                 // Use the authorization code flow.
@@ -71,7 +71,13 @@ namespace Mvc.Client
 
             app.UseAuthentication();
 
-            app.UseMvc();
+            app.UseAuthorization();
+
+            app.UseRouting();
+
+            app.UseEndpoints(options => options.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}"));
         }
     }
 }

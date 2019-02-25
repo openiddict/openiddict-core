@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Models;
-using OpenIddict.Validation;
 
 namespace Mvc.Server.Controllers
 {
@@ -17,7 +15,7 @@ namespace Mvc.Server.Controllers
             _userManager = userManager;
         }
 
-        [Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
         [HttpGet("message")]
         public async Task<IActionResult> GetMessage()
         {

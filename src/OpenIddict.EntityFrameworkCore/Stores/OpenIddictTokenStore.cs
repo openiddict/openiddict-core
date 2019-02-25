@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -206,7 +205,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the tokens corresponding
         /// to the specified subject and associated with the application identifier.
         /// </summary>
-        private static readonly Func<TContext, TKey, string, AsyncEnumerable<TToken>> FindBySubjectAndClient =
+        private static readonly Func<TContext, TKey, string, IAsyncEnumerable<TToken>> FindBySubjectAndClient =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -245,14 +244,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubjectAndClient(Context,
-                ConvertIdentifierFromString(client), subject).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TToken>();
+
+            await foreach (var token in FindBySubjectAndClient(Context,
+                ConvertIdentifierFromString(client), subject))
+            {
+                builder.Add(token);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the tokens matching the specified parameters.
         /// </summary>
-        private static readonly Func<TContext, TKey, string, string, AsyncEnumerable<TToken>> FindBySubjectClientAndStatus =
+        private static readonly Func<TContext, TKey, string, string, IAsyncEnumerable<TToken>> FindBySubjectClientAndStatus =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -297,14 +303,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubjectClientAndStatus(Context,
-                ConvertIdentifierFromString(client), subject, status).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TToken>();
+
+            await foreach (var token in FindBySubjectClientAndStatus(Context,
+                ConvertIdentifierFromString(client), subject, status))
+            {
+                builder.Add(token);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the tokens matching the specified parameters.
         /// </summary>
-        private static readonly Func<TContext, TKey, string, string, string, AsyncEnumerable<TToken>> FindBySubjectClientStatusAndType =
+        private static readonly Func<TContext, TKey, string, string, string, IAsyncEnumerable<TToken>> FindBySubjectClientStatusAndType =
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -357,15 +370,22 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubjectClientStatusAndType(Context,
-                ConvertIdentifierFromString(client), subject, status, type).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TToken>();
+
+            await foreach (var token in FindBySubjectClientStatusAndType(Context,
+                ConvertIdentifierFromString(client), subject, status, type))
+            {
+                builder.Add(token);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the list of
         /// tokens corresponding to the specified application identifier.
         /// </summary>
-        private static readonly Func<TContext, TKey, AsyncEnumerable<TToken>> FindByApplicationId =
+        private static readonly Func<TContext, TKey, IAsyncEnumerable<TToken>> FindByApplicationId =
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -395,15 +415,21 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return ImmutableArray.CreateRange(await FindByApplicationId(Context,
-                ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TToken>();
+
+            await foreach (var token in FindByApplicationId(Context, ConvertIdentifierFromString(identifier)))
+            {
+                builder.Add(token);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the list of
         /// tokens corresponding to the specified authorization identifier.
         /// </summary>
-        private static readonly Func<TContext, TKey, AsyncEnumerable<TToken>> FindByAuthorizationId =
+        private static readonly Func<TContext, TKey, IAsyncEnumerable<TToken>> FindByAuthorizationId =
             // Note: due to a bug in Entity Framework Core's query visitor, the tokens can't be
             // filtered using token.Authorization.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -433,8 +459,14 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return ImmutableArray.CreateRange(await FindByAuthorizationId(Context,
-                ConvertIdentifierFromString(identifier)).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TToken>();
+
+            await foreach (var token in FindByAuthorizationId(Context, ConvertIdentifierFromString(identifier)))
+            {
+                builder.Add(token);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
@@ -505,7 +537,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the
         /// list of tokens corresponding to the specified subject.
         /// </summary>
-        private static readonly Func<TContext, string, AsyncEnumerable<TToken>> FindBySubject =
+        private static readonly Func<TContext, string, IAsyncEnumerable<TToken>> FindBySubject =
             EF.CompileAsyncQuery((TContext context, string subject) =>
                 from token in context.Set<TToken>()
                     .Include(token => token.Application)
@@ -530,7 +562,14 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            return ImmutableArray.CreateRange(await FindBySubject(Context, subject).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TToken>();
+
+            await foreach (var token in FindBySubject(Context, subject))
+            {
+                builder.Add(token);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
