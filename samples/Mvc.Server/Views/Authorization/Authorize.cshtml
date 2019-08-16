@@ -5,10 +5,11 @@
 
     <p class="lead text-left">Do you want to grant <strong>@Model.ApplicationName</strong> access to your data? (scopes requested: @Model.Scope)</p>
 
-    <form method="post">
-        @Html.AntiForgeryToken()
-
-        <input type="hidden" name="request_id" value="@Model.RequestId" />
+    <form asp-controller="Authorization" asp-action="Authorize" method="post">
+        @foreach (var parameter in Model.Parameters)
+        {
+            <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+        }
 
         <input class="btn btn-lg btn-success" name="submit.Accept" type="submit" value="Yes" />
         <input class="btn btn-lg btn-danger" name="submit.Deny" type="submit" value="No" />

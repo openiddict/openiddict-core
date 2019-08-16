@@ -1,15 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\packages.props" />
-  
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <Description>Entity Framework Core stores for OpenIddict.</Description>
-    <Authors>Kévin Chalet</Authors>
-    <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
+    <PackageTags>$(PackageTags);entityframeworkcore</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EntityFrameworkCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup>

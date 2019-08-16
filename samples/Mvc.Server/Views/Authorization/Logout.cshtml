@@ -5,7 +5,10 @@
     <p class="lead text-left">Are you sure you want to sign out?</p>
 
     <form asp-controller="Authorization" asp-action="Logout" method="post">
-        <input type="hidden" name="request_id" value="@Model.RequestId" />
+        @foreach (var parameter in Model.Parameters)
+        {
+            <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+        }
 
         <input class="btn btn-lg btn-success" name="Confirm" type="submit" value="Yes" />
     </form>

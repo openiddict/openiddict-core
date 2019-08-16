@@ -746,7 +746,7 @@ namespace OpenIddict.Core
                 builder.Add(new ValidationResult("The scope name cannot be null or empty."));
             }
 
-            else if (name.Contains(OpenIddictConstants.Separators.Space))
+            else if (name.Contains(OpenIddictConstants.Separators.Space[0]))
             {
                 builder.Add(new ValidationResult("The scope name cannot contain spaces."));
             }

@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -333,7 +332,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve all the applications
         /// associated with the specified post_logout_redirect_uri.
         /// </summary>
-        private static readonly Func<TContext, string, AsyncEnumerable<TApplication>> FindByPostLogoutRedirectUri =
+        private static readonly Func<TContext, string, IAsyncEnumerable<TApplication>> FindByPostLogoutRedirectUri =
             // To optimize the efficiency of the query a bit, only applications whose stringified
             // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
             // are retrieved, a second pass is made to ensure only valid elements are returned.
@@ -361,10 +360,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            var applications = await FindByPostLogoutRedirectUri(Context, address).ToListAsync(cancellationToken);
-            var builder = ImmutableArray.CreateBuilder<TApplication>(applications.Count);
+            var builder = ImmutableArray.CreateBuilder<TApplication>();
 
-            foreach (var application in applications)
+            await foreach (var application in FindByPostLogoutRedirectUri(Context, address))
             {
                 foreach (var uri in await GetPostLogoutRedirectUrisAsync(application, cancellationToken))
                 {
@@ -379,16 +377,14 @@ namespace OpenIddict.EntityFrameworkCore
                 }
             }
 
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
+            return builder.ToImmutable();
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve all the
         /// applications associated with the specified redirect_uri.
         /// </summary>
-        private static readonly Func<TContext, string, AsyncEnumerable<TApplication>> FindByRedirectUri =
+        private static readonly Func<TContext, string, IAsyncEnumerable<TApplication>> FindByRedirectUri =
             // To optimize the efficiency of the query a bit, only applications whose stringified
             // RedirectUris property contains the specified URL are returned. Once the applications
             // are retrieved, a second pass is made to ensure only valid elements are returned.
@@ -416,10 +412,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            var applications = await FindByRedirectUri(Context, address).ToListAsync(cancellationToken);
-            var builder = ImmutableArray.CreateBuilder<TApplication>(applications.Count);
+            var builder = ImmutableArray.CreateBuilder<TApplication>();
 
-            foreach (var application in applications)
+            await foreach (var application in FindByRedirectUri(Context, address))
             {
                 foreach (var uri in await GetRedirectUrisAsync(application, cancellationToken))
                 {
@@ -434,9 +429,7 @@ namespace OpenIddict.EntityFrameworkCore
                 }
             }
 
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
+            return builder.ToImmutable();
         }
 
         /// <summary>

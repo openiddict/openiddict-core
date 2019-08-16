@@ -1,6 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\..\build\packages.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,8 +6,7 @@
 
   <PropertyGroup>
     <Description>Relational entities for the Entity Framework Core stores.</Description>
-    <Authors>Kévin Chalet</Authors>
-    <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
+    <PackageTags>$(PackageTags);entityframeworkcore;models</PackageTags>
   </PropertyGroup>
 
 </Project>

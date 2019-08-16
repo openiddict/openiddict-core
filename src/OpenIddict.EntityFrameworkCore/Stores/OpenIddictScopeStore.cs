@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
@@ -13,7 +14,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -239,7 +239,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve a list of scopes using their name.
         /// </summary>
-        private static readonly Func<TContext, ImmutableArray<string>, AsyncEnumerable<TScope>> FindByNames =
+        private static readonly Func<TContext, ImmutableArray<string>, IAsyncEnumerable<TScope>> FindByNames =
             EF.CompileAsyncQuery((TContext context, ImmutableArray<string> names) =>
                 from scope in context.Set<TScope>().AsTracking()
                 where names.Contains(scope.Name)
@@ -262,13 +262,20 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
-            return ImmutableArray.CreateRange(await FindByNames(Context, names).ToListAsync(cancellationToken));
+            var builder = ImmutableArray.CreateBuilder<TScope>();
+
+            await foreach (var scope in FindByNames(Context, names))
+            {
+                builder.Add(scope);
+            }
+
+            return builder.ToImmutable();
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve all the scopes that contain the specified resource.
         /// </summary>
-        private static readonly Func<TContext, string, AsyncEnumerable<TScope>> FindByResource =
+        private static readonly Func<TContext, string, IAsyncEnumerable<TScope>> FindByResource =
             // To optimize the efficiency of the query a bit, only scopes whose stringified
             // Resources column contains the specified resource are returned. Once the scopes
             // are retrieved, a second pass is made to ensure only valid elements are returned.
@@ -298,7 +305,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             var builder = ImmutableArray.CreateBuilder<TScope>();
 
-            foreach (var scope in await FindByResource(Context, resource).ToListAsync(cancellationToken))
+            await foreach (var scope in FindByResource(Context, resource))
             {
                 var resources = await GetResourcesAsync(scope, cancellationToken);
                 if (resources.Contains(resource, StringComparer.Ordinal))

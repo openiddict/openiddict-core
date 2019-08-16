@@ -1,15 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\packages.props" />
-
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
     <Description>Entity Framework 6.x stores for OpenIddict.</Description>
-    <Authors>Kévin Chalet</Authors>
-    <PackageTags>aspnetcore;authentication;jwt;openidconnect;openiddict;security</PackageTags>
+    <PackageTags>$(PackageTags);entityframework</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

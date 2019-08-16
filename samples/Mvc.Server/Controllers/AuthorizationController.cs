@@ -4,14 +4,14 @@
  * the license and the contributors participating to this project.
  */
 
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Extensions;
-using AspNet.Security.OpenIdConnect.Primitives;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Helpers;
@@ -21,7 +21,8 @@ using Mvc.Server.ViewModels.Shared;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore.Models;
-using OpenIddict.Server;
+using OpenIddict.Server.AspNetCore;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Mvc.Server
 {
@@ -46,11 +47,13 @@ namespace Mvc.Server
         // you must provide your own authorization endpoint action:
 
         [Authorize, HttpGet("~/connect/authorize")]
-        public async Task<IActionResult> Authorize(OpenIdConnectRequest request)
+        public async Task<IActionResult> Authorize()
         {
-            Debug.Assert(request.IsAuthorizationRequest(),
-                "The OpenIddict binder for ASP.NET Core MVC is not registered. " +
-                "Make sure services.AddOpenIddict().AddServer().UseMvc() is correctly called.");
+            var request = HttpContext.GetOpenIddictServerRequest();
+            if (request == null)
+            {
+                throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+            }
 
             // Retrieve the application details from the database.
             var application = await _applicationManager.FindByClientIdAsync(request.ClientId);
@@ -58,7 +61,7 @@ namespace Mvc.Server
             {
                 return View("Error", new ErrorViewModel
                 {
-                    Error = OpenIddictConstants.Errors.InvalidClient,
+                    Error = Errors.InvalidClient,
                     ErrorDescription = "Details concerning the calling client application cannot be found in the database"
                 });
             }
@@ -68,18 +71,20 @@ namespace Mvc.Server
             return View(new AuthorizeViewModel
             {
                 ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
-                RequestId = request.RequestId,
+                Parameters = request.GetFlattenedParameters(),
                 Scope = request.Scope
             });
         }
 
         [Authorize, FormValueRequired("submit.Accept")]
         [HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
-        public async Task<IActionResult> Accept(OpenIdConnectRequest request)
+        public async Task<IActionResult> Accept()
         {
-            Debug.Assert(request.IsAuthorizationRequest(),
-                "The OpenIddict binder for ASP.NET Core MVC is not registered. " +
-                "Make sure services.AddOpenIddict().AddServer().UseMvc() is correctly called.");
+            var request = HttpContext.GetOpenIddictServerRequest();
+            if (request == null)
+            {
+                throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+            }
 
             // Retrieve the profile of the logged in user.
             var user = await _userManager.GetUserAsync(User);
@@ -87,47 +92,56 @@ namespace Mvc.Server
             {
                 return View("Error", new ErrorViewModel
                 {
-                    Error = OpenIddictConstants.Errors.ServerError,
+                    Error = Errors.ServerError,
                     ErrorDescription = "An internal error has occurred"
                 });
             }
 
-            // Create a new authentication ticket.
-            var ticket = await CreateTicketAsync(request, user);
+            var principal = await _signInManager.CreateUserPrincipalAsync(user);
+
+            // Note: in this sample, the granted scopes match the requested scope
+            // but you may want to allow the user to uncheck specific scopes.
+            // For that, simply restrict the list of scopes before calling SetScopes.
+            principal.SetScopes(request.GetScopes());
+            principal.SetResources("resource_server");
+
+            foreach (var claim in principal.Claims)
+            {
+                claim.SetDestinations(GetDestinations(claim, principal));
+            }
 
             // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
-            return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
+            return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
         [Authorize, FormValueRequired("submit.Deny")]
         [HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
-        public IActionResult Deny()
-        {
-            // Notify OpenIddict that the authorization grant has been denied by the resource owner
-            // to redirect the user agent to the client application using the appropriate response_mode.
-            return Forbid(OpenIddictServerDefaults.AuthenticationScheme);
-        }
+        // Notify OpenIddict that the authorization grant has been denied by the resource owner
+        // to redirect the user agent to the client application using the appropriate response_mode.
+        public IActionResult Deny() => Forbid(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
 
         // Note: the logout action is only useful when implementing interactive
         // flows like the authorization code flow or the implicit flow.
 
         [HttpGet("~/connect/logout")]
-        public IActionResult Logout(OpenIdConnectRequest request)
+        public IActionResult Logout()
         {
-            Debug.Assert(request.IsLogoutRequest(),
-                "The OpenIddict binder for ASP.NET Core MVC is not registered. " +
-                "Make sure services.AddOpenIddict().AddServer().UseMvc() is correctly called.");
+            var request = HttpContext.GetOpenIddictServerRequest();
+            if (request == null)
+            {
+                throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+            }
 
             // Flow the request_id to allow OpenIddict to restore
             // the original logout request from the distributed cache.
             return View(new LogoutViewModel
             {
-                RequestId = request.RequestId
+                Parameters = request.GetFlattenedParameters()
             });
         }
 
-        [HttpPost("~/connect/logout"), ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
+        [ActionName(nameof(Logout)), HttpPost("~/connect/logout"), ValidateAntiForgeryToken]
+        public async Task<IActionResult> LogoutPost()
         {
             // Ask ASP.NET Core Identity to delete the local and external cookies created
             // when the user agent is redirected from the external identity provider
@@ -136,7 +150,7 @@ namespace Mvc.Server
 
             // Returning a SignOutResult will ask OpenIddict to redirect the user agent
             // to the post_logout_redirect_uri specified by the client application.
-            return SignOut(OpenIddictServerDefaults.AuthenticationScheme);
+            return SignOut(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
         #endregion
 
@@ -145,115 +159,105 @@ namespace Mvc.Server
         // you must provide your own token endpoint action:
 
         [HttpPost("~/connect/token"), Produces("application/json")]
-        public async Task<IActionResult> Exchange(OpenIdConnectRequest request)
+        public async Task<IActionResult> Exchange()
         {
-            Debug.Assert(request.IsTokenRequest(),
-                "The OpenIddict binder for ASP.NET Core MVC is not registered. " +
-                "Make sure services.AddOpenIddict().AddMvcBinders() is correctly called.");
+            var request = HttpContext.GetOpenIddictServerRequest();
+            if (request == null)
+            {
+                throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+            }
 
             if (request.IsPasswordGrantType())
             {
                 var user = await _userManager.FindByNameAsync(request.Username);
                 if (user == null)
                 {
-                    return BadRequest(new OpenIdConnectResponse
+                    var properties = new AuthenticationProperties(new Dictionary<string, string>
                     {
-                        Error = OpenIddictConstants.Errors.InvalidGrant,
-                        ErrorDescription = "The username/password couple is invalid."
+                        [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+                        [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The username/password couple is invalid."
                     });
+
+                    return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
                 }
 
                 // Validate the username/password parameters and ensure the account is not locked out.
                 var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
                 if (!result.Succeeded)
                 {
-                    return BadRequest(new OpenIdConnectResponse
+                    var properties = new AuthenticationProperties(new Dictionary<string, string>
                     {
-                        Error = OpenIddictConstants.Errors.InvalidGrant,
-                        ErrorDescription = "The username/password couple is invalid."
+                        [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+                        [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The username/password couple is invalid."
                     });
+
+                    return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
                 }
 
-                // Create a new authentication ticket.
-                var ticket = await CreateTicketAsync(request, user);
+                var principal = await _signInManager.CreateUserPrincipalAsync(user);
 
-                return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
+                // Note: in this sample, the granted scopes match the requested scope
+                // but you may want to allow the user to uncheck specific scopes.
+                // For that, simply restrict the list of scopes before calling SetScopes.
+                principal.SetScopes(request.GetScopes());
+                principal.SetResources("resource_server");
+
+                foreach (var claim in principal.Claims)
+                {
+                    claim.SetDestinations(GetDestinations(claim, principal));
+                }
+
+                // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
+                return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
             }
 
             else if (request.IsAuthorizationCodeGrantType() || request.IsRefreshTokenGrantType())
             {
                 // Retrieve the claims principal stored in the authorization code/refresh token.
-                var info = await HttpContext.AuthenticateAsync(OpenIddictServerDefaults.AuthenticationScheme);
+                var principal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
 
                 // Retrieve the user profile corresponding to the authorization code/refresh token.
                 // Note: if you want to automatically invalidate the authorization code/refresh token
                 // when the user password/roles change, use the following line instead:
                 // var user = _signInManager.ValidateSecurityStampAsync(info.Principal);
-                var user = await _userManager.GetUserAsync(info.Principal);
+                var user = await _userManager.GetUserAsync(principal);
                 if (user == null)
                 {
-                    return BadRequest(new OpenIdConnectResponse
+                    var properties = new AuthenticationProperties(new Dictionary<string, string>
                     {
-                        Error = OpenIddictConstants.Errors.InvalidGrant,
-                        ErrorDescription = "The token is no longer valid."
+                        [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+                        [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The token is no longer valid."
                     });
+
+                    return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
                 }
 
                 // Ensure the user is still allowed to sign in.
                 if (!await _signInManager.CanSignInAsync(user))
                 {
-                    return BadRequest(new OpenIdConnectResponse
+                    var properties = new AuthenticationProperties(new Dictionary<string, string>
                     {
-                        Error = OpenIddictConstants.Errors.InvalidGrant,
-                        ErrorDescription = "The user is no longer allowed to sign in."
+                        [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+                        [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The user is no longer allowed to sign in."
                     });
+
+                    return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
                 }
 
-                // Create a new authentication ticket, but reuse the properties stored in the
-                // authorization code/refresh token, including the scopes originally granted.
-                var ticket = await CreateTicketAsync(request, user, info.Properties);
+                foreach (var claim in principal.Claims)
+                {
+                    claim.SetDestinations(GetDestinations(claim, principal));
+                }
 
-                return SignIn(ticket.Principal, ticket.Properties, ticket.AuthenticationScheme);
+                // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
+                return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
             }
 
-            return BadRequest(new OpenIdConnectResponse
-            {
-                Error = OpenIddictConstants.Errors.UnsupportedGrantType,
-                ErrorDescription = "The specified grant type is not supported."
-            });
+            throw new InvalidOperationException("The specified grant type is not supported.");
         }
         #endregion
 
-        private async Task<AuthenticationTicket> CreateTicketAsync(
-            OpenIdConnectRequest request, ApplicationUser user,
-            AuthenticationProperties properties = null)
-        {
-            // Create a new ClaimsPrincipal containing the claims that
-            // will be used to create an id_token, a token or a code.
-            var principal = await _signInManager.CreateUserPrincipalAsync(user);
-
-            // Create a new authentication ticket holding the user identity.
-            var ticket = new AuthenticationTicket(principal, properties,
-                OpenIddictServerDefaults.AuthenticationScheme);
-
-            if (!request.IsAuthorizationCodeGrantType() && !request.IsRefreshTokenGrantType())
-            {
-                // Note: in this sample, the granted scopes match the requested scope
-                // but you may want to allow the user to uncheck specific scopes.
-                // For that, simply restrict the list of scopes before calling SetScopes.
-                ticket.SetScopes(request.GetScopes());
-                ticket.SetResources("resource_server");
-            }
-
-            foreach (var claim in ticket.Principal.Claims)
-            {
-                claim.SetDestinations(GetDestinations(claim, ticket));
-            }
-
-            return ticket;
-        }
-
-        private IEnumerable<string> GetDestinations(Claim claim, AuthenticationTicket ticket)
+        private IEnumerable<string> GetDestinations(Claim claim, ClaimsPrincipal principal)
         {
             // Note: by default, claims are NOT automatically included in the access and identity tokens.
             // To allow OpenIddict to serialize them, you must attach them a destination, that specifies
@@ -261,27 +265,27 @@ namespace Mvc.Server
 
             switch (claim.Type)
             {
-                case OpenIddictConstants.Claims.Name:
-                    yield return OpenIddictConstants.Destinations.AccessToken;
+                case Claims.Name:
+                    yield return Destinations.AccessToken;
 
-                    if (ticket.HasScope(OpenIddictConstants.Scopes.Profile))
-                        yield return OpenIddictConstants.Destinations.IdentityToken;
-
-                    yield break;
-
-                case OpenIddictConstants.Claims.Email:
-                    yield return OpenIddictConstants.Destinations.AccessToken;
-
-                    if (ticket.HasScope(OpenIddictConstants.Scopes.Email))
-                        yield return OpenIddictConstants.Destinations.IdentityToken;
+                    if (principal.HasScope(Scopes.Profile))
+                        yield return Destinations.IdentityToken;
 
                     yield break;
 
-                case OpenIddictConstants.Claims.Role:
-                    yield return OpenIddictConstants.Destinations.AccessToken;
+                case Claims.Email:
+                    yield return Destinations.AccessToken;
 
-                    if (ticket.HasScope(OpenIddictConstants.Scopes.Roles))
-                        yield return OpenIddictConstants.Destinations.IdentityToken;
+                    if (principal.HasScope(Scopes.Email))
+                        yield return Destinations.IdentityToken;
+
+                    yield break;
+
+                case Claims.Role:
+                    yield return Destinations.AccessToken;
+
+                    if (principal.HasScope(Scopes.Roles))
+                        yield return Destinations.IdentityToken;
 
                     yield break;
 
@@ -289,7 +293,7 @@ namespace Mvc.Server
                 case "AspNet.Identity.SecurityStamp": yield break;
 
                 default:
-                    yield return OpenIddictConstants.Destinations.AccessToken;
+                    yield return Destinations.AccessToken;
                     yield break;
             }
         }

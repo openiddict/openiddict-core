@@ -4,30 +4,36 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Text.Encodings.Web;
-using AspNet.Security.OpenIdConnect.Server;
+using System;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using static OpenIddict.Server.OpenIddictServerEvents;
 
 namespace OpenIddict.Server
 {
     /// <summary>
-    /// Provides the logic necessary to extract, validate and handle OpenID Connect requests.
+    /// Represents a handler able to process <typeparamref name="TContext"/> events.
     /// </summary>
-    public class OpenIddictServerHandler : OpenIdConnectServerHandler
+    /// <typeparam name="TContext">The type of the events handled by this instance.</typeparam>
+    public class OpenIddictServerHandler<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseContext
     {
+        private readonly Func<TContext, Task> _handler;
+
         /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictServerHandler"/> class.
+        /// Creates a new event using the specified handler delegate.
         /// </summary>
-        public OpenIddictServerHandler(
-            [NotNull] IOptionsMonitor<OpenIddictServerOptions> options,
-            [NotNull] ILoggerFactory logger,
-            [NotNull] UrlEncoder encoder,
-            [NotNull] ISystemClock clock)
-            : base(options, logger, encoder, clock)
-        {
-        }
+        /// <param name="handler">The event handler delegate.</param>
+        public OpenIddictServerHandler([NotNull] Func<TContext, Task> handler)
+            => _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+
+        /// <summary>
+        /// Processes the event.
+        /// </summary>
+        /// <param name="context">The event to process.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// </returns>
+        public Task HandleAsync([NotNull] TContext context)
+            => _handler(context ?? throw new ArgumentNullException(nameof(context)));
     }
 }

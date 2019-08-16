@@ -10,7 +10,6 @@ using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
-using OpenIddict.Core;
 using OpenIddict.Extensions;
 using OpenIddict.NHibernate.Models;
 

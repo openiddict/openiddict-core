@@ -1,0 +1,29 @@
+<Project>
+
+  <PropertyGroup>
+    <VersionPrefix>3.0.0</VersionPrefix>
+    <PreReleaseVersionLabel>alpha1</PreReleaseVersionLabel>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AspNetCoreVersion>3.0.0-preview8.19405.7</AspNetCoreVersion>
+    <BclAsyncInterfacesVersion>1.0.0-preview8.19405.3</BclAsyncInterfacesVersion>
+    <CoreFxVersion>4.4.0</CoreFxVersion>
+    <CryptoHelperVersion>3.0.2</CryptoHelperVersion>
+    <DataAnnotationsVersion>4.4.0</DataAnnotationsVersion>
+    <EntityFrameworkVersion>6.3.0-preview8-19405-04</EntityFrameworkVersion>
+    <EntityFrameworkCoreVersion>3.0.0-preview8.19405.11</EntityFrameworkCoreVersion>
+    <ExtensionsVersion>3.0.0-preview8.19405.4</ExtensionsVersion>
+    <JetBrainsVersion>2018.3.0</JetBrainsVersion>
+    <JsonNetVersion>12.0.2</JsonNetVersion>
+    <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
+    <IdentityModelVersion>6.2.0-preview-60806030202</IdentityModelVersion>
+    <ImmutableCollectionsVersion>1.5.0</ImmutableCollectionsVersion>
+    <MongoDbVersion>2.7.0</MongoDbVersion>
+    <MoqVersion>4.7.63</MoqVersion>
+    <NHibernateVersion>5.2.2</NHibernateVersion>
+    <OwinVersion>4.0.0</OwinVersion>
+    <TasksExtensionsVersion>4.5.3</TasksExtensionsVersion>
+  </PropertyGroup>
+
+</Project>

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 
 namespace OpenIddict.Abstractions
 {
@@ -15,17 +14,10 @@ namespace OpenIddict.Abstractions
         public string ApplicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the optional principal associated with the authorization.
+        /// Gets the claims associated with the authorization.
         /// Note: this property is not stored by the default authorization stores.
         /// </summary>
-        public ClaimsPrincipal Principal { get; set; }
-
-        /// <summary>
-        /// Gets the optional authentication properties associated with the authorization.
-        /// Note: this property is not stored by the default authorization stores.
-        /// </summary>
-        public IDictionary<string, string> Properties { get; } =
-            new Dictionary<string, string>(StringComparer.Ordinal);
+        public IDictionary<string, object> Claims { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the scopes associated with the authorization.

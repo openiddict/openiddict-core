@@ -5,15 +5,13 @@
  */
 
 using System;
-using System.Text;
-using AspNet.Security.OpenIdConnect.Server;
+using System.Linq;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OpenIddict.Abstractions;
 using OpenIddict.Server;
+using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using static OpenIddict.Server.OpenIddictServerHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -35,40 +33,31 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.AddAuthentication();
-            builder.Services.AddDistributedMemoryCache();
             builder.Services.AddLogging();
-            builder.Services.AddMemoryCache();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<IOpenIddictServerEventDispatcher, OpenIddictServerEventDispatcher>();
-            builder.Services.TryAddScoped<OpenIddictServerHandler>();
-            builder.Services.TryAddScoped(provider =>
-            {
-                InvalidOperationException CreateException() => new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server handler.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .Append("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .ToString());
+            builder.Services.TryAddScoped<IOpenIddictServerProvider, OpenIddictServerProvider>();
 
-                return new OpenIddictServerProvider(
-                    provider.GetRequiredService<ILogger<OpenIddictServerProvider>>(),
-                    provider.GetRequiredService<IOpenIddictServerEventDispatcher>(),
-                    provider.GetService<IOpenIddictApplicationManager>() ?? throw CreateException(),
-                    provider.GetService<IOpenIddictAuthorizationManager>() ?? throw CreateException(),
-                    provider.GetService<IOpenIddictScopeManager>() ?? throw CreateException(),
-                    provider.GetService<IOpenIddictTokenManager>() ?? throw CreateException());
-            });
+            // Register the built-in server event handlers used by the OpenIddict server components.
+            // Note: the order used here is not important, as the actual order is set in the options.
+            builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
-            // Register the options initializers used by the OpenID Connect server handler and OpenIddict.
-            // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
-            builder.Services.TryAddEnumerable(new[]
-            {
-                ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictServerConfiguration>(),
-                ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationOptions>, OpenIddictServerConfiguration>(),
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOptions>, OpenIddictServerConfiguration>(),
-                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerOptions>, OpenIdConnectServerInitializer>()
-            });
+            // Register the built-in filters used by the default OpenIddict server event handlers.
+            builder.Services.TryAddSingleton<RequireAccessTokenIncluded>();
+            builder.Services.TryAddSingleton<RequireAuthorizationCodeIncluded>();
+            builder.Services.TryAddSingleton<RequireClientIdParameter>();
+            builder.Services.TryAddSingleton<RequireDegradedModeDisabled>();
+            builder.Services.TryAddSingleton<RequireDegradedModeEnabled>();
+            builder.Services.TryAddSingleton<RequireEndpointPermissionsEnabled>();
+            builder.Services.TryAddSingleton<RequireGrantTypePermissionsEnabled>();
+            builder.Services.TryAddSingleton<RequireIdentityTokenIncluded>();
+            builder.Services.TryAddSingleton<RequireRefreshTokenIncluded>();
+            builder.Services.TryAddSingleton<RequireScopePermissionsEnabled>();
+            builder.Services.TryAddSingleton<RequireScopeValidationEnabled>();
+
+            // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+                IPostConfigureOptions<OpenIddictServerOptions>, OpenIddictServerConfiguration>());
 
             return new OpenIddictServerBuilder(builder.Services);
         }
@@ -79,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="configuration">The configuration delegate used to configure the server services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        /// <returns>The <see cref="OpenIddictBuilder"/>.</returns>
         public static OpenIddictBuilder AddServer(
             [NotNull] this OpenIddictBuilder builder,
             [NotNull] Action<OpenIddictServerBuilder> configuration)

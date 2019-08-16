@@ -2,7 +2,6 @@
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -45,20 +44,18 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Creates a new permanent authorization based on the specified parameters.
         /// </summary>
-        /// <param name="principal">The principal associated with the authorization.</param>
+        /// <param name="claims">The claims associated with the authorization.</param>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="type">The authorization type.</param>
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
-        /// <param name="properties">The authentication properties associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
         /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
         Task<object> CreateAsync(
-            [NotNull] ClaimsPrincipal principal, [NotNull] string subject, [NotNull] string client,
-            [NotNull] string type, ImmutableArray<string> scopes,
-            [CanBeNull] ImmutableDictionary<string, string> properties, CancellationToken cancellationToken = default);
+            [NotNull] ImmutableDictionary<string, object> claims, [NotNull] string subject, [NotNull] string client,
+            [NotNull] string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a new authorization based on the specified descriptor.
