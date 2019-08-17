@@ -20,11 +20,16 @@ namespace OpenIddict.NHibernate
     /// </summary>
     public class OpenIddictScopeStoreResolver : IOpenIddictScopeStoreResolver
     {
-        private static readonly ConcurrentDictionary<Type, Type> _cache = new ConcurrentDictionary<Type, Type>();
+        private readonly TypeResolutionCache _cache;
         private readonly IServiceProvider _provider;
 
-        public OpenIddictScopeStoreResolver([NotNull] IServiceProvider provider)
-            => _provider = provider;
+        public OpenIddictScopeStoreResolver(
+            [NotNull] TypeResolutionCache cache,
+            [NotNull] IServiceProvider provider)
+        {
+            _cache = cache;
+            _provider = provider;
+        }
 
         /// <summary>
         /// Returns a scope store compatible with the specified scope type or throws an
@@ -60,5 +65,11 @@ namespace OpenIddict.NHibernate
 
             return (IOpenIddictScopeStore<TScope>) _provider.GetRequiredService(type);
         }
+
+        // Note: NHibernate resolvers are registered as scoped dependencies as their inner
+        // service provider must be able to resolve scoped services (typically, the store they return).
+        // To avoid having to declare a static type resolution cache, a special cache service is used
+        // here and registered as a singleton dependency so that its content persists beyond the scope.
+        public class TypeResolutionCache : ConcurrentDictionary<Type, Type> { }
     }
 }
