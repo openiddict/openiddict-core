@@ -14,6 +14,7 @@ using Moq;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore.Models;
 using Xunit;
+using static OpenIddict.EntityFrameworkCore.OpenIddictScopeStoreResolver;
 
 namespace OpenIddict.EntityFrameworkCore.Tests
 {
@@ -28,7 +29,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
 
             var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions>>();
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictScopeStoreResolver(options, provider);
+            var resolver = new OpenIddictScopeStoreResolver(new TypeResolutionCache(), options, provider);
 
             // Act and assert
             Assert.NotNull(resolver.Get<CustomScope>());
@@ -42,7 +43,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
 
             var options = Mock.Of<IOptionsMonitor<OpenIddictEntityFrameworkCoreOptions>>();
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictScopeStoreResolver(options, provider);
+            var resolver = new OpenIddictScopeStoreResolver(new TypeResolutionCache(), options, provider);
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomScope>());
@@ -68,7 +69,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
                 });
 
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictScopeStoreResolver(options, provider);
+            var resolver = new OpenIddictScopeStoreResolver(new TypeResolutionCache(), options, provider);
 
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictScope>());
@@ -95,7 +96,7 @@ namespace OpenIddict.EntityFrameworkCore.Tests
                 });
 
             var provider = services.BuildServiceProvider();
-            var resolver = new OpenIddictScopeStoreResolver(options, provider);
+            var resolver = new OpenIddictScopeStoreResolver(new TypeResolutionCache(), options, provider);
 
             // Act and assert
             Assert.NotNull(resolver.Get<MyScope>());
