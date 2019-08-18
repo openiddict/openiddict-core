@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,10 +54,10 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations in the database.
         /// </returns>
-        public virtual async Task<long> CountAsync(CancellationToken cancellationToken)
+        public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -71,10 +72,10 @@ namespace OpenIddict.MongoDb
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations that match the specified query.
         /// </returns>
-        public virtual async Task<long> CountAsync<TResult>(
+        public virtual async ValueTask<long> CountAsync<TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
@@ -93,10 +94,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="authorization">The authorization to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -114,10 +113,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="authorization">The authorization to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -149,11 +146,8 @@ namespace OpenIddict.MongoDb
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the subject/client.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the subject/client.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
@@ -166,12 +160,20 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(await collection.Find(authorization =>
-                authorization.Subject == subject &&
-                authorization.ApplicationId == ObjectId.Parse(client)).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+                await foreach (var authorization in collection.Find(authorization =>
+                    authorization.Subject == subject &&
+                    authorization.ApplicationId == ObjectId.Parse(client)).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return authorization;
+                }
+            }
         }
 
         /// <summary>
@@ -181,11 +183,8 @@ namespace OpenIddict.MongoDb
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="status">The authorization status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, CancellationToken cancellationToken)
         {
@@ -204,13 +203,21 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(await collection.Find(authorization =>
-                authorization.Subject == subject &&
-                authorization.ApplicationId == ObjectId.Parse(client) &&
-                authorization.Status == status).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+                await foreach (var authorization in collection.Find(authorization =>
+                    authorization.Subject == subject &&
+                    authorization.ApplicationId == ObjectId.Parse(client) &&
+                    authorization.Status == status).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return authorization;
+                }
+            }
         }
 
         /// <summary>
@@ -221,11 +228,8 @@ namespace OpenIddict.MongoDb
         /// <param name="status">The authorization status.</param>
         /// <param name="type">The authorization type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken)
         {
@@ -249,14 +253,22 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(await collection.Find(authorization =>
-                authorization.Subject == subject &&
-                authorization.ApplicationId == ObjectId.Parse(client) &&
-                authorization.Status == status &&
-                authorization.Type == type).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+                await foreach (var authorization in collection.Find(authorization =>
+                    authorization.Subject == subject &&
+                    authorization.ApplicationId == ObjectId.Parse(client) &&
+                    authorization.Status == status &&
+                    authorization.Type == type).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return authorization;
+                }
+            }
         }
 
         /// <summary>
@@ -268,11 +280,8 @@ namespace OpenIddict.MongoDb
         /// <param name="type">The authorization type.</param>
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, [NotNull] string type,
             ImmutableArray<string> scopes, CancellationToken cancellationToken)
@@ -297,17 +306,25 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            // Note: Enumerable.All() is deliberately used without the extension method syntax to ensure
-            // ImmutableArrayExtensions.All() (which is not supported by MongoDB) is not used instead.
-            return ImmutableArray.CreateRange(await collection.Find(authorization =>
-                authorization.Subject == subject &&
-                authorization.ApplicationId == ObjectId.Parse(client) &&
-                authorization.Status == status &&
-                authorization.Type == type &&
-                Enumerable.All(scopes, scope => authorization.Scopes.Contains(scope))).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+                // Note: Enumerable.All() is deliberately used without the extension method syntax to ensure
+                // ImmutableArrayExtensions.All() (which is not supported by MongoDB) is not used instead.
+                await foreach (var authorization in collection.Find(authorization =>
+                    authorization.Subject == subject &&
+                    authorization.ApplicationId == ObjectId.Parse(client) &&
+                    authorization.Status == status &&
+                    authorization.Type == type &&
+                    Enumerable.All(scopes, scope => authorization.Scopes.Contains(scope))).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return authorization;
+                }
+            }
         }
 
         /// <summary>
@@ -315,11 +332,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="identifier">The application identifier associated with the authorizations.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified application.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindByApplicationIdAsync(
+        /// <returns>The authorizations corresponding to the specified application.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindByApplicationIdAsync(
             [NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
@@ -327,11 +341,19 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(await collection.Find(authorization =>
-                authorization.ApplicationId == ObjectId.Parse(identifier)).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+                await foreach (var authorization in collection.Find(authorization =>
+                    authorization.ApplicationId == ObjectId.Parse(identifier)).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return authorization;
+                }
+            }
         }
 
         /// <summary>
@@ -340,10 +362,10 @@ namespace OpenIddict.MongoDb
         /// <param name="identifier">The unique identifier associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        public virtual async Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -362,11 +384,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified subject.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindBySubjectAsync(
+        /// <returns>The authorizations corresponding to the specified subject.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindBySubjectAsync(
             [NotNull] string subject, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
@@ -374,11 +393,19 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(await collection.Find(authorization =>
-                authorization.Subject == subject).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+                await foreach (var authorization in collection.Find(authorization =>
+                    authorization.Subject == subject).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return authorization;
+                }
+            }
         }
 
         /// <summary>
@@ -409,10 +436,10 @@ namespace OpenIddict.MongoDb
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual async Task<TResult> GetAsync<TState, TResult>(
+        public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -584,12 +611,9 @@ namespace OpenIddict.MongoDb
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> ListAsync(
-            [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual async IAsyncEnumerable<TAuthorization> ListAsync(
+            [CanBeNull] int? count, [CanBeNull] int? offset, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -606,7 +630,10 @@ namespace OpenIddict.MongoDb
                 query = query.Take(count.Value);
             }
 
-            return ImmutableArray.CreateRange(await query.ToListAsync(cancellationToken));
+            await foreach (var authorization in ((IAsyncCursorSource<TAuthorization>) query).ToAsyncEnumerable(cancellationToken))
+            {
+                yield return authorization;
+            }
         }
 
         /// <summary>
@@ -617,11 +644,8 @@ namespace OpenIddict.MongoDb
         /// <param name="query">The query to execute.</param>
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -630,21 +654,26 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(query));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(
-                await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TResult> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
+
+                await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return element;
+                }
+            }
         }
 
         /// <summary>
         /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no valid/nonexpired token attached.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task PruneAsync(CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask PruneAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -708,10 +737,8 @@ namespace OpenIddict.MongoDb
         /// <param name="authorization">The authorization.</param>
         /// <param name="identifier">The unique identifier associated with the client application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetApplicationIdAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetApplicationIdAsync([NotNull] TAuthorization authorization,
             [CanBeNull] string identifier, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -729,7 +756,7 @@ namespace OpenIddict.MongoDb
                 authorization.ApplicationId = ObjectId.Empty;
             }
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -738,10 +765,8 @@ namespace OpenIddict.MongoDb
         /// <param name="authorization">The authorization.</param>
         /// <param name="properties">The additional properties associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetPropertiesAsync([NotNull] TAuthorization authorization, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetPropertiesAsync([NotNull] TAuthorization authorization, [CanBeNull] JObject properties, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -752,12 +777,12 @@ namespace OpenIddict.MongoDb
             {
                 authorization.Properties = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             authorization.Properties = BsonDocument.Parse(properties.ToString(Formatting.None));
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -766,10 +791,8 @@ namespace OpenIddict.MongoDb
         /// <param name="authorization">The authorization.</param>
         /// <param name="scopes">The scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetScopesAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetScopesAsync([NotNull] TAuthorization authorization,
             ImmutableArray<string> scopes, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -781,12 +804,12 @@ namespace OpenIddict.MongoDb
             {
                 authorization.Scopes = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             authorization.Scopes = scopes.ToArray();
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -795,10 +818,8 @@ namespace OpenIddict.MongoDb
         /// <param name="authorization">The authorization.</param>
         /// <param name="status">The status associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetStatusAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetStatusAsync([NotNull] TAuthorization authorization,
             [CanBeNull] string status, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -808,7 +829,7 @@ namespace OpenIddict.MongoDb
 
             authorization.Status = status;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -817,10 +838,8 @@ namespace OpenIddict.MongoDb
         /// <param name="authorization">The authorization.</param>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetSubjectAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetSubjectAsync([NotNull] TAuthorization authorization,
             [CanBeNull] string subject, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -830,7 +849,7 @@ namespace OpenIddict.MongoDb
 
             authorization.Subject = subject;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -839,10 +858,8 @@ namespace OpenIddict.MongoDb
         /// <param name="authorization">The authorization.</param>
         /// <param name="type">The type associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetTypeAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetTypeAsync([NotNull] TAuthorization authorization,
             [CanBeNull] string type, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -852,7 +869,7 @@ namespace OpenIddict.MongoDb
 
             authorization.Type = type;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -860,10 +877,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="authorization">The authorization to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {

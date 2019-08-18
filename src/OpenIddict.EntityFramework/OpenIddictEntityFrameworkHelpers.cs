@@ -4,6 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using JetBrains.Annotations;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
@@ -11,7 +14,7 @@ using OpenIddict.EntityFramework.Models;
 namespace System.Data.Entity
 {
     /// <summary>
-    /// Exposes extensions allowing to register the OpenIddict Entity Framework 6.x entity sets.
+    /// Exposes extensions simplifying the integration between OpenIddict and Entity Framework 6.x.
     /// </summary>
     public static class OpenIddictEntityFrameworkHelpers
     {
@@ -54,6 +57,31 @@ namespace System.Data.Entity
                 .Add(new OpenIddictTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
 
             return builder;
+        }
+
+        /// <summary>
+        /// Executes the query and returns the results as a non-streamed async enumeration.
+        /// </summary>
+        /// <typeparam name="T">The type of the returned entities.</typeparam>
+        /// <param name="source">The query source.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>The non-streamed async enumeration containing the results.</returns>
+        internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>([NotNull] this IQueryable<T> source, CancellationToken cancellationToken)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<T> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                foreach (var element in await source.ToListAsync(cancellationToken))
+                {
+                    yield return element;
+                }
+            }
         }
     }
 }

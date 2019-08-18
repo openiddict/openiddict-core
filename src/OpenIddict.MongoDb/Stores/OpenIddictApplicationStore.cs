@@ -5,8 +5,10 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,10 +54,10 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of applications in the database.
         /// </returns>
-        public virtual async Task<long> CountAsync(CancellationToken cancellationToken)
+        public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
@@ -70,10 +72,10 @@ namespace OpenIddict.MongoDb
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of applications that match the specified query.
         /// </returns>
-        public virtual async Task<long> CountAsync<TResult>(
+        public virtual async ValueTask<long> CountAsync<TResult>(
             [NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
@@ -92,10 +94,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="application">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -113,10 +113,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="application">The application to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -151,10 +149,10 @@ namespace OpenIddict.MongoDb
         /// <param name="identifier">The client identifier associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual async Task<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -173,10 +171,10 @@ namespace OpenIddict.MongoDb
         /// <param name="identifier">The unique identifier associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual async Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -195,11 +193,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns the client applications corresponding to the specified post_logout_redirect_uri.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TApplication>> FindByPostLogoutRedirectUriAsync(
+        /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
+        public virtual IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
             [NotNull] string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
@@ -207,11 +202,19 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(await collection.Find(application =>
-                application.PostLogoutRedirectUris.Contains(address)).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TApplication> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+
+                await foreach (var application in collection.Find(application =>
+                    application.PostLogoutRedirectUris.Contains(address)).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return application;
+                }
+            }
         }
 
         /// <summary>
@@ -219,11 +222,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="address">The redirect_uri associated with the applications.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns the client applications corresponding to the specified redirect_uri.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TApplication>> FindByRedirectUriAsync(
+        /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
+        public virtual IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
             [NotNull] string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
@@ -231,11 +231,19 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(await collection.Find(application =>
-                application.RedirectUris.Contains(address)).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TApplication> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+
+                await foreach (var application in collection.Find(application =>
+                    application.RedirectUris.Contains(address)).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return application;
+                }
+            }
         }
 
         /// <summary>
@@ -247,10 +255,10 @@ namespace OpenIddict.MongoDb
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual async Task<TResult> GetAsync<TState, TResult>(
+        public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -512,12 +520,9 @@ namespace OpenIddict.MongoDb
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TApplication>> ListAsync(
-            [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual async IAsyncEnumerable<TApplication> ListAsync(
+            [CanBeNull] int? count, [CanBeNull] int? offset, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
@@ -534,7 +539,10 @@ namespace OpenIddict.MongoDb
                 query = query.Take(count.Value);
             }
 
-            return ImmutableArray.CreateRange(await query.ToListAsync(cancellationToken));
+            await foreach (var application in ((IAsyncCursorSource<TApplication>) query).ToAsyncEnumerable(cancellationToken))
+            {
+                yield return application;
+            }
         }
 
         /// <summary>
@@ -545,11 +553,8 @@ namespace OpenIddict.MongoDb
         /// <param name="query">The query to execute.</param>
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -558,11 +563,18 @@ namespace OpenIddict.MongoDb
                 throw new ArgumentNullException(nameof(query));
             }
 
-            var database = await Context.GetDatabaseAsync(cancellationToken);
-            var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(
-                await ((IMongoQueryable<TResult>) query(collection.AsQueryable(), state)).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TResult> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var database = await Context.GetDatabaseAsync(cancellationToken);
+                var collection = database.GetCollection<TApplication>(Options.CurrentValue.ApplicationsCollectionName);
+
+                await foreach (var element in query(collection.AsQueryable(), state).ToAsyncEnumerable(cancellationToken))
+                {
+                    yield return element;
+                }
+            }
         }
 
         /// <summary>
@@ -571,10 +583,8 @@ namespace OpenIddict.MongoDb
         /// <param name="application">The application.</param>
         /// <param name="identifier">The client identifier associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetClientIdAsync([NotNull] TApplication application,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetClientIdAsync([NotNull] TApplication application,
             [CanBeNull] string identifier, CancellationToken cancellationToken)
         {
             if (application == null)
@@ -584,7 +594,7 @@ namespace OpenIddict.MongoDb
 
             application.ClientId = identifier;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -595,10 +605,8 @@ namespace OpenIddict.MongoDb
         /// <param name="application">The application.</param>
         /// <param name="secret">The client secret associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetClientSecretAsync([NotNull] TApplication application,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetClientSecretAsync([NotNull] TApplication application,
             [CanBeNull] string secret, CancellationToken cancellationToken)
         {
             if (application == null)
@@ -608,7 +616,7 @@ namespace OpenIddict.MongoDb
 
             application.ClientSecret = secret;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -617,10 +625,8 @@ namespace OpenIddict.MongoDb
         /// <param name="application">The application.</param>
         /// <param name="type">The client type associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetClientTypeAsync([NotNull] TApplication application,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetClientTypeAsync([NotNull] TApplication application,
             [CanBeNull] string type, CancellationToken cancellationToken)
         {
             if (application == null)
@@ -630,7 +636,7 @@ namespace OpenIddict.MongoDb
 
             application.Type = type;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -639,10 +645,8 @@ namespace OpenIddict.MongoDb
         /// <param name="application">The application.</param>
         /// <param name="type">The consent type associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetConsentTypeAsync([NotNull] TApplication application,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetConsentTypeAsync([NotNull] TApplication application,
             [CanBeNull] string type, CancellationToken cancellationToken)
         {
             if (application == null)
@@ -652,7 +656,7 @@ namespace OpenIddict.MongoDb
 
             application.ConsentType = type;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -661,10 +665,8 @@ namespace OpenIddict.MongoDb
         /// <param name="application">The application.</param>
         /// <param name="name">The display name associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetDisplayNameAsync([NotNull] TApplication application,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDisplayNameAsync([NotNull] TApplication application,
             [CanBeNull] string name, CancellationToken cancellationToken)
         {
             if (application == null)
@@ -674,7 +676,7 @@ namespace OpenIddict.MongoDb
 
             application.DisplayName = name;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -683,10 +685,8 @@ namespace OpenIddict.MongoDb
         /// <param name="application">The application.</param>
         /// <param name="permissions">The permissions associated with the application </param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetPermissionsAsync([NotNull] TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetPermissionsAsync([NotNull] TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -697,12 +697,12 @@ namespace OpenIddict.MongoDb
             {
                 application.Permissions = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             application.Permissions = permissions.ToArray();
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -711,10 +711,8 @@ namespace OpenIddict.MongoDb
         /// <param name="application">The application.</param>
         /// <param name="addresses">The logout callback addresses associated with the application </param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
             if (application == null)
@@ -726,12 +724,12 @@ namespace OpenIddict.MongoDb
             {
                 application.PostLogoutRedirectUris = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             application.PostLogoutRedirectUris = addresses.ToArray();
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -740,10 +738,8 @@ namespace OpenIddict.MongoDb
         /// <param name="application">The application.</param>
         /// <param name="properties">The additional properties associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -754,12 +750,12 @@ namespace OpenIddict.MongoDb
             {
                 application.Properties = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             application.Properties = BsonDocument.Parse(properties.ToString(Formatting.None));
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -768,10 +764,8 @@ namespace OpenIddict.MongoDb
         /// <param name="application">The application.</param>
         /// <param name="addresses">The callback addresses associated with the application </param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetRedirectUrisAsync([NotNull] TApplication application,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetRedirectUrisAsync([NotNull] TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken)
         {
             if (application == null)
@@ -783,12 +777,12 @@ namespace OpenIddict.MongoDb
             {
                 application.RedirectUris = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             application.RedirectUris = addresses.ToArray();
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -796,10 +790,8 @@ namespace OpenIddict.MongoDb
         /// </summary>
         /// <param name="application">The application to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {

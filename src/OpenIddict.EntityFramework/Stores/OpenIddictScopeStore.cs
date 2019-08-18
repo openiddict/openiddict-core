@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -85,11 +86,11 @@ namespace OpenIddict.EntityFramework
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes in the database.
         /// </returns>
-        public virtual Task<long> CountAsync(CancellationToken cancellationToken)
-            => Scopes.LongCountAsync();
+        public virtual ValueTask<long> CountAsync(CancellationToken cancellationToken)
+            => new ValueTask<long>(Scopes.LongCountAsync());
 
         /// <summary>
         /// Determines the number of scopes that match the specified query.
@@ -98,17 +99,17 @@ namespace OpenIddict.EntityFramework
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes that match the specified query.
         /// </returns>
-        public virtual Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Scopes).LongCountAsync();
+            return new ValueTask<long>(query(Scopes).LongCountAsync());
         }
 
         /// <summary>
@@ -116,10 +117,8 @@ namespace OpenIddict.EntityFramework
         /// </summary>
         /// <param name="scope">The scope to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -128,7 +127,7 @@ namespace OpenIddict.EntityFramework
 
             Scopes.Add(scope);
 
-            return Context.SaveChangesAsync(cancellationToken);
+            return new ValueTask(Context.SaveChangesAsync(cancellationToken));
         }
 
         /// <summary>
@@ -136,10 +135,8 @@ namespace OpenIddict.EntityFramework
         /// </summary>
         /// <param name="scope">The scope to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -168,10 +165,10 @@ namespace OpenIddict.EntityFramework
         /// <param name="identifier">The unique identifier associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the identifier.
         /// </returns>
-        public virtual Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual ValueTask<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -180,9 +177,9 @@ namespace OpenIddict.EntityFramework
 
             var key = ConvertIdentifierFromString(identifier);
 
-            return (from scope in Scopes
-                    where scope.Id.Equals(key)
-                    select scope).FirstOrDefaultAsync(cancellationToken);
+            return new ValueTask<TScope>((from scope in Scopes
+                                          where scope.Id.Equals(key)
+                                          select scope).FirstOrDefaultAsync(cancellationToken));
         }
 
         /// <summary>
@@ -191,19 +188,19 @@ namespace OpenIddict.EntityFramework
         /// <param name="name">The name associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the specified name.
         /// </returns>
-        public virtual Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
+        public virtual ValueTask<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
             }
 
-            return (from scope in Scopes
-                    where scope.Name == name
-                    select scope).FirstOrDefaultAsync(cancellationToken);
+            return new ValueTask<TScope>((from scope in Scopes
+                                          where scope.Name == name
+                                          select scope).FirstOrDefaultAsync(cancellationToken));
         }
 
         /// <summary>
@@ -211,11 +208,8 @@ namespace OpenIddict.EntityFramework
         /// </summary>
         /// <param name="names">The names associated with the scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scopes corresponding to the specified names.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TScope>> FindByNamesAsync(
+        /// <returns>The scopes corresponding to the specified names.</returns>
+        public virtual IAsyncEnumerable<TScope> FindByNamesAsync(
             ImmutableArray<string> names, CancellationToken cancellationToken)
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
@@ -223,10 +217,9 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
-            return ImmutableArray.CreateRange(
-                await (from scope in Scopes
-                       where names.Contains(scope.Name)
-                       select scope).ToListAsync(cancellationToken));
+            return (from scope in Scopes
+                    where names.Contains(scope.Name)
+                    select scope).AsAsyncEnumerable(cancellationToken);
         }
 
         /// <summary>
@@ -234,11 +227,8 @@ namespace OpenIddict.EntityFramework
         /// </summary>
         /// <param name="resource">The resource associated with the scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scopes associated with the specified resource.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TScope>> FindByResourceAsync(
+        /// <returns>The scopes associated with the specified resource.</returns>
+        public virtual IAsyncEnumerable<TScope> FindByResourceAsync(
             [NotNull] string resource, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(resource))
@@ -251,22 +241,9 @@ namespace OpenIddict.EntityFramework
             // are retrieved, a second pass is made to ensure only valid elements are returned.
             // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            var scopes = await (from scope in Scopes
-                                where scope.Resources.Contains(resource)
-                                select scope).ToListAsync(cancellationToken);
-
-            var builder = ImmutableArray.CreateBuilder<TScope>();
-
-            foreach (var scope in scopes)
-            {
-                var resources = await GetResourcesAsync(scope, cancellationToken);
-                if (resources.Contains(resource, StringComparer.OrdinalIgnoreCase))
-                {
-                    builder.Add(scope);
-                }
-            }
-
-            return builder.ToImmutable();
+            return Scopes.Where(scope => scope.Resources.Contains(resource))
+                .AsAsyncEnumerable(cancellationToken)
+                .WhereAwait(async scope => (await GetResourcesAsync(scope, cancellationToken)).Contains(resource, StringComparer.Ordinal));
         }
 
         /// <summary>
@@ -278,10 +255,10 @@ namespace OpenIddict.EntityFramework
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual Task<TResult> GetAsync<TState, TResult>(
+        public virtual ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -290,7 +267,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Scopes, state).FirstOrDefaultAsync(cancellationToken);
+            return new ValueTask<TResult>(query(Scopes, state).FirstOrDefaultAsync(cancellationToken));
         }
 
         /// <summary>
@@ -473,11 +450,8 @@ namespace OpenIddict.EntityFramework
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TScope>> ListAsync(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TScope> ListAsync(
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
             var query = Scopes.OrderBy(scope => scope.Id).AsQueryable();
@@ -492,7 +466,7 @@ namespace OpenIddict.EntityFramework
                 query = query.Take(count.Value);
             }
 
-            return ImmutableArray.CreateRange(await query.ToListAsync(cancellationToken));
+            return query.AsAsyncEnumerable(cancellationToken);
         }
 
         /// <summary>
@@ -503,11 +477,8 @@ namespace OpenIddict.EntityFramework
         /// <param name="query">The query to execute.</param>
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -516,7 +487,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(Scopes, state).ToListAsync(cancellationToken));
+            return query(Scopes, state).AsAsyncEnumerable(cancellationToken);
         }
 
         /// <summary>
@@ -525,10 +496,8 @@ namespace OpenIddict.EntityFramework
         /// <param name="scope">The scope.</param>
         /// <param name="description">The description associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetDescriptionAsync([NotNull] TScope scope, [CanBeNull] string description, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDescriptionAsync([NotNull] TScope scope, [CanBeNull] string description, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -537,7 +506,7 @@ namespace OpenIddict.EntityFramework
 
             scope.Description = description;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -546,10 +515,8 @@ namespace OpenIddict.EntityFramework
         /// <param name="scope">The scope.</param>
         /// <param name="name">The display name associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetDisplayNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDisplayNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -558,7 +525,7 @@ namespace OpenIddict.EntityFramework
 
             scope.DisplayName = name;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -567,10 +534,8 @@ namespace OpenIddict.EntityFramework
         /// <param name="scope">The scope.</param>
         /// <param name="name">The name associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -579,7 +544,7 @@ namespace OpenIddict.EntityFramework
 
             scope.Name = name;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -588,10 +553,8 @@ namespace OpenIddict.EntityFramework
         /// <param name="scope">The scope.</param>
         /// <param name="properties">The additional properties associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetPropertiesAsync([NotNull] TScope scope, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetPropertiesAsync([NotNull] TScope scope, [CanBeNull] JObject properties, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -602,12 +565,12 @@ namespace OpenIddict.EntityFramework
             {
                 scope.Properties = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             scope.Properties = properties.ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -616,10 +579,8 @@ namespace OpenIddict.EntityFramework
         /// <param name="scope">The scope.</param>
         /// <param name="resources">The resources associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetResourcesAsync([NotNull] TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetResourcesAsync([NotNull] TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -630,12 +591,12 @@ namespace OpenIddict.EntityFramework
             {
                 scope.Resources = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             scope.Resources = new JArray(resources.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -643,10 +604,8 @@ namespace OpenIddict.EntityFramework
         /// </summary>
         /// <param name="scope">The scope to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {

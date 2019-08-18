@@ -5,9 +5,11 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +19,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NHibernate;
+using NHibernate.Cfg;
 using NHibernate.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.NHibernate.Models;
@@ -92,10 +95,10 @@ namespace OpenIddict.NHibernate
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes in the database.
         /// </returns>
-        public virtual async Task<long> CountAsync(CancellationToken cancellationToken)
+        public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
         {
             var session = await Context.GetSessionAsync(cancellationToken);
             return await session.Query<TScope>().LongCountAsync(cancellationToken);
@@ -108,10 +111,10 @@ namespace OpenIddict.NHibernate
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes that match the specified query.
         /// </returns>
-        public virtual async Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual async ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TScope>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
@@ -127,10 +130,8 @@ namespace OpenIddict.NHibernate
         /// </summary>
         /// <param name="scope">The scope to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask CreateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -147,10 +148,8 @@ namespace OpenIddict.NHibernate
         /// </summary>
         /// <param name="scope">The scope to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask DeleteAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -180,10 +179,10 @@ namespace OpenIddict.NHibernate
         /// <param name="identifier">The unique identifier associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the identifier.
         /// </returns>
-        public virtual async Task<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -200,10 +199,10 @@ namespace OpenIddict.NHibernate
         /// <param name="name">The name associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the specified name.
         /// </returns>
-        public virtual async Task<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
+        public virtual async ValueTask<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -222,24 +221,27 @@ namespace OpenIddict.NHibernate
         /// </summary>
         /// <param name="names">The names associated with the scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scopes corresponding to the specified names.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TScope>> FindByNamesAsync(
-            ImmutableArray<string> names, CancellationToken cancellationToken)
+        /// <returns>The scopes corresponding to the specified names.</returns>
+        public virtual IAsyncEnumerable<TScope> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken)
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
-            var session = await Context.GetSessionAsync(cancellationToken);
+            return ExecuteAsync(cancellationToken);
 
-            return ImmutableArray.CreateRange(
-                await (from scope in session.Query<TScope>()
-                       where names.Contains(scope.Name)
-                       select scope).ToListAsync(cancellationToken));
+            async IAsyncEnumerable<TScope> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var session = await Context.GetSessionAsync(cancellationToken);
+
+                await foreach (var scope in (from scope in session.Query<TScope>()
+                                             where names.Contains(scope.Name)
+                                             select scope).AsAsyncEnumerable(cancellationToken))
+                {
+                    yield return scope;
+                }
+            }
         }
 
         /// <summary>
@@ -247,41 +249,33 @@ namespace OpenIddict.NHibernate
         /// </summary>
         /// <param name="resource">The resource associated with the scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scopes associated with the specified resource.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TScope>> FindByResourceAsync(
-            [NotNull] string resource, CancellationToken cancellationToken)
+        /// <returns>The scopes associated with the specified resource.</returns>
+        public virtual IAsyncEnumerable<TScope> FindByResourceAsync([NotNull] string resource, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(resource))
             {
                 throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
             }
 
-            var session = await Context.GetSessionAsync(cancellationToken);
+            return ExecuteAsync(cancellationToken);
 
-            // To optimize the efficiency of the query a bit, only scopes whose stringified
-            // Resources column contains the specified resource are returned. Once the scopes
-            // are retrieved, a second pass is made to ensure only valid elements are returned.
-            // Implementers that use this method in a hot path may want to override this method
-            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            var scopes = await (from scope in session.Query<TScope>()
-                                where scope.Resources.Contains(resource)
-                                select scope).ToListAsync(cancellationToken);
-
-            var builder = ImmutableArray.CreateBuilder<TScope>();
-
-            foreach (var scope in scopes)
+            async IAsyncEnumerable<TScope> ExecuteAsync(CancellationToken cancellationToken)
             {
-                var resources = await GetResourcesAsync(scope, cancellationToken);
-                if (resources.Contains(resource, StringComparer.OrdinalIgnoreCase))
+                var session = await Context.GetSessionAsync(cancellationToken);
+
+                // To optimize the efficiency of the query a bit, only scopes whose stringified
+                // Resources column contains the specified resource are returned. Once the scopes
+                // are retrieved, a second pass is made to ensure only valid elements are returned.
+                // Implementers that use this method in a hot path may want to override this method
+                // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
+                await foreach (var scope in session.Query<TScope>()
+                    .Where(scope => scope.Resources.Contains(resource))
+                    .AsAsyncEnumerable(cancellationToken)
+                    .WhereAwait(async scope => (await GetResourcesAsync(scope, cancellationToken)).Contains(resource, StringComparer.Ordinal)))
                 {
-                    builder.Add(scope);
+                    yield return scope;
                 }
             }
-
-            return builder.ToImmutable();
         }
 
         /// <summary>
@@ -293,10 +287,10 @@ namespace OpenIddict.NHibernate
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual async Task<TResult> GetAsync<TState, TResult>(
+        public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -478,12 +472,9 @@ namespace OpenIddict.NHibernate
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TScope>> ListAsync(
-            [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual async IAsyncEnumerable<TScope> ListAsync(
+            [CanBeNull] int? count, [CanBeNull] int? offset, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var session = await Context.GetSessionAsync(cancellationToken);
             var query = session.Query<TScope>()
@@ -500,7 +491,10 @@ namespace OpenIddict.NHibernate
                 query = query.Take(count.Value);
             }
 
-            return ImmutableArray.CreateRange(await query.ToListAsync(cancellationToken));
+            await foreach (var scope in query.AsAsyncEnumerable(cancellationToken))
+            {
+                yield return scope;
+            }
         }
 
         /// <summary>
@@ -511,11 +505,8 @@ namespace OpenIddict.NHibernate
         /// <param name="query">The query to execute.</param>
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TScope>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -524,8 +515,17 @@ namespace OpenIddict.NHibernate
                 throw new ArgumentNullException(nameof(query));
             }
 
-            var session = await Context.GetSessionAsync(cancellationToken);
-            return ImmutableArray.CreateRange(await query(session.Query<TScope>(), state).ToListAsync(cancellationToken));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TResult> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                var session = await Context.GetSessionAsync(cancellationToken);
+
+                await foreach (var element in query(session.Query<TScope>(), state).AsAsyncEnumerable(cancellationToken))
+                {
+                    yield return element;
+                }
+            }
         }
 
         /// <summary>
@@ -534,10 +534,8 @@ namespace OpenIddict.NHibernate
         /// <param name="scope">The scope.</param>
         /// <param name="description">The description associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetDescriptionAsync([NotNull] TScope scope, [CanBeNull] string description, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDescriptionAsync([NotNull] TScope scope, [CanBeNull] string description, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -546,7 +544,7 @@ namespace OpenIddict.NHibernate
 
             scope.Description = description;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -555,10 +553,8 @@ namespace OpenIddict.NHibernate
         /// <param name="scope">The scope.</param>
         /// <param name="name">The display name associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetDisplayNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetDisplayNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -567,7 +563,7 @@ namespace OpenIddict.NHibernate
 
             scope.DisplayName = name;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -576,10 +572,8 @@ namespace OpenIddict.NHibernate
         /// <param name="scope">The scope.</param>
         /// <param name="name">The name associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetNameAsync([NotNull] TScope scope, [CanBeNull] string name, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -588,7 +582,7 @@ namespace OpenIddict.NHibernate
 
             scope.Name = name;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -597,10 +591,8 @@ namespace OpenIddict.NHibernate
         /// <param name="scope">The scope.</param>
         /// <param name="properties">The additional properties associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetPropertiesAsync([NotNull] TScope scope, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetPropertiesAsync([NotNull] TScope scope, [CanBeNull] JObject properties, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -611,12 +603,12 @@ namespace OpenIddict.NHibernate
             {
                 scope.Properties = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             scope.Properties = properties.ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -625,10 +617,8 @@ namespace OpenIddict.NHibernate
         /// <param name="scope">The scope.</param>
         /// <param name="resources">The resources associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetResourcesAsync([NotNull] TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetResourcesAsync([NotNull] TScope scope, ImmutableArray<string> resources, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -639,12 +629,12 @@ namespace OpenIddict.NHibernate
             {
                 scope.Resources = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             scope.Resources = new JArray(resources.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -652,10 +642,8 @@ namespace OpenIddict.NHibernate
         /// </summary>
         /// <param name="scope">The scope to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask UpdateAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
