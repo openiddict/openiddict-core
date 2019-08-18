@@ -11,7 +11,6 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using static OpenIddict.Server.OpenIddictServerHandlers;
 
 namespace OpenIddict.Server.AspNetCore
 {

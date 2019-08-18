@@ -51,6 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireEndpointPermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireGrantTypePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireIdentityTokenIncluded>();
+            builder.Services.TryAddSingleton<RequirePostLogoutRedirectUriParameter>();
             builder.Services.TryAddSingleton<RequireRefreshTokenIncluded>();
             builder.Services.TryAddSingleton<RequireScopePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireScopeValidationEnabled>();

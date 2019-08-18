@@ -93,7 +93,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AppendLine("The OpenIddict ASP.NET Core server cannot be used as the default scheme handler.")
                     .Append("Make sure that neither DefaultAuthenticateScheme, DefaultChallengeScheme, ")
                     .Append("DefaultForbidScheme, DefaultSignInScheme, DefaultSignOutScheme nor DefaultScheme ")
-                    .Append("point to an instance of the OpenIddict server handler.")
+                    .Append("point to an instance of the OpenIddict ASP.NET Core server handler.")
                     .ToString());
             }
         }

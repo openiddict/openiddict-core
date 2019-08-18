@@ -45,7 +45,8 @@ namespace OpenIddict.Server
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
-            .AddRange(Serialization.DefaultHandlers);
+            .AddRange(Serialization.DefaultHandlers)
+            .AddRange(Session.DefaultHandlers);
 
         /// <summary>
         /// Contains the logic responsible of ensuring that the challenge response contains an appropriate error.

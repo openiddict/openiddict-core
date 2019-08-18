@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -89,6 +88,7 @@ namespace Mvc.Server
                     options.UseAspNetCore()
                            .EnableStatusCodePagesIntegration()
                            .EnableAuthorizationEndpointPassthrough()
+                           .EnableLogoutEndpointPassthrough()
                            .EnableTokenEndpointPassthrough()
                            .EnableUserinfoEndpointPassthrough()
                            .DisableTransportSecurityRequirement(); // During development, you can disable the HTTPS requirement.

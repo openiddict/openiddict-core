@@ -62,6 +62,28 @@ namespace OpenIddict.Server.Owin
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if the
+        /// pass-through mode was not enabled for the logout endpoint.
+        /// </summary>
+        public class RequireLogoutEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
+
+            public RequireLogoutEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+                => _options = options;
+
+            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return Task.FromResult(_options.CurrentValue.EnableLogoutEndpointPassthrough);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if no OWIN request can be found.
         /// </summary>
         public class RequireOwinRequest : IOpenIddictServerHandlerFilter<BaseContext>

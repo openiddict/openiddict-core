@@ -37,7 +37,8 @@ namespace OpenIddict.Server.AspNetCore
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
-            .AddRange(Serialization.DefaultHandlers);
+            .AddRange(Serialization.DefaultHandlers)
+            .AddRange(Session.DefaultHandlers);
 
         /// <summary>
         /// Contains the logic responsible of inferring the endpoint type from the request address.

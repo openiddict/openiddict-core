@@ -116,6 +116,17 @@ namespace OpenIddict.Server
                         .ToString());
                 }
 
+                if (options.LogoutEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                    descriptor => descriptor.ContextType == typeof(ValidateLogoutRequestContext) &&
+                                  descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("No custom logout request validation handler was found. When enabling the degraded mode, ")
+                        .Append("a custom 'IOpenIddictServerHandler<ValidateLogoutRequestContext>' must be implemented ")
+                        .Append("to validate logout requests (e.g to ensure the post_logout_redirect_uri is valid).")
+                        .ToString());
+                }
+
                 if (options.TokenEndpointUris.Count != 0 && !options.CustomHandlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateTokenRequestContext) &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
