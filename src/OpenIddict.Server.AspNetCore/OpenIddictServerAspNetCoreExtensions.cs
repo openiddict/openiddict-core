@@ -47,6 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireAuthorizationEndpointPassthroughEnabled>();
             builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
             builder.Services.TryAddSingleton<RequireHttpRequest>();
+            builder.Services.TryAddSingleton<RequireLogoutEndpointPassthroughEnabled>();
             builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();
             builder.Services.TryAddSingleton<RequireRequestCachingEnabled>();
             builder.Services.TryAddSingleton<RequireStatusCodePagesIntegrationEnabled>();

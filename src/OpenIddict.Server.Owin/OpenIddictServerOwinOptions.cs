@@ -47,6 +47,14 @@ namespace OpenIddict.Server.Owin
         public bool EnableErrorPassthrough { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the authorization endpoint.
+        /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+        /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+        /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+        /// </summary>
+        public bool EnableLogoutEndpointPassthrough { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the token endpoint.
         /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
         /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests

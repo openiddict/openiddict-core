@@ -83,6 +83,16 @@ namespace OpenIddict.Server
                 : base(transaction)
             {
             }
+
+            /// <summary>
+            /// Gets a boolean indicating whether the logout request should be processed.
+            /// </summary>
+            public bool IsLogoutAllowed { get; private set; }
+
+            /// <summary>
+            /// Allow the logout request to be processed.
+            /// </summary>
+            public void ProcessLogout() => IsLogoutAllowed = true;
         }
 
         /// <summary>

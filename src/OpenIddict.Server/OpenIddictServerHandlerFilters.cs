@@ -144,6 +144,22 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers when no post_logout_redirect_uri is received.
+        /// </summary>
+        public class RequirePostLogoutRedirectUriParameter : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return Task.FromResult(!string.IsNullOrEmpty(context.Request.PostLogoutRedirectUri));
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if no refresh token is returned.
         /// </summary>
         public class RequireRefreshTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninResponseContext>

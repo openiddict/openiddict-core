@@ -28,7 +28,6 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using static OpenIddict.Server.OpenIddictServerHandlers;
 
 namespace OpenIddict.Server.AspNetCore
 {
@@ -55,6 +54,7 @@ namespace OpenIddict.Server.AspNetCore
                 RemoveCachedRequest.Descriptor,
                 ProcessFormPostResponse.Descriptor,
                 ProcessQueryResponse.Descriptor,
+                ProcessFragmentResponse.Descriptor,
                 ProcessStatusCodePagesErrorResponse.Descriptor,
                 ProcessPassthroughErrorResponse.Descriptor,
                 ProcessLocalErrorResponse.Descriptor);

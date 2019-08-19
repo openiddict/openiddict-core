@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.ComponentModel;
 using JetBrains.Annotations;
 using Microsoft.Owin;
 using OpenIddict.Abstractions;

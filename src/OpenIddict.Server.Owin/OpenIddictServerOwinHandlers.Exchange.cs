@@ -9,7 +9,6 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 
 namespace OpenIddict.Server.Owin

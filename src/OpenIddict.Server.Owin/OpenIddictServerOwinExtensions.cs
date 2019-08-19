@@ -48,6 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Register the built-in filters used by the default OpenIddict OWIN server event handlers.
             builder.Services.TryAddSingleton<RequireAuthorizationEndpointPassthroughEnabled>();
             builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
+            builder.Services.TryAddSingleton<RequireLogoutEndpointPassthroughEnabled>();
             builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();
             builder.Services.TryAddSingleton<RequireOwinRequest>();
             builder.Services.TryAddSingleton<RequireRequestCachingEnabled>();
