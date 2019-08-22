@@ -1,4 +1,4 @@
-# OpenIddict
+﻿# OpenIddict
 ### The OpenID Connect server you'll be addicted to.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/46ofo2eusje0hcw2?svg=true)](https://ci.appveyor.com/project/openiddict/openiddict-core)
@@ -260,7 +260,10 @@ using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFacto
 
 **OpenIddict** is actively maintained by **[Kévin Chalet](https://github.com/PinpointTownes)**. Contributions are welcome and can be submitted using pull requests.
 
-**Special thanks to [Christopher McCrum](https://github.com/chrisjmccrum) and [Data Citadel](http://www.datacitadel.com/) for their incredible support**.
+**Special thanks to the following sponsors for their incredible support**:
+
+- [David Hamilton](https://github.com/daveh101) from [DAM Good Media](https://www.damgoodmedia.com/)
+- [Christopher McCrum](https://github.com/chrisjmccrum) from [Data Citadel](http://www.datacitadel.com/)
 
 ## License
 
