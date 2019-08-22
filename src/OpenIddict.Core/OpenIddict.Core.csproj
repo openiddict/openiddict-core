@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(ExtensionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)" />
+    <PackageReference Include="System.Linq.Async" Version="$(LinqAsyncVersion)" />
   </ItemGroup>
 
   <ItemGroup>

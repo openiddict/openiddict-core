@@ -1017,7 +1017,7 @@ namespace OpenIddict.Server
                     var scopes = context.Request.GetScopes().Except(context.Options.Scopes);
                     if (scopes.Count != 0)
                     {
-                        foreach (var scope in await _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
+                        await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
                         {
                             scopes = scopes.Remove(await _scopeManager.GetNameAsync(scope));
                         }

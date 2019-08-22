@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,10 +23,8 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="authorization">The authorization to add to the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task AddAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask AddAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the authorizations corresponding to the specified
@@ -34,11 +33,8 @@ namespace OpenIddict.Abstractions
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the subject/client.
-        /// </returns>
-        ValueTask<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the subject/client.</returns>
+        IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken);
 
         /// <summary>
@@ -48,11 +44,8 @@ namespace OpenIddict.Abstractions
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="status">The authorization status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        ValueTask<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client, [NotNull] string status, CancellationToken cancellationToken);
 
         /// <summary>
@@ -63,11 +56,8 @@ namespace OpenIddict.Abstractions
         /// <param name="status">The authorization status.</param>
         /// <param name="type">The authorization type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        ValueTask<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client, [NotNull] string status,
             [NotNull] string type, CancellationToken cancellationToken);
 
@@ -80,11 +70,8 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The authorization type.</param>
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        ValueTask<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client, [NotNull] string status,
             [NotNull] string type, ImmutableArray<string> scopes, CancellationToken cancellationToken);
 
@@ -93,11 +80,8 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="identifier">The application identifier associated with the authorizations.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified application.
-        /// </returns>
-        ValueTask<ImmutableArray<TAuthorization>> FindByApplicationIdAsync(
+        /// <returns>The authorizations corresponding to the specified application.</returns>
+        IAsyncEnumerable<TAuthorization> FindByApplicationIdAsync(
             [NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
@@ -116,20 +100,15 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified subject.
-        /// </returns>
-        ValueTask<ImmutableArray<TAuthorization>> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
+        /// <returns>The authorizations corresponding to the specified subject.</returns>
+        IAsyncEnumerable<TAuthorization> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the specified authorization from the cache.
         /// </summary>
         /// <param name="authorization">The authorization to remove from the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task RemoveAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask RemoveAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken);
     }
 }

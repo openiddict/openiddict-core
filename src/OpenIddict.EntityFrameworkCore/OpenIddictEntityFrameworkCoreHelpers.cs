@@ -13,7 +13,7 @@ using OpenIddict.EntityFrameworkCore.Models;
 namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
-    /// Exposes extensions allowing to register the OpenIddict Entity Framework Core entity sets.
+    /// Exposes extensions simplifying the integration between OpenIddict and Entity Framework Core.
     /// </summary>
     public static class OpenIddictEntityFrameworkCoreHelpers
     {

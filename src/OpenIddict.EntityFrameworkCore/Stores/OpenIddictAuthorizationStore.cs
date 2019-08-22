@@ -124,11 +124,11 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations in the database.
         /// </returns>
-        public virtual Task<long> CountAsync(CancellationToken cancellationToken)
-            => Authorizations.LongCountAsync();
+        public virtual ValueTask<long> CountAsync(CancellationToken cancellationToken)
+            => new ValueTask<long>(Authorizations.AsQueryable().LongCountAsync());
 
         /// <summary>
         /// Determines the number of authorizations that match the specified query.
@@ -137,17 +137,17 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations that match the specified query.
         /// </returns>
-        public virtual Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Authorizations).LongCountAsync();
+            return new ValueTask<long>(query(Authorizations).LongCountAsync());
         }
 
         /// <summary>
@@ -155,10 +155,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="authorization">The authorization to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -167,7 +165,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             Context.Add(authorization);
 
-            return Context.SaveChangesAsync(cancellationToken);
+            return new ValueTask(Context.SaveChangesAsync(cancellationToken));
         }
 
         /// <summary>
@@ -175,17 +173,15 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="authorization">The authorization to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            async Task<IDbContextTransaction> CreateTransactionAsync()
+            async ValueTask<IDbContextTransaction> CreateTransactionAsync()
             {
                 // Note: transactions that specify an explicit isolation level are only supported by
                 // relational providers and trying to use them with a different provider results in
@@ -222,29 +218,28 @@ namespace OpenIddict.EntityFrameworkCore
             // To prevent an SQL exception from being thrown if a new associated entity is
             // created after the existing entries have been listed, the following logic is
             // executed in a serializable transaction, that will lock the affected tables.
-            using (var transaction = await CreateTransactionAsync())
+            using var transaction = await CreateTransactionAsync();
+
+            // Remove all the tokens associated with the authorization.
+            foreach (var token in await ListTokensAsync())
             {
-                // Remove all the tokens associated with the authorization.
-                foreach (var token in await ListTokensAsync())
-                {
-                    Context.Remove(token);
-                }
+                Context.Remove(token);
+            }
 
-                Context.Remove(authorization);
+            Context.Remove(authorization);
 
-                try
-                {
-                    await Context.SaveChangesAsync(cancellationToken);
-                    transaction?.Commit();
-                }
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+                transaction?.Commit();
+            }
 
-                catch (DbUpdateConcurrencyException exception)
-                {
-                    throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                        .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
-                        .Append("Reload the authorization from the database and retry the operation.")
-                        .ToString(), exception);
-                }
+            catch (DbUpdateConcurrencyException exception)
+            {
+                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
+                    .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
+                    .Append("Reload the authorization from the database and retry the operation.")
+                    .ToString(), exception);
             }
         }
 
@@ -273,11 +268,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the subject/client.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the subject/client.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
@@ -290,15 +282,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
-
-            await foreach (var authorization in FindBySubjectAndClient(Context,
-                ConvertIdentifierFromString(client), subject))
-            {
-                builder.Add(authorization);
-            }
-
-            return builder.ToImmutable();
+            return FindBySubjectAndClient(Context, ConvertIdentifierFromString(client), subject);
         }
 
         /// <summary>
@@ -325,11 +309,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="status">The authorization status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, CancellationToken cancellationToken)
         {
@@ -348,15 +329,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
-
-            await foreach (var authorization in FindBySubjectClientAndStatus(Context,
-                ConvertIdentifierFromString(client), subject, status))
-            {
-                builder.Add(authorization);
-            }
-
-            return builder.ToImmutable();
+            return FindBySubjectClientAndStatus(Context, ConvertIdentifierFromString(client), subject, status);
         }
 
         /// <summary>
@@ -386,11 +359,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="status">The authorization status.</param>
         /// <param name="type">The authorization type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken)
         {
@@ -414,15 +384,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
-
-            await foreach (var authorization in FindBySubjectClientStatusAndType(Context,
-                ConvertIdentifierFromString(client), subject, status, type))
-            {
-                builder.Add(authorization);
-            }
-
-            return builder.ToImmutable();
+            return FindBySubjectClientStatusAndType(Context, ConvertIdentifierFromString(client), subject, status, type);
         }
 
         /// <summary>
@@ -434,40 +396,14 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="type">The authorization type.</param>
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, [NotNull] string type,
             ImmutableArray<string> scopes, CancellationToken cancellationToken)
-        {
-            var authorizations = await FindAsync(subject, client, status, type, cancellationToken);
-            if (authorizations.IsEmpty)
-            {
-                return ImmutableArray.Create<TAuthorization>();
-            }
-
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
-
-            foreach (var authorization in authorizations)
-            {
-                async Task<bool> HasScopesAsync()
-                    => (await GetScopesAsync(authorization, cancellationToken))
-                        .ToImmutableHashSet(StringComparer.Ordinal)
-                        .IsSupersetOf(scopes);
-
-                if (await HasScopesAsync())
-                {
-                    builder.Add(authorization);
-                }
-            }
-
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
-        }
+            => FindAsync(subject, client, status, type, cancellationToken)
+                .WhereAwait(async authorization => new HashSet<string>(
+                    await GetScopesAsync(authorization, cancellationToken), StringComparer.Ordinal).IsSupersetOf(scopes));
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the list of
@@ -491,11 +427,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="identifier">The application identifier associated with the authorizations.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified application.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindByApplicationIdAsync(
+        /// <returns>The authorizations corresponding to the specified application.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindByApplicationIdAsync(
             [NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
@@ -503,15 +436,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
-
-            await foreach (var authorization in FindByApplicationId(Context,
-                ConvertIdentifierFromString(identifier)))
-            {
-                builder.Add(authorization);
-            }
-
-            return builder.ToImmutable();
+            return FindByApplicationId(Context, ConvertIdentifierFromString(identifier));
         }
 
         /// <summary>
@@ -530,18 +455,15 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorization corresponding to the identifier.
-        /// </returns>
-        public virtual Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        /// <returns>The authorization corresponding to the identifier.</returns>
+        public virtual ValueTask<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return FindById(Context, ConvertIdentifierFromString(identifier));
+            return new ValueTask<TAuthorization>(FindById(Context, ConvertIdentifierFromString(identifier)));
         }
 
         /// <summary>
@@ -557,15 +479,12 @@ namespace OpenIddict.EntityFrameworkCore
                 select authorization);
 
         /// <summary>
-        /// Retrieves .
+        /// Retrieves the subject associated with an authorization.
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified subject.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindBySubjectAsync(
+        /// <returns>The authorizations corresponding to the specified subject.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindBySubjectAsync(
             [NotNull] string subject, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(subject))
@@ -573,14 +492,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>();
-
-            await foreach (var authorization in FindBySubject(Context, subject))
-            {
-                builder.Add(authorization);
-            }
-
-            return builder.ToImmutable();
+            return FindBySubject(Context, subject);
         }
 
         /// <summary>
@@ -628,10 +540,10 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual Task<TResult> GetAsync<TState, TResult>(
+        public virtual ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -640,9 +552,9 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(
+            return new ValueTask<TResult>(query(
                 Authorizations.Include(authorization => authorization.Application)
-                              .AsTracking(), state).FirstOrDefaultAsync(cancellationToken);
+                              .AsTracking(), state).FirstOrDefaultAsync(cancellationToken));
         }
 
         /// <summary>
@@ -825,11 +737,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> ListAsync(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> ListAsync(
             [CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken)
         {
             var query = Authorizations.Include(authorization => authorization.Application)
@@ -846,7 +755,7 @@ namespace OpenIddict.EntityFrameworkCore
                 query = query.Take(count.Value);
             }
 
-            return ImmutableArray.CreateRange(await query.ToListAsync(cancellationToken));
+            return query.AsAsyncEnumerable();
         }
 
         /// <summary>
@@ -857,11 +766,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="query">The query to execute.</param>
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -870,19 +776,17 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return ImmutableArray.CreateRange(await query(
+            return query(
                 Authorizations.Include(authorization => authorization.Application)
-                              .AsTracking(), state).ToListAsync(cancellationToken));
+                              .AsTracking(), state).AsAsyncEnumerable();
         }
 
         /// <summary>
         /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no valid/nonexpired token attached.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task PruneAsync(CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask PruneAsync(CancellationToken cancellationToken)
         {
             // Note: Entity Framework Core doesn't support set-based deletes, which prevents removing
             // entities in a single command without having to retrieve and materialize them first.
@@ -890,7 +794,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             IList<Exception> exceptions = null;
 
-            async Task<IDbContextTransaction> CreateTransactionAsync()
+            async ValueTask<IDbContextTransaction> CreateTransactionAsync()
             {
                 // Note: transactions that specify an explicit isolation level are only supported by
                 // relational providers and trying to use them with a different provider results in
@@ -916,7 +820,7 @@ namespace OpenIddict.EntityFrameworkCore
                 return null;
             }
 
-            for (var offset = 0; offset < 100_000; offset = offset + 1_000)
+            for (var offset = 0; offset < 100_000; offset += 1_000)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -924,44 +828,43 @@ namespace OpenIddict.EntityFrameworkCore
                 // after it was retrieved from the database, the following logic is executed in
                 // a repeatable read transaction, that will put a lock on the retrieved entries
                 // and thus prevent them from being concurrently modified outside this block.
-                using (var transaction = await CreateTransactionAsync())
+                using var transaction = await CreateTransactionAsync();
+
+                var authorizations =
+                    await (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
+                           where authorization.Status != OpenIddictConstants.Statuses.Valid ||
+                                (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
+                                !authorization.Tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid &&
+                                                                   token.ExpirationDate > DateTimeOffset.UtcNow))
+                           orderby authorization.Id
+                           select authorization).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
+
+                if (authorizations.Count == 0)
                 {
-                    var authorizations =
-                        await (from authorization in Authorizations.Include(authorization => authorization.Tokens).AsTracking()
-                               where authorization.Status != OpenIddictConstants.Statuses.Valid ||
-                                    (authorization.Type == OpenIddictConstants.AuthorizationTypes.AdHoc &&
-                                    !authorization.Tokens.Any(token => token.Status == OpenIddictConstants.Statuses.Valid &&
-                                                                       token.ExpirationDate > DateTimeOffset.UtcNow))
-                               orderby authorization.Id
-                               select authorization).Skip(offset).Take(1_000).ToListAsync(cancellationToken);
+                    break;
+                }
 
-                    if (authorizations.Count == 0)
+                // Note: new tokens may be attached after the authorizations were retrieved
+                // from the database since the transaction level is deliberately limited to
+                // repeatable read instead of serializable for performance reasons). In this
+                // case, the operation will fail, which is considered an acceptable risk.
+                Context.RemoveRange(authorizations);
+                Context.RemoveRange(authorizations.SelectMany(authorization => authorization.Tokens));
+
+                try
+                {
+                    await Context.SaveChangesAsync(cancellationToken);
+                    transaction?.Commit();
+                }
+
+                catch (Exception exception)
+                {
+                    if (exceptions == null)
                     {
-                        break;
+                        exceptions = new List<Exception>(capacity: 1);
                     }
 
-                    // Note: new tokens may be attached after the authorizations were retrieved
-                    // from the database since the transaction level is deliberately limited to
-                    // repeatable read instead of serializable for performance reasons). In this
-                    // case, the operation will fail, which is considered an acceptable risk.
-                    Context.RemoveRange(authorizations);
-                    Context.RemoveRange(authorizations.SelectMany(authorization => authorization.Tokens));
-
-                    try
-                    {
-                        await Context.SaveChangesAsync(cancellationToken);
-                        transaction?.Commit();
-                    }
-
-                    catch (Exception exception)
-                    {
-                        if (exceptions == null)
-                        {
-                            exceptions = new List<Exception>(capacity: 1);
-                        }
-
-                        exceptions.Add(exception);
-                    }
+                    exceptions.Add(exception);
                 }
             }
 
@@ -977,10 +880,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="authorization">The authorization.</param>
         /// <param name="identifier">The unique identifier associated with the client application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task SetApplicationIdAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask SetApplicationIdAsync([NotNull] TAuthorization authorization,
             [CanBeNull] string identifier, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -1023,10 +924,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="authorization">The authorization.</param>
         /// <param name="properties">The additional properties associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetPropertiesAsync([NotNull] TAuthorization authorization, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetPropertiesAsync([NotNull] TAuthorization authorization, [CanBeNull] JObject properties, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -1037,12 +936,12 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 authorization.Properties = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             authorization.Properties = properties.ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -1051,10 +950,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="authorization">The authorization.</param>
         /// <param name="scopes">The scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetScopesAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetScopesAsync([NotNull] TAuthorization authorization,
             ImmutableArray<string> scopes, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -1066,12 +963,12 @@ namespace OpenIddict.EntityFrameworkCore
             {
                 authorization.Scopes = null;
 
-                return Task.CompletedTask;
+                return default;
             }
 
             authorization.Scopes = new JArray(scopes.ToArray()).ToString(Formatting.None);
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -1080,10 +977,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="authorization">The authorization.</param>
         /// <param name="status">The status associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetStatusAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetStatusAsync([NotNull] TAuthorization authorization,
             [CanBeNull] string status, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -1093,7 +988,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             authorization.Status = status;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -1102,10 +997,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="authorization">The authorization.</param>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetSubjectAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetSubjectAsync([NotNull] TAuthorization authorization,
             [CanBeNull] string subject, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -1115,7 +1008,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             authorization.Subject = subject;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -1124,10 +1017,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="authorization">The authorization.</param>
         /// <param name="type">The type associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual Task SetTypeAsync([NotNull] TAuthorization authorization,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetTypeAsync([NotNull] TAuthorization authorization,
             [CanBeNull] string type, CancellationToken cancellationToken)
         {
             if (authorization == null)
@@ -1137,7 +1028,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             authorization.Type = type;
 
-            return Task.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -1145,10 +1036,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// </summary>
         /// <param name="authorization">The authorization to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {

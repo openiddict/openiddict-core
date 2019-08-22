@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,10 +23,8 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="scope">The scope to add to the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task AddAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask AddAsync([NotNull] TScope scope, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a scope using its unique identifier.
@@ -54,31 +53,23 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="names">The names associated with the scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scopes corresponding to the specified names.
-        /// </returns>
-        ValueTask<ImmutableArray<TScope>> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken);
+        /// <returns>The scopes corresponding to the specified names.</returns>
+        IAsyncEnumerable<TScope> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all the scopes that contain the specified resource.
         /// </summary>
         /// <param name="resource">The resource associated with the scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scopes associated with the specified resource.
-        /// </returns>
-        ValueTask<ImmutableArray<TScope>> FindByResourceAsync([NotNull] string resource, CancellationToken cancellationToken);
+        /// <returns>The scopes associated with the specified resource.</returns>
+        IAsyncEnumerable<TScope> FindByResourceAsync([NotNull] string resource, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the specified scope from the cache.
         /// </summary>
         /// <param name="scope">The scope to remove from the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task RemoveAsync([NotNull] TScope scope, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask RemoveAsync([NotNull] TScope scope, CancellationToken cancellationToken);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -23,10 +24,10 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations in the database.
         /// </returns>
-        Task<long> CountAsync(CancellationToken cancellationToken = default);
+        ValueTask<long> CountAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines the number of authorizations that match the specified query.
@@ -35,10 +36,10 @@ namespace OpenIddict.Abstractions
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations that match the specified query.
         /// </returns>
-        Task<long> CountAsync<TResult>(
+        ValueTask<long> CountAsync<TResult>(
             [NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -51,9 +52,9 @@ namespace OpenIddict.Abstractions
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        Task<object> CreateAsync(
+        ValueTask<object> CreateAsync(
             [NotNull] ImmutableDictionary<string, object> claims, [NotNull] string subject, [NotNull] string client,
             [NotNull] string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
 
@@ -63,9 +64,9 @@ namespace OpenIddict.Abstractions
         /// <param name="descriptor">The authorization descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        Task<object> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default);
+        ValueTask<object> CreateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a new authorization.
@@ -73,9 +74,9 @@ namespace OpenIddict.Abstractions
         /// <param name="authorization">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task CreateAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        ValueTask CreateAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes an existing authorization.
@@ -83,9 +84,9 @@ namespace OpenIddict.Abstractions
         /// <param name="authorization">The authorization to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task DeleteAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        ValueTask DeleteAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the authorizations corresponding to the specified
@@ -94,11 +95,8 @@ namespace OpenIddict.Abstractions
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the subject/client.
-        /// </returns>
-        Task<ImmutableArray<object>> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken = default);
+        /// <returns>The authorizations corresponding to the subject/client.</returns>
+        IAsyncEnumerable<object> FindAsync([NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the authorizations matching the specified parameters.
@@ -107,11 +105,8 @@ namespace OpenIddict.Abstractions
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="status">The authorization status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        Task<ImmutableArray<object>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        IAsyncEnumerable<object> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, CancellationToken cancellationToken = default);
 
@@ -123,11 +118,8 @@ namespace OpenIddict.Abstractions
         /// <param name="status">The authorization status.</param>
         /// <param name="type">The authorization type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        Task<ImmutableArray<object>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        IAsyncEnumerable<object> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken = default);
 
@@ -140,11 +132,8 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The authorization type.</param>
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        Task<ImmutableArray<object>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        IAsyncEnumerable<object> FindAsync(
             [NotNull] string subject, [NotNull] string client, [NotNull] string status,
             [NotNull] string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
 
@@ -153,11 +142,8 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="identifier">The application identifier associated with the authorizations.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified application.
-        /// </returns>
-        Task<ImmutableArray<object>> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default);
+        /// <returns>The authorizations corresponding to the specified application.</returns>
+        IAsyncEnumerable<object> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves an authorization using its unique identifier.
@@ -165,21 +151,18 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The unique identifier associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        Task<object> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default);
+        ValueTask<object> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves all the authorizations corresponding to the specified subject.
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified subject.
-        /// </returns>
-        Task<ImmutableArray<object>> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken = default);
+        /// <returns>The authorizations corresponding to the specified subject.</returns>
+        IAsyncEnumerable<object> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves the optional application identifier associated with an authorization.
@@ -199,10 +182,10 @@ namespace OpenIddict.Abstractions
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        Task<TResult> GetAsync<TResult>(
+        ValueTask<TResult> GetAsync<TResult>(
             [NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -214,10 +197,10 @@ namespace OpenIddict.Abstractions
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        Task<TResult> GetAsync<TState, TResult>(
+        ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<object>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken = default);
 
@@ -283,7 +266,7 @@ namespace OpenIddict.Abstractions
         /// <param name="scopes">The scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the scopes are included in the authorization, <c>false</c> otherwise.</returns>
-        Task<bool> HasScopesAsync([NotNull] object authorization, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
+        ValueTask<bool> HasScopesAsync([NotNull] object authorization, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines whether a given authorization is ad hoc.
@@ -291,7 +274,7 @@ namespace OpenIddict.Abstractions
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization is ad hoc, <c>false</c> otherwise.</returns>
-        Task<bool> IsAdHocAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        ValueTask<bool> IsAdHocAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines whether a given authorization is permanent.
@@ -299,7 +282,7 @@ namespace OpenIddict.Abstractions
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization is permanent, <c>false</c> otherwise.</returns>
-        Task<bool> IsPermanentAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        ValueTask<bool> IsPermanentAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines whether a given authorization has been revoked.
@@ -307,7 +290,7 @@ namespace OpenIddict.Abstractions
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization has been revoked, <c>false</c> otherwise.</returns>
-        Task<bool> IsRevokedAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        ValueTask<bool> IsRevokedAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines whether a given authorization is valid.
@@ -315,7 +298,7 @@ namespace OpenIddict.Abstractions
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization is valid, <c>false</c> otherwise.</returns>
-        Task<bool> IsValidAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        ValueTask<bool> IsValidAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
@@ -323,11 +306,8 @@ namespace OpenIddict.Abstractions
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        Task<ImmutableArray<object>> ListAsync(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        IAsyncEnumerable<object> ListAsync(
             [CanBeNull] int? count = null, [CanBeNull] int? offset = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -336,11 +316,8 @@ namespace OpenIddict.Abstractions
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        Task<ImmutableArray<TResult>> ListAsync<TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        IAsyncEnumerable<TResult> ListAsync<TResult>(
             [NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -351,11 +328,8 @@ namespace OpenIddict.Abstractions
         /// <param name="query">The query to execute.</param>
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<object>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken = default);
 
@@ -366,9 +340,9 @@ namespace OpenIddict.Abstractions
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task PopulateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, [NotNull] object authorization, CancellationToken cancellationToken = default);
+        ValueTask PopulateAsync([NotNull] OpenIddictAuthorizationDescriptor descriptor, [NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Populates the authorization using the specified descriptor.
@@ -377,26 +351,26 @@ namespace OpenIddict.Abstractions
         /// <param name="descriptor">The descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task PopulateAsync([NotNull] object authorization, [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default);
+        ValueTask PopulateAsync([NotNull] object authorization, [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes the authorizations that are marked as invalid and the ad-hoc ones that have no valid/nonexpired token attached.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task PruneAsync(CancellationToken cancellationToken = default);
+        ValueTask PruneAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Revokes an authorization.
         /// </summary>
         /// <param name="authorization">The authorization to revoke.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        Task RevokeAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask RevokeAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sets the application identifier associated with an authorization.
@@ -405,9 +379,9 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The unique identifier associated with the client application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task SetApplicationIdAsync([NotNull] object authorization, [CanBeNull] string identifier, CancellationToken cancellationToken = default);
+        ValueTask SetApplicationIdAsync([NotNull] object authorization, [CanBeNull] string identifier, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates an existing authorization.
@@ -415,9 +389,9 @@ namespace OpenIddict.Abstractions
         /// <param name="authorization">The authorization to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task UpdateAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        ValueTask UpdateAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates an existing authorization.
@@ -426,19 +400,16 @@ namespace OpenIddict.Abstractions
         /// <param name="descriptor">The descriptor used to update the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task UpdateAsync([NotNull] object authorization, [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default);
+        ValueTask UpdateAsync([NotNull] object authorization, [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Validates the authorization to ensure it's in a consistent state.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the validation error encountered when validating the authorization.
-        /// </returns>
-        Task<ImmutableArray<ValidationResult>> ValidateAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        /// <returns>The validation error encountered when validating the authorization.</returns>
+        IAsyncEnumerable<ValidationResult> ValidateAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
     }
 }

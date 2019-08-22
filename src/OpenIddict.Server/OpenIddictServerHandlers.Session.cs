@@ -446,30 +446,6 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    async Task<bool> ValidatePostLogoutRedirectUriAsync(string address)
-                    {
-                        var applications = await _applicationManager.FindByPostLogoutRedirectUriAsync(address);
-                        if (applications.IsDefaultOrEmpty)
-                        {
-                            return false;
-                        }
-
-                        if (context.Options.IgnoreEndpointPermissions)
-                        {
-                            return true;
-                        }
-
-                        foreach (var application in applications)
-                        {
-                            if (await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
-                            {
-                                return true;
-                            }
-                        }
-
-                        return false;
-                    }
-
                     if (!await ValidatePostLogoutRedirectUriAsync(context.PostLogoutRedirectUri))
                     {
                         context.Logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
@@ -480,6 +456,33 @@ namespace OpenIddict.Server
                             description: "The specified 'post_logout_redirect_uri' parameter is not valid.");
 
                         return;
+                    }
+
+                    async Task<bool> ValidatePostLogoutRedirectUriAsync(string address)
+                    {
+                        // To be considered valid, a post_logout_redirect_uri must correspond to an existing client application
+                        // that was granted the ept:logout permission, unless endpoint permissions checking was explicitly disabled.
+
+                        await using var enumerator = _applicationManager.FindByPostLogoutRedirectUriAsync(address).GetAsyncEnumerator();
+                        if (await enumerator.MoveNextAsync())
+                        {
+                            if (context.Options.IgnoreEndpointPermissions)
+                            {
+                                return true;
+                            }
+
+                            do
+                            {
+                                if (await _applicationManager.HasPermissionAsync(enumerator.Current, Permissions.Endpoints.Logout))
+                                {
+                                    return true;
+                                }
+                            }
+
+                            while (await enumerator.MoveNextAsync());
+                        }
+
+                        return false;
                     }
                 }
             }

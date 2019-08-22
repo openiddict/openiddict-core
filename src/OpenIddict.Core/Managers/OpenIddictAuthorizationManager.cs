@@ -5,9 +5,11 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,10 +63,10 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations in the database.
         /// </returns>
-        public virtual Task<long> CountAsync(CancellationToken cancellationToken = default)
+        public virtual ValueTask<long> CountAsync(CancellationToken cancellationToken = default)
             => Store.CountAsync(cancellationToken);
 
         /// <summary>
@@ -74,10 +76,10 @@ namespace OpenIddict.Core
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations that match the specified query.
         /// </returns>
-        public virtual Task<long> CountAsync<TResult>(
+        public virtual ValueTask<long> CountAsync<TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
             if (query == null)
@@ -94,9 +96,9 @@ namespace OpenIddict.Core
         /// <param name="authorization">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual async ValueTask CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -109,7 +111,7 @@ namespace OpenIddict.Core
                 await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Valid, cancellationToken);
             }
 
-            var results = await ValidateAsync(authorization, cancellationToken);
+            var results = await ValidateAsync(authorization, cancellationToken).ToListAsync(cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -121,7 +123,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
             }
 
             await Store.CreateAsync(authorization, cancellationToken);
@@ -138,9 +140,9 @@ namespace OpenIddict.Core
         /// <param name="descriptor">The authorization descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        public virtual async Task<TAuthorization> CreateAsync(
+        public virtual async ValueTask<TAuthorization> CreateAsync(
             [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
             if (descriptor == null)
@@ -170,9 +172,9 @@ namespace OpenIddict.Core
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
-        public virtual Task<TAuthorization> CreateAsync(
+        public virtual ValueTask<TAuthorization> CreateAsync(
             [NotNull] ImmutableDictionary<string, object> claims, [NotNull] string subject,
             [NotNull] string client, [NotNull] string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
         {
@@ -220,9 +222,9 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual async ValueTask DeleteAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -244,11 +246,8 @@ namespace OpenIddict.Core
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the subject/client.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the subject/client.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(subject))
@@ -262,13 +261,8 @@ namespace OpenIddict.Core
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
-                await Store.FindAsync(subject, client, cancellationToken) :
-                await Cache.FindAsync(subject, client, cancellationToken);
-
-            if (authorizations.IsEmpty)
-            {
-                return ImmutableArray.Create<TAuthorization>();
-            }
+                Store.FindAsync(subject, client, cancellationToken) :
+                Cache.FindAsync(subject, client, cancellationToken);
 
             // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
@@ -279,19 +273,8 @@ namespace OpenIddict.Core
                 return authorizations;
             }
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
-
-            foreach (var authorization in authorizations)
-            {
-                if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
-                {
-                    builder.Add(authorization);
-                }
-            }
-
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
+            return authorizations.WhereAwait(async authorization => string.Equals(
+                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -301,11 +284,8 @@ namespace OpenIddict.Core
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="status">The authorization status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, CancellationToken cancellationToken = default)
         {
@@ -325,13 +305,8 @@ namespace OpenIddict.Core
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
-                await Store.FindAsync(subject, client, status, cancellationToken) :
-                await Cache.FindAsync(subject, client, status, cancellationToken);
-
-            if (authorizations.IsEmpty)
-            {
-                return ImmutableArray.Create<TAuthorization>();
-            }
+                Store.FindAsync(subject, client, status, cancellationToken) :
+                Cache.FindAsync(subject, client, status, cancellationToken);
 
             if (Options.CurrentValue.DisableAdditionalFiltering)
             {
@@ -342,19 +317,8 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
-
-            foreach (var authorization in authorizations)
-            {
-                if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
-                {
-                    builder.Add(authorization);
-                }
-            }
-
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
+            return authorizations.WhereAwait(async authorization => string.Equals(
+                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -365,11 +329,8 @@ namespace OpenIddict.Core
         /// <param name="status">The authorization status.</param>
         /// <param name="type">The authorization type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken = default)
         {
@@ -394,36 +355,16 @@ namespace OpenIddict.Core
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
-                await Store.FindAsync(subject, client, status, type, cancellationToken) :
-                await Cache.FindAsync(subject, client, status, type, cancellationToken);
-
-            if (authorizations.IsEmpty)
-            {
-                return ImmutableArray.Create<TAuthorization>();
-            }
+                Store.FindAsync(subject, client, status, type, cancellationToken) :
+                Cache.FindAsync(subject, client, status, type, cancellationToken);
 
             if (Options.CurrentValue.DisableAdditionalFiltering)
             {
                 return authorizations;
             }
 
-            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
-            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
-            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
-
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
-
-            foreach (var authorization in authorizations)
-            {
-                if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
-                {
-                    builder.Add(authorization);
-                }
-            }
-
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
+            return authorizations.WhereAwait(async authorization => string.Equals(
+                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -435,11 +376,8 @@ namespace OpenIddict.Core
         /// <param name="type">The authorization type.</param>
         /// <param name="scopes">The minimal scopes associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the criteria.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindAsync(
+        /// <returns>The authorizations corresponding to the criteria.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, [NotNull] string type,
             ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
@@ -465,13 +403,8 @@ namespace OpenIddict.Core
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
-                await Store.FindAsync(subject, client, status, type, scopes, cancellationToken) :
-                await Cache.FindAsync(subject, client, status, type, scopes, cancellationToken);
-
-            if (authorizations.IsEmpty)
-            {
-                return ImmutableArray.Create<TAuthorization>();
-            }
+                Store.FindAsync(subject, client, status, type, scopes, cancellationToken) :
+                Cache.FindAsync(subject, client, status, type, scopes, cancellationToken);
 
             if (Options.CurrentValue.DisableAdditionalFiltering)
             {
@@ -482,20 +415,9 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
-
-            foreach (var authorization in authorizations)
-            {
-                if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal)
-                    && await HasScopesAsync(authorization, scopes, cancellationToken))
-                {
-                    builder.Add(authorization);
-                }
-            }
-
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
+            return authorizations.WhereAwait(async authorization => string.Equals(
+                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal) &&
+                await HasScopesAsync(authorization, scopes, cancellationToken));
         }
 
         /// <summary>
@@ -503,11 +425,8 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="identifier">The application identifier associated with the authorizations.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified application.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindByApplicationIdAsync(
+        /// <returns>The authorizations corresponding to the specified application.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindByApplicationIdAsync(
             [NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
@@ -516,13 +435,8 @@ namespace OpenIddict.Core
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
-                await Store.FindByApplicationIdAsync(identifier, cancellationToken) :
-                await Cache.FindByApplicationIdAsync(identifier, cancellationToken);
-
-            if (authorizations.IsEmpty)
-            {
-                return ImmutableArray.Create<TAuthorization>();
-            }
+                Store.FindByApplicationIdAsync(identifier, cancellationToken) :
+                Cache.FindByApplicationIdAsync(identifier, cancellationToken);
 
             if (Options.CurrentValue.DisableAdditionalFiltering)
             {
@@ -533,19 +447,8 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
-
-            foreach (var authorization in authorizations)
-            {
-                if (string.Equals(await Store.GetApplicationIdAsync(authorization, cancellationToken), identifier, StringComparison.Ordinal))
-                {
-                    builder.Add(authorization);
-                }
-            }
-
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
+            return authorizations.WhereAwait(async authorization => string.Equals(
+                await Store.GetApplicationIdAsync(authorization, cancellationToken), identifier, StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -554,10 +457,10 @@ namespace OpenIddict.Core
         /// <param name="identifier">The unique identifier associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        public virtual async Task<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
+        public virtual async ValueTask<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -590,11 +493,8 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the authorizations corresponding to the specified subject.
-        /// </returns>
-        public virtual async Task<ImmutableArray<TAuthorization>> FindBySubjectAsync(
+        /// <returns>The authorizations corresponding to the specified subject.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> FindBySubjectAsync(
             [NotNull] string subject, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(subject))
@@ -603,13 +503,8 @@ namespace OpenIddict.Core
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
-                await Store.FindBySubjectAsync(subject, cancellationToken) :
-                await Cache.FindBySubjectAsync(subject, cancellationToken);
-
-            if (authorizations.IsEmpty)
-            {
-                return ImmutableArray.Create<TAuthorization>();
-            }
+                Store.FindBySubjectAsync(subject, cancellationToken) :
+                Cache.FindBySubjectAsync(subject, cancellationToken);
 
             if (Options.CurrentValue.DisableAdditionalFiltering)
             {
@@ -620,19 +515,8 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            var builder = ImmutableArray.CreateBuilder<TAuthorization>(authorizations.Length);
-
-            foreach (var authorization in authorizations)
-            {
-                if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
-                {
-                    builder.Add(authorization);
-                }
-            }
-
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
+            return authorizations.WhereAwait(async authorization => string.Equals(
+                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -662,10 +546,10 @@ namespace OpenIddict.Core
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual Task<TResult> GetAsync<TResult>(
+        public virtual ValueTask<TResult> GetAsync<TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
             if (query == null)
@@ -685,10 +569,10 @@ namespace OpenIddict.Core
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual Task<TResult> GetAsync<TState, TResult>(
+        public virtual ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken = default)
         {
@@ -806,7 +690,7 @@ namespace OpenIddict.Core
         /// <param name="scopes">The scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the scopes are included in the authorization, <c>false</c> otherwise.</returns>
-        public virtual async Task<bool> HasScopesAsync([NotNull] TAuthorization authorization,
+        public virtual async ValueTask<bool> HasScopesAsync([NotNull] TAuthorization authorization,
             ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
@@ -825,7 +709,7 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization is ad hoc, <c>false</c> otherwise.</returns>
-        public async Task<bool> IsAdHocAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public async ValueTask<bool> IsAdHocAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -847,7 +731,7 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization is permanent, <c>false</c> otherwise.</returns>
-        public async Task<bool> IsPermanentAsync(
+        public async ValueTask<bool> IsPermanentAsync(
             [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
@@ -870,7 +754,7 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization has been revoked, <c>false</c> otherwise.</returns>
-        public virtual async Task<bool> IsRevokedAsync(
+        public virtual async ValueTask<bool> IsRevokedAsync(
             [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
@@ -893,7 +777,7 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the authorization is valid, <c>false</c> otherwise.</returns>
-        public virtual async Task<bool> IsValidAsync(
+        public virtual async ValueTask<bool> IsValidAsync(
             [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
@@ -916,15 +800,10 @@ namespace OpenIddict.Core
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual Task<ImmutableArray<TAuthorization>> ListAsync(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TAuthorization> ListAsync(
             [CanBeNull] int? count = null, [CanBeNull] int? offset = null, CancellationToken cancellationToken = default)
-        {
-            return Store.ListAsync(count, offset, cancellationToken);
-        }
+            => Store.ListAsync(count, offset, cancellationToken);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
@@ -932,11 +811,8 @@ namespace OpenIddict.Core
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual Task<ImmutableArray<TResult>> ListAsync<TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TResult> ListAsync<TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken = default)
         {
             if (query == null)
@@ -955,11 +831,8 @@ namespace OpenIddict.Core
         /// <param name="query">The query to execute.</param>
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        public virtual Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        public virtual IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken = default)
         {
@@ -978,9 +851,9 @@ namespace OpenIddict.Core
         /// <param name="descriptor">The descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task PopulateAsync([NotNull] TAuthorization authorization,
+        public virtual async ValueTask PopulateAsync([NotNull] TAuthorization authorization,
             [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
@@ -1007,9 +880,9 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task PopulateAsync(
+        public virtual async ValueTask PopulateAsync(
             [NotNull] OpenIddictAuthorizationDescriptor descriptor,
             [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
@@ -1036,9 +909,9 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual Task PruneAsync(CancellationToken cancellationToken = default)
+        public virtual ValueTask PruneAsync(CancellationToken cancellationToken = default)
             => Store.PruneAsync(cancellationToken);
 
         /// <summary>
@@ -1046,8 +919,8 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="authorization">The authorization to revoke.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="Task"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async Task RevokeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual async ValueTask RevokeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -1069,9 +942,9 @@ namespace OpenIddict.Core
         /// <param name="identifier">The unique identifier associated with the client application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task SetApplicationIdAsync(
+        public virtual async ValueTask SetApplicationIdAsync(
             [NotNull] TAuthorization authorization, [CanBeNull] string identifier, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
@@ -1089,16 +962,16 @@ namespace OpenIddict.Core
         /// <param name="authorization">The authorization to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        public virtual async ValueTask UpdateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            var results = await ValidateAsync(authorization, cancellationToken);
+            var results = await ValidateAsync(authorization, cancellationToken).ToListAsync(cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -1110,7 +983,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
             }
 
             await Store.UpdateAsync(authorization, cancellationToken);
@@ -1129,9 +1002,9 @@ namespace OpenIddict.Core
         /// <param name="descriptor">The descriptor used to update the authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual async Task UpdateAsync([NotNull] TAuthorization authorization,
+        public virtual async ValueTask UpdateAsync([NotNull] TAuthorization authorization,
             [NotNull] OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
@@ -1153,12 +1026,9 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="authorization">The authorization.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the validation error encountered when validating the authorization.
-        /// </returns>
-        public virtual async Task<ImmutableArray<ValidationResult>> ValidateAsync(
-            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        /// <returns>The validation error encountered when validating the authorization.</returns>
+        public virtual async IAsyncEnumerable<ValidationResult> ValidateAsync(
+            [NotNull] TAuthorization authorization, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
@@ -1170,23 +1040,23 @@ namespace OpenIddict.Core
             var type = await Store.GetTypeAsync(authorization, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                builder.Add(new ValidationResult("The authorization type cannot be null or empty."));
+                yield return new ValidationResult("The authorization type cannot be null or empty.");
             }
 
             else if (!string.Equals(type, OpenIddictConstants.AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
                      !string.Equals(type, OpenIddictConstants.AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
             {
-                builder.Add(new ValidationResult("The specified authorization type is not supported by the default token manager."));
+                yield return new ValidationResult("The specified authorization type is not supported by the default token manager.");
             }
 
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
             {
-                builder.Add(new ValidationResult("The status cannot be null or empty."));
+                yield return new ValidationResult("The status cannot be null or empty.");
             }
 
             if (string.IsNullOrEmpty(await Store.GetSubjectAsync(authorization, cancellationToken)))
             {
-                builder.Add(new ValidationResult("The subject cannot be null or empty."));
+                yield return new ValidationResult("The subject cannot be null or empty.");
             }
 
             // Ensure that the scopes are not null or empty and do not contain spaces.
@@ -1194,70 +1064,66 @@ namespace OpenIddict.Core
             {
                 if (string.IsNullOrEmpty(scope))
                 {
-                    builder.Add(new ValidationResult("Scopes cannot be null or empty."));
+                    yield return new ValidationResult("Scopes cannot be null or empty.");
 
                     break;
                 }
 
                 if (scope.Contains(OpenIddictConstants.Separators.Space[0]))
                 {
-                    builder.Add(new ValidationResult("Scopes cannot contain spaces."));
+                    yield return new ValidationResult("Scopes cannot contain spaces.");
 
                     break;
                 }
             }
-
-            return builder.Count == builder.Capacity ?
-                builder.MoveToImmutable() :
-                builder.ToImmutable();
         }
 
-        Task<long> IOpenIddictAuthorizationManager.CountAsync(CancellationToken cancellationToken)
+        ValueTask<long> IOpenIddictAuthorizationManager.CountAsync(CancellationToken cancellationToken)
             => CountAsync(cancellationToken);
 
-        Task<long> IOpenIddictAuthorizationManager.CountAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        ValueTask<long> IOpenIddictAuthorizationManager.CountAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => CountAsync(query, cancellationToken);
 
-        async Task<object> IOpenIddictAuthorizationManager.CreateAsync(ImmutableDictionary<string, object> claims, string subject, string client, string type, ImmutableArray<string> scopes, CancellationToken cancellationToken)
+        async ValueTask<object> IOpenIddictAuthorizationManager.CreateAsync(ImmutableDictionary<string, object> claims, string subject, string client, string type, ImmutableArray<string> scopes, CancellationToken cancellationToken)
             => await CreateAsync(claims, subject, client, type, scopes, cancellationToken);
 
-        async Task<object> IOpenIddictAuthorizationManager.CreateAsync(OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
+        async ValueTask<object> IOpenIddictAuthorizationManager.CreateAsync(OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
             => await CreateAsync(descriptor, cancellationToken);
 
-        Task IOpenIddictAuthorizationManager.CreateAsync(object authorization, CancellationToken cancellationToken)
+        ValueTask IOpenIddictAuthorizationManager.CreateAsync(object authorization, CancellationToken cancellationToken)
             => CreateAsync((TAuthorization) authorization, cancellationToken);
 
-        Task IOpenIddictAuthorizationManager.DeleteAsync(object authorization, CancellationToken cancellationToken)
+        ValueTask IOpenIddictAuthorizationManager.DeleteAsync(object authorization, CancellationToken cancellationToken)
             => DeleteAsync((TAuthorization) authorization, cancellationToken);
 
-        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, CancellationToken cancellationToken)
-            => (await FindAsync(subject, client, cancellationToken)).CastArray<object>();
+        IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, CancellationToken cancellationToken)
+            => FindAsync(subject, client, cancellationToken).OfType<object>();
 
-        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, CancellationToken cancellationToken)
-            => (await FindAsync(subject, client, status, cancellationToken)).CastArray<object>();
+        IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, CancellationToken cancellationToken)
+            => FindAsync(subject, client, status, cancellationToken).OfType<object>();
 
-        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
-            => (await FindAsync(subject, client, status, type, cancellationToken)).CastArray<object>();
+        IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
+            => FindAsync(subject, client, status, type, cancellationToken).OfType<object>();
 
-        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, string type, ImmutableArray<string> scopes, CancellationToken cancellationToken)
-            => (await FindAsync(subject, client, status, type, scopes, cancellationToken)).CastArray<object>();
+        IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, string type, ImmutableArray<string> scopes, CancellationToken cancellationToken)
+            => FindAsync(subject, client, status, type, scopes, cancellationToken).OfType<object>();
 
-        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
-            => (await FindByApplicationIdAsync(identifier, cancellationToken)).CastArray<object>();
+        IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
+            => FindByApplicationIdAsync(identifier, cancellationToken).OfType<object>();
 
-        async Task<object> IOpenIddictAuthorizationManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
+        async ValueTask<object> IOpenIddictAuthorizationManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
             => await FindByIdAsync(identifier, cancellationToken);
 
-        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.FindBySubjectAsync(string subject, CancellationToken cancellationToken)
-            => (await FindBySubjectAsync(subject, cancellationToken)).CastArray<object>();
+        IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindBySubjectAsync(string subject, CancellationToken cancellationToken)
+            => FindBySubjectAsync(subject, cancellationToken).OfType<object>();
 
         ValueTask<string> IOpenIddictAuthorizationManager.GetApplicationIdAsync(object authorization, CancellationToken cancellationToken)
             => GetApplicationIdAsync((TAuthorization) authorization, cancellationToken);
 
-        Task<TResult> IOpenIddictAuthorizationManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        ValueTask<TResult> IOpenIddictAuthorizationManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => GetAsync(query, cancellationToken);
 
-        Task<TResult> IOpenIddictAuthorizationManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+        ValueTask<TResult> IOpenIddictAuthorizationManager.GetAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
             => GetAsync(query, state, cancellationToken);
 
         ValueTask<string> IOpenIddictAuthorizationManager.GetIdAsync(object authorization, CancellationToken cancellationToken)
@@ -1275,52 +1141,52 @@ namespace OpenIddict.Core
         ValueTask<string> IOpenIddictAuthorizationManager.GetTypeAsync(object authorization, CancellationToken cancellationToken)
             => GetTypeAsync((TAuthorization) authorization, cancellationToken);
 
-        Task<bool> IOpenIddictAuthorizationManager.HasScopesAsync(object authorization, ImmutableArray<string> scopes, CancellationToken cancellationToken)
+        ValueTask<bool> IOpenIddictAuthorizationManager.HasScopesAsync(object authorization, ImmutableArray<string> scopes, CancellationToken cancellationToken)
             => HasScopesAsync((TAuthorization) authorization, scopes, cancellationToken);
 
-        Task<bool> IOpenIddictAuthorizationManager.IsAdHocAsync(object authorization, CancellationToken cancellationToken)
+        ValueTask<bool> IOpenIddictAuthorizationManager.IsAdHocAsync(object authorization, CancellationToken cancellationToken)
             => IsAdHocAsync((TAuthorization) authorization, cancellationToken);
 
-        Task<bool> IOpenIddictAuthorizationManager.IsPermanentAsync(object authorization, CancellationToken cancellationToken)
+        ValueTask<bool> IOpenIddictAuthorizationManager.IsPermanentAsync(object authorization, CancellationToken cancellationToken)
             => IsPermanentAsync((TAuthorization) authorization, cancellationToken);
 
-        Task<bool> IOpenIddictAuthorizationManager.IsRevokedAsync(object authorization, CancellationToken cancellationToken)
+        ValueTask<bool> IOpenIddictAuthorizationManager.IsRevokedAsync(object authorization, CancellationToken cancellationToken)
             => IsRevokedAsync((TAuthorization) authorization, cancellationToken);
 
-        Task<bool> IOpenIddictAuthorizationManager.IsValidAsync(object authorization, CancellationToken cancellationToken)
+        ValueTask<bool> IOpenIddictAuthorizationManager.IsValidAsync(object authorization, CancellationToken cancellationToken)
             => IsValidAsync((TAuthorization) authorization, cancellationToken);
 
-        async Task<ImmutableArray<object>> IOpenIddictAuthorizationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
-            => (await ListAsync(count, offset, cancellationToken)).CastArray<object>();
+        IAsyncEnumerable<object> IOpenIddictAuthorizationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
+            => ListAsync(count, offset, cancellationToken).OfType<object>();
 
-        Task<ImmutableArray<TResult>> IOpenIddictAuthorizationManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        IAsyncEnumerable<TResult> IOpenIddictAuthorizationManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => ListAsync(query, cancellationToken);
 
-        Task<ImmutableArray<TResult>> IOpenIddictAuthorizationManager.ListAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
+        IAsyncEnumerable<TResult> IOpenIddictAuthorizationManager.ListAsync<TState, TResult>(Func<IQueryable<object>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken)
             => ListAsync(query, state, cancellationToken);
 
-        Task IOpenIddictAuthorizationManager.PopulateAsync(OpenIddictAuthorizationDescriptor descriptor, object authorization, CancellationToken cancellationToken)
+        ValueTask IOpenIddictAuthorizationManager.PopulateAsync(OpenIddictAuthorizationDescriptor descriptor, object authorization, CancellationToken cancellationToken)
             => PopulateAsync(descriptor, (TAuthorization) authorization, cancellationToken);
 
-        Task IOpenIddictAuthorizationManager.PopulateAsync(object authorization, OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
+        ValueTask IOpenIddictAuthorizationManager.PopulateAsync(object authorization, OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
             => PopulateAsync((TAuthorization) authorization, descriptor, cancellationToken);
 
-        Task IOpenIddictAuthorizationManager.PruneAsync(CancellationToken cancellationToken)
+        ValueTask IOpenIddictAuthorizationManager.PruneAsync(CancellationToken cancellationToken)
             => PruneAsync(cancellationToken);
 
-        Task IOpenIddictAuthorizationManager.RevokeAsync(object authorization, CancellationToken cancellationToken)
+        ValueTask IOpenIddictAuthorizationManager.RevokeAsync(object authorization, CancellationToken cancellationToken)
             => RevokeAsync((TAuthorization) authorization, cancellationToken);
 
-        Task IOpenIddictAuthorizationManager.SetApplicationIdAsync(object authorization, string identifier, CancellationToken cancellationToken)
+        ValueTask IOpenIddictAuthorizationManager.SetApplicationIdAsync(object authorization, string identifier, CancellationToken cancellationToken)
             => SetApplicationIdAsync((TAuthorization) authorization, identifier, cancellationToken);
 
-        Task IOpenIddictAuthorizationManager.UpdateAsync(object authorization, CancellationToken cancellationToken)
+        ValueTask IOpenIddictAuthorizationManager.UpdateAsync(object authorization, CancellationToken cancellationToken)
             => UpdateAsync((TAuthorization) authorization, cancellationToken);
 
-        Task IOpenIddictAuthorizationManager.UpdateAsync(object authorization, OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
+        ValueTask IOpenIddictAuthorizationManager.UpdateAsync(object authorization, OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
             => UpdateAsync((TAuthorization) authorization, descriptor, cancellationToken);
 
-        Task<ImmutableArray<ValidationResult>> IOpenIddictAuthorizationManager.ValidateAsync(object authorization, CancellationToken cancellationToken)
+        IAsyncEnumerable<ValidationResult> IOpenIddictAuthorizationManager.ValidateAsync(object authorization, CancellationToken cancellationToken)
             => ValidateAsync((TAuthorization) authorization, cancellationToken);
     }
 }

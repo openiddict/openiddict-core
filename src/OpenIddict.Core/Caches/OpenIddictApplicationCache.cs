@@ -6,7 +6,9 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -45,10 +47,8 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="application">The application to add to the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public async Task AddAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public async ValueTask AddAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -246,11 +246,8 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client applications corresponding to the specified post_logout_redirect_uri.
-        /// </returns>
-        public ValueTask<ImmutableArray<TApplication>> FindByPostLogoutRedirectUriAsync(
+        /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
+        public IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync(
             [NotNull] string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
@@ -266,12 +263,15 @@ namespace OpenIddict.Core
 
             if (_cache.TryGetValue(parameters, out ImmutableArray<TApplication> applications))
             {
-                return new ValueTask<ImmutableArray<TApplication>>(applications);
+                return applications.ToAsyncEnumerable();
             }
 
-            async Task<ImmutableArray<TApplication>> ExecuteAsync()
+            async IAsyncEnumerable<TApplication> ExecuteAsync()
             {
-                foreach (var application in (applications = await _store.FindByPostLogoutRedirectUriAsync(address, cancellationToken)))
+                var applications = ImmutableArray.CreateRange(await _store.FindByPostLogoutRedirectUriAsync(
+                    address, cancellationToken).ToListAsync(cancellationToken));
+
+                foreach (var application in applications)
                 {
                     await AddAsync(application, cancellationToken);
                 }
@@ -293,10 +293,13 @@ namespace OpenIddict.Core
                     entry.SetValue(applications);
                 }
 
-                return applications;
+                foreach (var application in applications)
+                {
+                    yield return application;
+                }
             }
 
-            return new ValueTask<ImmutableArray<TApplication>>(ExecuteAsync());
+            return ExecuteAsync();
         }
 
         /// <summary>
@@ -304,11 +307,8 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="address">The redirect_uri associated with the applications.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the client applications corresponding to the specified redirect_uri.
-        /// </returns>
-        public ValueTask<ImmutableArray<TApplication>> FindByRedirectUriAsync(
+        /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
+        public IAsyncEnumerable<TApplication> FindByRedirectUriAsync(
             [NotNull] string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))
@@ -324,12 +324,15 @@ namespace OpenIddict.Core
 
             if (_cache.TryGetValue(parameters, out ImmutableArray<TApplication> applications))
             {
-                return new ValueTask<ImmutableArray<TApplication>>(applications);
+                return applications.ToAsyncEnumerable();
             }
 
-            async Task<ImmutableArray<TApplication>> ExecuteAsync()
+            async IAsyncEnumerable<TApplication> ExecuteAsync()
             {
-                foreach (var application in (applications = await _store.FindByRedirectUriAsync(address, cancellationToken)))
+                var applications = ImmutableArray.CreateRange(await _store.FindByRedirectUriAsync(
+                    address, cancellationToken).ToListAsync(cancellationToken));
+
+                foreach (var application in applications)
                 {
                     await AddAsync(application, cancellationToken);
                 }
@@ -351,10 +354,13 @@ namespace OpenIddict.Core
                     entry.SetValue(applications);
                 }
 
-                return applications;
+                foreach (var application in applications)
+                {
+                    yield return application;
+                }
             }
 
-            return new ValueTask<ImmutableArray<TApplication>>(ExecuteAsync());
+            return ExecuteAsync();
         }
 
         /// <summary>
@@ -362,10 +368,8 @@ namespace OpenIddict.Core
         /// </summary>
         /// <param name="application">The application to remove from the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public async Task RemoveAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public async ValueTask RemoveAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -391,10 +395,10 @@ namespace OpenIddict.Core
         /// <param name="application">The application associated with the expiration signal.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns an expiration signal for the specified application.
         /// </returns>
-        protected virtual async Task<IChangeToken> CreateExpirationSignalAsync(
+        protected virtual async ValueTask<IChangeToken> CreateExpirationSignalAsync(
             [NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)

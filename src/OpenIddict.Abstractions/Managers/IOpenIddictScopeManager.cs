@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -23,10 +24,10 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes in the database.
         /// </returns>
-        Task<long> CountAsync(CancellationToken cancellationToken = default);
+        ValueTask<long> CountAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines the number of scopes that match the specified query.
@@ -35,10 +36,10 @@ namespace OpenIddict.Abstractions
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of scopes that match the specified query.
         /// </returns>
-        Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
+        ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a new scope based on the specified descriptor.
@@ -46,9 +47,9 @@ namespace OpenIddict.Abstractions
         /// <param name="descriptor">The scope descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the scope.
         /// </returns>
-        Task<object> CreateAsync([NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default);
+        ValueTask<object> CreateAsync([NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a new scope.
@@ -56,9 +57,9 @@ namespace OpenIddict.Abstractions
         /// <param name="scope">The scope to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task CreateAsync([NotNull] object scope, CancellationToken cancellationToken = default);
+        ValueTask CreateAsync([NotNull] object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Removes an existing scope.
@@ -66,9 +67,9 @@ namespace OpenIddict.Abstractions
         /// <param name="scope">The scope to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task DeleteAsync([NotNull] object scope, CancellationToken cancellationToken = default);
+        ValueTask DeleteAsync([NotNull] object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves a scope using its unique identifier.
@@ -76,10 +77,10 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The unique identifier associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the identifier.
         /// </returns>
-        Task<object> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default);
+        ValueTask<object> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves a scope using its name.
@@ -87,32 +88,26 @@ namespace OpenIddict.Abstractions
         /// <param name="name">The name associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the specified name.
         /// </returns>
-        Task<object> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken = default);
+        ValueTask<object> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves a list of scopes using their name.
         /// </summary>
         /// <param name="names">The names associated with the scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scopes corresponding to the specified names.
-        /// </returns>
-        Task<ImmutableArray<object>> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken = default);
+        /// <returns>The scopes corresponding to the specified names.</returns>
+        IAsyncEnumerable<object> FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves all the scopes that contain the specified resource.
         /// </summary>
         /// <param name="resource">The resource associated with the scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the scopes associated with the specified resource.
-        /// </returns>
-        Task<ImmutableArray<object>> FindByResourceAsync([NotNull] string resource, CancellationToken cancellationToken = default);
+        /// <returns>The scopes associated with the specified resource.</returns>
+        IAsyncEnumerable<object> FindByResourceAsync([NotNull] string resource, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns the first element.
@@ -121,10 +116,10 @@ namespace OpenIddict.Abstractions
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        Task<TResult> GetAsync<TResult>(
+        ValueTask<TResult> GetAsync<TResult>(
             [NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -136,10 +131,10 @@ namespace OpenIddict.Abstractions
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        Task<TResult> GetAsync<TState, TResult>(
+        ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<object>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken = default);
 
@@ -204,11 +199,8 @@ namespace OpenIddict.Abstractions
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        Task<ImmutableArray<object>> ListAsync(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        IAsyncEnumerable<object> ListAsync(
             [CanBeNull] int? count = null, [CanBeNull] int? offset = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -217,11 +209,8 @@ namespace OpenIddict.Abstractions
         /// <typeparam name="TResult">The result type.</typeparam>
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        Task<ImmutableArray<TResult>> ListAsync<TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        IAsyncEnumerable<TResult> ListAsync<TResult>(
             [NotNull] Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -232,11 +221,8 @@ namespace OpenIddict.Abstractions
         /// <param name="query">The query to execute.</param>
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<object>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken = default);
 
@@ -245,11 +231,8 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="scopes">The scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the resources associated with the specified scopes.
-        /// </returns>
-        Task<ImmutableArray<string>> ListResourcesAsync(ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
+        /// <returns>All the resources associated with the specified scopes.</returns>
+        IAsyncEnumerable<string> ListResourcesAsync(ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Populates the specified descriptor using the properties exposed by the scope.
@@ -258,9 +241,9 @@ namespace OpenIddict.Abstractions
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task PopulateAsync([NotNull] OpenIddictScopeDescriptor descriptor, [NotNull] object scope, CancellationToken cancellationToken = default);
+        ValueTask PopulateAsync([NotNull] OpenIddictScopeDescriptor descriptor, [NotNull] object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Populates the scope using the specified descriptor.
@@ -269,9 +252,9 @@ namespace OpenIddict.Abstractions
         /// <param name="descriptor">The descriptor.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task PopulateAsync([NotNull] object scope, [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default);
+        ValueTask PopulateAsync([NotNull] object scope, [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates an existing scope.
@@ -279,9 +262,9 @@ namespace OpenIddict.Abstractions
         /// <param name="scope">The scope to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task UpdateAsync([NotNull] object scope, CancellationToken cancellationToken = default);
+        ValueTask UpdateAsync([NotNull] object scope, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates an existing scope.
@@ -290,19 +273,16 @@ namespace OpenIddict.Abstractions
         /// <param name="descriptor">The descriptor used to update the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task UpdateAsync([NotNull] object scope, [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default);
+        ValueTask UpdateAsync([NotNull] object scope, [NotNull] OpenIddictScopeDescriptor descriptor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Validates the scope to ensure it's in a consistent state.
         /// </summary>
         /// <param name="scope">The scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the validation error encountered when validating the scope.
-        /// </returns>
-        Task<ImmutableArray<ValidationResult>> ValidateAsync([NotNull] object scope, CancellationToken cancellationToken = default);
+        /// <returns>The validation error encountered when validating the scope.</returns>
+        IAsyncEnumerable<ValidationResult> ValidateAsync([NotNull] object scope, CancellationToken cancellationToken = default);
     }
 }

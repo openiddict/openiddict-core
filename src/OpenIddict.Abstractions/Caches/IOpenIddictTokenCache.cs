@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,10 +23,8 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="token">The token to add to the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task AddAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask AddAsync([NotNull] TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the tokens corresponding to the specified
@@ -34,11 +33,8 @@ namespace OpenIddict.Abstractions
         /// <param name="subject">The subject associated with the token.</param>
         /// <param name="client">The client associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens corresponding to the subject/client.
-        /// </returns>
-        ValueTask<ImmutableArray<TToken>> FindAsync([NotNull] string subject,
+        /// <returns>The tokens corresponding to the subject/client.</returns>
+        IAsyncEnumerable<TToken> FindAsync([NotNull] string subject,
             [NotNull] string client, CancellationToken cancellationToken);
 
         /// <summary>
@@ -48,11 +44,8 @@ namespace OpenIddict.Abstractions
         /// <param name="client">The client associated with the token.</param>
         /// <param name="status">The token status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens corresponding to the criteria.
-        /// </returns>
-        ValueTask<ImmutableArray<TToken>> FindAsync(
+        /// <returns>The tokens corresponding to the criteria.</returns>
+        IAsyncEnumerable<TToken> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, CancellationToken cancellationToken);
 
@@ -64,11 +57,8 @@ namespace OpenIddict.Abstractions
         /// <param name="status">The token status.</param>
         /// <param name="type">The token type.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens corresponding to the criteria.
-        /// </returns>
-        ValueTask<ImmutableArray<TToken>> FindAsync(
+        /// <returns>The tokens corresponding to the criteria.</returns>
+        IAsyncEnumerable<TToken> FindAsync(
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, [NotNull] string type, CancellationToken cancellationToken);
 
@@ -77,22 +67,16 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="identifier">The application identifier associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens corresponding to the specified application.
-        /// </returns>
-        ValueTask<ImmutableArray<TToken>> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        /// <returns>The tokens corresponding to the specified application.</returns>
+        IAsyncEnumerable<TToken> FindByApplicationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the list of tokens corresponding to the specified authorization identifier.
         /// </summary>
         /// <param name="identifier">The authorization identifier associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens corresponding to the specified authorization.
-        /// </returns>
-        ValueTask<ImmutableArray<TToken>> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        /// <returns>The tokens corresponding to the specified authorization.</returns>
+        IAsyncEnumerable<TToken> FindByAuthorizationIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a token using its unique identifier.
@@ -122,20 +106,15 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="subject">The subject associated with the tokens.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns the tokens corresponding to the specified subject.
-        /// </returns>
-        ValueTask<ImmutableArray<TToken>> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
+        /// <returns>The tokens corresponding to the specified subject.</returns>
+        IAsyncEnumerable<TToken> FindBySubjectAsync([NotNull] string subject, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the specified token from the cache.
         /// </summary>
         /// <param name="token">The token to remove from the cache.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task RemoveAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask RemoveAsync([NotNull] TToken token, CancellationToken cancellationToken);
     }
 }

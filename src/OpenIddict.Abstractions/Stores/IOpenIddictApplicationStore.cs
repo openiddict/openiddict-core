@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -25,10 +26,10 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of applications in the database.
         /// </returns>
-        Task<long> CountAsync(CancellationToken cancellationToken);
+        ValueTask<long> CountAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Determines the number of applications that match the specified query.
@@ -37,30 +38,26 @@ namespace OpenIddict.Abstractions
         /// <param name="query">The query to execute.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of applications that match the specified query.
         /// </returns>
-        Task<long> CountAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
+        ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TApplication>, IQueryable<TResult>> query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates a new application.
         /// </summary>
         /// <param name="application">The application to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask CreateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes an existing application.
         /// </summary>
         /// <param name="application">The application to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask DeleteAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an application using its unique identifier.
@@ -68,10 +65,10 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The unique identifier associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        Task<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        ValueTask<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves an application using its client identifier.
@@ -79,32 +76,26 @@ namespace OpenIddict.Abstractions
         /// <param name="identifier">The client identifier associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        Task<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
+        ValueTask<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
         /// </summary>
         /// <param name="address">The post_logout_redirect_uri associated with the applications.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns the client applications corresponding to the specified post_logout_redirect_uri.
-        /// </returns>
-        Task<ImmutableArray<TApplication>> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
+        /// <returns>The client applications corresponding to the specified post_logout_redirect_uri.</returns>
+        IAsyncEnumerable<TApplication> FindByPostLogoutRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified redirect_uri.
         /// </summary>
         /// <param name="address">The redirect_uri associated with the applications.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation, whose result
-        /// returns the client applications corresponding to the specified redirect_uri.
-        /// </returns>
-        Task<ImmutableArray<TApplication>> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
+        /// <returns>The client applications corresponding to the specified redirect_uri.</returns>
+        IAsyncEnumerable<TApplication> FindByRedirectUriAsync([NotNull] string address, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query and returns the first element.
@@ -115,10 +106,10 @@ namespace OpenIddict.Abstractions
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        Task<TResult> GetAsync<TState, TResult>(
+        ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken);
 
@@ -250,11 +241,8 @@ namespace OpenIddict.Abstractions
         /// <param name="count">The number of results to return.</param>
         /// <param name="offset">The number of results to skip.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        Task<ImmutableArray<TApplication>> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        IAsyncEnumerable<TApplication> ListAsync([CanBeNull] int? count, [CanBeNull] int? offset, CancellationToken cancellationToken);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
@@ -264,11 +252,8 @@ namespace OpenIddict.Abstractions
         /// <param name="query">The query to execute.</param>
         /// <param name="state">The optional state.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation,
-        /// whose result returns all the elements returned when executing the specified query.
-        /// </returns>
-        Task<ImmutableArray<TResult>> ListAsync<TState, TResult>(
+        /// <returns>All the elements returned when executing the specified query.</returns>
+        IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TApplication>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken);
 
@@ -278,10 +263,8 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application.</param>
         /// <param name="identifier">The client identifier associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetClientIdAsync([NotNull] TApplication application, [CanBeNull] string identifier, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetClientIdAsync([NotNull] TApplication application, [CanBeNull] string identifier, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the client secret associated with an application.
@@ -291,10 +274,8 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application.</param>
         /// <param name="secret">The client secret associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetClientSecretAsync([NotNull] TApplication application, [CanBeNull] string secret, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetClientSecretAsync([NotNull] TApplication application, [CanBeNull] string secret, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the client type associated with an application.
@@ -302,10 +283,8 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application.</param>
         /// <param name="type">The client type associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetClientTypeAsync([NotNull] TApplication application, [CanBeNull] string type, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetClientTypeAsync([NotNull] TApplication application, [CanBeNull] string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the consent type associated with an application.
@@ -313,10 +292,8 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application.</param>
         /// <param name="type">The consent type associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetConsentTypeAsync([NotNull] TApplication application, [CanBeNull] string type, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetConsentTypeAsync([NotNull] TApplication application, [CanBeNull] string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the display name associated with an application.
@@ -324,10 +301,8 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application.</param>
         /// <param name="name">The display name associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetDisplayNameAsync([NotNull] TApplication application, [CanBeNull] string name, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetDisplayNameAsync([NotNull] TApplication application, [CanBeNull] string name, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the permissions associated with an application.
@@ -335,10 +310,8 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application.</param>
         /// <param name="permissions">The permissions associated with the application </param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetPermissionsAsync([NotNull] TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetPermissionsAsync([NotNull] TApplication application, ImmutableArray<string> permissions, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the logout callback addresses associated with an application.
@@ -346,10 +319,8 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application.</param>
         /// <param name="addresses">The logout callback addresses associated with the application </param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetPostLogoutRedirectUrisAsync([NotNull] TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken);
 
         /// <summary>
@@ -358,10 +329,8 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application.</param>
         /// <param name="properties">The additional properties associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the callback addresses associated with an application.
@@ -369,10 +338,8 @@ namespace OpenIddict.Abstractions
         /// <param name="application">The application.</param>
         /// <param name="addresses">The callback addresses associated with the application </param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task SetRedirectUrisAsync([NotNull] TApplication application,
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetRedirectUrisAsync([NotNull] TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken);
 
         /// <summary>
@@ -380,9 +347,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="application">The application to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        Task UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask UpdateAsync([NotNull] TApplication application, CancellationToken cancellationToken);
     }
 }
