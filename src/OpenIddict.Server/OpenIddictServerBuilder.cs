@@ -411,7 +411,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddEncryptionCertificate(
             [NotNull] Assembly assembly, [NotNull] string resource, [NotNull] string password)
+#if SUPPORTS_EPHEMERAL_KEY_SETS
+            // Note: ephemeral key sets are currently not supported on macOS.
+            => AddEncryptionCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+                X509KeyStorageFlags.MachineKeySet :
+                X509KeyStorageFlags.EphemeralKeySet);
+#else
             => AddEncryptionCertificate(assembly, resource, password, X509KeyStorageFlags.MachineKeySet);
+#endif
 
         /// <summary>
         /// Registers a <see cref="X509Certificate2"/> retrieved from an
@@ -458,7 +465,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddEncryptionCertificate([NotNull] Stream stream, [NotNull] string password)
+#if SUPPORTS_EPHEMERAL_KEY_SETS
+            // Note: ephemeral key sets are currently not supported on macOS.
+            => AddEncryptionCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+                X509KeyStorageFlags.MachineKeySet :
+                X509KeyStorageFlags.EphemeralKeySet);
+#else
             => AddEncryptionCertificate(stream, password, X509KeyStorageFlags.MachineKeySet);
+#endif
 
         /// <summary>
         /// Registers a <see cref="X509Certificate2"/> extracted from a
@@ -856,7 +870,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddSigningCertificate(
             [NotNull] Assembly assembly, [NotNull] string resource, [NotNull] string password)
+#if SUPPORTS_EPHEMERAL_KEY_SETS
+            // Note: ephemeral key sets are currently not supported on macOS.
+            => AddSigningCertificate(assembly, resource, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+                X509KeyStorageFlags.MachineKeySet :
+                X509KeyStorageFlags.EphemeralKeySet);
+#else
             => AddSigningCertificate(assembly, resource, password, X509KeyStorageFlags.MachineKeySet);
+#endif
 
         /// <summary>
         /// Registers a <see cref="X509Certificate2"/> retrieved from an
@@ -903,7 +924,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="password">The password used to open the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AddSigningCertificate([NotNull] Stream stream, [NotNull] string password)
+#if SUPPORTS_EPHEMERAL_KEY_SETS
+            // Note: ephemeral key sets are currently not supported on macOS.
+            => AddSigningCertificate(stream, password, RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+                X509KeyStorageFlags.MachineKeySet :
+                X509KeyStorageFlags.EphemeralKeySet);
+#else
             => AddSigningCertificate(stream, password, X509KeyStorageFlags.MachineKeySet);
+#endif
 
         /// <summary>
         /// Registers a <see cref="X509Certificate2"/> extracted from a
