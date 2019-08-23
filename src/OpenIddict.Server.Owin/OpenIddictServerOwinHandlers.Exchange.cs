@@ -55,9 +55,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleTokenRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleTokenRequestContext context)
                 {
                     if (context == null)
                     {
@@ -66,7 +66,7 @@ namespace OpenIddict.Server.Owin
 
                     context.SkipRequest();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
         }

@@ -21,8 +21,8 @@ namespace OpenIddict.Server
         /// </summary>
         /// <param name="context">The context associated with the event to process.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        Task HandleAsync([NotNull] TContext context);
+        ValueTask HandleAsync([NotNull] TContext context);
     }
 }

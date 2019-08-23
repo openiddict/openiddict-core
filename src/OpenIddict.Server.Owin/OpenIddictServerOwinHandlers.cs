@@ -62,9 +62,9 @@ namespace OpenIddict.Server.Owin
             /// </summary>
             /// <param name="context">The context associated with the event to process.</param>
             /// <returns>
-            /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public Task HandleAsync([NotNull] ProcessRequestContext context)
+            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
             {
                 if (context == null)
                 {
@@ -90,7 +90,7 @@ namespace OpenIddict.Server.Owin
                     Matches(context.Options.UserinfoEndpointUris)      ? OpenIddictServerEndpointType.Userinfo      :
                                                                          OpenIddictServerEndpointType.Unknown;
 
-                return Task.CompletedTask;
+                return default;
 
                 bool Matches(IList<Uri> addresses)
                 {
@@ -155,9 +155,9 @@ namespace OpenIddict.Server.Owin
             /// </summary>
             /// <param name="context">The context associated with the event to process.</param>
             /// <returns>
-            /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public Task HandleAsync([NotNull] ProcessRequestContext context)
+            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
             {
                 if (context == null)
                 {
@@ -175,7 +175,7 @@ namespace OpenIddict.Server.Owin
                 // Don't require that the host be present if the request is not handled by OpenIddict.
                 if (context.EndpointType == OpenIddictServerEndpointType.Unknown)
                 {
-                    return Task.CompletedTask;
+                    return default;
                 }
 
                 // Reject authorization requests sent without transport security.
@@ -185,10 +185,10 @@ namespace OpenIddict.Server.Owin
                         error: Errors.InvalidRequest,
                         description: "This server only accepts HTTPS requests.");
 
-                    return Task.CompletedTask;
+                    return default;
                 }
 
-                return Task.CompletedTask;
+                return default;
             }
         }
 
@@ -213,9 +213,9 @@ namespace OpenIddict.Server.Owin
             /// </summary>
             /// <param name="context">The context associated with the event to process.</param>
             /// <returns>
-            /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public Task HandleAsync([NotNull] ProcessRequestContext context)
+            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
             {
                 if (context == null)
                 {
@@ -234,7 +234,7 @@ namespace OpenIddict.Server.Owin
                 // by an OpenIddict endpoint or if an explicit issuer URL was set in the options.
                 if (context.Options.Issuer != null || context.EndpointType == OpenIddictServerEndpointType.Unknown)
                 {
-                    return Task.CompletedTask;
+                    return default;
                 }
 
                 if (string.IsNullOrEmpty(request.Host.Value))
@@ -243,10 +243,10 @@ namespace OpenIddict.Server.Owin
                         error: Errors.InvalidRequest,
                         description: "The mandatory 'Host' header is missing.");
 
-                    return Task.CompletedTask;
+                    return default;
                 }
 
-                return Task.CompletedTask;
+                return default;
             }
         }
 
@@ -271,9 +271,9 @@ namespace OpenIddict.Server.Owin
             /// </summary>
             /// <param name="context">The context associated with the event to process.</param>
             /// <returns>
-            /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public Task HandleAsync([NotNull] TContext context)
+            public ValueTask HandleAsync([NotNull] TContext context)
             {
                 if (context == null)
                 {
@@ -302,10 +302,10 @@ namespace OpenIddict.Server.Owin
                         error: Errors.InvalidRequest,
                         description: "The specified HTTP method is not valid.");
 
-                    return Task.CompletedTask;
+                    return default;
                 }
 
-                return Task.CompletedTask;
+                return default;
             }
         }
 
@@ -330,9 +330,9 @@ namespace OpenIddict.Server.Owin
             /// </summary>
             /// <param name="context">The context associated with the event to process.</param>
             /// <returns>
-            /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async Task HandleAsync([NotNull] TContext context)
+            public async ValueTask HandleAsync([NotNull] TContext context)
             {
                 if (context == null)
                 {
@@ -417,9 +417,9 @@ namespace OpenIddict.Server.Owin
             /// </summary>
             /// <param name="context">The context associated with the event to process.</param>
             /// <returns>
-            /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async Task HandleAsync([NotNull] TContext context)
+            public async ValueTask HandleAsync([NotNull] TContext context)
             {
                 if (context == null)
                 {
@@ -500,9 +500,9 @@ namespace OpenIddict.Server.Owin
             /// </summary>
             /// <param name="context">The context associated with the event to process.</param>
             /// <returns>
-            /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public Task HandleAsync([NotNull] TContext context)
+            public ValueTask HandleAsync([NotNull] TContext context)
             {
                 if (context == null)
                 {
@@ -520,7 +520,7 @@ namespace OpenIddict.Server.Owin
                 var header = request.Headers["Authorization"];
                 if (string.IsNullOrEmpty(header) || !header.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Task.CompletedTask;
+                    return default;
                 }
 
                 // At this point, reject requests that use multiple client authentication methods.
@@ -533,7 +533,7 @@ namespace OpenIddict.Server.Owin
                         error: Errors.InvalidRequest,
                         description: "Multiple client credentials cannot be specified.");
 
-                    return Task.CompletedTask;
+                    return default;
                 }
 
                 try
@@ -548,14 +548,14 @@ namespace OpenIddict.Server.Owin
                             error: Errors.InvalidRequest,
                             description: "The specified client credentials are invalid.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Attach the basic authentication credentials to the request message.
                     context.Request.ClientId = UnescapeDataString(data.Substring(0, index));
                     context.Request.ClientSecret = UnescapeDataString(data.Substring(index + 1));
 
-                    return Task.CompletedTask;
+                    return default;
                 }
 
                 catch
@@ -564,7 +564,7 @@ namespace OpenIddict.Server.Owin
                         error: Errors.InvalidRequest,
                         description: "The specified client credentials are invalid.");
 
-                    return Task.CompletedTask;
+                    return default;
                 }
 
                 static string UnescapeDataString(string data)
@@ -600,9 +600,9 @@ namespace OpenIddict.Server.Owin
             /// </summary>
             /// <param name="context">The context associated with the event to process.</param>
             /// <returns>
-            /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async Task HandleAsync([NotNull] TContext context)
+            public async ValueTask HandleAsync([NotNull] TContext context)
             {
                 if (context == null)
                 {

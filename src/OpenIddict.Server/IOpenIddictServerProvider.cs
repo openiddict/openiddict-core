@@ -13,6 +13,6 @@ namespace OpenIddict.Server
     public interface IOpenIddictServerProvider
     {
         ValueTask<OpenIddictServerTransaction> CreateTransactionAsync();
-        Task DispatchAsync<TContext>([NotNull] TContext context) where TContext : BaseContext;
+        ValueTask DispatchAsync<TContext>([NotNull] TContext context) where TContext : BaseContext;
     }
 }

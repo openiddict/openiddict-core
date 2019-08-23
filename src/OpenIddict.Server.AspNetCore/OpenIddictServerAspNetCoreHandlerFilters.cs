@@ -31,14 +31,14 @@ namespace OpenIddict.Server.AspNetCore
             public RequireAuthorizationEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(_options.CurrentValue.EnableAuthorizationEndpointPassthrough);
+                return new ValueTask<bool>(_options.CurrentValue.EnableAuthorizationEndpointPassthrough);
             }
         }
 
@@ -52,14 +52,14 @@ namespace OpenIddict.Server.AspNetCore
             public RequireErrorPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(_options.CurrentValue.EnableErrorPassthrough);
+                return new ValueTask<bool>(_options.CurrentValue.EnableErrorPassthrough);
             }
         }
 
@@ -68,14 +68,14 @@ namespace OpenIddict.Server.AspNetCore
         /// </summary>
         public class RequireHttpRequest : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(context.Transaction.GetHttpRequest() != null);
+                return new ValueTask<bool>(context.Transaction.GetHttpRequest() != null);
             }
         }
         /// <summary>
@@ -89,14 +89,14 @@ namespace OpenIddict.Server.AspNetCore
             public RequireLogoutEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(_options.CurrentValue.EnableLogoutEndpointPassthrough);
+                return new ValueTask<bool>(_options.CurrentValue.EnableLogoutEndpointPassthrough);
             }
         }
 
@@ -110,14 +110,14 @@ namespace OpenIddict.Server.AspNetCore
             public RequireTransportSecurityRequirementEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(!_options.CurrentValue.DisableTransportSecurityRequirement);
+                return new ValueTask<bool>(!_options.CurrentValue.DisableTransportSecurityRequirement);
             }
         }
 
@@ -131,14 +131,14 @@ namespace OpenIddict.Server.AspNetCore
             public RequireRequestCachingEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(_options.CurrentValue.EnableRequestCaching);
+                return new ValueTask<bool>(_options.CurrentValue.EnableRequestCaching);
             }
         }
 
@@ -152,14 +152,14 @@ namespace OpenIddict.Server.AspNetCore
             public RequireStatusCodePagesIntegrationEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(_options.CurrentValue.EnableStatusCodePagesIntegration);
+                return new ValueTask<bool>(_options.CurrentValue.EnableStatusCodePagesIntegration);
             }
         }
 
@@ -174,14 +174,14 @@ namespace OpenIddict.Server.AspNetCore
             public RequireTokenEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(_options.CurrentValue.EnableTokenEndpointPassthrough);
+                return new ValueTask<bool>(_options.CurrentValue.EnableTokenEndpointPassthrough);
             }
         }
 
@@ -196,14 +196,14 @@ namespace OpenIddict.Server.AspNetCore
             public RequireUserinfoEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
                 => _options = options;
 
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(_options.CurrentValue.EnableUserinfoEndpointPassthrough);
+                return new ValueTask<bool>(_options.CurrentValue.EnableUserinfoEndpointPassthrough);
             }
         }
     }

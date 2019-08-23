@@ -136,7 +136,7 @@ namespace OpenIddict.Server
             /// </summary>
             /// <param name="handler">The handler instance.</param>
             /// <returns>The builder instance, so that calls can be easily chained.</returns>
-            public Builder<TContext> UseInlineHandler([NotNull] Func<TContext, Task> handler)
+            public Builder<TContext> UseInlineHandler([NotNull] Func<TContext, ValueTask> handler)
             {
                 if (handler == null)
                 {

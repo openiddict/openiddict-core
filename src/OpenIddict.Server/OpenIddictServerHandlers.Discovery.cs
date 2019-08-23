@@ -91,9 +91,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -166,9 +166,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -232,9 +232,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -326,9 +326,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] TContext context)
+                public async ValueTask HandleAsync([NotNull] TContext context)
                 {
                     if (context == null)
                     {
@@ -376,9 +376,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -390,7 +390,7 @@ namespace OpenIddict.Server
                         context.Issuer = context.Options.Issuer;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -413,9 +413,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -505,7 +505,7 @@ namespace OpenIddict.Server
                         context.UserinfoEndpoint = new Uri(context.Issuer, context.UserinfoEndpoint);
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -528,9 +528,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -543,7 +543,7 @@ namespace OpenIddict.Server
                         context.GrantTypes.UnionWith(context.Options.GrantTypes);
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -566,9 +566,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -583,7 +583,7 @@ namespace OpenIddict.Server
                         context.ResponseModes.Add(ResponseModes.Query);
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -606,9 +606,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -635,7 +635,7 @@ namespace OpenIddict.Server
                         context.ResponseTypes.Add(ResponseTypes.Token);
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -659,9 +659,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -686,7 +686,7 @@ namespace OpenIddict.Server
                         context.TokenEndpointAuthenticationMethods.Add(ClientAuthenticationMethods.ClientSecretPost);
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -710,9 +710,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -728,7 +728,7 @@ namespace OpenIddict.Server
                         context.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -751,9 +751,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -762,7 +762,7 @@ namespace OpenIddict.Server
 
                     context.Scopes.UnionWith(context.Options.Scopes);
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -785,9 +785,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -796,7 +796,7 @@ namespace OpenIddict.Server
 
                     context.Claims.UnionWith(context.Options.Claims);
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -819,9 +819,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -830,7 +830,7 @@ namespace OpenIddict.Server
 
                     context.SubjectTypes.Add(SubjectTypes.Public);
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -853,9 +853,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -914,7 +914,7 @@ namespace OpenIddict.Server
                         context.IdTokenSigningAlgorithms.Add(algorithm);
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -937,9 +937,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleConfigurationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -952,7 +952,7 @@ namespace OpenIddict.Server
                     context.Metadata[Metadata.RequestParameterSupported] = false;
                     context.Metadata[Metadata.RequestUriParameterSupported] = false;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -980,9 +980,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1055,9 +1055,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1121,9 +1121,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1247,9 +1247,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] TContext context)
+                public async ValueTask HandleAsync([NotNull] TContext context)
                 {
                     if (context == null)
                     {
@@ -1297,9 +1297,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleCryptographyRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleCryptographyRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1465,7 +1465,7 @@ namespace OpenIddict.Server
                         context.Keys.Add(key);
                     }
 
-                    return Task.CompletedTask;
+                    return default;
 
                     static bool IsAlgorithmSupported(SecurityKey key, string algorithm) =>
                         key.CryptoProviderFactory.IsSupportedAlgorithm(algorithm, key);

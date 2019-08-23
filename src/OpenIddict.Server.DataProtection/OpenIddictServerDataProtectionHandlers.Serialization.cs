@@ -89,9 +89,9 @@ namespace OpenIddict.Server.DataProtection
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] TContext context)
+                public ValueTask HandleAsync([NotNull] TContext context)
                 {
                     if (context == null)
                     {
@@ -145,7 +145,7 @@ namespace OpenIddict.Server.DataProtection
                     context.Token = Base64UrlEncoder.Encode(protector.Protect(buffer.ToArray()));
                     context.HandleSerialization();
 
-                    return Task.CompletedTask;
+                    return default;
 
                     // Note: the following local methods closely matches the logic used by ASP.NET Core's
                     // authentication stack and MUST NOT be modified to ensure tokens encrypted using
@@ -297,9 +297,9 @@ namespace OpenIddict.Server.DataProtection
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] TContext context)
+                public ValueTask HandleAsync([NotNull] TContext context)
                 {
                     if (context == null)
                     {
@@ -323,7 +323,7 @@ namespace OpenIddict.Server.DataProtection
                         var (principal, properties) = Read(reader, version: 5);
                         if (principal == null)
                         {
-                            return Task.CompletedTask;
+                            return default;
                         }
 
                         context.Principal = principal;
@@ -349,14 +349,14 @@ namespace OpenIddict.Server.DataProtection
 
                         context.HandleDeserialization();
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     catch (Exception exception)
                     {
                         context.Logger.LogTrace(exception, "An exception occured while deserializing a token.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     static (ClaimsPrincipal principal, ImmutableDictionary<string, string> properties) Read(BinaryReader reader, int version)
@@ -508,9 +508,9 @@ namespace OpenIddict.Server.DataProtection
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] SerializeAccessTokenContext context)
+                public ValueTask HandleAsync([NotNull] SerializeAccessTokenContext context)
                 {
                     if (context == null)
                     {
@@ -534,7 +534,7 @@ namespace OpenIddict.Server.DataProtection
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
                     context.Properties[typeof(IDataProtector).FullName] = protector;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -562,9 +562,9 @@ namespace OpenIddict.Server.DataProtection
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] SerializeAuthorizationCodeContext context)
+                public ValueTask HandleAsync([NotNull] SerializeAuthorizationCodeContext context)
                 {
                     if (context == null)
                     {
@@ -588,7 +588,7 @@ namespace OpenIddict.Server.DataProtection
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
                     context.Properties[typeof(IDataProtector).FullName] = protector;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -616,9 +616,9 @@ namespace OpenIddict.Server.DataProtection
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] SerializeRefreshTokenContext context)
+                public ValueTask HandleAsync([NotNull] SerializeRefreshTokenContext context)
                 {
                     if (context == null)
                     {
@@ -642,7 +642,7 @@ namespace OpenIddict.Server.DataProtection
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
                     context.Properties[typeof(IDataProtector).FullName] = protector;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -670,9 +670,9 @@ namespace OpenIddict.Server.DataProtection
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] DeserializeAccessTokenContext context)
+                public ValueTask HandleAsync([NotNull] DeserializeAccessTokenContext context)
                 {
                     if (context == null)
                     {
@@ -696,7 +696,7 @@ namespace OpenIddict.Server.DataProtection
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
                     context.Properties[typeof(IDataProtector).FullName] = protector;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -724,9 +724,9 @@ namespace OpenIddict.Server.DataProtection
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] DeserializeAuthorizationCodeContext context)
+                public ValueTask HandleAsync([NotNull] DeserializeAuthorizationCodeContext context)
                 {
                     if (context == null)
                     {
@@ -750,7 +750,7 @@ namespace OpenIddict.Server.DataProtection
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
                     context.Properties[typeof(IDataProtector).FullName] = protector;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -778,9 +778,9 @@ namespace OpenIddict.Server.DataProtection
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] DeserializeRefreshTokenContext context)
+                public ValueTask HandleAsync([NotNull] DeserializeRefreshTokenContext context)
                 {
                     if (context == null)
                     {
@@ -804,7 +804,7 @@ namespace OpenIddict.Server.DataProtection
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
                     context.Properties[typeof(IDataProtector).FullName] = protector;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
         }
