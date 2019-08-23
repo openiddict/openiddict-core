@@ -37,7 +37,7 @@ namespace OpenIddict.Server.Owin
         /// </summary>
         /// <param name="context">The <see cref="IOwinContext"/>.</param>
         /// <returns>
-        /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public override Task Invoke([NotNull] IOwinContext context)
         {

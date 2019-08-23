@@ -95,9 +95,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] TContext context)
+                public ValueTask HandleAsync([NotNull] TContext context)
                 {
                     if (context == null)
                     {
@@ -178,7 +178,7 @@ namespace OpenIddict.Server
 
                     context.HandleSerialization();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -201,9 +201,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] TContext context)
+                public ValueTask HandleAsync([NotNull] TContext context)
                 {
                     if (context == null)
                     {
@@ -214,7 +214,7 @@ namespace OpenIddict.Server
                     {
                         context.Logger.LogTrace("The token '{Token}' was not compatible with the JWT format.", context.Token);
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     try
@@ -241,7 +241,7 @@ namespace OpenIddict.Server
                             context.Logger.LogDebug("The token usage associated to the token {Token} does not match the expected type.");
                             context.HandleDeserialization();
 
-                            return Task.CompletedTask;
+                            return default;
                         }
 
                         context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
@@ -260,7 +260,7 @@ namespace OpenIddict.Server
 
                         context.HandleDeserialization();
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     catch (Exception exception)
@@ -268,7 +268,7 @@ namespace OpenIddict.Server
                         context.Logger.LogDebug(exception, "An exception occured while deserializing a token.");
                         context.HandleDeserialization();
 
-                        return Task.CompletedTask;
+                        return default;
                     }
                 }
             }
@@ -292,9 +292,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] SerializeAccessTokenContext context)
+                public ValueTask HandleAsync([NotNull] SerializeAccessTokenContext context)
                 {
                     if (context == null)
                     {
@@ -313,7 +313,7 @@ namespace OpenIddict.Server
                     context.SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(
                         credentials => credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -336,9 +336,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] SerializeAuthorizationCodeContext context)
+                public ValueTask HandleAsync([NotNull] SerializeAuthorizationCodeContext context)
                 {
                     if (context == null)
                     {
@@ -361,7 +361,7 @@ namespace OpenIddict.Server
                     context.SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(
                         credentials => credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -384,9 +384,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] SerializeIdentityTokenContext context)
+                public ValueTask HandleAsync([NotNull] SerializeIdentityTokenContext context)
                 {
                     if (context == null)
                     {
@@ -403,7 +403,7 @@ namespace OpenIddict.Server
                     context.SigningCredentials = context.Options.SigningCredentials.First(
                         credentials => credentials.Key is AsymmetricSecurityKey);
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -426,9 +426,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] SerializeRefreshTokenContext context)
+                public ValueTask HandleAsync([NotNull] SerializeRefreshTokenContext context)
                 {
                     if (context == null)
                     {
@@ -451,7 +451,7 @@ namespace OpenIddict.Server
                     context.SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(
                         credentials => credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -474,9 +474,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] DeserializeAccessTokenContext context)
+                public ValueTask HandleAsync([NotNull] DeserializeAccessTokenContext context)
                 {
                     if (context == null)
                     {
@@ -496,7 +496,7 @@ namespace OpenIddict.Server
                     context.TokenValidationParameters.ValidateAudience = false;
                     context.TokenValidationParameters.ValidateLifetime = false;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -519,9 +519,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] DeserializeAuthorizationCodeContext context)
+                public ValueTask HandleAsync([NotNull] DeserializeAuthorizationCodeContext context)
                 {
                     if (context == null)
                     {
@@ -540,7 +540,7 @@ namespace OpenIddict.Server
                     context.TokenValidationParameters.ValidateAudience = false;
                     context.TokenValidationParameters.ValidateLifetime = false;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -563,9 +563,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] DeserializeIdentityTokenContext context)
+                public ValueTask HandleAsync([NotNull] DeserializeIdentityTokenContext context)
                 {
                     if (context == null)
                     {
@@ -583,7 +583,7 @@ namespace OpenIddict.Server
                     context.TokenValidationParameters.ValidateAudience = false;
                     context.TokenValidationParameters.ValidateLifetime = false;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -606,9 +606,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] DeserializeRefreshTokenContext context)
+                public ValueTask HandleAsync([NotNull] DeserializeRefreshTokenContext context)
                 {
                     if (context == null)
                     {
@@ -627,7 +627,7 @@ namespace OpenIddict.Server
                     context.TokenValidationParameters.ValidateAudience = false;
                     context.TokenValidationParameters.ValidateLifetime = false;
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
         }

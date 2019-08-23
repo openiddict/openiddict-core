@@ -88,9 +88,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ExtractLogoutRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ExtractLogoutRequestContext context)
                 {
                     if (context == null)
                     {
@@ -175,9 +175,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ExtractLogoutRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ExtractLogoutRequestContext context)
                 {
                     if (context == null)
                     {
@@ -257,9 +257,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleLogoutRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleLogoutRequestContext context)
                 {
                     if (context == null)
                     {
@@ -268,7 +268,7 @@ namespace OpenIddict.Server.Owin
 
                     context.SkipRequest();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -306,9 +306,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
                 {
                     if (context == null)
                     {
@@ -317,7 +317,7 @@ namespace OpenIddict.Server.Owin
 
                     if (string.IsNullOrEmpty(context.Request?.RequestId))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Note: the ApplyLogoutResponse event is called for both successful
@@ -326,7 +326,7 @@ namespace OpenIddict.Server.Owin
 
                     // Note: the cache key is always prefixed with a specific marker
                     // to avoid collisions with the other types of cached payloads.
-                    return _cache.RemoveAsync(Cache.LogoutRequest + context.Request.RequestId);
+                    return new ValueTask(_cache.RemoveAsync(Cache.LogoutRequest + context.Request.RequestId));
                 }
             }
 
@@ -351,9 +351,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
                 {
                     if (context == null)
                     {
@@ -370,13 +370,13 @@ namespace OpenIddict.Server.Owin
 
                     if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     context.Logger.LogInformation("The logout response was successfully returned: {Response}.", response);
                     context.HandleRequest();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -401,9 +401,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
                 {
                     if (context == null)
                     {
@@ -420,7 +420,7 @@ namespace OpenIddict.Server.Owin
 
                     if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     context.Logger.LogInformation("The logout response was successfully returned to '{PostLogoutRedirectUri}': {Response}.",
@@ -439,7 +439,7 @@ namespace OpenIddict.Server.Owin
                     response.Redirect(location);
                     context.HandleRequest();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -467,9 +467,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
                 {
                     if (context == null)
                     {
@@ -486,7 +486,7 @@ namespace OpenIddict.Server.Owin
 
                     if (string.IsNullOrEmpty(context.Response.Error) || !string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Apply a 400 status code by default.
@@ -494,7 +494,7 @@ namespace OpenIddict.Server.Owin
 
                     context.SkipRequest();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -519,9 +519,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                public async ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
                 {
                     if (context == null)
                     {

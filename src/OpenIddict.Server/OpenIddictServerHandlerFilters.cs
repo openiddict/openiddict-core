@@ -20,14 +20,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireAccessTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninResponseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(context.IncludeAccessToken);
+                return new ValueTask<bool>(context.IncludeAccessToken);
             }
         }
 
@@ -36,14 +36,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireAuthorizationCodeIncluded : IOpenIddictServerHandlerFilter<ProcessSigninResponseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(context.IncludeAuthorizationCode);
+                return new ValueTask<bool>(context.IncludeAuthorizationCode);
             }
         }
 
@@ -52,14 +52,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireClientIdParameter : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(!string.IsNullOrEmpty(context.Request.ClientId));
+                return new ValueTask<bool>(!string.IsNullOrEmpty(context.Request.ClientId));
             }
         }
 
@@ -68,14 +68,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireDegradedModeDisabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(!context.Options.EnableDegradedMode);
+                return new ValueTask<bool>(!context.Options.EnableDegradedMode);
             }
         }
 
@@ -84,14 +84,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireDegradedModeEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(context.Options.EnableDegradedMode);
+                return new ValueTask<bool>(context.Options.EnableDegradedMode);
             }
         }
 
@@ -100,14 +100,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireEndpointPermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(!context.Options.IgnoreEndpointPermissions);
+                return new ValueTask<bool>(!context.Options.IgnoreEndpointPermissions);
             }
         }
 
@@ -116,14 +116,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireGrantTypePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(!context.Options.IgnoreGrantTypePermissions);
+                return new ValueTask<bool>(!context.Options.IgnoreGrantTypePermissions);
             }
         }
 
@@ -132,14 +132,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireIdentityTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninResponseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(context.IncludeIdentityToken);
+                return new ValueTask<bool>(context.IncludeIdentityToken);
             }
         }
 
@@ -148,14 +148,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequirePostLogoutRedirectUriParameter : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(!string.IsNullOrEmpty(context.Request.PostLogoutRedirectUri));
+                return new ValueTask<bool>(!string.IsNullOrEmpty(context.Request.PostLogoutRedirectUri));
             }
         }
 
@@ -164,14 +164,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireRefreshTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninResponseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(context.IncludeRefreshToken);
+                return new ValueTask<bool>(context.IncludeRefreshToken);
             }
         }
 
@@ -180,14 +180,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireScopePermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(!context.Options.IgnoreScopePermissions);
+                return new ValueTask<bool>(!context.Options.IgnoreScopePermissions);
             }
         }
 
@@ -196,14 +196,14 @@ namespace OpenIddict.Server
         /// </summary>
         public class RequireScopeValidationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(!context.Options.DisableScopeValidation);
+                return new ValueTask<bool>(!context.Options.DisableScopeValidation);
             }
         }
     }

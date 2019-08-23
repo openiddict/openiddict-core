@@ -42,7 +42,7 @@ namespace OpenIddict.Server
                 Options = _options.CurrentValue
             });
 
-        public async Task DispatchAsync<TContext>([NotNull] TContext context) where TContext : BaseContext
+        public async ValueTask DispatchAsync<TContext>([NotNull] TContext context) where TContext : BaseContext
         {
             if (context == null)
             {
@@ -116,7 +116,7 @@ namespace OpenIddict.Server
                 }
             }
 
-            async Task<bool> IsActiveAsync(OpenIddictServerHandlerDescriptor descriptor)
+            async ValueTask<bool> IsActiveAsync(OpenIddictServerHandlerDescriptor descriptor)
             {
                 for (var index = 0; index < descriptor.FilterTypes.Length; index++)
                 {

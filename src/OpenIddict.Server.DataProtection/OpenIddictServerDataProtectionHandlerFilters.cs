@@ -29,14 +29,14 @@ namespace OpenIddict.Server.DataProtection
             public RequirePreferDataProtectionFormatEnabled([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
-            public Task<bool> IsActiveAsync([NotNull] BaseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return Task.FromResult(_options.CurrentValue.PreferDataProtectionFormat);
+                return new ValueTask<bool>(_options.CurrentValue.PreferDataProtectionFormat);
             }
         }
     }

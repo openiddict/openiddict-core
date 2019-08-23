@@ -90,9 +90,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ExtractAuthorizationRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ExtractAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -177,9 +177,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ExtractAuthorizationRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ExtractAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -258,9 +258,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] HandleAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] HandleAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -269,7 +269,7 @@ namespace OpenIddict.Server.Owin
 
                     context.SkipRequest();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -307,9 +307,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -318,7 +318,7 @@ namespace OpenIddict.Server.Owin
 
                     if (string.IsNullOrEmpty(context.Request?.RequestId))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Note: the ApplyAuthorizationResponse event is called for both successful
@@ -327,7 +327,7 @@ namespace OpenIddict.Server.Owin
 
                     // Note: the cache key is always prefixed with a specific marker
                     // to avoid collisions with the other types of cached payloads.
-                    return _cache.RemoveAsync(Cache.AuthorizationRequest + context.Request.RequestId);
+                    return new ValueTask(_cache.RemoveAsync(Cache.AuthorizationRequest + context.Request.RequestId));
                 }
             }
 
@@ -357,9 +357,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                public async ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -452,9 +452,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -472,7 +472,7 @@ namespace OpenIddict.Server.Owin
                     if (string.IsNullOrEmpty(context.RedirectUri) ||
                        !string.Equals(context.ResponseMode, ResponseModes.Query, StringComparison.Ordinal))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     context.Logger.LogInformation("The authorization response was successfully returned to " +
@@ -492,7 +492,7 @@ namespace OpenIddict.Server.Owin
                     response.Redirect(location);
                     context.HandleRequest();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -517,9 +517,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -537,7 +537,7 @@ namespace OpenIddict.Server.Owin
                     if (string.IsNullOrEmpty(context.RedirectUri) ||
                        !string.Equals(context.ResponseMode, ResponseModes.Fragment, StringComparison.Ordinal))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     context.Logger.LogInformation("The authorization response was successfully returned to " +
@@ -560,7 +560,7 @@ namespace OpenIddict.Server.Owin
                     response.Redirect(builder.ToString());
                     context.HandleRequest();
 
-                    return Task.CompletedTask;
+                    return default;
 
                     static bool Contains(StringBuilder builder, char delimiter)
                     {
@@ -601,9 +601,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -620,7 +620,7 @@ namespace OpenIddict.Server.Owin
 
                     if (string.IsNullOrEmpty(context.Response.Error) || !string.IsNullOrEmpty(context.RedirectUri))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Don't return the state originally sent by the client application.
@@ -631,7 +631,7 @@ namespace OpenIddict.Server.Owin
 
                     context.SkipRequest();
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -656,9 +656,9 @@ namespace OpenIddict.Server.Owin
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                public async ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {

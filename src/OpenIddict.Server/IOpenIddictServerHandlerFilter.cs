@@ -12,6 +12,6 @@ namespace OpenIddict.Server
 {
     public interface IOpenIddictServerHandlerFilter<in TContext> where TContext : BaseContext
     {
-        Task<bool> IsActiveAsync([NotNull] TContext context);
+        ValueTask<bool> IsActiveAsync([NotNull] TContext context);
     }
 }

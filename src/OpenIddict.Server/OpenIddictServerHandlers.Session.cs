@@ -68,9 +68,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -143,9 +143,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -215,9 +215,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -308,9 +308,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] TContext context)
+                public async ValueTask HandleAsync([NotNull] TContext context)
                 {
                     if (context == null)
                     {
@@ -358,9 +358,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateLogoutRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateLogoutRequestContext context)
                 {
                     if (context == null)
                     {
@@ -369,12 +369,11 @@ namespace OpenIddict.Server
 
                     if (string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // If an optional post_logout_redirect_uri was provided, validate it.
-                    if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri uri) ||
-                        !uri.IsWellFormedOriginalString())
+                    if (!Uri.TryCreate(context.PostLogoutRedirectUri, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
                     {
                         context.Logger.LogError("The logout request was rejected because the specified post_logout_redirect_uri " +
                                                 "was not a valid absolute URL: {PostLogoutRedirectUri}.", context.PostLogoutRedirectUri);
@@ -383,7 +382,7 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     if (!string.IsNullOrEmpty(uri.Fragment))
@@ -395,10 +394,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The 'post_logout_redirect_uri' parameter must not include a fragment.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -437,9 +436,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ValidateLogoutRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ValidateLogoutRequestContext context)
                 {
                     if (context == null)
                     {
@@ -458,7 +457,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    async Task<bool> ValidatePostLogoutRedirectUriAsync(string address)
+                    async ValueTask<bool> ValidatePostLogoutRedirectUriAsync(string address)
                     {
                         // To be considered valid, a post_logout_redirect_uri must correspond to an existing client application
                         // that was granted the ept:logout permission, unless endpoint permissions checking was explicitly disabled.
@@ -507,9 +506,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
                 {
                     if (context == null)
                     {
@@ -518,7 +517,7 @@ namespace OpenIddict.Server
 
                     if (context.Request == null)
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if an error
@@ -528,7 +527,7 @@ namespace OpenIddict.Server
                         context.PostLogoutRedirectUri = (string) property;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -551,9 +550,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyLogoutResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
                 {
                     if (context == null)
                     {
@@ -566,7 +565,7 @@ namespace OpenIddict.Server
                         context.Response.State = context.Request?.State;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
         }

@@ -84,9 +84,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -159,9 +159,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -233,9 +233,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ProcessRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ProcessRequestContext context)
                 {
                     if (context == null)
                     {
@@ -327,9 +327,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] TContext context)
+                public async ValueTask HandleAsync([NotNull] TContext context)
                 {
                     if (context == null)
                     {
@@ -377,9 +377,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -396,10 +396,10 @@ namespace OpenIddict.Server
                             error: Errors.RequestNotSupported,
                             description: "The 'request' parameter is not supported.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -422,9 +422,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -441,10 +441,10 @@ namespace OpenIddict.Server
                             error: Errors.RequestUriNotSupported,
                             description: "The 'request_uri' parameter is not supported.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -467,9 +467,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -487,10 +487,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The mandatory 'client_id' parameter is missing.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -513,9 +513,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -538,10 +538,10 @@ namespace OpenIddict.Server
                                 error: Errors.InvalidRequest,
                                 description: "The mandatory 'redirect_uri' parameter is missing.");
 
-                            return Task.CompletedTask;
+                            return default;
                         }
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Note: when specified, redirect_uri MUST be an absolute URI.
@@ -561,7 +561,7 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The 'redirect_uri' parameter must be a valid absolute URL.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Note: when specified, redirect_uri MUST NOT include a fragment component.
@@ -576,10 +576,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The 'redirect_uri' parameter must not include a fragment.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -602,9 +602,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -621,7 +621,7 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The mandatory 'response_type' parameter is missing.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Reject requests containing the id_token response_type if no openid scope has been received.
@@ -633,7 +633,7 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The mandatory 'openid' scope is missing.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Reject requests containing the code response_type if the token endpoint has been disabled.
@@ -645,7 +645,7 @@ namespace OpenIddict.Server
                             error: Errors.UnsupportedResponseType,
                             description: "The specified 'response_type' is not supported by this server.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Reject requests that specify an unsupported response_type.
@@ -658,7 +658,7 @@ namespace OpenIddict.Server
                             error: Errors.UnsupportedResponseType,
                             description: "The specified 'response_type' parameter is not supported.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Reject code flow authorization requests if the authorization code flow is not enabled.
@@ -671,7 +671,7 @@ namespace OpenIddict.Server
                             error: Errors.UnsupportedResponseType,
                             description: "The specified 'response_type' parameter is not allowed.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Reject implicit flow authorization requests if the implicit flow is not enabled.
@@ -683,7 +683,7 @@ namespace OpenIddict.Server
                             error: Errors.UnsupportedResponseType,
                             description: "The specified 'response_type' parameter is not allowed.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Reject hybrid flow authorization requests if the authorization code or the implicit flows are not enabled.
@@ -697,7 +697,7 @@ namespace OpenIddict.Server
                             error: Errors.UnsupportedResponseType,
                             description: "The specified 'response_type' parameter is not allowed.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
@@ -707,10 +707,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The 'offline_access' scope is not allowed.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -733,9 +733,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -756,7 +756,7 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The specified 'response_type'/'response_mode' combination is invalid.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Reject requests that specify an unsupported response_mode.
@@ -771,10 +771,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The specified 'response_mode' parameter is not supported.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -797,9 +797,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -813,7 +813,7 @@ namespace OpenIddict.Server
 
                     if (!string.IsNullOrEmpty(context.Request.Nonce) || !context.Request.HasScope(Scopes.OpenId))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     if (context.Request.IsImplicitFlow() || context.Request.IsHybridFlow())
@@ -824,10 +824,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The mandatory 'nonce' parameter is missing.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -850,9 +850,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -870,10 +870,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The specified 'prompt' parameter is invalid.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -896,9 +896,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -908,7 +908,7 @@ namespace OpenIddict.Server
                     if (string.IsNullOrEmpty(context.Request.CodeChallenge) &&
                         string.IsNullOrEmpty(context.Request.CodeChallengeMethod))
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Ensure a code_challenge was specified if a code_challenge_method was used.
@@ -920,7 +920,7 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The 'code_challenge_method' parameter cannot be used without 'code_challenge'.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // When code_challenge or code_challenge_method is specified, ensure the response_type includes "code".
@@ -934,7 +934,7 @@ namespace OpenIddict.Server
                             description: "The 'code_challenge' and 'code_challenge_method' parameters " +
                                          "can only be used with a response type containing 'code'.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Reject authorization requests that contain response_type=token when a code_challenge is specified.
@@ -947,7 +947,7 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The specified 'response_type' parameter is not allowed when using PKCE.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // If a code_challenge_method was specified, ensure the algorithm is supported.
@@ -962,10 +962,10 @@ namespace OpenIddict.Server
                             error: Errors.InvalidRequest,
                             description: "The specified code_challenge_method is not supported'.");
 
-                        return Task.CompletedTask;
+                        return default;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -1004,9 +1004,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1072,9 +1072,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1131,9 +1131,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1198,9 +1198,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1263,9 +1263,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1328,9 +1328,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1438,9 +1438,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public async Task HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
                 {
                     if (context == null)
                     {
@@ -1498,9 +1498,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -1509,7 +1509,7 @@ namespace OpenIddict.Server
 
                     if (context.Request == null)
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if an error
@@ -1519,7 +1519,7 @@ namespace OpenIddict.Server
                         context.RedirectUri = (string) property;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -1543,9 +1543,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -1554,7 +1554,7 @@ namespace OpenIddict.Server
 
                     if (context.Request == null)
                     {
-                        return Task.CompletedTask;
+                        return default;
                     }
 
                     context.ResponseMode = context.Request.ResponseMode;
@@ -1567,7 +1567,7 @@ namespace OpenIddict.Server
                                                context.Request.IsQueryResponseMode()    ? ResponseModes.Query    : null;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
 
@@ -1590,9 +1590,9 @@ namespace OpenIddict.Server
                 /// </summary>
                 /// <param name="context">The context associated with the event to process.</param>
                 /// <returns>
-                /// A <see cref="Task"/> that can be used to monitor the asynchronous operation.
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
                 /// </returns>
-                public Task HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
+                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
                 {
                     if (context == null)
                     {
@@ -1605,7 +1605,7 @@ namespace OpenIddict.Server
                         context.Response.State = context.Request?.State;
                     }
 
-                    return Task.CompletedTask;
+                    return default;
                 }
             }
         }
