@@ -333,6 +333,19 @@ namespace OpenIddict.Abstractions
             public const string Destinations = ".destinations";
         }
 
+        public static class Requirements
+        {
+            public static class Features
+            {
+                public const string ProofKeyForCodeExchange = "ft:pkce";
+            }
+
+            public static class Prefixes
+            {
+                public const string Feature = "ft:";
+            }
+        }
+
         public static class ResponseModes
         {
             public const string FormPost = "form_post";

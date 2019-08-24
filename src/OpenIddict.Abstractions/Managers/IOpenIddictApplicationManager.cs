@@ -243,6 +243,17 @@ namespace OpenIddict.Abstractions
         ValueTask<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] object application, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Retrieves the requirements associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the requirements associated with the application.
+        /// </returns>
+        ValueTask<ImmutableArray<string>> GetRequirementsAsync([NotNull] object application, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Determines whether the specified permission has been granted to the application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -250,6 +261,15 @@ namespace OpenIddict.Abstractions
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the application has been granted the specified permission, <c>false</c> otherwise.</returns>
         ValueTask<bool> HasPermissionAsync([NotNull] object application, [NotNull] string permission, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Determines whether the specified requirement has been enforced for the specified application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="requirement">The requirement.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the requirement has been enforced for the specified application, <c>false</c> otherwise.</returns>
+        ValueTask<bool> HasRequirementAsync([NotNull] object application, [NotNull] string requirement, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Determines whether an application is a confidential client.

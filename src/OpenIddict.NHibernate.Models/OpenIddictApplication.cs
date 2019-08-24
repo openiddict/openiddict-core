@@ -96,6 +96,12 @@ namespace OpenIddict.NHibernate.Models
         public virtual string RedirectUris { get; set; }
 
         /// <summary>
+        /// Gets or sets the requirements associated with the
+        /// current application, serialized as a JSON array.
+        /// </summary>
+        public virtual string Requirements { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of the tokens associated with this application.
         /// </summary>
         public virtual IList<TToken> Tokens { get; set; } = new List<TToken>();

@@ -52,6 +52,7 @@ namespace OpenIddict.Server
                 ValidateClientSecret.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
                 ValidateGrantTypePermissions.Descriptor,
+                ValidateProofKeyForCodeExchangeRequirement.Descriptor,
                 ValidateScopePermissions.Descriptor,
                 ValidateToken.Descriptor,
                 ValidatePresenters.Descriptor,
@@ -1157,6 +1158,83 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting token requests made by
+            /// applications for which proof key for code exchange (PKCE) was enforced.
+            /// Note: this handler is not used when the degraded mode is enabled.
+            /// </summary>
+            public class ValidateProofKeyForCodeExchangeRequirement : IOpenIddictServerHandler<ValidateTokenRequestContext>
+            {
+                private readonly IOpenIddictApplicationManager _applicationManager;
+
+                public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                    .ToString());
+
+                public ValidateProofKeyForCodeExchangeRequirement([NotNull] IOpenIddictApplicationManager applicationManager)
+                    => _applicationManager = applicationManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
+                        .AddFilter<RequireClientIdParameter>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .UseScopedHandler<ValidateProofKeyForCodeExchangeRequirement>()
+                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public async ValueTask HandleAsync([NotNull] ValidateTokenRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    if (!context.Request.IsAuthorizationCodeGrantType())
+                    {
+                        return;
+                    }
+
+                    // If a code_verifier was provided, the request is always considered valid,
+                    // whether the proof key for code exchange requirement is enforced or not.
+                    if (!string.IsNullOrEmpty(context.Request.CodeVerifier))
+                    {
+                        return;
+                    }
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                    }
+
+                    if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
+                    {
+                        context.Logger.LogError("The token request was rejected because the " +
+                                                "required 'code_verifier' parameter was missing.");
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The mandatory 'code_verifier' parameter is missing.");
+
+                        return;
+                    }
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting token requests made by applications
             /// that haven't been granted the appropriate grant type permission.
             /// Note: this handler is not used when the degraded mode is enabled.
@@ -1185,7 +1263,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireDegradedModeDisabled>()
                         .AddFilter<RequireScopePermissionsEnabled>()
                         .UseScopedHandler<ValidateScopePermissions>()
-                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -1514,6 +1592,12 @@ namespace OpenIddict.Server
                         return default;
                     }
 
+                    // Note: the ValidateProofKeyForCodeExchangeRequirement handler (invoked earlier) ensures
+                    // a code_verifier is specified if the proof key for code exchange requirement was enforced
+                    // for the client application. But unlike the aforementioned handler, ValidateCodeVerifier
+                    // is active even if the degraded mode is enabled and ensures that a code_verifier is sent if a
+                    // code_challenge was stored in the authorization code when the authorization request was handled.
+
                     // If a code challenge was initially sent in the authorization request and associated with the
                     // code, validate the code verifier to ensure the token request is sent by a legit caller.
                     var challenge = context.Principal.GetClaim(Claims.Private.CodeChallenge);
@@ -1522,8 +1606,7 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    // Get the code verifier from the token request.
-                    // If it cannot be found, return an invalid_grant error.
+                    // Get the code verifier from the token request. If it cannot be found, return an invalid_grant error.
                     if (string.IsNullOrEmpty(context.Request.CodeVerifier))
                     {
                         context.Logger.LogError("The token request was rejected because the required 'code_verifier' " +

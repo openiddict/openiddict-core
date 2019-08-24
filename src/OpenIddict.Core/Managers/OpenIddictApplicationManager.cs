@@ -585,6 +585,26 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Retrieves the requirements associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the requirements associated with the application.
+        /// </returns>
+        public virtual ValueTask<ImmutableArray<string>> GetRequirementsAsync(
+            [NotNull] TApplication application, CancellationToken cancellationToken = default)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Store.GetRequirementsAsync(application, cancellationToken);
+        }
+
+        /// <summary>
         /// Determines whether the specified permission has been granted to the application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -604,7 +624,30 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The permission name cannot be null or empty.", nameof(permission));
             }
 
-            return (await GetPermissionsAsync(application, cancellationToken)).Contains(permission, StringComparer.OrdinalIgnoreCase);
+            return (await GetPermissionsAsync(application, cancellationToken)).Contains(permission, StringComparer.Ordinal);
+        }
+
+        /// <summary>
+        /// Determines whether the specified requirement has been enforced for the specified application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="requirement">The requirement.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the requirement has been enforced for the specified application, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> HasRequirementAsync(
+            [NotNull] TApplication application, [NotNull] string requirement, CancellationToken cancellationToken = default)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(requirement))
+            {
+                throw new ArgumentException("The requirement name cannot be null or empty.", nameof(requirement));
+            }
+
+            return (await GetRequirementsAsync(application, cancellationToken)).Contains(requirement, StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -756,6 +799,7 @@ namespace OpenIddict.Core
                 descriptor.PostLogoutRedirectUris.Select(address => address.OriginalString)), cancellationToken);
             await Store.SetRedirectUrisAsync(application, ImmutableArray.CreateRange(
                 descriptor.RedirectUris.Select(address => address.OriginalString)), cancellationToken);
+            await Store.SetRequirementsAsync(application, ImmutableArray.CreateRange(descriptor.Requirements), cancellationToken);
         }
 
         /// <summary>
@@ -788,9 +832,10 @@ namespace OpenIddict.Core
             descriptor.Type = await Store.GetClientTypeAsync(application, cancellationToken);
             descriptor.Permissions.Clear();
             descriptor.Permissions.UnionWith(await Store.GetPermissionsAsync(application, cancellationToken));
-            descriptor.PostLogoutRedirectUris.Clear();
-            descriptor.RedirectUris.Clear();
+            descriptor.Requirements.Clear();
+            descriptor.Requirements.UnionWith(await Store.GetRequirementsAsync(application, cancellationToken));
 
+            descriptor.PostLogoutRedirectUris.Clear();
             foreach (var address in await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken))
             {
                 // Ensure the address is not null or empty.
@@ -808,6 +853,7 @@ namespace OpenIddict.Core
                 descriptor.PostLogoutRedirectUris.Add(uri);
             }
 
+            descriptor.RedirectUris.Clear();
             foreach (var address in await Store.GetRedirectUrisAsync(application, cancellationToken))
             {
                 // Ensure the address is not null or empty.
@@ -1416,8 +1462,14 @@ namespace OpenIddict.Core
         ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRedirectUrisAsync(object application, CancellationToken cancellationToken)
             => GetRedirectUrisAsync((TApplication) application, cancellationToken);
 
+        ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRequirementsAsync(object application, CancellationToken cancellationToken)
+            => GetRequirementsAsync((TApplication) application, cancellationToken);
+
         ValueTask<bool> IOpenIddictApplicationManager.HasPermissionAsync(object application, string permission, CancellationToken cancellationToken)
             => HasPermissionAsync((TApplication) application, permission, cancellationToken);
+
+        ValueTask<bool> IOpenIddictApplicationManager.HasRequirementAsync(object application, string requirement, CancellationToken cancellationToken)
+            => HasRequirementAsync((TApplication) application, requirement, cancellationToken);
 
         ValueTask<bool> IOpenIddictApplicationManager.IsConfidentialAsync(object application, CancellationToken cancellationToken)
             => IsConfidentialAsync((TApplication) application, cancellationToken);

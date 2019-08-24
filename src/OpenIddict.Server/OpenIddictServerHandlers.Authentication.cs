@@ -55,6 +55,7 @@ namespace OpenIddict.Server
                 ValidateScopes.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
                 ValidateGrantTypePermissions.Descriptor,
+                ValidateProofKeyForCodeExchangeRequirement.Descriptor,
                 ValidateScopePermissions.Descriptor,
 
                 /*
@@ -1444,6 +1445,77 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting authorization requests made by
+            /// applications for which proof key for code exchange (PKCE) was enforced.
+            /// Note: this handler is not used when the degraded mode is enabled.
+            /// </summary>
+            public class ValidateProofKeyForCodeExchangeRequirement : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+            {
+                private readonly IOpenIddictApplicationManager _applicationManager;
+
+                public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                    .ToString());
+
+                public ValidateProofKeyForCodeExchangeRequirement([NotNull] IOpenIddictApplicationManager applicationManager)
+                    => _applicationManager = applicationManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .UseScopedHandler<ValidateProofKeyForCodeExchangeRequirement>()
+                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    // If a code_challenge was provided, the request is always considered valid,
+                    // whether the proof key for code exchange requirement is enforced or not.
+                    if (!string.IsNullOrEmpty(context.Request.CodeChallenge))
+                    {
+                        return;
+                    }
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                    }
+
+                    if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
+                    {
+                        context.Logger.LogError("The authorization request was rejected because the " +
+                                                "required 'code_challenge' parameter was missing.");
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The mandatory 'code_challenge' parameter is missing.");
+
+                        return;
+                    }
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting authorization requests made by unauthorized applications.
             /// Note: this handler is not used when the degraded mode is enabled or when scope permissions are disabled.
             /// </summary>
@@ -1470,7 +1542,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireScopePermissionsEnabled>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateScopePermissions>()
-                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>

@@ -226,6 +226,17 @@ namespace OpenIddict.Abstractions
         ValueTask<ImmutableArray<string>> GetRedirectUrisAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves the requirements associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the requirements associated with the application.
+        /// </returns>
+        ValueTask<ImmutableArray<string>> GetRequirementsAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Instantiates a new application.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -341,6 +352,15 @@ namespace OpenIddict.Abstractions
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         ValueTask SetRedirectUrisAsync([NotNull] TApplication application,
             ImmutableArray<string> addresses, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the requirements associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="requirements">The requirements associated with the application </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        ValueTask SetRequirementsAsync([NotNull] TApplication application, ImmutableArray<string> requirements, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing application.
