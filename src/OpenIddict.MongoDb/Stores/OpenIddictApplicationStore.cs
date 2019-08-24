@@ -489,6 +489,30 @@ namespace OpenIddict.MongoDb
         }
 
         /// <summary>
+        /// Retrieves the requirements associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>
+        /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+        /// whose result returns all the requirements associated with the application.
+        /// </returns>
+        public virtual ValueTask<ImmutableArray<string>> GetRequirementsAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (application.Requirements == null || application.Requirements.Length == 0)
+            {
+                return new ValueTask<ImmutableArray<string>>(ImmutableArray.Create<string>());
+            }
+
+            return new ValueTask<ImmutableArray<string>>(application.Requirements.ToImmutableArray());
+        }
+
+        /// <summary>
         /// Instantiates a new application.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -781,6 +805,33 @@ namespace OpenIddict.MongoDb
             }
 
             application.RedirectUris = addresses.ToArray();
+
+            return default;
+        }
+
+        /// <summary>
+        /// Sets the requirements associated with an application.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="requirements">The requirements associated with the application </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        public virtual ValueTask SetRequirementsAsync([NotNull] TApplication application,
+            ImmutableArray<string> requirements, CancellationToken cancellationToken)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (requirements.IsDefaultOrEmpty)
+            {
+                application.Requirements = null;
+
+                return default;
+            }
+
+            application.Requirements = requirements.ToArray();
 
             return default;
         }

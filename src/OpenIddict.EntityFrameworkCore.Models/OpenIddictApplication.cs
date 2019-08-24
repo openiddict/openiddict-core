@@ -101,6 +101,12 @@ namespace OpenIddict.EntityFrameworkCore.Models
         public virtual string RedirectUris { get; set; }
 
         /// <summary>
+        /// Gets or sets the requirements associated with the
+        /// current application, serialized as a JSON array.
+        /// </summary>
+        public virtual string Requirements { get; set; }
+
+        /// <summary>
         /// Gets the list of the tokens associated with this application.
         /// </summary>
         public virtual ICollection<TToken> Tokens { get; } = new HashSet<TToken>();

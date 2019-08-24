@@ -84,6 +84,12 @@ namespace OpenIddict.MongoDb.Models
         public virtual string[] RedirectUris { get; set; } = Array.Empty<string>();
 
         /// <summary>
+        /// Gets or sets the requirements associated with the current application.
+        /// </summary>
+        [BsonElement("requirements"), BsonIgnoreIfDefault]
+        public virtual string[] Requirements { get; set; } = Array.Empty<string>();
+
+        /// <summary>
         /// Gets or sets the application type
         /// associated with the current application.
         /// </summary>

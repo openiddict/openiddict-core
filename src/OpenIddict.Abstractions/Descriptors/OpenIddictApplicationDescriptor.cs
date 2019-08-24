@@ -36,7 +36,7 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets the permissions associated with the application.
         /// </summary>
-        public ISet<string> Permissions { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public ISet<string> Permissions { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the logout callback URLs
@@ -49,6 +49,11 @@ namespace OpenIddict.Abstractions
         /// associated with the application.
         /// </summary>
         public ISet<Uri> RedirectUris { get; } = new HashSet<Uri>();
+
+        /// <summary>
+        /// Gets the requirements associated with the application.
+        /// </summary>
+        public ISet<string> Requirements { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the application type
