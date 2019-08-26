@@ -197,7 +197,7 @@ namespace OpenIddict.Server.Owin
                     // Don't cache the request if the request doesn't include any parameter.
                     // If a request_id parameter can be found in the authorization request,
                     // ignore the following logic to prevent an infinite redirect loop.
-                    if (context.Request.GetParameters().IsEmpty || !string.IsNullOrEmpty(context.Request.RequestId))
+                    if (context.Request.Count == 0 || !string.IsNullOrEmpty(context.Request.RequestId))
                     {
                         return;
                     }

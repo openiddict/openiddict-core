@@ -175,6 +175,11 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Gets the number of parameters contained in the current message.
+        /// </summary>
+        public int Count => Parameters.Count;
+
+        /// <summary>
         /// Gets the dictionary containing the parameters.
         /// </summary>
         protected Dictionary<string, OpenIddictParameter> Parameters { get; }
