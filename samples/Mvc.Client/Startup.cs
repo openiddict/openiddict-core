@@ -32,7 +32,7 @@ namespace Mvc.Client
                 options.ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654";
 
                 options.RequireHttpsMetadata = false;
-                options.GetClaimsFromUserInfoEndpoint = false;
+                options.GetClaimsFromUserInfoEndpoint = true;
                 options.SaveTokens = true;
 
                 // Use the authorization code flow.

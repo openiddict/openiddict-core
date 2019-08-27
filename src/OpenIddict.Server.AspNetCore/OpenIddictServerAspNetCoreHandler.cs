@@ -142,10 +142,7 @@ namespace OpenIddict.Server.AspNetCore
 
                     if (notification.Principal == null)
                     {
-                        Logger.LogWarning("The identity token extracted from the 'id_token_hint' " +
-                                          "parameter was invalid or malformed and was ignored.");
-
-                        return AuthenticateResult.NoResult();
+                        return AuthenticateResult.Fail("The identity token is not valid.");
                     }
 
                     // Note: tickets are returned even if they are considered invalid (e.g expired).
@@ -182,9 +179,7 @@ namespace OpenIddict.Server.AspNetCore
 
                     if (notification.Principal == null)
                     {
-                        Logger.LogWarning("The authorization code extracted from the token request was invalid and was ignored.");
-
-                        return AuthenticateResult.NoResult();
+                        return AuthenticateResult.Fail("The authorization code is not valid.");
                     }
 
                     // Note: tickets are returned even if they are considered invalid (e.g expired).
@@ -219,12 +214,49 @@ namespace OpenIddict.Server.AspNetCore
 
                     if (notification.Principal == null)
                     {
-                        Logger.LogWarning("The refresh token extracted from the token request was invalid and was ignored.");
-
-                        return AuthenticateResult.NoResult();
+                        return AuthenticateResult.Fail("The refresh token is not valid.");
                     }
 
                     // Note: tickets are returned even if they are considered invalid (e.g expired).
+
+                    return AuthenticateResult.Success(new AuthenticationTicket(
+                        notification.Principal,
+                        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
+                }
+
+                case OpenIddictServerEndpointType.Userinfo:
+                {
+                    if (string.IsNullOrEmpty(transaction.Request.AccessToken))
+                    {
+                        return AuthenticateResult.NoResult();
+                    }
+
+                    var notification = new DeserializeAccessTokenContext(transaction)
+                    {
+                        Token = transaction.Request.AccessToken
+                    };
+
+                    await _provider.DispatchAsync(notification);
+
+                    if (!notification.IsHandled)
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .Append("The access token was not correctly processed. This may indicate ")
+                            .Append("that the event handler responsible of validating access tokens ")
+                            .Append("was not registered or was explicitly removed from the handlers list.")
+                            .ToString());
+                    }
+
+                    if (notification.Principal == null)
+                    {
+                        return AuthenticateResult.Fail("The access token is not valid.");
+                    }
+
+                    var date = notification.Principal.GetExpirationDate();
+                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
+                    {
+                        return AuthenticateResult.Fail("The access token is no longer valid.");
+                    }
 
                     return AuthenticateResult.Success(new AuthenticationTicket(
                         notification.Principal,

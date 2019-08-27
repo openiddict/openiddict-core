@@ -223,6 +223,47 @@ namespace OpenIddict.Server.Owin
                     return new AuthenticationTicket((ClaimsIdentity) notification.Principal.Identity, new AuthenticationProperties());
                 }
 
+                case OpenIddictServerEndpointType.Userinfo:
+                {
+                    if (string.IsNullOrEmpty(transaction.Request.AccessToken))
+                    {
+                        return null;
+                    }
+
+                    var notification = new DeserializeAccessTokenContext(transaction)
+                    {
+                        Token = transaction.Request.AccessToken
+                    };
+
+                    await _provider.DispatchAsync(notification);
+
+                    if (!notification.IsHandled)
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .Append("The access token was not correctly processed. This may indicate ")
+                            .Append("that the event handler responsible of validating access tokens ")
+                            .Append("was not registered or was explicitly removed from the handlers list.")
+                            .ToString());
+                    }
+
+                    if (notification.Principal == null)
+                    {
+                        _logger.LogWarning("The access token extracted from the userinfo request was invalid and was ignored.");
+
+                        return null;
+                    }
+
+                    var date = notification.Principal.GetExpirationDate();
+                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
+                    {
+                        _logger.LogError("The access token extracted from the userinfo request was expired.");
+
+                        return null;
+                    }
+
+                    return new AuthenticationTicket((ClaimsIdentity) notification.Principal.Identity, new AuthenticationProperties());
+                }
+
                 default: throw new InvalidOperationException("An identity cannot be extracted from this request.");
             }
         }

@@ -1,13 +1,16 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Models;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
+using OpenIddict.Server.AspNetCore;
 
 namespace Mvc.Server.Controllers
 {
-    [Route("api")]
     public class UserinfoController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -19,17 +22,17 @@ namespace Mvc.Server.Controllers
 
         //
         // GET: /api/userinfo
-        //[Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
-        [HttpGet("userinfo"), Produces("application/json")]
+        [Authorize(AuthenticationSchemes = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)]
+        [HttpGet("~/connect/userinfo"), Produces("application/json")]
         public async Task<IActionResult> Userinfo()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return Challenge();
+                return Challenge(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
             }
 
-            var claims = new JObject();
+            var claims = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Note: the "sub" claim is a mandatory claim and must be included in the JSON response.
             claims[OpenIddictConstants.Claims.Subject] = await _userManager.GetUserIdAsync(user);
@@ -54,7 +57,7 @@ namespace Mvc.Server.Controllers
             // Note: the complete list of standard claims supported by the OpenID Connect specification
             // can be found here: http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
 
-            return Json(claims);
+            return Ok(claims);
         }
     }
 }

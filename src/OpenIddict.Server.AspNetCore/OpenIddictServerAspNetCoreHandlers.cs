@@ -38,7 +38,8 @@ namespace OpenIddict.Server.AspNetCore
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
             .AddRange(Serialization.DefaultHandlers)
-            .AddRange(Session.DefaultHandlers);
+            .AddRange(Session.DefaultHandlers)
+            .AddRange(Userinfo.DefaultHandlers);
 
         /// <summary>
         /// Contains the logic responsible of inferring the endpoint type from the request address.
@@ -478,7 +479,7 @@ namespace OpenIddict.Server.AspNetCore
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting token requests that specify an invalid grant type.
+        /// Contains the logic responsible of extracting client credentials from the standard HTTP Authorization header.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
         public class ExtractBasicAuthenticationCredentials<TContext> : IOpenIddictServerHandler<TContext>
@@ -579,6 +580,58 @@ namespace OpenIddict.Server.AspNetCore
         }
 
         /// <summary>
+        /// Contains the logic responsible of extracting an access token from the standard HTTP Authorization header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class ExtractAccessToken<TContext> : IOpenIddictServerHandler<TContext>
+            where TContext : BaseValidatingContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<ExtractAccessToken<TContext>>()
+                    .SetOrder(ExtractBasicAuthenticationCredentials<TContext>.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var request = context.Transaction.GetHttpRequest();
+                if (request == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                string header = request.Headers[HeaderNames.Authorization];
+                if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    return default;
+                }
+
+                // Attach the access token to the request message.
+                context.Request.AccessToken = header.Substring("Bearer ".Length);
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of processing OpenID Connect responses that must be returned as JSON.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
@@ -620,6 +673,8 @@ namespace OpenIddict.Server.AspNetCore
                 {
                     throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
                 }
+
+                context.Logger.LogInformation("The response was successfully returned as a JSON document: {Response}.", context.Response);
 
                 using (var buffer = new MemoryStream())
                 using (var writer = new JsonTextWriter(new StreamWriter(buffer)))
