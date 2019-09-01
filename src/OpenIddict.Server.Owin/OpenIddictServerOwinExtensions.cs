@@ -53,6 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireOwinRequest>();
             builder.Services.TryAddSingleton<RequireRequestCachingEnabled>();
             builder.Services.TryAddSingleton<RequireTokenEndpointPassthroughEnabled>();
+            builder.Services.TryAddSingleton<RequireUserinfoEndpointPassthroughEnabled>();
 
             // Register the option initializers used by the OpenIddict OWIN server integration services.
             // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.

@@ -46,7 +46,8 @@ namespace OpenIddict.Server
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
             .AddRange(Serialization.DefaultHandlers)
-            .AddRange(Session.DefaultHandlers);
+            .AddRange(Session.DefaultHandlers)
+            .AddRange(Userinfo.DefaultHandlers);
 
         /// <summary>
         /// Contains the logic responsible of ensuring that the challenge response contains an appropriate error.
@@ -82,6 +83,7 @@ namespace OpenIddict.Server
                     {
                         OpenIddictServerEndpointType.Authorization => Errors.AccessDenied,
                         OpenIddictServerEndpointType.Token         => Errors.InvalidGrant,
+                        OpenIddictServerEndpointType.Userinfo      => Errors.InvalidToken,
 
                         _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
                     };
@@ -93,6 +95,7 @@ namespace OpenIddict.Server
                     {
                         OpenIddictServerEndpointType.Authorization => "The authorization was denied by the resource owner.",
                         OpenIddictServerEndpointType.Token         => "The token request was rejected by the authorization server.",
+                        OpenIddictServerEndpointType.Userinfo      => "The access token is not valid or cannot be used to retrieve user information.",
 
                         _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
                     };

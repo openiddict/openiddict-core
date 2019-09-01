@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using JetBrains.Annotations;
 using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
@@ -42,6 +43,11 @@ namespace OpenIddict.Server
                 : base(transaction)
             {
             }
+
+            /// <summary>
+            /// Gets or sets the security principal extracted from the access token, if available.
+            /// </summary>
+            public ClaimsPrincipal Principal { get; set; }
         }
 
         /// <summary>
@@ -57,6 +63,11 @@ namespace OpenIddict.Server
                 : base(transaction)
             {
             }
+
+            /// <summary>
+            /// Gets or sets the security principal extracted from the access token.
+            /// </summary>
+            public ClaimsPrincipal Principal { get; set; }
 
             /// <summary>
             /// Gets the additional claims returned to the client application.

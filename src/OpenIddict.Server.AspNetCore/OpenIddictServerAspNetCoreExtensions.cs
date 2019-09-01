@@ -52,6 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireRequestCachingEnabled>();
             builder.Services.TryAddSingleton<RequireStatusCodePagesIntegrationEnabled>();
             builder.Services.TryAddSingleton<RequireTokenEndpointPassthroughEnabled>();
+            builder.Services.TryAddSingleton<RequireUserinfoEndpointPassthroughEnabled>();
 
             // Register the option initializer used by the OpenIddict ASP.NET Core server integration services.
             // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
