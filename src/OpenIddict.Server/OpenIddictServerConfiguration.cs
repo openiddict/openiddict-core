@@ -116,6 +116,17 @@ namespace OpenIddict.Server
                         .ToString());
                 }
 
+                if (options.IntrospectionEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                    descriptor => descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) &&
+                                  descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("No custom introspection request validation handler was found. When enabling the degraded mode, ")
+                        .Append("a custom 'IOpenIddictServerHandler<ValidateIntrospectionRequestContext>' must be implemented ")
+                        .Append("to validate introspection requests (e.g to ensure the client_id and client_secret are valid).")
+                        .ToString());
+                }
+
                 if (options.LogoutEndpointUris.Count != 0 && !options.CustomHandlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateLogoutRequestContext) &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))

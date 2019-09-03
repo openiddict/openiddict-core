@@ -25,6 +25,7 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers.Serialization;
+using Properties = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Properties;
 
 namespace OpenIddict.Server.DataProtection
 {
@@ -98,7 +99,7 @@ namespace OpenIddict.Server.DataProtection
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (!context.Properties.TryGetValue(typeof(IDataProtector).FullName, out var property) ||
+                    if (!context.Properties.TryGetValue(Properties.DataProtector, out var property) ||
                        !(property is IDataProtector protector))
                     {
                         throw new InvalidOperationException(new StringBuilder()
@@ -128,7 +129,7 @@ namespace OpenIddict.Server.DataProtection
                     SetProperty(properties, Properties.Issued,
                         context.Principal.GetCreationDate()?.ToString("r", CultureInfo.InvariantCulture));
                     SetProperty(properties, Properties.OriginalRedirectUri,
-                        context.Principal.GetClaim(Claims.Private.OriginalRedirectUri));
+                        context.Principal.GetClaim(Claims.Private.RedirectUri));
                     SetProperty(properties, Properties.RefreshTokenLifetime,
                         context.Principal.GetClaim(Claims.Private.RefreshTokenLifetime));
 
@@ -306,7 +307,7 @@ namespace OpenIddict.Server.DataProtection
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (!context.Properties.TryGetValue(typeof(IDataProtector).FullName, out var property) ||
+                    if (!context.Properties.TryGetValue(Properties.DataProtector, out var property) ||
                        !(property is IDataProtector protector))
                     {
                         throw new InvalidOperationException(new StringBuilder()
@@ -344,8 +345,12 @@ namespace OpenIddict.Server.DataProtection
                             .SetClaim(Claims.Private.CodeChallenge, GetProperty(properties, Properties.CodeChallenge))
                             .SetClaim(Claims.Private.CodeChallengeMethod, GetProperty(properties, Properties.CodeChallengeMethod))
                             .SetClaim(Claims.Private.IdentityTokenLifetime, GetProperty(properties, Properties.IdentityTokenLifetime))
-                            .SetClaim(Claims.Private.OriginalRedirectUri, GetProperty(properties, Properties.OriginalRedirectUri))
-                            .SetClaim(Claims.Private.RefreshTokenLifetime, GetProperty(properties, Properties.RefreshTokenLifetime));
+                            .SetClaim(Claims.Private.RedirectUri, GetProperty(properties, Properties.OriginalRedirectUri))
+                            .SetClaim(Claims.Private.RefreshTokenLifetime, GetProperty(properties, Properties.RefreshTokenLifetime))
+
+                            // Note: since the data format relies on a data protector using different "purposes" strings
+                            // per token type, the token processed at this stage is guaranteed to be of the expected type.
+                            .SetClaim(Claims.Private.TokenUsage, (string) context.Properties[Properties.TokenUsage]);
 
                         context.HandleDeserialization();
 
@@ -532,7 +537,8 @@ namespace OpenIddict.Server.DataProtection
                     }
 
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
-                    context.Properties[typeof(IDataProtector).FullName] = protector;
+                    context.Properties[Properties.DataProtector] = protector;
+                    context.Properties[Properties.TokenUsage] = TokenUsages.AccessToken;
 
                     return default;
                 }
@@ -586,7 +592,8 @@ namespace OpenIddict.Server.DataProtection
                     }
 
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
-                    context.Properties[typeof(IDataProtector).FullName] = protector;
+                    context.Properties[Properties.DataProtector] = protector;
+                    context.Properties[Properties.TokenUsage] = TokenUsages.AuthorizationCode;
 
                     return default;
                 }
@@ -640,7 +647,8 @@ namespace OpenIddict.Server.DataProtection
                     }
 
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
-                    context.Properties[typeof(IDataProtector).FullName] = protector;
+                    context.Properties[Properties.DataProtector] = protector;
+                    context.Properties[Properties.TokenUsage] = TokenUsages.RefreshToken;
 
                     return default;
                 }
@@ -694,7 +702,8 @@ namespace OpenIddict.Server.DataProtection
                     }
 
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
-                    context.Properties[typeof(IDataProtector).FullName] = protector;
+                    context.Properties[Properties.DataProtector] = protector;
+                    context.Properties[Properties.TokenUsage] = TokenUsages.AccessToken;
 
                     return default;
                 }
@@ -748,7 +757,8 @@ namespace OpenIddict.Server.DataProtection
                     }
 
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
-                    context.Properties[typeof(IDataProtector).FullName] = protector;
+                    context.Properties[Properties.DataProtector] = protector;
+                    context.Properties[Properties.TokenUsage] = TokenUsages.AuthorizationCode;
 
                     return default;
                 }
@@ -802,7 +812,8 @@ namespace OpenIddict.Server.DataProtection
                     }
 
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(purposes);
-                    context.Properties[typeof(IDataProtector).FullName] = protector;
+                    context.Properties[Properties.DataProtector] = protector;
+                    context.Properties[Properties.TokenUsage] = TokenUsages.RefreshToken;
 
                     return default;
                 }

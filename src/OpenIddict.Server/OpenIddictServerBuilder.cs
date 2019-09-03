@@ -136,8 +136,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Makes client identification optional so that token and revocation
+        /// Makes client identification optional so that token, introspection and revocation
         /// requests that don't specify a client_id are not automatically rejected.
+        /// Enabling this option is NOT recommended.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AcceptAnonymousClients()

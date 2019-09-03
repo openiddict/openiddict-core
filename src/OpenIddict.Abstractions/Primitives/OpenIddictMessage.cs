@@ -123,12 +123,13 @@ namespace OpenIddict.Abstractions
                 // not be present more than once but derived specifications like the
                 // token exchange RFC deliberately allow specifying multiple resource
                 // parameters with the same name to represent a multi-valued parameter.
-                switch (parameter.Value?.Length ?? 0)
+                AddParameter(parameter.Key, parameter.Value?.Length switch
                 {
-                    case 0:  AddParameter(parameter.Key, default);            break;
-                    case 1:  AddParameter(parameter.Key, parameter.Value[0]); break;
-                    default: AddParameter(parameter.Key, parameter.Value);    break;
-                }
+                    null => default,
+                    0    => default,
+                    1    => new OpenIddictParameter(parameter.Value[0]),
+                    _    => new OpenIddictParameter(parameter.Value)
+                });
             }
         }
 
@@ -154,12 +155,12 @@ namespace OpenIddict.Abstractions
                 // not be present more than once but derived specifications like the
                 // token exchange RFC deliberately allow specifying multiple resource
                 // parameters with the same name to represent a multi-valued parameter.
-                switch (parameter.Value.Count)
+                AddParameter(parameter.Key, parameter.Value.Count switch
                 {
-                    case 0:  AddParameter(parameter.Key, default);                   break;
-                    case 1:  AddParameter(parameter.Key, parameter.Value[0]);        break;
-                    default: AddParameter(parameter.Key, parameter.Value.ToArray()); break;
-                }
+                    0 => default,
+                    1 => new OpenIddictParameter(parameter.Value[0]),
+                    _ => new OpenIddictParameter(parameter.Value.ToArray())
+                });
             }
         }
 

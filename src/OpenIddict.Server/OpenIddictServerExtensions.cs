@@ -47,7 +47,6 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireAuthorizationCodeIncluded>();
             builder.Services.TryAddSingleton<RequireClientIdParameter>();
             builder.Services.TryAddSingleton<RequireDegradedModeDisabled>();
-            builder.Services.TryAddSingleton<RequireDegradedModeEnabled>();
             builder.Services.TryAddSingleton<RequireEndpointPermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireGrantTypePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireIdentityTokenIncluded>();

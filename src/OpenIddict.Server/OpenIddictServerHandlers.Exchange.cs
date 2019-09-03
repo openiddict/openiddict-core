@@ -18,6 +18,7 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 
 namespace OpenIddict.Server
 {
@@ -203,7 +204,7 @@ namespace OpenIddict.Server
                     }
 
                     // Store the security principal extracted from the authorization code/refresh token as an environment property.
-                    context.Transaction.Properties[Properties.OriginalPrincipal] = notification.Principal;
+                    context.Transaction.Properties[Properties.Principal] = notification.Principal;
 
                     context.Logger.LogInformation("The token request was successfully validated.");
                 }
@@ -427,8 +428,7 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting token requests that don't
-            /// specify a client identifier for the authorization code grant type.
+            /// Contains the logic responsible of rejecting token requests that don't specify a client identifier.
             /// </summary>
             public class ValidateClientIdParameter : IOpenIddictServerHandler<ValidateTokenRequestContext>
             {
@@ -1478,7 +1478,7 @@ namespace OpenIddict.Server
                     // if the authorization request didn't contain an explicit redirect_uri.
                     // See https://tools.ietf.org/html/rfc6749#section-4.1.3
                     // and http://openid.net/specs/openid-connect-core-1_0.html#TokenRequestValidation.
-                    var address = context.Principal.GetClaim(Claims.Private.OriginalRedirectUri);
+                    var address = context.Principal.GetClaim(Claims.Private.RedirectUri);
                     if (string.IsNullOrEmpty(address))
                     {
                         return default;
@@ -1739,7 +1739,7 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    if (context.Transaction.Properties.TryGetValue(Properties.OriginalPrincipal, out var principal))
+                    if (context.Transaction.Properties.TryGetValue(Properties.Principal, out var principal))
                     {
                         context.Principal ??= (ClaimsPrincipal) principal;
                     }

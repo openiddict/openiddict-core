@@ -75,6 +75,7 @@ namespace OpenIddict.Abstractions
             public const string StreetAddress = "street_address";
             public const string Subject = "sub";
             public const string TokenType = "token_type";
+            public const string TokenUsage = "token_usage";
             public const string UpdatedAt = "updated_at";
             public const string Username = "username";
             public const string Website = "website";
@@ -93,7 +94,8 @@ namespace OpenIddict.Abstractions
                 public const string CodeChallenge = "oi_cd_chlg";
                 public const string CodeChallengeMethod = "oi_cd_chlg_meth";
                 public const string IdentityTokenLifetime = "oi_idt_lft";
-                public const string OriginalRedirectUri = "oi_reduri";
+                public const string Nonce = "oi_nce";
+                public const string RedirectUri = "oi_reduri";
                 public const string RefreshTokenLifetime = "oi_reft_lft";
                 public const string TokenUsage = "oi_tkn_use";
             }
@@ -310,29 +312,7 @@ namespace OpenIddict.Abstractions
 
         public static class Properties
         {
-            public const string AccessTokenLifetime = ".access_token_lifetime";
-            public const string AuthorizationCodeLifetime = ".authorization_code_lifetime";
-            public const string Audiences = ".audiences";
-            public const string CodeChallenge = ".code_challenge";
-            public const string CodeChallengeMethod = ".code_challenge_method";
             public const string Destinations = ".destinations";
-            public const string Error = ".error";
-            public const string ErrorDescription = ".error_description";
-            public const string ErrorUri = ".error_uri";
-            public const string Expires = ".expires";
-            public const string IdentityTokenLifetime = ".identity_token_lifetime";
-            public const string Issued = ".issued";
-            public const string Nonce = ".nonce";
-            public const string OriginalPrincipal = ".original_principal";
-            public const string OriginalRedirectUri = ".original_redirect_uri";
-            public const string PostLogoutRedirectUri = ".post_logout_redirect_uri";
-            public const string Presenters = ".presenters";
-            public const string RefreshTokenLifetime = ".refresh_token_lifetime";
-            public const string Resources = ".resources";
-            public const string Scopes = ".scopes";
-            public const string TokenId = ".token_id";
-            public const string TokenUsage = ".token_usage";
-            public const string ValidatedRedirectUri = ".validated_redirect_uri";
         }
 
         public static class ResponseModes

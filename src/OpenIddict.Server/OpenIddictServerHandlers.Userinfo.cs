@@ -16,6 +16,7 @@ using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 
 namespace OpenIddict.Server
 {
@@ -186,7 +187,7 @@ namespace OpenIddict.Server
                     }
 
                     // Store the security principal extracted from the authorization code/refresh token as an environment property.
-                    context.Transaction.Properties[Properties.OriginalPrincipal] = notification.Principal;
+                    context.Transaction.Properties[Properties.Principal] = notification.Principal;
 
                     context.Logger.LogInformation("The userinfo request was successfully validated.");
                 }
@@ -497,7 +498,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Transaction.Properties.TryGetValue(Properties.OriginalPrincipal, out var principal))
+                    if (context.Transaction.Properties.TryGetValue(Properties.Principal, out var principal))
                     {
                         context.Principal ??= (ClaimsPrincipal) principal;
                     }
