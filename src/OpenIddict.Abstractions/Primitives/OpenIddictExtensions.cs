@@ -1261,6 +1261,85 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Gets the token usage associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The token usage or <c>null</c> if the claim cannot be found.</returns>
+        public static string GetTokenUsage([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return principal.GetClaim(Claims.Private.TokenUsage);
+        }
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the
+        /// claims principal corresponds to an access token.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to an access token.</returns>
+        public static bool IsAccessToken([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the
+        /// claims principal corresponds to an access token.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to an authorization code.</returns>
+        public static bool IsAuthorizationCode([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the
+        /// claims principal corresponds to an identity token.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to an identity token.</returns>
+        public static bool IsIdentityToken([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), TokenUsages.IdToken, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the
+        /// claims principal corresponds to a refresh token.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to a refresh token.</returns>
+        public static bool IsRefreshToken([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Determines whether the claims principal contains at least one audience.
         /// </summary>
         /// <param name="principal">The claims principal.</param>

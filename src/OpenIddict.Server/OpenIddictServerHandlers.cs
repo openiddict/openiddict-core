@@ -45,6 +45,7 @@ namespace OpenIddict.Server
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
+            .AddRange(Introspection.DefaultHandlers)
             .AddRange(Serialization.DefaultHandlers)
             .AddRange(Session.DefaultHandlers)
             .AddRange(Userinfo.DefaultHandlers);
@@ -502,7 +503,7 @@ namespace OpenIddict.Server
                 // receiving a grant_type=authorization_code token request.
                 if (!string.IsNullOrEmpty(context.Request.RedirectUri))
                 {
-                    principal.SetClaim(Claims.Private.OriginalRedirectUri, context.Request.RedirectUri);
+                    principal.SetClaim(Claims.Private.RedirectUri, context.Request.RedirectUri);
                 }
 
                 // Attach the code challenge and the code challenge methods to allow the ValidateCodeVerifier
@@ -521,7 +522,7 @@ namespace OpenIddict.Server
                 // the token endpoint as part of the JWT identity token.
                 if (!string.IsNullOrEmpty(context.Request.Nonce))
                 {
-                    principal.SetClaim(Claims.Nonce, context.Request.Nonce);
+                    principal.SetClaim(Claims.Private.Nonce, context.Request.Nonce);
                 }
 
                 var notification = new SerializeAuthorizationCodeContext(context.Transaction)
@@ -701,7 +702,7 @@ namespace OpenIddict.Server
 
                 else if (context.EndpointType == OpenIddictServerEndpointType.Token)
                 {
-                    var nonce = context.Principal.GetClaim(Claims.Nonce);
+                    var nonce = context.Principal.GetClaim(Claims.Private.Nonce);
                     if (!string.IsNullOrEmpty(nonce))
                     {
                         principal.SetClaim(Claims.Nonce, nonce);

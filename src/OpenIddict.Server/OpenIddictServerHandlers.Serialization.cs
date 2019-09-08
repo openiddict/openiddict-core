@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -16,7 +15,6 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -109,37 +107,15 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException("The token usage cannot be null or empty.");
                     }
 
-                    var destinations = new Dictionary<string, string[]>(StringComparer.Ordinal);
                     var claims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         [Claims.Private.TokenUsage] = context.TokenUsage
                     };
 
+                    var destinations = new Dictionary<string, string[]>(StringComparer.Ordinal);
                     foreach (var group in context.Principal.Claims.GroupBy(claim => claim.Type))
                     {
                         var collection = group.ToList();
-                        switch (collection.Count)
-                        {
-                            case 1:
-                                claims[group.Key] = collection[0].ValueType switch
-                                {
-                                    ClaimValueTypes.Boolean   => bool.Parse(collection[0].Value),
-                                    ClaimValueTypes.Double    => double.Parse(collection[0].Value, NumberStyles.Number, CultureInfo.InvariantCulture),
-                                    ClaimValueTypes.Integer   => int.Parse(collection[0].Value, NumberStyles.Integer, CultureInfo.InvariantCulture),
-                                    ClaimValueTypes.Integer32 => int.Parse(collection[0].Value, NumberStyles.Integer, CultureInfo.InvariantCulture),
-                                    ClaimValueTypes.Integer64 => long.Parse(collection[0].Value, NumberStyles.Integer, CultureInfo.InvariantCulture),
-
-                                    "JSON"       => JObject.Parse(collection[0].Value),
-                                    "JSON_ARRAY" => JArray.Parse(collection[0].Value),
-
-                                    _ => (object) collection[0].Value
-                                };
-                                break;
-
-                            default:
-                                claims[group.Key] = collection.Select(claim => claim.Value).ToArray();
-                                break;
-                        }
 
                         // Note: destinations are attached to claims as special CLR properties. Such properties can't be serialized
                         // as part of classic JWT tokens. To work around this limitation, claim destinations are added to a special
@@ -170,6 +146,7 @@ namespace OpenIddict.Server
 
                     context.Token = context.SecurityTokenHandler.CreateToken(new SecurityTokenDescriptor
                     {
+                        Subject = (ClaimsIdentity) context.Principal.Identity,
                         Claims = new ReadOnlyDictionary<string, object>(claims),
                         EncryptingCredentials = context.EncryptingCredentials,
                         Issuer = context.Issuer?.AbsoluteUri,

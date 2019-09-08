@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 
@@ -47,6 +48,11 @@ namespace OpenIddict.Server
             /// introspection request, or <c>null</c> if it cannot be found.
             /// </summary>
             public string TokenTypeHint => Request.TokenTypeHint;
+
+            /// <summary>
+            /// Gets or sets the security principal extracted from the introspected token, if available.
+            /// </summary>
+            public ClaimsPrincipal Principal { get; set; }
         }
 
         /// <summary>
@@ -64,16 +70,15 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Gets or sets the security principal extracted from the introspected token.
+            /// </summary>
+            public ClaimsPrincipal Principal { get; set; }
+
+            /// <summary>
             /// Gets the additional claims returned to the caller.
             /// </summary>
             public IDictionary<string, OpenIddictParameter> Claims { get; } =
                 new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
-
-            /// <summary>
-            /// Gets or sets the flag indicating
-            /// whether the token is active or inactive.
-            /// </summary>
-            public bool Active { get; set; }
 
             /// <summary>
             /// Gets the list of audiences returned to the caller

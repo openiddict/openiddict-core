@@ -14,6 +14,7 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 
 namespace OpenIddict.Server
 {
@@ -184,7 +185,7 @@ namespace OpenIddict.Server
                     if (!string.IsNullOrEmpty(notification.PostLogoutRedirectUri))
                     {
                         // Store the validated post_logout_redirect_uri as an environment property.
-                        context.Transaction.Properties[Properties.PostLogoutRedirectUri] = notification.PostLogoutRedirectUri;
+                        context.Transaction.Properties[Properties.ValidatedPostLogoutRedirectUri] = notification.PostLogoutRedirectUri;
                     }
 
                     context.Logger.LogInformation("The logout request was successfully validated.");
@@ -522,7 +523,7 @@ namespace OpenIddict.Server
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if an error
                     // is returned from the ExtractLogoutRequest/ValidateLogoutRequest events).
-                    if (context.Transaction.Properties.TryGetValue(Properties.PostLogoutRedirectUri, out var property))
+                    if (context.Transaction.Properties.TryGetValue(Properties.ValidatedPostLogoutRedirectUri, out var property))
                     {
                         context.PostLogoutRedirectUri = (string) property;
                     }

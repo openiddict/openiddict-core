@@ -80,22 +80,6 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if the degraded mode was enabled.
-        /// </summary>
-        public class RequireDegradedModeEnabled : IOpenIddictServerHandlerFilter<BaseContext>
-        {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                return new ValueTask<bool>(context.Options.EnableDegradedMode);
-            }
-        }
-
-        /// <summary>
         /// Represents a filter that excludes the associated handlers if endpoint permissions were disabled.
         /// </summary>
         public class RequireEndpointPermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>

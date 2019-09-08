@@ -56,6 +56,8 @@ namespace Mvc.Client
 
                 options.TokenValidationParameters.NameClaimType = "name";
                 options.TokenValidationParameters.RoleClaimType = "role";
+
+                options.AccessDeniedPath = "/";
             });
 
             services.AddMvc();

@@ -160,8 +160,8 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets or sets a boolean determining whether client identification is optional.
-        /// Enabling this option allows client applications to communicate with the token
-        /// and revocation endpoints without having to send their client identifier.
+        /// Enabling this option allows client applications to communicate with the token,
+        /// introspection and revocation endpoints without having to send their client identifier.
         /// </summary>
         public bool AcceptAnonymousClients { get; set; }
 
