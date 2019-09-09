@@ -805,6 +805,13 @@ namespace OpenIddict.Server
                                 SecurityAlgorithms.RsaSha384Signature => HashAlgorithmName.SHA384,
                                 SecurityAlgorithms.RsaSha512Signature => HashAlgorithmName.SHA512,
 
+                                SecurityAlgorithms.RsaSsaPssSha256 => HashAlgorithmName.SHA256,
+                                SecurityAlgorithms.RsaSsaPssSha384 => HashAlgorithmName.SHA384,
+                                SecurityAlgorithms.RsaSsaPssSha512 => HashAlgorithmName.SHA512,
+                                SecurityAlgorithms.RsaSsaPssSha256Signature => HashAlgorithmName.SHA256,
+                                SecurityAlgorithms.RsaSsaPssSha384Signature => HashAlgorithmName.SHA384,
+                                SecurityAlgorithms.RsaSsaPssSha512Signature => HashAlgorithmName.SHA512,
+
                                 _ => throw new InvalidOperationException("The signing credentials algorithm is not supported.")
                             }
                         };

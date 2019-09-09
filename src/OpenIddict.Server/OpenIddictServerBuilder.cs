@@ -770,6 +770,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 case SecurityAlgorithms.RsaSha256Signature:
                 case SecurityAlgorithms.RsaSha384Signature:
                 case SecurityAlgorithms.RsaSha512Signature:
+
+                case SecurityAlgorithms.RsaSsaPssSha256:
+                case SecurityAlgorithms.RsaSsaPssSha384:
+                case SecurityAlgorithms.RsaSsaPssSha512:
+                case SecurityAlgorithms.RsaSsaPssSha256Signature:
+                case SecurityAlgorithms.RsaSsaPssSha384Signature:
+                case SecurityAlgorithms.RsaSsaPssSha512Signature:
                     return AddSigningCredentials(new SigningCredentials(CreateRsaSecurityKey(2048), algorithm));
 
 #if SUPPORTS_ECDSA
