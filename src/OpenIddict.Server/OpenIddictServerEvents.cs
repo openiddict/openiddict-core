@@ -286,14 +286,33 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Represents an event called when processing a challenge response.
+        /// Represents an event called when processing an authentication operation.
         /// </summary>
-        public class ProcessChallengeResponseContext : BaseValidatingContext
+        public class ProcessAuthenticationContext : BaseValidatingContext
         {
             /// <summary>
-            /// Creates a new instance of the <see cref="ProcessChallengeResponseContext"/> class.
+            /// Creates a new instance of the <see cref="ProcessAuthenticationContext"/> class.
             /// </summary>
-            public ProcessChallengeResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ProcessAuthenticationContext([NotNull] OpenIddictServerTransaction transaction)
+                : base(transaction)
+            {
+            }
+
+            /// <summary>
+            /// Gets or sets the security principal.
+            /// </summary>
+            public ClaimsPrincipal Principal { get; set; }
+        }
+
+        /// <summary>
+        /// Represents an event called when processing a challenge response.
+        /// </summary>
+        public class ProcessChallengeContext : BaseValidatingContext
+        {
+            /// <summary>
+            /// Creates a new instance of the <see cref="ProcessChallengeContext"/> class.
+            /// </summary>
+            public ProcessChallengeContext([NotNull] OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
@@ -302,12 +321,12 @@ namespace OpenIddict.Server
         /// <summary>
         /// Represents an event called when processing a sign-in response.
         /// </summary>
-        public class ProcessSigninResponseContext : BaseValidatingTicketContext
+        public class ProcessSigninContext : BaseValidatingTicketContext
         {
             /// <summary>
-            /// Creates a new instance of the <see cref="ProcessSigninResponseContext"/> class.
+            /// Creates a new instance of the <see cref="ProcessSigninContext"/> class.
             /// </summary>
-            public ProcessSigninResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ProcessSigninContext([NotNull] OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
@@ -348,12 +367,12 @@ namespace OpenIddict.Server
         /// <summary>
         /// Represents an event called when processing a sign-out response.
         /// </summary>
-        public class ProcessSignoutResponseContext : BaseValidatingContext
+        public class ProcessSignoutContext : BaseValidatingContext
         {
             /// <summary>
-            /// Creates a new instance of the <see cref="ProcessSignoutResponseContext"/> class.
+            /// Creates a new instance of the <see cref="ProcessSignoutContext"/> class.
             /// </summary>
-            public ProcessSignoutResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ProcessSignoutContext([NotNull] OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }

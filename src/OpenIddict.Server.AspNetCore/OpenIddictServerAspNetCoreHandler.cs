@@ -114,157 +114,57 @@ namespace OpenIddict.Server.AspNetCore
                 throw new InvalidOperationException("An identity cannot be extracted from this request.");
             }
 
-            switch (transaction.EndpointType)
+            var context = new ProcessAuthenticationContext(transaction);
+            await _provider.DispatchAsync(context);
+
+            if (context.Principal == null || context.IsRequestHandled || context.IsRequestSkipped)
             {
-                case OpenIddictServerEndpointType.Authorization:
-                case OpenIddictServerEndpointType.Logout:
-                {
-                    if (string.IsNullOrEmpty(transaction.Request.IdTokenHint))
-                    {
-                        return AuthenticateResult.NoResult();
-                    }
-
-                    var notification = new DeserializeIdentityTokenContext(transaction)
-                    {
-                        Token = transaction.Request.IdTokenHint
-                    };
-
-                    await _provider.DispatchAsync(notification);
-
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The identity token was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating identity tokens ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
-                    if (notification.Principal == null)
-                    {
-                        return AuthenticateResult.Fail("The identity token is not valid.");
-                    }
-
-                    // Note: tickets are returned even if they are considered invalid (e.g expired).
-
-                    return AuthenticateResult.Success(new AuthenticationTicket(
-                        notification.Principal,
-                        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
-                }
-
-                case OpenIddictServerEndpointType.Token when transaction.Request.IsAuthorizationCodeGrantType():
-                {
-                    // Note: this method can be called from the ApplyTokenResponse event,
-                    // which may be invoked for a missing authorization code/refresh token.
-                    if (string.IsNullOrEmpty(transaction.Request.Code))
-                    {
-                        return AuthenticateResult.NoResult();
-                    }
-
-                    var notification = new DeserializeAuthorizationCodeContext(transaction)
-                    {
-                        Token = transaction.Request.Code
-                    };
-
-                    await _provider.DispatchAsync(notification);
-
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The authorization code was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating authorization codes ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
-                    if (notification.Principal == null)
-                    {
-                        return AuthenticateResult.Fail("The authorization code is not valid.");
-                    }
-
-                    // Note: tickets are returned even if they are considered invalid (e.g expired).
-
-                    return AuthenticateResult.Success(new AuthenticationTicket(
-                        notification.Principal,
-                        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
-                }
-
-                case OpenIddictServerEndpointType.Token when transaction.Request.IsRefreshTokenGrantType():
-                {
-                    if (string.IsNullOrEmpty(transaction.Request.RefreshToken))
-                    {
-                        return AuthenticateResult.NoResult();
-                    }
-
-                    var notification = new DeserializeRefreshTokenContext(transaction)
-                    {
-                        Token = transaction.Request.RefreshToken
-                    };
-
-                    await _provider.DispatchAsync(notification);
-
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The refresh token was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating refresh tokens ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
-                    if (notification.Principal == null)
-                    {
-                        return AuthenticateResult.Fail("The refresh token is not valid.");
-                    }
-
-                    // Note: tickets are returned even if they are considered invalid (e.g expired).
-
-                    return AuthenticateResult.Success(new AuthenticationTicket(
-                        notification.Principal,
-                        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
-                }
-
-                case OpenIddictServerEndpointType.Userinfo:
-                {
-                    if (string.IsNullOrEmpty(transaction.Request.AccessToken))
-                    {
-                        return AuthenticateResult.NoResult();
-                    }
-
-                    var notification = new DeserializeAccessTokenContext(transaction)
-                    {
-                        Token = transaction.Request.AccessToken
-                    };
-
-                    await _provider.DispatchAsync(notification);
-
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The access token was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating access tokens ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
-                    if (notification.Principal == null)
-                    {
-                        return AuthenticateResult.Fail("The access token is not valid.");
-                    }
-
-                    var date = notification.Principal.GetExpirationDate();
-                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
-                    {
-                        return AuthenticateResult.Fail("The access token is no longer valid.");
-                    }
-
-                    return AuthenticateResult.Success(new AuthenticationTicket(
-                        notification.Principal,
-                        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
-                }
-
-                default: throw new InvalidOperationException("An identity cannot be extracted from this request.");
+                return AuthenticateResult.NoResult();
             }
+
+            else if (context.IsRejected)
+            {
+                var builder = new StringBuilder();
+
+                if (!string.IsNullOrEmpty(context.Error))
+                {
+                    builder.AppendLine("An error occurred while authenticating the current request:");
+                    builder.AppendFormat("Error code: ", context.Error);
+
+                    if (!string.IsNullOrEmpty(context.ErrorDescription))
+                    {
+                        builder.AppendLine();
+                        builder.AppendFormat("Error description: ", context.ErrorDescription);
+                    }
+
+                    if (!string.IsNullOrEmpty(context.ErrorUri))
+                    {
+                        builder.AppendLine();
+                        builder.AppendFormat("Error URI: ", context.ErrorUri);
+                    }
+                }
+
+                else
+                {
+                    builder.Append("An unknown error occurred while authenticating the current request.");
+                }
+
+                return AuthenticateResult.Fail(new Exception(builder.ToString())
+                {
+                    // Note: the error details are stored as additional exception properties,
+                    // which is similar to what other ASP.NET Core security handlers do.
+                    Data =
+                    {
+                        [Parameters.Error] = context.Error,
+                        [Parameters.ErrorDescription] = context.ErrorDescription,
+                        [Parameters.ErrorUri] = context.ErrorUri
+                    }
+                });
+            }
+
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                context.Principal,
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
         }
 
         protected override async Task HandleChallengeAsync([CanBeNull] AuthenticationProperties properties)
@@ -275,7 +175,7 @@ namespace OpenIddict.Server.AspNetCore
                 throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
             }
 
-            var context = new ProcessChallengeResponseContext(transaction)
+            var context = new ProcessChallengeContext(transaction)
             {
                 Response = new OpenIddictResponse
                 {
@@ -338,7 +238,7 @@ namespace OpenIddict.Server.AspNetCore
                 throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
             }
 
-            var context = new ProcessSigninResponseContext(transaction)
+            var context = new ProcessSigninContext(transaction)
             {
                 Principal = user,
                 Response = new OpenIddictResponse()
@@ -386,7 +286,7 @@ namespace OpenIddict.Server.AspNetCore
                 throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
             }
 
-            var context = new ProcessSignoutResponseContext(transaction)
+            var context = new ProcessSignoutContext(transaction)
             {
                 Response = new OpenIddictResponse()
             };

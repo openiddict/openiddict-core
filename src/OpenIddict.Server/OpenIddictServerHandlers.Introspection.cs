@@ -199,7 +199,7 @@ namespace OpenIddict.Server
                     }
 
                     // Store the security principal extracted from the introspected token as an environment property.
-                    context.Transaction.Properties[Properties.Principal] = notification.Principal;
+                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
 
                     context.Logger.LogInformation("The introspection request was successfully validated.");
                 }
@@ -767,16 +767,6 @@ namespace OpenIddict.Server
                         };
 
                         await _provider.DispatchAsync(notification);
-
-                        if (!notification.IsHandled)
-                        {
-                            throw new InvalidOperationException(new StringBuilder()
-                                .Append("The access token was not correctly processed. This may indicate ")
-                                .Append("that the event handler responsible of validating access tokens ")
-                                .Append("was not registered or was explicitly removed from the handlers list.")
-                                .ToString());
-                        }
-
                         return notification.Principal;
                     }
 
@@ -788,16 +778,6 @@ namespace OpenIddict.Server
                         };
 
                         await _provider.DispatchAsync(notification);
-
-                        if (!notification.IsHandled)
-                        {
-                            throw new InvalidOperationException(new StringBuilder()
-                                .Append("The authorization code was not correctly processed. This may indicate ")
-                                .Append("that the event handler responsible of validating authorization codes ")
-                                .Append("was not registered or was explicitly removed from the handlers list.")
-                                .ToString());
-                        }
-
                         return notification.Principal;
                     }
 
@@ -809,16 +789,6 @@ namespace OpenIddict.Server
                         };
 
                         await _provider.DispatchAsync(notification);
-
-                        if (!notification.IsHandled)
-                        {
-                            throw new InvalidOperationException(new StringBuilder()
-                                .Append("The identity token was not correctly processed. This may indicate ")
-                                .Append("that the event handler responsible of validating identity token ")
-                                .Append("was not registered or was explicitly removed from the handlers list.")
-                                .ToString());
-                        }
-
                         return notification.Principal;
                     }
 
@@ -830,16 +800,6 @@ namespace OpenIddict.Server
                         };
 
                         await _provider.DispatchAsync(notification);
-
-                        if (!notification.IsHandled)
-                        {
-                            throw new InvalidOperationException(new StringBuilder()
-                                .Append("The refresh token was not correctly processed. This may indicate ")
-                                .Append("that the event handler responsible of validating refresh tokens ")
-                                .Append("was not registered or was explicitly removed from the handlers list.")
-                                .ToString());
-                        }
-
                         return notification.Principal;
                     }
                 }
@@ -987,7 +947,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Transaction.Properties.TryGetValue(Properties.Principal, out var principal))
+                    if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
                     {
                         context.Principal ??= (ClaimsPrincipal) principal;
                     }

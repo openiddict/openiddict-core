@@ -31,12 +31,13 @@ namespace OpenIddict.Server
                 HandleLogoutRequest.Descriptor,
                 ApplyLogoutResponse<ProcessErrorResponseContext>.Descriptor,
                 ApplyLogoutResponse<ProcessRequestContext>.Descriptor,
-                ApplyLogoutResponse<ProcessSignoutResponseContext>.Descriptor,
+                ApplyLogoutResponse<ProcessSignoutContext>.Descriptor,
 
                 /*
                  * Logout request validation:
                  */
                 ValidatePostLogoutRedirectUriParameter.Descriptor,
+                ValidateIdTokenHint.Descriptor,
                 ValidateClientPostLogoutRedirectUri.Descriptor,
 
                 /*
@@ -256,7 +257,7 @@ namespace OpenIddict.Server
 
                     if (notification.IsLogoutAllowed)
                     {
-                        var @event = new ProcessSignoutResponseContext(context.Transaction)
+                        var @event = new ProcessSignoutContext(context.Transaction)
                         {
                             Response = new OpenIddictResponse()
                         };
@@ -403,6 +404,67 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting logout requests that don't specify a valid id_token_hint.
+            /// </summary>
+            public class ValidateIdTokenHint : IOpenIddictServerHandler<ValidateLogoutRequestContext>
+            {
+                private readonly IOpenIddictServerProvider _provider;
+
+                public ValidateIdTokenHint([NotNull] IOpenIddictServerProvider provider)
+                    => _provider = provider;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateLogoutRequestContext>()
+                        .UseScopedHandler<ValidateIdTokenHint>()
+                        .SetOrder(ValidatePostLogoutRedirectUriParameter.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public async ValueTask HandleAsync([NotNull] ValidateLogoutRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    if (string.IsNullOrEmpty(context.Request.IdTokenHint))
+                    {
+                        return;
+                    }
+
+                    var notification = new DeserializeIdentityTokenContext(context.Transaction)
+                    {
+                        Token = context.Request.IdTokenHint
+                    };
+
+                    await _provider.DispatchAsync(notification);
+
+                    if (notification.Principal == null)
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The specified 'id_token_hint' parameter is invalid or malformed.");
+
+                        return;
+                    }
+
+                    // Note: the expiration date associated with an identity token used as an id_token_hint is deliberately ignored.
+
+                    // Store the security principal extracted from the identity token as an environment property.
+                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting logout requests that use an invalid redirect_uri.
             /// Note: this handler is not used when the degraded mode is enabled.
             /// </summary>
@@ -521,11 +583,11 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    // Note: at this stage, the validated redirect URI property may be null (e.g if an error
-                    // is returned from the ExtractLogoutRequest/ValidateLogoutRequest events).
-                    if (context.Transaction.Properties.TryGetValue(Properties.ValidatedPostLogoutRedirectUri, out var property))
+                    // Note: at this stage, the validated redirect URI property may be null (e.g if
+                    // an error is returned from the ExtractLogoutRequest/ValidateLogoutRequest events).
+                    if (context.Transaction.Properties.TryGetValue(Properties.ValidatedPostLogoutRedirectUri, out var address))
                     {
-                        context.PostLogoutRedirectUri = (string) property;
+                        context.PostLogoutRedirectUri = (string) address;
                     }
 
                     return default;

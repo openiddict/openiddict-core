@@ -18,9 +18,9 @@ namespace OpenIddict.Server
         /// <summary>
         /// Represents a filter that excludes the associated handlers if no access token is returned.
         /// </summary>
-        public class RequireAccessTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninResponseContext>
+        public class RequireAccessTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -34,9 +34,9 @@ namespace OpenIddict.Server
         /// <summary>
         /// Represents a filter that excludes the associated handlers if no authorization code is returned.
         /// </summary>
-        public class RequireAuthorizationCodeIncluded : IOpenIddictServerHandlerFilter<ProcessSigninResponseContext>
+        public class RequireAuthorizationCodeIncluded : IOpenIddictServerHandlerFilter<ProcessSigninContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -114,9 +114,9 @@ namespace OpenIddict.Server
         /// <summary>
         /// Represents a filter that excludes the associated handlers if no identity token is returned.
         /// </summary>
-        public class RequireIdentityTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninResponseContext>
+        public class RequireIdentityTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -146,9 +146,9 @@ namespace OpenIddict.Server
         /// <summary>
         /// Represents a filter that excludes the associated handlers if no refresh token is returned.
         /// </summary>
-        public class RequireRefreshTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninResponseContext>
+        public class RequireRefreshTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninContext>
         {
-            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
