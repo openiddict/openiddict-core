@@ -112,160 +112,32 @@ namespace OpenIddict.Server.Owin
                 throw new InvalidOperationException("An identity cannot be extracted from this request.");
             }
 
-            switch (transaction.EndpointType)
+            var context = new ProcessAuthenticationContext(transaction);
+            await _provider.DispatchAsync(context);
+
+            if (context.Principal == null || context.IsRequestHandled || context.IsRequestSkipped)
             {
-                case OpenIddictServerEndpointType.Authorization:
-                case OpenIddictServerEndpointType.Logout:
-                {
-                    if (string.IsNullOrEmpty(transaction.Request.IdTokenHint))
-                    {
-                        return null;
-                    }
-
-                    var notification = new DeserializeIdentityTokenContext(transaction)
-                    {
-                        Token = transaction.Request.IdTokenHint
-                    };
-
-                    await _provider.DispatchAsync(notification);
-
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The identity token was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating identity tokens ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
-                    if (notification.Principal == null)
-                    {
-                        _logger.LogWarning("The identity token extracted from the 'id_token_hint' " +
-                                           "parameter was invalid or malformed and was ignored.");
-
-                        return null;
-                    }
-
-                    // Tickets are returned even if they are considered invalid (e.g expired).
-
-                    return new AuthenticationTicket((ClaimsIdentity) notification.Principal.Identity, new AuthenticationProperties());
-                }
-
-                case OpenIddictServerEndpointType.Token when transaction.Request.IsAuthorizationCodeGrantType():
-                {
-                    // Note: this method can be called from the ApplyTokenResponse event,
-                    // which may be invoked for a missing authorization code/refresh token.
-                    if (string.IsNullOrEmpty(transaction.Request.Code))
-                    {
-                        return null;
-                    }
-
-                    var notification = new DeserializeAuthorizationCodeContext(transaction)
-                    {
-                        Token = transaction.Request.Code
-                    };
-
-                    await _provider.DispatchAsync(notification);
-
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The authorization code was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating authorization codes ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
-                    if (notification.Principal == null)
-                    {
-                        _logger.LogWarning("The authorization code extracted from the token request was invalid and was ignored.");
-
-                        return null;
-                    }
-
-                    // Tickets are returned even if they are considered invalid (e.g expired).
-
-                    return new AuthenticationTicket((ClaimsIdentity) notification.Principal.Identity, new AuthenticationProperties());
-                }
-
-                case OpenIddictServerEndpointType.Token when transaction.Request.IsRefreshTokenGrantType():
-                {
-                    if (string.IsNullOrEmpty(transaction.Request.RefreshToken))
-                    {
-                        return null;
-                    }
-
-                    var notification = new DeserializeRefreshTokenContext(transaction)
-                    {
-                        Token = transaction.Request.RefreshToken
-                    };
-
-                    await _provider.DispatchAsync(notification);
-
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The refresh token was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating refresh tokens ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
-                    if (notification.Principal == null)
-                    {
-                        _logger.LogWarning("The refresh token extracted from the token request was invalid and was ignored.");
-
-                        return null;
-                    }
-
-                    // Tickets are returned even if they are considered invalid (e.g expired).
-
-                    return new AuthenticationTicket((ClaimsIdentity) notification.Principal.Identity, new AuthenticationProperties());
-                }
-
-                case OpenIddictServerEndpointType.Userinfo:
-                {
-                    if (string.IsNullOrEmpty(transaction.Request.AccessToken))
-                    {
-                        return null;
-                    }
-
-                    var notification = new DeserializeAccessTokenContext(transaction)
-                    {
-                        Token = transaction.Request.AccessToken
-                    };
-
-                    await _provider.DispatchAsync(notification);
-
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The access token was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating access tokens ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
-                    if (notification.Principal == null)
-                    {
-                        _logger.LogWarning("The access token extracted from the userinfo request was invalid and was ignored.");
-
-                        return null;
-                    }
-
-                    var date = notification.Principal.GetExpirationDate();
-                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
-                    {
-                        _logger.LogError("The access token extracted from the userinfo request was expired.");
-
-                        return null;
-                    }
-
-                    return new AuthenticationTicket((ClaimsIdentity) notification.Principal.Identity, new AuthenticationProperties());
-                }
-
-                default: throw new InvalidOperationException("An identity cannot be extracted from this request.");
+                return null;
             }
+
+            else if (context.IsRejected)
+            {
+                _logger.LogError("An error occurred while authenticating the current request: {Error} ; {Description}",
+                                 /* Error: */ context.Error ?? Errors.InvalidToken,
+                                 /* Description: */ context.ErrorDescription);
+
+                return new AuthenticationTicket(identity: null, new AuthenticationProperties
+                {
+                    Dictionary =
+                    {
+                        [Parameters.Error] = context.Error,
+                        [Parameters.ErrorDescription] = context.ErrorDescription,
+                        [Parameters.ErrorUri] = context.ErrorUri
+                    }
+                });
+            }
+
+            return new AuthenticationTicket((ClaimsIdentity) context.Principal.Identity, new AuthenticationProperties());
         }
 
         protected override async Task TeardownCoreAsync()
@@ -291,7 +163,7 @@ namespace OpenIddict.Server.Owin
                     throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
 
-                var context = new ProcessChallengeResponseContext(transaction)
+                var context = new ProcessChallengeContext(transaction)
                 {
                     Response = new OpenIddictResponse
                     {
@@ -347,7 +219,7 @@ namespace OpenIddict.Server.Owin
                     throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
 
-                var context = new ProcessSigninResponseContext(transaction)
+                var context = new ProcessSigninContext(transaction)
                 {
                     Principal = signin.Principal,
                     Response = new OpenIddictResponse()
@@ -396,7 +268,7 @@ namespace OpenIddict.Server.Owin
                     throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
 
-                var context = new ProcessSignoutResponseContext(transaction)
+                var context = new ProcessSignoutContext(transaction)
                 {
                     Response = new OpenIddictResponse()
                 };

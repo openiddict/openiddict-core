@@ -29,10 +29,10 @@ namespace OpenIddict.Server
                 ExtractAuthorizationRequest.Descriptor,
                 ValidateAuthorizationRequest.Descriptor,
                 HandleAuthorizationRequest.Descriptor,
-                ApplyAuthorizationResponse<ProcessChallengeResponseContext>.Descriptor,
+                ApplyAuthorizationResponse<ProcessChallengeContext>.Descriptor,
                 ApplyAuthorizationResponse<ProcessErrorResponseContext>.Descriptor,
                 ApplyAuthorizationResponse<ProcessRequestContext>.Descriptor,
-                ApplyAuthorizationResponse<ProcessSigninResponseContext>.Descriptor,
+                ApplyAuthorizationResponse<ProcessSigninContext>.Descriptor,
 
                 /*
                  * Authorization request validation:
@@ -46,6 +46,7 @@ namespace OpenIddict.Server
                 ValidateNonceParameter.Descriptor,
                 ValidatePromptParameter.Descriptor,
                 ValidateCodeChallengeParameters.Descriptor,
+                ValidateIdTokenHint.Descriptor,
                 ValidateClientId.Descriptor,
                 ValidateClientType.Descriptor,
                 ValidateClientRedirectUri.Descriptor,
@@ -274,7 +275,7 @@ namespace OpenIddict.Server
 
                     if (notification.Principal != null)
                     {
-                        var @event = new ProcessSigninResponseContext(context.Transaction)
+                        var @event = new ProcessSigninContext(context.Transaction)
                         {
                             Principal = notification.Principal,
                             Response = new OpenIddictResponse()
@@ -971,32 +972,21 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting authorization requests that use unregistered scopes.
-            /// Note: this handler is not used when the degraded mode is enabled or when scope validation is disabled.
+            /// Contains the logic responsible of rejecting authorization requests that don't specify a valid id_token_hint.
             /// </summary>
-            public class ValidateScopes : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+            public class ValidateIdTokenHint : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
             {
-                private readonly IOpenIddictScopeManager _scopeManager;
+                private readonly IOpenIddictServerProvider _provider;
 
-                public ValidateScopes() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
-
-                public ValidateScopes([NotNull] IOpenIddictScopeManager scopeManager)
-                    => _scopeManager = scopeManager;
+                public ValidateIdTokenHint([NotNull] IOpenIddictServerProvider provider)
+                    => _provider = provider;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
-                        .AddFilter<RequireScopeValidationEnabled>()
-                        .AddFilter<RequireDegradedModeDisabled>()
-                        .UseScopedHandler<ValidateScopes>()
+                        .UseScopedHandler<ValidateIdTokenHint>()
                         .SetOrder(ValidateCodeChallengeParameters.Descriptor.Order + 1_000)
                         .Build();
 
@@ -1014,28 +1004,31 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    // If all the specified scopes are registered in the options, avoid making a database lookup.
-                    var scopes = context.Request.GetScopes().Except(context.Options.Scopes);
-                    if (scopes.Count != 0)
+                    if (string.IsNullOrEmpty(context.Request.IdTokenHint))
                     {
-                        await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
-                        {
-                            scopes = scopes.Remove(await _scopeManager.GetNameAsync(scope));
-                        }
+                        return;
                     }
 
-                    // If at least one scope was not recognized, return an error.
-                    if (scopes.Count != 0)
+                    var notification = new DeserializeIdentityTokenContext(context.Transaction)
                     {
-                        context.Logger.LogError("The authentication request was rejected because " +
-                                                "invalid scopes were specified: {Scopes}.", scopes);
+                        Token = context.Request.IdTokenHint
+                    };
 
+                    await _provider.DispatchAsync(notification);
+
+                    if (notification.Principal == null)
+                    {
                         context.Reject(
-                            error: Errors.InvalidScope,
-                            description: "The specified 'scope' parameter is not valid.");
+                            error: Errors.InvalidRequest,
+                            description: "The specified 'id_token_hint' parameter is invalid or malformed.");
 
                         return;
                     }
+
+                    // Note: the expiration date associated with an identity token used as an id_token_hint is deliberately ignored.
+
+                    // Store the security principal extracted from the identity token as an environment property.
+                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
                 }
             }
 
@@ -1065,7 +1058,7 @@ namespace OpenIddict.Server
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientId>()
-                        .SetOrder(ValidateScopes.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateIdTokenHint.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -1230,6 +1223,75 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting authorization requests that use unregistered scopes.
+            /// Note: this handler is not used when the degraded mode is enabled or when scope validation is disabled.
+            /// </summary>
+            public class ValidateScopes : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+            {
+                private readonly IOpenIddictScopeManager _scopeManager;
+
+                public ValidateScopes() => throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                    .ToString());
+
+                public ValidateScopes([NotNull] IOpenIddictScopeManager scopeManager)
+                    => _scopeManager = scopeManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                        .AddFilter<RequireScopeValidationEnabled>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .UseScopedHandler<ValidateScopes>()
+                        .SetOrder(ValidateClientRedirectUri.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public async ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    // If all the specified scopes are registered in the options, avoid making a database lookup.
+                    var scopes = context.Request.GetScopes().Except(context.Options.Scopes);
+                    if (scopes.Count != 0)
+                    {
+                        await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
+                        {
+                            scopes = scopes.Remove(await _scopeManager.GetNameAsync(scope));
+                        }
+                    }
+
+                    // If at least one scope was not recognized, return an error.
+                    if (scopes.Count != 0)
+                    {
+                        context.Logger.LogError("The authentication request was rejected because " +
+                                                "invalid scopes were specified: {Scopes}.", scopes);
+
+                        context.Reject(
+                            error: Errors.InvalidScope,
+                            description: "The specified 'scope' parameter is not valid.");
+
+                        return;
+                    }
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting authorization requests made by unauthorized applications.
             /// Note: this handler is not used when the degraded mode is enabled or when endpoint permissions are disabled.
             /// </summary>
@@ -1256,7 +1318,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireEndpointPermissionsEnabled>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateEndpointPermissions>()
-                        .SetOrder(ValidateClientRedirectUri.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateScopes.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -1515,9 +1577,9 @@ namespace OpenIddict.Server
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if an error
                     // is returned from the ExtractAuthorizationRequest/ValidateAuthorizationRequest events).
-                    if (context.Transaction.Properties.TryGetValue(Properties.ValidatedRedirectUri, out var property))
+                    if (context.Transaction.Properties.TryGetValue(Properties.ValidatedRedirectUri, out var address))
                     {
-                        context.RedirectUri = (string) property;
+                        context.RedirectUri = (string) address;
                     }
 
                     return default;

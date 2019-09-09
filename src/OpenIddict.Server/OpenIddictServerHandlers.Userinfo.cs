@@ -31,7 +31,7 @@ namespace OpenIddict.Server
                 ExtractUserinfoRequest.Descriptor,
                 ValidateUserinfoRequest.Descriptor,
                 HandleUserinfoRequest.Descriptor,
-                ApplyUserinfoResponse<ProcessChallengeResponseContext>.Descriptor,
+                ApplyUserinfoResponse<ProcessChallengeContext>.Descriptor,
                 ApplyUserinfoResponse<ProcessErrorResponseContext>.Descriptor,
                 ApplyUserinfoResponse<ProcessRequestContext>.Descriptor,
 
@@ -187,7 +187,7 @@ namespace OpenIddict.Server
                     }
 
                     // Store the security principal extracted from the authorization code/refresh token as an environment property.
-                    context.Transaction.Properties[Properties.Principal] = notification.Principal;
+                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
 
                     context.Logger.LogInformation("The userinfo request was successfully validated.");
                 }
@@ -432,15 +432,6 @@ namespace OpenIddict.Server
 
                     await _provider.DispatchAsync(notification);
 
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The access token was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating access tokens ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
                     if (notification.Principal == null)
                     {
                         context.Logger.LogError("The userinfo request was rejected because the access token was invalid.");
@@ -498,7 +489,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Transaction.Properties.TryGetValue(Properties.Principal, out var principal))
+                    if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
                     {
                         context.Principal ??= (ClaimsPrincipal) principal;
                     }

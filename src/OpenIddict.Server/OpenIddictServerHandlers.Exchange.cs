@@ -33,10 +33,10 @@ namespace OpenIddict.Server
                 ExtractTokenRequest.Descriptor,
                 ValidateTokenRequest.Descriptor,
                 HandleTokenRequest.Descriptor,
-                ApplyTokenResponse<ProcessChallengeResponseContext>.Descriptor,
+                ApplyTokenResponse<ProcessChallengeContext>.Descriptor,
                 ApplyTokenResponse<ProcessErrorResponseContext>.Descriptor,
                 ApplyTokenResponse<ProcessRequestContext>.Descriptor,
-                ApplyTokenResponse<ProcessSigninResponseContext>.Descriptor,
+                ApplyTokenResponse<ProcessSigninContext>.Descriptor,
 
                 /*
                  * Token request validation:
@@ -204,7 +204,7 @@ namespace OpenIddict.Server
                     }
 
                     // Store the security principal extracted from the authorization code/refresh token as an environment property.
-                    context.Transaction.Properties[Properties.Principal] = notification.Principal;
+                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
 
                     context.Logger.LogInformation("The token request was successfully validated.");
                 }
@@ -274,7 +274,7 @@ namespace OpenIddict.Server
 
                     if (notification.Principal != null)
                     {
-                        var @event = new ProcessSigninResponseContext(context.Transaction)
+                        var @event = new ProcessSigninContext(context.Transaction)
                         {
                             Principal = notification.Principal,
                             Response = new OpenIddictResponse()
@@ -1233,15 +1233,6 @@ namespace OpenIddict.Server
 
                     await _provider.DispatchAsync(notification);
 
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The authorization code was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating authorization codes ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
-
                     if (notification.Principal == null)
                     {
                         context.Logger.LogError("The token request was rejected because the authorization code was invalid.");
@@ -1314,15 +1305,6 @@ namespace OpenIddict.Server
                     };
 
                     await _provider.DispatchAsync(notification);
-
-                    if (!notification.IsHandled)
-                    {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The refresh token was not correctly processed. This may indicate ")
-                            .Append("that the event handler responsible of validating refresh tokens ")
-                            .Append("was not registered or was explicitly removed from the handlers list.")
-                            .ToString());
-                    }
 
                     if (notification.Principal == null)
                     {
@@ -1739,7 +1721,7 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    if (context.Transaction.Properties.TryGetValue(Properties.Principal, out var principal))
+                    if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
                     {
                         context.Principal ??= (ClaimsPrincipal) principal;
                     }

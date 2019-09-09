@@ -8,6 +8,7 @@ using System;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 
 namespace OpenIddict.Server
 {
@@ -26,12 +28,17 @@ namespace OpenIddict.Server
     {
         public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
             /*
-             * Challenge response processing:
+             * Authentication processing:
+             */
+            AttachAmbientPrincipal.Descriptor,
+
+            /*
+             * Challenge processing:
              */
             AttachDefaultChallengeError.Descriptor,
             
             /*
-            * Sign-in response processing:
+            * Sign-in processing:
             */
             ValidateSigninResponse.Descriptor,
             AttachDefaultScopes.Descriptor,
@@ -51,15 +58,64 @@ namespace OpenIddict.Server
             .AddRange(Userinfo.DefaultHandlers);
 
         /// <summary>
-        /// Contains the logic responsible of ensuring that the challenge response contains an appropriate error.
+        /// Contains the logic responsible of attaching the ambient principal resolved for the current request.
         /// </summary>
-        public class AttachDefaultChallengeError : IOpenIddictServerHandler<ProcessChallengeResponseContext>
+        public class AttachAmbientPrincipal : IOpenIddictServerHandler<ProcessAuthenticationContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                    .UseSingletonHandler<AttachAmbientPrincipal>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                switch (context.EndpointType)
+                {
+                    case OpenIddictServerEndpointType.Authorization:
+                    case OpenIddictServerEndpointType.Logout:
+                    case OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType():
+                    case OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType():
+                    case OpenIddictServerEndpointType.Userinfo:
+                    {
+                        if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
+                        {
+                            context.Principal = (ClaimsPrincipal) principal;
+                        }
+
+                        return default;
+                    }
+
+                    default: throw new InvalidOperationException("An identity cannot be extracted from this request.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of ensuring that the challenge response contains an appropriate error.
+        /// </summary>
+        public class AttachDefaultChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                     .UseSingletonHandler<AttachDefaultChallengeError>()
                     .SetOrder(int.MinValue + 100_000)
                     .Build();
@@ -71,7 +127,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessChallengeResponseContext context)
+            public ValueTask HandleAsync([NotNull] ProcessChallengeContext context)
             {
                 if (context == null)
                 {
@@ -110,13 +166,13 @@ namespace OpenIddict.Server
         /// Contains the logic responsible of ensuring that the sign-in response
         /// is compatible with the type of the endpoint that handled the request.
         /// </summary>
-        public class ValidateSigninResponse : IOpenIddictServerHandler<ProcessSigninResponseContext>
+        public class ValidateSigninResponse : IOpenIddictServerHandler<ProcessSigninContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .UseSingletonHandler<ValidateSigninResponse>()
                     .SetOrder(int.MinValue + 100_000)
                     .Build();
@@ -128,7 +184,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -167,13 +223,13 @@ namespace OpenIddict.Server
         /// <summary>
         /// Contains the logic responsible of attaching default scopes to the authentication principal.
         /// </summary>
-        public class AttachDefaultScopes : IOpenIddictServerHandler<ProcessSigninResponseContext>
+        public class AttachDefaultScopes : IOpenIddictServerHandler<ProcessSigninContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .UseSingletonHandler<AttachDefaultScopes>()
                     .SetOrder(ValidateSigninResponse.Descriptor.Order + 1_000)
                     .Build();
@@ -185,7 +241,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -207,13 +263,13 @@ namespace OpenIddict.Server
         /// <summary>
         /// Contains the logic responsible of attaching default presenters to the authentication principal.
         /// </summary>
-        public class AttachDefaultPresenters : IOpenIddictServerHandler<ProcessSigninResponseContext>
+        public class AttachDefaultPresenters : IOpenIddictServerHandler<ProcessSigninContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .UseSingletonHandler<AttachDefaultPresenters>()
                     .SetOrder(AttachDefaultScopes.Descriptor.Order + 1_000)
                     .Build();
@@ -225,7 +281,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -246,13 +302,13 @@ namespace OpenIddict.Server
         /// <summary>
         /// Contains the logic responsible of selecting the token types returned to the client application.
         /// </summary>
-        public class EvaluateReturnedTokens : IOpenIddictServerHandler<ProcessSigninResponseContext>
+        public class EvaluateReturnedTokens : IOpenIddictServerHandler<ProcessSigninContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .UseSingletonHandler<EvaluateReturnedTokens>()
                     .SetOrder(AttachDefaultPresenters.Descriptor.Order + 1_000)
                     .Build();
@@ -264,7 +320,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSigninResponseContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -332,7 +388,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Contains the logic responsible of generating and attaching an access token.
         /// </summary>
-        public class AttachAccessToken : IOpenIddictServerHandler<ProcessSigninResponseContext>
+        public class AttachAccessToken : IOpenIddictServerHandler<ProcessSigninContext>
         {
             private readonly IOpenIddictServerProvider _provider;
 
@@ -343,7 +399,7 @@ namespace OpenIddict.Server
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .AddFilter<RequireAccessTokenIncluded>()
                     .UseScopedHandler<AttachAccessToken>()
                     .SetOrder(EvaluateReturnedTokens.Descriptor.Order + 1_000)
@@ -356,7 +412,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninResponseContext context)
+            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -402,7 +458,7 @@ namespace OpenIddict.Server
                 // Remove the destinations from the claim properties.
                 foreach (var claim in principal.Claims)
                 {
-                    claim.Properties.Remove(Properties.Destinations);
+                    claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
                 }
 
                 // When receiving a grant_type=refresh_token request, determine whether the client application
@@ -427,15 +483,6 @@ namespace OpenIddict.Server
 
                 await _provider.DispatchAsync(notification);
 
-                if (!notification.IsHandled)
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The access token was not correctly processed. This may indicate ")
-                        .Append("that the event handler responsible of generating access tokens ")
-                        .Append("was not registered or was explicitly removed from the handlers list.")
-                        .ToString());
-                }
-
                 context.Response.TokenType = TokenTypes.Bearer;
                 context.Response.AccessToken = notification.Token;
 
@@ -458,7 +505,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Contains the logic responsible of generating and attaching an authorization code.
         /// </summary>
-        public class AttachAuthorizationCode : IOpenIddictServerHandler<ProcessSigninResponseContext>
+        public class AttachAuthorizationCode : IOpenIddictServerHandler<ProcessSigninContext>
         {
             private readonly IOpenIddictServerProvider _provider;
 
@@ -469,7 +516,7 @@ namespace OpenIddict.Server
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .AddFilter<RequireAuthorizationCodeIncluded>()
                     .UseScopedHandler<AttachAuthorizationCode>()
                     .SetOrder(AttachAccessToken.Descriptor.Order + 1_000)
@@ -482,7 +529,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninResponseContext context)
+            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -532,15 +579,6 @@ namespace OpenIddict.Server
 
                 await _provider.DispatchAsync(notification);
 
-                if (!notification.IsHandled)
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The authorization code was not correctly processed. This may indicate ")
-                        .Append("that the event handler responsible of generating authorization codes ")
-                        .Append("was not registered or was explicitly removed from the handlers list.")
-                        .ToString());
-                }
-
                 context.Response.Code = notification.Token;
             }
         }
@@ -548,7 +586,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Contains the logic responsible of generating and attaching a refresh token.
         /// </summary>
-        public class AttachRefreshToken : IOpenIddictServerHandler<ProcessSigninResponseContext>
+        public class AttachRefreshToken : IOpenIddictServerHandler<ProcessSigninContext>
         {
             private readonly IOpenIddictServerProvider _provider;
 
@@ -559,7 +597,7 @@ namespace OpenIddict.Server
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .AddFilter<RequireRefreshTokenIncluded>()
                     .UseScopedHandler<AttachRefreshToken>()
                     .SetOrder(AttachAuthorizationCode.Descriptor.Order + 1_000)
@@ -572,7 +610,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninResponseContext context)
+            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -596,15 +634,6 @@ namespace OpenIddict.Server
 
                 await _provider.DispatchAsync(notification);
 
-                if (!notification.IsHandled)
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The refresh token was not correctly processed. This may indicate ")
-                        .Append("that the event handler responsible of generating refresh tokens ")
-                        .Append("was not registered or was explicitly removed from the handlers list.")
-                        .ToString());
-                }
-
                 context.Response.RefreshToken = notification.Token;
             }
         }
@@ -612,7 +641,7 @@ namespace OpenIddict.Server
         /// <summary>
         /// Contains the logic responsible of generating and attaching an identity token.
         /// </summary>
-        public class AttachIdentityToken : IOpenIddictServerHandler<ProcessSigninResponseContext>
+        public class AttachIdentityToken : IOpenIddictServerHandler<ProcessSigninContext>
         {
             private readonly IOpenIddictServerProvider _provider;
 
@@ -623,7 +652,7 @@ namespace OpenIddict.Server
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninResponseContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .AddFilter<RequireIdentityTokenIncluded>()
                     .UseScopedHandler<AttachIdentityToken>()
                     .SetOrder(AttachRefreshToken.Descriptor.Order + 1_000)
@@ -636,7 +665,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninResponseContext context)
+            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -677,7 +706,7 @@ namespace OpenIddict.Server
                 // Remove the destinations from the claim properties.
                 foreach (var claim in principal.Claims)
                 {
-                    claim.Properties.Remove(Properties.Destinations);
+                    claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
                 }
 
                 var lifetime = context.Principal.GetIdentityTokenLifetime() ?? context.Options.IdentityTokenLifetime;
@@ -749,15 +778,6 @@ namespace OpenIddict.Server
                 };
 
                 await _provider.DispatchAsync(notification);
-
-                if (!notification.IsHandled)
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The identity token was not correctly processed. This may indicate ")
-                        .Append("that the event handler responsible of generating identity tokens ")
-                        .Append("was not registered or was explicitly removed from the handlers list.")
-                        .ToString());
-                }
 
                 context.Response.IdToken = notification.Token;
 

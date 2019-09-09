@@ -10,7 +10,7 @@ namespace OpenIddict.Server
     {
         public static class Properties
         {
-            public const string Principal = ".principal";
+            public const string AmbientPrincipal = ".ambient_principal";
             public const string ValidatedPostLogoutRedirectUri = ".validated_post_logout_redirect_uri";
             public const string ValidatedRedirectUri = ".validated_redirect_uri";
         }
