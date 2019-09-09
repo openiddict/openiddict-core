@@ -8,6 +8,7 @@
   <PropertyGroup>
     <AspNetCoreVersion>3.0.0-preview8.19405.7</AspNetCoreVersion>
     <BclAsyncInterfacesVersion>1.0.0-preview8.19405.3</BclAsyncInterfacesVersion>
+    <BouncyCastleVersion>1.8.5</BouncyCastleVersion>
     <CoreFxVersion>4.4.0</CoreFxVersion>
     <CryptoHelperVersion>3.0.2</CryptoHelperVersion>
     <DataAnnotationsVersion>4.4.0</DataAnnotationsVersion>

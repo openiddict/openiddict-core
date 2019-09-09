@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;netstandard2.1</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,13 +14,26 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CryptoHelper" Version="$(CryptoHelperVersion)" />
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(ExtensionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)" />
     <PackageReference Include="System.Linq.Async" Version="$(LinqAsyncVersion)" />
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Portable.BouncyCastle" Version="$(BouncyCastleVersion)" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netstandard2.1' ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_BASE64_SPAN_CONVERSION</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_TIME_CONSTANT_COMPARISONS</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\shared\OpenIddict.Extensions\*\*.cs" />
