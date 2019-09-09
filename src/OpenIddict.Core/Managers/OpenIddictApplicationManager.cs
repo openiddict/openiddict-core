@@ -10,14 +10,21 @@ using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CryptoHelper;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+
+#if !SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Crypto.Parameters;
+#endif
 
 namespace OpenIddict.Core
 {
@@ -1131,7 +1138,72 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
             }
 
-            return new ValueTask<string>(Crypto.HashPassword(secret));
+            // Note: the PRF, iteration count, salt length and key length currently all match the default values
+            // used by CryptoHelper and ASP.NET Core Identity but this may change in the future, if necessary.
+
+            var salt = new byte[128 / 8];
+
+#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
+            RandomNumberGenerator.Fill(salt);
+#else
+            using var generator = RandomNumberGenerator.Create();
+            generator.GetBytes(salt);
+#endif
+
+            var hash = HashSecret(secret, salt, HashAlgorithmName.SHA256, iterations: 10_000, length: 256 / 8);
+
+            return new ValueTask<string>(
+#if SUPPORTS_BASE64_SPAN_CONVERSION
+                Convert.ToBase64String(hash)
+#else
+                Convert.ToBase64String(hash.ToArray())
+#endif
+            );
+
+            // Note: the following logic deliberately uses the same format as CryptoHelper (used in OpenIddict 1.x/2.x),
+            // which was itself based on ASP.NET Core Identity's latest hashed password format. This guarantees that
+            // secrets hashed using a recent OpenIddict version can still be read by older packages (and vice versa).
+
+            static ReadOnlySpan<byte> HashSecret(string secret, ReadOnlySpan<byte> salt,
+                HashAlgorithmName algorithm, int iterations, int length)
+            {
+                var key = DeriveKey(secret, salt, algorithm, iterations, length);
+                var payload = new Span<byte>(new byte[13 + salt.Length + key.Length]);
+
+                // Write the format marker.
+                payload[0] = 0x01;
+
+                // Write the hashing algorithm version.
+                WriteNetworkByteOrder(payload, 1, algorithm switch
+                {
+                    { Name: nameof(SHA1)   } => (uint) 0,
+                    { Name: nameof(SHA256) } => (uint) 1,
+                    { Name: nameof(SHA512) } => (uint) 2,
+                    _ => throw new InvalidOperationException("The specified HMAC algorithm is not valid.")
+                });
+
+                // Write the iteration count of the algorithm.
+                WriteNetworkByteOrder(payload, 5, (uint) iterations);
+
+                // Write the size of the salt.
+                WriteNetworkByteOrder(payload, 9, (uint) salt.Length);
+
+                // Write the salt.
+                salt.CopyTo(payload.Slice(13));
+
+                // Write the subkey.
+                key.CopyTo(payload.Slice(13 + salt.Length));
+
+                return payload;
+            }
+
+            static void WriteNetworkByteOrder(Span<byte> buffer, int offset, uint value)
+            {
+                buffer[offset + 0] = (byte) (value >> 24);
+                buffer[offset + 1] = (byte) (value >> 16);
+                buffer[offset + 2] = (byte) (value >> 8);
+                buffer[offset + 3] = (byte) (value >> 0);
+            }
         }
 
         /// <summary>
@@ -1160,7 +1232,7 @@ namespace OpenIddict.Core
 
             try
             {
-                return new ValueTask<bool>(Crypto.VerifyHashedPassword(comparand, secret));
+                return new ValueTask<bool>(VerifyHashedSecret(comparand, secret));
             }
 
             catch (Exception exception)
@@ -1170,6 +1242,113 @@ namespace OpenIddict.Core
 
                 return new ValueTask<bool>(false);
             }
+
+            // Note: the following logic deliberately uses the same format as CryptoHelper (used in OpenIddict 1.x/2.x),
+            // which was itself based on ASP.NET Core Identity's latest hashed password format. This guarantees that
+            // secrets hashed using a recent OpenIddict version can still be read by older packages (and vice versa).
+
+            static bool VerifyHashedSecret(string hash, string secret)
+            {
+                var payload = new ReadOnlySpan<byte>(Convert.FromBase64String(hash));
+                if (payload.Length == 0)
+                {
+                    return false;
+                }
+
+                // Verify the hashing format version.
+                if (payload[0] != 0x01)
+                {
+                    return false;
+                }
+
+                // Read the hashing algorithm version.
+                var algorithm = (int) ReadNetworkByteOrder(payload, 1) switch
+                {
+                    0 => HashAlgorithmName.SHA1,
+                    1 => HashAlgorithmName.SHA256,
+                    2 => HashAlgorithmName.SHA512,
+                    _ => throw new InvalidOperationException("The specified hash algorithm is not valid.")
+                };
+
+                // Read the iteration count of the algorithm.
+                var iterations = (int) ReadNetworkByteOrder(payload, 5);
+
+                // Read the size of the salt and ensure it's more than 128 bits.
+                var saltLength = (int) ReadNetworkByteOrder(payload, 9);
+                if (saltLength < 128 / 8)
+                {
+                    return false;
+                }
+
+                // Read the salt.
+                var salt = payload.Slice(13, saltLength);
+
+                // Ensure the derived key length is more than 128 bits.
+                var keyLength = payload.Length - 13 - salt.Length;
+                if (keyLength < 128 / 8)
+                {
+                    return false;
+                }
+
+                return FixedTimeEquals(
+                    left: payload.Slice(13 + salt.Length, keyLength),
+                    right: DeriveKey(secret, salt, algorithm, iterations, keyLength));
+            }
+
+            static uint ReadNetworkByteOrder(ReadOnlySpan<byte> buffer, int offset) =>
+                ((uint) buffer[offset + 0] << 24) |
+                ((uint) buffer[offset + 1] << 16) |
+                ((uint) buffer[offset + 2] << 8)  |
+                ((uint) buffer[offset + 3]);
+        }
+
+        private static ReadOnlySpan<byte> DeriveKey(string secret, ReadOnlySpan<byte> salt,
+            HashAlgorithmName algorithm, int iterations, int length)
+        {
+#if SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
+            using var generator = new Rfc2898DeriveBytes(secret, salt.ToArray(), iterations, algorithm);
+            return generator.GetBytes(length);
+#else
+            var generator = new Pkcs5S2ParametersGenerator(algorithm switch
+            {
+                { Name: nameof(SHA1)   } => (IDigest) new Sha1Digest(),
+                { Name: nameof(SHA256) } => new Sha256Digest(),
+                { Name: nameof(SHA512) } => new Sha512Digest(),
+                _ => throw new InvalidOperationException("The specified hash algorithm is not valid.")
+            });
+
+            generator.Init(PbeParametersGenerator.Pkcs5PasswordToBytes(secret.ToCharArray()), salt.ToArray(), iterations);
+
+            var key = (KeyParameter) generator.GenerateDerivedMacParameters(length * 8);
+            return key.GetKey();
+#endif
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+        {
+#if SUPPORTS_TIME_CONSTANT_COMPARISONS
+            return CryptographicOperations.FixedTimeEquals(left, right);
+#else
+            // Note: these null checks can be theoretically considered as early checks
+            // (which would defeat the purpose of a time-constant comparison method),
+            // but the expected string length is the only information an attacker
+            // could get at this stage, which is not critical where this method is used.
+
+            if (left.Length != right.Length)
+            {
+                return false;
+            }
+
+            var result = true;
+
+            for (var index = 0; index < left.Length; index++)
+            {
+                result &= left[index] == right[index];
+            }
+
+            return result;
+#endif
         }
 
         ValueTask<long> IOpenIddictApplicationManager.CountAsync(CancellationToken cancellationToken)

@@ -52,7 +52,7 @@ namespace Mvc.Server
 
             services.AddOpenIddict()
 
-                // Register the OpenIddict core services.
+                // Register the OpenIddict core components.
                 .AddCore(options =>
                 {
                     // Configure OpenIddict to use the Entity Framework Core stores and models.
@@ -60,7 +60,7 @@ namespace Mvc.Server
                            .UseDbContext<ApplicationDbContext>();
                 })
 
-                // Register the OpenIddict server handler.
+                // Register the OpenIddict server components.
                 .AddServer(options =>
                 {
                     // Enable the authorization, logout, token and userinfo endpoints.
