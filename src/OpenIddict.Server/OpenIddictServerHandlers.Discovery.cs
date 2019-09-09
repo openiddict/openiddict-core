@@ -865,44 +865,31 @@ namespace OpenIddict.Server
                     foreach (var credentials in context.Options.SigningCredentials)
                     {
                         // Try to resolve the JWA algorithm short name.
-                        var algorithm = credentials.Digest switch
+                        var algorithm = credentials.Algorithm switch
                         {
-                            SecurityAlgorithms.Sha256 => SecurityAlgorithms.Sha256,
-                            SecurityAlgorithms.Sha384 => SecurityAlgorithms.Sha384,
-                            SecurityAlgorithms.Sha512 => SecurityAlgorithms.Sha512,
-                            SecurityAlgorithms.Sha256Digest => SecurityAlgorithms.Sha256,
-                            SecurityAlgorithms.Sha384Digest => SecurityAlgorithms.Sha384,
-                            SecurityAlgorithms.Sha512Digest => SecurityAlgorithms.Sha512,
-
-                            // If the digest algorithm was not explicitly set or was not recognized,
-                            // try to infer the digest algorithm from the specified signature algorithm.
-                            _ => credentials.Algorithm switch
-                            {
-
 #if SUPPORTS_ECDSA
-                                SecurityAlgorithms.EcdsaSha256 => SecurityAlgorithms.Sha256,
-                                SecurityAlgorithms.EcdsaSha384 => SecurityAlgorithms.Sha384,
-                                SecurityAlgorithms.EcdsaSha512 => SecurityAlgorithms.Sha512,
-                                SecurityAlgorithms.EcdsaSha256Signature => SecurityAlgorithms.Sha256,
-                                SecurityAlgorithms.EcdsaSha384Signature => SecurityAlgorithms.Sha384,
-                                SecurityAlgorithms.EcdsaSha512Signature => SecurityAlgorithms.Sha512,
+                            SecurityAlgorithms.EcdsaSha256 => SecurityAlgorithms.EcdsaSha256,
+                            SecurityAlgorithms.EcdsaSha384 => SecurityAlgorithms.EcdsaSha384,
+                            SecurityAlgorithms.EcdsaSha512 => SecurityAlgorithms.EcdsaSha512,
+                            SecurityAlgorithms.EcdsaSha256Signature => SecurityAlgorithms.EcdsaSha256,
+                            SecurityAlgorithms.EcdsaSha384Signature => SecurityAlgorithms.EcdsaSha384,
+                            SecurityAlgorithms.EcdsaSha512Signature => SecurityAlgorithms.EcdsaSha512,
 #endif
-                                SecurityAlgorithms.HmacSha256 => SecurityAlgorithms.Sha256,
-                                SecurityAlgorithms.HmacSha384 => SecurityAlgorithms.Sha384,
-                                SecurityAlgorithms.HmacSha512 => SecurityAlgorithms.Sha512,
-                                SecurityAlgorithms.HmacSha256Signature => SecurityAlgorithms.Sha256,
-                                SecurityAlgorithms.HmacSha384Signature => SecurityAlgorithms.Sha384,
-                                SecurityAlgorithms.HmacSha512Signature => SecurityAlgorithms.Sha512,
+                            SecurityAlgorithms.RsaSha256 => SecurityAlgorithms.RsaSha256,
+                            SecurityAlgorithms.RsaSha384 => SecurityAlgorithms.RsaSha384,
+                            SecurityAlgorithms.RsaSha512 => SecurityAlgorithms.RsaSha512,
+                            SecurityAlgorithms.RsaSha256Signature => SecurityAlgorithms.RsaSha256,
+                            SecurityAlgorithms.RsaSha384Signature => SecurityAlgorithms.RsaSha384,
+                            SecurityAlgorithms.RsaSha512Signature => SecurityAlgorithms.RsaSha512,
 
-                                SecurityAlgorithms.RsaSha256 => SecurityAlgorithms.Sha256,
-                                SecurityAlgorithms.RsaSha384 => SecurityAlgorithms.Sha384,
-                                SecurityAlgorithms.RsaSha512 => SecurityAlgorithms.Sha512,
-                                SecurityAlgorithms.RsaSha256Signature => SecurityAlgorithms.Sha256,
-                                SecurityAlgorithms.RsaSha384Signature => SecurityAlgorithms.Sha384,
-                                SecurityAlgorithms.RsaSha512Signature => SecurityAlgorithms.Sha512,
+                            SecurityAlgorithms.RsaSsaPssSha256 => SecurityAlgorithms.RsaSsaPssSha256,
+                            SecurityAlgorithms.RsaSsaPssSha384 => SecurityAlgorithms.RsaSsaPssSha384,
+                            SecurityAlgorithms.RsaSsaPssSha512 => SecurityAlgorithms.RsaSsaPssSha512,
+                            SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
+                            SecurityAlgorithms.RsaSsaPssSha384Signature => SecurityAlgorithms.RsaSsaPssSha384,
+                            SecurityAlgorithms.RsaSsaPssSha512Signature => SecurityAlgorithms.RsaSsaPssSha512,
 
-                                _ => null
-                            }
+                            _ => null
                         };
 
                         // If the algorithm cannot be resolved, ignore it.
@@ -1310,6 +1297,7 @@ namespace OpenIddict.Server
                     {
 #if SUPPORTS_ECDSA
                         if (!IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256) &&
+                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256) &&
                             !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha256) &&
                             !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha384) &&
                             !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.EcdsaSha512))
@@ -1321,7 +1309,8 @@ namespace OpenIddict.Server
                             continue;
                         }
 #else
-                        if (!IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256))
+                        if (!IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256) &&
+                            !IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256))
                         {
                             context.Logger.LogInformation("An unsupported signing key of type '{Type}' was ignored and excluded " +
                                                           "from the key set. Only RSA asymmetric security keys can be exposed " +
@@ -1353,6 +1342,13 @@ namespace OpenIddict.Server
                                 SecurityAlgorithms.RsaSha384Signature => SecurityAlgorithms.RsaSha384,
                                 SecurityAlgorithms.RsaSha512Signature => SecurityAlgorithms.RsaSha512,
 
+                                SecurityAlgorithms.RsaSsaPssSha256 => SecurityAlgorithms.RsaSsaPssSha256,
+                                SecurityAlgorithms.RsaSsaPssSha384 => SecurityAlgorithms.RsaSsaPssSha384,
+                                SecurityAlgorithms.RsaSsaPssSha512 => SecurityAlgorithms.RsaSsaPssSha512,
+                                SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
+                                SecurityAlgorithms.RsaSsaPssSha384Signature => SecurityAlgorithms.RsaSsaPssSha384,
+                                SecurityAlgorithms.RsaSsaPssSha512Signature => SecurityAlgorithms.RsaSsaPssSha512,
+
                                 _ => null
                             },
 
@@ -1360,7 +1356,8 @@ namespace OpenIddict.Server
                             Kid = credentials.Kid
                         };
 
-                        if (IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256))
+                        if (IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSha256) ||
+                            IsAlgorithmSupported(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256))
                         {
                             // Note: IdentityModel 5 doesn't expose a method allowing to retrieve the underlying algorithm
                             // from a generic asymmetric security key. To work around this limitation, try to cast
