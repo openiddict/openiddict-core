@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -39,6 +40,11 @@ namespace OpenIddict.Server
                 ValidatePostLogoutRedirectUriParameter.Descriptor,
                 ValidateIdTokenHint.Descriptor,
                 ValidateClientPostLogoutRedirectUri.Descriptor,
+
+                /*
+                 * Logout request handling:
+                 */
+                AttachIdentityTokenHintPrincipal.Descriptor,
 
                 /*
                  * Logout response processing:
@@ -255,26 +261,23 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    if (notification.IsLogoutAllowed)
+                    var @event = new ProcessSignoutContext(context.Transaction)
                     {
-                        var @event = new ProcessSignoutContext(context.Transaction)
-                        {
-                            Response = new OpenIddictResponse()
-                        };
+                        Response = new OpenIddictResponse()
+                    };
 
-                        await _provider.DispatchAsync(@event);
+                    await _provider.DispatchAsync(@event);
 
-                        if (@event.IsRequestHandled)
-                        {
-                            context.HandleRequest();
-                            return;
-                        }
+                    if (@event.IsRequestHandled)
+                    {
+                        context.HandleRequest();
+                        return;
+                    }
 
-                        else if (@event.IsRequestSkipped)
-                        {
-                            context.SkipRequest();
-                            return;
-                        }
+                    else if (@event.IsRequestSkipped)
+                    {
+                        context.SkipRequest();
+                        return;
                     }
 
                     throw new InvalidOperationException(new StringBuilder()
@@ -459,7 +462,9 @@ namespace OpenIddict.Server
 
                     // Note: the expiration date associated with an identity token used as an id_token_hint is deliberately ignored.
 
-                    // Store the security principal extracted from the identity token as an environment property.
+                    // Attach the security principal extracted from the identity token to the
+                    // validation context and store it as an environment property.
+                    context.IdentityTokenHintPrincipal = notification.Principal;
                     context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
                 }
             }
@@ -546,6 +551,43 @@ namespace OpenIddict.Server
 
                         return false;
                     }
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of attaching the principal extracted from the id_token_hint to the event context.
+            /// </summary>
+            public class AttachIdentityTokenHintPrincipal : IOpenIddictServerHandler<HandleLogoutRequestContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleLogoutRequestContext>()
+                        .UseSingletonHandler<AttachIdentityTokenHintPrincipal>()
+                        .SetOrder(int.MinValue + 100_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public ValueTask HandleAsync([NotNull] HandleLogoutRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
+                    {
+                        context.IdentityTokenHintPrincipal ??= (ClaimsPrincipal) principal;
+                    }
+
+                    return default;
                 }
             }
 
