@@ -51,6 +51,7 @@
     <_QuarterHours>$([System.Math]::Floor($(_QuarterHours)))</_QuarterHours>
     <_AppVeyorBuildRevision>$([MSBuild]::Add($(_Hours), $(_QuarterHours)))</_AppVeyorBuildRevision>
     <_AppVeyorBuildRevision>$([MSBuild]::Add($(_AppVeyorBuildRevision), 1))</_AppVeyorBuildRevision>
+    <OfficialBuild>true</OfficialBuild>
     <OfficialBuildId>$([System.DateTime]::Now.ToString(yyyyMMdd)).$(_AppVeyorBuildRevision)</OfficialBuildId>
   </PropertyGroup>
 
