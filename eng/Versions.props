@@ -17,7 +17,7 @@
     <ExtensionsVersion>3.0.0-preview8.19405.4</ExtensionsVersion>
     <JetBrainsVersion>2019.1.3</JetBrainsVersion>
     <JsonNetVersion>12.0.2</JsonNetVersion>
-    <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
+    <JsonNetBsonVersion>1.0.2</JsonNetBsonVersion>
     <IdentityModelVersion>6.2.0-preview-60906195846</IdentityModelVersion>
     <ImmutableCollectionsVersion>1.5.0</ImmutableCollectionsVersion>
     <LinqAsyncVersion>4.0.0-preview.6.build.801</LinqAsyncVersion>
