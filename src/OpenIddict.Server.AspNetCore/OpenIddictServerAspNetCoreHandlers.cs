@@ -38,6 +38,7 @@ namespace OpenIddict.Server.AspNetCore
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
             .AddRange(Introspection.DefaultHandlers)
+            .AddRange(Revocation.DefaultHandlers)
             .AddRange(Serialization.DefaultHandlers)
             .AddRange(Session.DefaultHandlers)
             .AddRange(Userinfo.DefaultHandlers);

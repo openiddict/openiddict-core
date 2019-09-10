@@ -53,6 +53,7 @@ namespace OpenIddict.Server
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
             .AddRange(Introspection.DefaultHandlers)
+            .AddRange(Revocation.DefaultHandlers)
             .AddRange(Serialization.DefaultHandlers)
             .AddRange(Session.DefaultHandlers)
             .AddRange(Userinfo.DefaultHandlers);

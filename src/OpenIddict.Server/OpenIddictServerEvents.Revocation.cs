@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using JetBrains.Annotations;
 
 namespace OpenIddict.Server
@@ -46,6 +47,11 @@ namespace OpenIddict.Server
             /// revocation request, or <c>null</c> if it cannot be found.
             /// </summary>
             public string TokenTypeHint => Request.TokenTypeHint;
+
+            /// <summary>
+            /// Gets or sets the security principal extracted from the revoked token, if available.
+            /// </summary>
+            public ClaimsPrincipal Principal { get; set; }
         }
 
         /// <summary>
@@ -61,6 +67,11 @@ namespace OpenIddict.Server
                 : base(transaction)
             {
             }
+
+            /// <summary>
+            /// Gets or sets the security principal extracted from the revoked token.
+            /// </summary>
+            public ClaimsPrincipal Principal { get; set; }
 
             /// <summary>
             /// Gets the authentication ticket.

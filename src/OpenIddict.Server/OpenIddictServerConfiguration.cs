@@ -138,6 +138,17 @@ namespace OpenIddict.Server
                         .ToString());
                 }
 
+                if (options.RevocationEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                    descriptor => descriptor.ContextType == typeof(ValidateRevocationRequestContext) &&
+                                  descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("No custom revocation request validation handler was found. When enabling the degraded mode, ")
+                        .Append("a custom 'IOpenIddictServerHandler<ValidateRevocationRequestContext>' must be implemented ")
+                        .Append("to validate revocation requests (e.g to ensure the client_id and client_secret are valid).")
+                        .ToString());
+                }
+
                 if (options.TokenEndpointUris.Count != 0 && !options.CustomHandlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateTokenRequestContext) &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
