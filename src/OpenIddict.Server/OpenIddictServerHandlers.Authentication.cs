@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -54,6 +55,11 @@ namespace OpenIddict.Server
                 ValidateEndpointPermissions.Descriptor,
                 ValidateGrantTypePermissions.Descriptor,
                 ValidateScopePermissions.Descriptor,
+
+                /*
+                 * Authorization request handling:
+                 */
+                AttachIdentityTokenHintPrincipal.Descriptor,
 
                 /*
                  * Authorization response processing:
@@ -1027,7 +1033,9 @@ namespace OpenIddict.Server
 
                     // Note: the expiration date associated with an identity token used as an id_token_hint is deliberately ignored.
 
-                    // Store the security principal extracted from the identity token as an environment property.
+                    // Attach the security principal extracted from the identity token to the
+                    // validation context and store it as an environment property.
+                    context.IdentityTokenHintPrincipal = notification.Principal;
                     context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
                 }
             }
@@ -1538,6 +1546,43 @@ namespace OpenIddict.Server
                             return;
                         }
                     }
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of attaching the principal extracted from the id_token_hint to the event context.
+            /// </summary>
+            public class AttachIdentityTokenHintPrincipal : IOpenIddictServerHandler<HandleAuthorizationRequestContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleAuthorizationRequestContext>()
+                        .UseSingletonHandler<AttachIdentityTokenHintPrincipal>()
+                        .SetOrder(int.MinValue + 100_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public ValueTask HandleAsync([NotNull] HandleAuthorizationRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
+                    {
+                        context.IdentityTokenHintPrincipal ??= (ClaimsPrincipal) principal;
+                    }
+
+                    return default;
                 }
             }
 
