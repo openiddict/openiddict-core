@@ -205,7 +205,13 @@ namespace OpenIddict.Server.AspNetCore
 
                     // Generate a 256-bit request identifier using a crypto-secure random number generator.
                     var data = new byte[256 / 8];
+
+#if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
                     RandomNumberGenerator.Fill(data);
+#else
+                    using var generator = RandomNumberGenerator.Create();
+                    generator.GetBytes(data);
+#endif
 
                     context.Request.RequestId = Base64UrlEncoder.Encode(data);
 

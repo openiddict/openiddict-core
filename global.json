@@ -1,6 +1,9 @@
 {
   "tools": {
-    "dotnet": "3.0.100-preview8-013656"
+    "dotnet": "3.0.100-preview8-013656",
+    "runtimes": {
+      "aspnetcore": [ "2.1.13" ]
+    }
   },
 
   "msbuild-sdks": {

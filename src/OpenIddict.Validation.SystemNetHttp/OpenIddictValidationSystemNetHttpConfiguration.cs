@@ -21,6 +21,13 @@ namespace OpenIddict.Validation.SystemNetHttp
     public class OpenIddictValidationSystemNetHttpConfiguration : IConfigureOptions<OpenIddictValidationOptions>,
                                                                   IConfigureNamedOptions<HttpClientFactoryOptions>
     {
+#if !SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
+        private readonly IServiceProvider _serviceProvider;
+
+        public OpenIddictValidationSystemNetHttpConfiguration([NotNull] IServiceProvider serviceProvider)
+            => _serviceProvider = serviceProvider;
+#endif
+
         public void Configure([NotNull] OpenIddictValidationOptions options)
         {
             if (options == null)
@@ -61,8 +68,11 @@ namespace OpenIddict.Validation.SystemNetHttp
 
             options.HttpMessageHandlerBuilderActions.Add(builder =>
             {
+#if SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER
                 var options = builder.Services.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>();
-
+#else
+                var options = _serviceProvider.GetRequiredService<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>();
+#endif
                 var policy = options.CurrentValue.HttpErrorPolicy;
                 if (policy != null)
                 {

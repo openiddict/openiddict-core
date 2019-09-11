@@ -20,4 +20,8 @@
     <PackageReference Include="System.Linq.Async" Version="$(LinqAsyncVersion)" />
   </ItemGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER</DefineConstants>
+  </PropertyGroup>
+
 </Project>
