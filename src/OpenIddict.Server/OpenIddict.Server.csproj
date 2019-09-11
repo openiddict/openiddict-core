@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net461;net472;netstandard2.0;netstandard2.1</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,10 +19,13 @@
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="$(IdentityModelVersion)" />
   </ItemGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_ECDSA</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netstandard2.1' ">
     <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_GENERATION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_DIRECT_KEY_CREATION_WITH_SPECIFIED_SIZE</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORTS_ECDSA</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_EPHEMERAL_KEY_SETS</DefineConstants>
   </PropertyGroup>
 
