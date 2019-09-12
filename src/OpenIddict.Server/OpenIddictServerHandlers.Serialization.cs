@@ -285,7 +285,6 @@ namespace OpenIddict.Server
 
                     context.EncryptingCredentials = context.Options.EncryptionCredentials.FirstOrDefault(
                         credentials => credentials.Key is SymmetricSecurityKey);
-                    context.Issuer = context.Options.Issuer;
                     context.SecurityTokenHandler = context.Options.AccessTokenHandler;
                     context.SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(
                         credentials => credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First();
@@ -333,7 +332,6 @@ namespace OpenIddict.Server
                     }
 
                     context.EncryptingCredentials = context.Options.EncryptionCredentials[0];
-                    context.Issuer = context.Options.Issuer;
                     context.SecurityTokenHandler = context.Options.AuthorizationCodeHandler;
                     context.SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(
                         credentials => credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First();
@@ -375,7 +373,6 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException("No suitable signing credentials could be found.");
                     }
 
-                    context.Issuer = context.Options.Issuer;
                     context.SecurityTokenHandler = context.Options.IdentityTokenHandler;
                     context.SigningCredentials = context.Options.SigningCredentials.First(
                         credentials => credentials.Key is AsymmetricSecurityKey);
@@ -423,7 +420,6 @@ namespace OpenIddict.Server
                     }
 
                     context.EncryptingCredentials = context.Options.EncryptionCredentials[0];
-                    context.Issuer = context.Options.Issuer;
                     context.SecurityTokenHandler = context.Options.AuthorizationCodeHandler;
                     context.SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(
                         credentials => credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First();
@@ -469,7 +465,7 @@ namespace OpenIddict.Server
                     context.TokenValidationParameters.TokenDecryptionKeys = context.Options.EncryptionCredentials
                         .Select(credentials => credentials.Key)
                         .Where(key => key is SymmetricSecurityKey);
-                    context.TokenValidationParameters.ValidIssuer = context.Options.Issuer?.AbsoluteUri;
+                    context.TokenValidationParameters.ValidIssuer = context.Issuer?.AbsoluteUri;
                     context.TokenValidationParameters.ValidateAudience = false;
                     context.TokenValidationParameters.ValidateLifetime = false;
 
@@ -513,7 +509,7 @@ namespace OpenIddict.Server
                     context.TokenValidationParameters.RoleClaimType = Claims.Role;
                     context.TokenValidationParameters.TokenDecryptionKeys = context.Options.EncryptionCredentials
                         .Select(credentials => credentials.Key);
-                    context.TokenValidationParameters.ValidIssuer = context.Options.Issuer?.AbsoluteUri;
+                    context.TokenValidationParameters.ValidIssuer = context.Issuer?.AbsoluteUri;
                     context.TokenValidationParameters.ValidateAudience = false;
                     context.TokenValidationParameters.ValidateLifetime = false;
 
@@ -556,7 +552,7 @@ namespace OpenIddict.Server
                         .OfType<AsymmetricSecurityKey>();
                     context.TokenValidationParameters.NameClaimType = Claims.Name;
                     context.TokenValidationParameters.RoleClaimType = Claims.Role;
-                    context.TokenValidationParameters.ValidIssuer = context.Options.Issuer?.AbsoluteUri;
+                    context.TokenValidationParameters.ValidIssuer = context.Issuer?.AbsoluteUri;
                     context.TokenValidationParameters.ValidateAudience = false;
                     context.TokenValidationParameters.ValidateLifetime = false;
 
@@ -600,7 +596,7 @@ namespace OpenIddict.Server
                     context.TokenValidationParameters.RoleClaimType = Claims.Role;
                     context.TokenValidationParameters.TokenDecryptionKeys = context.Options.EncryptionCredentials
                         .Select(credentials => credentials.Key);
-                    context.TokenValidationParameters.ValidIssuer = context.Options.Issuer?.AbsoluteUri;
+                    context.TokenValidationParameters.ValidIssuer = context.Issuer?.AbsoluteUri;
                     context.TokenValidationParameters.ValidateAudience = false;
                     context.TokenValidationParameters.ValidateLifetime = false;
 

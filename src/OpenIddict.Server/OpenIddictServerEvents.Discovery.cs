@@ -100,11 +100,6 @@ namespace OpenIddict.Server
             public Uri UserinfoEndpoint { get; set; }
 
             /// <summary>
-            /// Gets or sets the issuer address.
-            /// </summary>
-            public Uri Issuer { get; set; }
-
-            /// <summary>
             /// Gets the list of claims supported by the authorization server.
             /// </summary>
             public ISet<string> Claims { get; } =

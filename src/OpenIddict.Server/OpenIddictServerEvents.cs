@@ -34,6 +34,15 @@ namespace OpenIddict.Server
             public OpenIddictServerTransaction Transaction { get; }
 
             /// <summary>
+            /// Gets or sets the issuer address associated with the current transaction, if available.
+            /// </summary>
+            public Uri Issuer
+            {
+                get => Transaction.Issuer;
+                set => Transaction.Issuer = value;
+            }
+
+            /// <summary>
             /// Gets or sets the endpoint type that handled the request, if applicable.
             /// </summary>
             public OpenIddictServerEndpointType EndpointType

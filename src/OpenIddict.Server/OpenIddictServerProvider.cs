@@ -38,6 +38,7 @@ namespace OpenIddict.Server
         public ValueTask<OpenIddictServerTransaction> CreateTransactionAsync()
             => new ValueTask<OpenIddictServerTransaction>(new OpenIddictServerTransaction
             {
+                Issuer = _options.CurrentValue.Issuer,
                 Logger = _logger,
                 Options = _options.CurrentValue
             });

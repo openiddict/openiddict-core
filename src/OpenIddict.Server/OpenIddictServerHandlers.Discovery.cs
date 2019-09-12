@@ -40,7 +40,6 @@ namespace OpenIddict.Server
                 /*
                  * Configuration request handling:
                  */
-                AttachIssuer.Descriptor,
                 AttachEndpoints.Descriptor,
                 AttachGrantTypes.Descriptor,
                 AttachResponseModes.Descriptor,
@@ -358,43 +357,6 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of attaching the issuer URL to the provider discovery document.
-            /// </summary>
-            public class AttachIssuer : IOpenIddictServerHandler<HandleConfigurationRequestContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
-                        .UseSingletonHandler<AttachIssuer>()
-                        .SetOrder(int.MinValue + 100_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleConfigurationRequestContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.Options.Issuer != null)
-                    {
-                        context.Issuer = context.Options.Issuer;
-                    }
-
-                    return default;
-                }
-            }
-
-            /// <summary>
             /// Contains the logic responsible of attaching the endpoint URLs to the provider discovery document.
             /// </summary>
             public class AttachEndpoints : IOpenIddictServerHandler<HandleConfigurationRequestContext>
@@ -405,7 +367,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleConfigurationRequestContext>()
                         .UseSingletonHandler<AttachEndpoints>()
-                        .SetOrder(AttachIssuer.Descriptor.Order + 1_000)
+                        .SetOrder(int.MaxValue - 100_000)
                         .Build();
 
                 /// <summary>
