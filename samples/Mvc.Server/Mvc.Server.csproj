@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OpenIddict.Server.AspNetCore\OpenIddict.Server.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.AspNetCore\OpenIddict.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.EntityFrameworkCore\OpenIddict.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
