@@ -4,8 +4,10 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/46ofo2eusje0hcw2?svg=true)](https://ci.appveyor.com/project/openiddict/openiddict-core)
 [![Build status](https://travis-ci.org/openiddict/openiddict-core.svg)](https://travis-ci.org/openiddict/openiddict-core)
 
-> **Warning: this branch contains the OpenIddict 3.0 source code, which is still a work in progress. The 3.0 packages are still experimental and no official binaries are available yet**.
-**These packages currently lack many features and haven't been heavily tested: don't use them in any production application**.
+> **Warning: this branch contains the OpenIddict 3.0 source code, which is still a work in progress**.
+Nightly builds can be downloaded from the MyGet repository: https://www.myget.org/F/openiddict/api/v3/index.json
+
+> **The 3.0.0 alpha packages haven't been heavily tested: don't use them in production**.
 
 ### What's OpenIddict?
 
