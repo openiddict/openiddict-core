@@ -49,11 +49,6 @@ namespace OpenIddict.Server
             public JsonWebTokenHandler SecurityTokenHandler { get; set; }
 
             /// <summary>
-            /// Gets or sets the issuer address.
-            /// </summary>
-            public Uri Issuer { get; set; }
-
-            /// <summary>
             /// Gets or sets the token returned to the client application.
             /// </summary>
             public string Token { get; set; }

@@ -270,7 +270,7 @@ namespace OpenIddict.Server
                     var response = new OpenIddictResponse
                     {
                         [Claims.Active] = true,
-                        [Claims.Issuer] = notification.Issuer,
+                        [Claims.Issuer] = notification.Issuer?.AbsoluteUri,
                         [Claims.Username] = notification.Username,
                         [Claims.Subject] = notification.Subject,
                         [Claims.Scope] = string.Join(" ", notification.Scopes),
@@ -984,7 +984,6 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    context.Issuer = context.Options.Issuer?.AbsoluteUri;
                     context.TokenId = context.Principal.GetTokenId();
                     context.TokenUsage = context.Principal.GetTokenUsage();
                     context.Subject = context.Principal.GetClaim(Claims.Subject);

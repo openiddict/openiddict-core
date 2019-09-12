@@ -44,7 +44,7 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Authorization request handling:
                  */
-                EnablePassthroughMode.Descriptor,
+                EnablePassthroughMode<HandleAuthorizationRequestContext, RequireAuthorizationEndpointPassthroughEnabled>.Descriptor,
 
                 /*
                  * Authorization response processing:
@@ -234,42 +234,6 @@ namespace OpenIddict.Server.Owin
 
                     // Mark the response as handled to skip the rest of the pipeline.
                     context.HandleRequest();
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of enabling the pass-through mode for the received request.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-            /// </summary>
-            public class EnablePassthroughMode : IOpenIddictServerHandler<HandleAuthorizationRequestContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleAuthorizationRequestContext>()
-                        .AddFilter<RequireAuthorizationEndpointPassthroughEnabled>()
-                        .UseSingletonHandler<EnablePassthroughMode>()
-                        .SetOrder(int.MaxValue - 100_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleAuthorizationRequestContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    context.SkipRequest();
-
-                    return default;
                 }
             }
 

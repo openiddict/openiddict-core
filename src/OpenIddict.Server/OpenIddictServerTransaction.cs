@@ -22,6 +22,11 @@ namespace OpenIddict.Server
         public OpenIddictServerEndpointType EndpointType { get; set; }
 
         /// <summary>
+        /// Gets or sets the issuer address associated with the current transaction, if available.
+        /// </summary>
+        public Uri Issuer { get; set; }
+
+        /// <summary>
         /// Gets or sets the logger associated with the current request.
         /// </summary>
         public ILogger Logger { get; set; }

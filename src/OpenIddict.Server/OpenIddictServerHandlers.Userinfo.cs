@@ -44,7 +44,6 @@ namespace OpenIddict.Server
                 /*
                  * Userinfo request handling:
                  */
-                AttachIssuer.Descriptor,
                 AttachPrincipal.Descriptor,
                 AttachAudiences.Descriptor,
                 AttachClaims.Descriptor);
@@ -264,7 +263,7 @@ namespace OpenIddict.Server
                         [Claims.EmailVerified] = notification.EmailVerified,
                         [Claims.FamilyName] = notification.FamilyName,
                         [Claims.GivenName] = notification.GivenName,
-                        [Claims.Issuer] = notification.Issuer,
+                        [Claims.Issuer] = notification.Issuer?.AbsoluteUri,
                         [Claims.PhoneNumber] = notification.PhoneNumber,
                         [Claims.PhoneNumberVerified] = notification.PhoneNumberVerified,
                         [Claims.PreferredUsername] = notification.PreferredUsername,
@@ -499,43 +498,6 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of attaching the issuer URL to the userinfo response.
-            /// </summary>
-            public class AttachIssuer : IOpenIddictServerHandler<HandleUserinfoRequestContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleUserinfoRequestContext>()
-                        .UseSingletonHandler<AttachIssuer>()
-                        .SetOrder(AttachPrincipal.Descriptor.Order + 100_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] HandleUserinfoRequestContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.Options.Issuer != null)
-                    {
-                        context.Issuer = context.Options.Issuer.AbsoluteUri;
-                    }
-
-                    return default;
-                }
-            }
-
-            /// <summary>
             /// Contains the logic responsible of attaching the audiences to the userinfo response.
             /// </summary>
             public class AttachAudiences : IOpenIddictServerHandler<HandleUserinfoRequestContext>
@@ -546,7 +508,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleUserinfoRequestContext>()
                         .UseSingletonHandler<AttachAudiences>()
-                        .SetOrder(AttachIssuer.Descriptor.Order + 100_000)
+                        .SetOrder(AttachPrincipal.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>

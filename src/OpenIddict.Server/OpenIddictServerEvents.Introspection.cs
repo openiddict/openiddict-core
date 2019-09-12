@@ -106,12 +106,6 @@ namespace OpenIddict.Server
             public DateTimeOffset? IssuedAt { get; set; }
 
             /// <summary>
-            /// Gets or sets the "iss" claim
-            /// returned to the caller, if applicable.
-            /// </summary>
-            public string Issuer { get; set; }
-
-            /// <summary>
             /// Gets or sets the "nbf" claim
             /// returned to the caller, if applicable.
             /// </summary>

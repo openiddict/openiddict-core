@@ -32,14 +32,13 @@ namespace OpenIddict.Server.AspNetCore
              * Top-level request processing:
              */
             InferEndpointType.Descriptor,
-            ValidateTransportSecurityRequirement.Descriptor,
-            ValidateHost.Descriptor)
+            InferIssuerFromHost.Descriptor,
+            ValidateTransportSecurityRequirement.Descriptor)
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
             .AddRange(Introspection.DefaultHandlers)
             .AddRange(Revocation.DefaultHandlers)
-            .AddRange(Serialization.DefaultHandlers)
             .AddRange(Session.DefaultHandlers)
             .AddRange(Userinfo.DefaultHandlers);
 
@@ -136,6 +135,76 @@ namespace OpenIddict.Server.AspNetCore
         }
 
         /// <summary>
+        /// Contains the logic responsible of infering the issuer URL from the HTTP request host and validating it.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class InferIssuerFromHost : IOpenIddictServerHandler<ProcessRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<InferIssuerFromHost>()
+                    .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var request = context.Transaction.GetHttpRequest();
+                if (request == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                // Don't require that the request host be present if the request is not handled
+                // by an OpenIddict endpoint or if an explicit issuer URL was already set.
+                if (context.Issuer != null || context.EndpointType == OpenIddictServerEndpointType.Unknown)
+                {
+                    return default;
+                }
+
+                if (!request.Host.HasValue)
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: "The mandatory 'Host' header is missing.");
+
+                    return default;
+                }
+
+                if (!Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out Uri issuer) ||
+                    !issuer.IsWellFormedOriginalString())
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: "The specified 'Host' header is invalid.");
+
+                    return default;
+                }
+
+                context.Issuer = issuer;
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of rejecting OpenID Connect requests that don't use transport security.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
@@ -195,64 +264,6 @@ namespace OpenIddict.Server.AspNetCore
         }
 
         /// <summary>
-        /// Contains the logic responsible of ensuring the host can be inferred from the request if none was set in the options.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-        /// </summary>
-        public class ValidateHost : IOpenIddictServerHandler<ProcessRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
-                    .AddFilter<RequireHttpRequest>()
-                    .UseSingletonHandler<ValidateHost>()
-                    .SetOrder(ValidateTransportSecurityRequirement.Descriptor.Order + 1_000)
-                    .Build();
-
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessRequestContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-                // this may indicate that the request was incorrectly processed by another server stack.
-                var request = context.Transaction.GetHttpRequest();
-                if (request == null)
-                {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
-                }
-
-                // Don't require that the request host be present if the request is not handled
-                // by an OpenIddict endpoint or if an explicit issuer URL was set in the options.
-                if (context.Options.Issuer != null || context.EndpointType == OpenIddictServerEndpointType.Unknown)
-                {
-                    return default;
-                }
-
-                if (!request.Host.HasValue)
-                {
-                    context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: "The mandatory 'Host' header is missing.");
-
-                    return default;
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
         /// Contains the logic responsible of extracting OpenID Connect requests from GET HTTP requests.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
@@ -265,7 +276,7 @@ namespace OpenIddict.Server.AspNetCore
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ExtractGetOrPostRequest<TContext>>()
-                    .SetOrder(ValidateHost.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateTransportSecurityRequirement.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -634,6 +645,45 @@ namespace OpenIddict.Server.AspNetCore
         }
 
         /// <summary>
+        /// Contains the logic responsible of enabling the pass-through mode for the received request.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class EnablePassthroughMode<TContext, TFilter> : IOpenIddictServerHandler<TContext>
+            where TContext : BaseRequestContext
+            where TFilter : IOpenIddictServerHandlerFilter<TContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .AddFilter<TFilter>()
+                    .UseSingletonHandler<EnablePassthroughMode<TContext, TFilter>>()
+                    .SetOrder(int.MaxValue - 100_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                context.SkipRequest();
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of processing OpenID Connect responses that must be returned as JSON.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
@@ -704,8 +754,7 @@ namespace OpenIddict.Server.AspNetCore
 
                         if (!string.IsNullOrEmpty(scheme))
                         {
-                            var issuer = context.Options.Issuer;
-                            if (issuer == null && !Uri.TryCreate(request.Scheme + "://" + request.Host + request.PathBase, UriKind.Absolute, out issuer))
+                            if (context.Issuer == null)
                             {
                                 throw new InvalidOperationException("The issuer address cannot be inferred from the current request.");
                             }
@@ -717,7 +766,7 @@ namespace OpenIddict.Server.AspNetCore
                                 .Append(' ')
                                 .Append(Parameters.Realm)
                                 .Append("=\"")
-                                .Append(issuer.AbsoluteUri)
+                                .Append(context.Issuer.AbsoluteUri)
                                 .Append('"')
                                 .ToString();
                         }
