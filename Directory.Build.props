@@ -14,8 +14,9 @@
 
   <PropertyGroup>
     <Authors>Kévin Chalet</Authors>
+    <Company>$(Authors)</Company>
     <Product>OpenIddict</Product>
-    <Copyright>© Kévin Chalet. All rights reserved.</Copyright>
+    <_ProjectCopyright>© Kévin Chalet. All rights reserved.</_ProjectCopyright>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/13908567?s=64</PackageIconUrl>
     <PackageProjectUrl>https://github.com/openiddict/openiddict-core</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
