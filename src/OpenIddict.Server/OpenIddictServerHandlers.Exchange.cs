@@ -34,7 +34,7 @@ namespace OpenIddict.Server
                 ValidateTokenRequest.Descriptor,
                 HandleTokenRequest.Descriptor,
                 ApplyTokenResponse<ProcessChallengeContext>.Descriptor,
-                ApplyTokenResponse<ProcessErrorResponseContext>.Descriptor,
+                ApplyTokenResponse<ProcessErrorContext>.Descriptor,
                 ApplyTokenResponse<ProcessRequestContext>.Descriptor,
                 ApplyTokenResponse<ProcessSigninContext>.Descriptor,
 

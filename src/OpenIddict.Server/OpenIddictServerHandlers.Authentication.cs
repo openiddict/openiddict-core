@@ -31,7 +31,7 @@ namespace OpenIddict.Server
                 ValidateAuthorizationRequest.Descriptor,
                 HandleAuthorizationRequest.Descriptor,
                 ApplyAuthorizationResponse<ProcessChallengeContext>.Descriptor,
-                ApplyAuthorizationResponse<ProcessErrorResponseContext>.Descriptor,
+                ApplyAuthorizationResponse<ProcessErrorContext>.Descriptor,
                 ApplyAuthorizationResponse<ProcessRequestContext>.Descriptor,
                 ApplyAuthorizationResponse<ProcessSigninContext>.Descriptor,
 

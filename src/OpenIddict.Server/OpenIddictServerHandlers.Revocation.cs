@@ -30,7 +30,7 @@ namespace OpenIddict.Server
                 ExtractRevocationRequest.Descriptor,
                 ValidateRevocationRequest.Descriptor,
                 HandleRevocationRequest.Descriptor,
-                ApplyRevocationResponse<ProcessErrorResponseContext>.Descriptor,
+                ApplyRevocationResponse<ProcessErrorContext>.Descriptor,
                 ApplyRevocationResponse<ProcessRequestContext>.Descriptor,
 
                 /*

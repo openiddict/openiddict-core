@@ -265,6 +265,31 @@ namespace OpenIddict.Abstractions
         };
 
         /// <summary>
+        /// Tries to get the child item corresponding to the specified name.
+        /// </summary>
+        /// <param name="name">The name of the child item.</param>
+        /// <param name="value">An <see cref="OpenIddictParameter"/> instance containing the item value.</param>
+        /// <returns><c>true</c> if the parameter could be found, <c>false</c> otherwise.</returns>
+        public bool TryGetParameter([NotNull] string name, out OpenIddictParameter value)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("The parameter name cannot be null or empty.", nameof(name));
+            }
+
+            if (Value is JObject dictionary && dictionary.TryGetValue(name, out JToken token))
+            {
+                value = new OpenIddictParameter(token);
+
+                return true;
+            }
+
+            value = default;
+
+            return false;
+        }
+
+        /// <summary>
         /// Determines whether two <see cref="OpenIddictParameter"/> instances are equal.
         /// </summary>
         /// <param name="left">The first instance.</param>

@@ -35,7 +35,7 @@ namespace OpenIddict.Server
                 ExtractIntrospectionRequest.Descriptor,
                 ValidateIntrospectionRequest.Descriptor,
                 HandleIntrospectionRequest.Descriptor,
-                ApplyIntrospectionResponse<ProcessErrorResponseContext>.Descriptor,
+                ApplyIntrospectionResponse<ProcessErrorContext>.Descriptor,
                 ApplyIntrospectionResponse<ProcessRequestContext>.Descriptor,
 
                 /*

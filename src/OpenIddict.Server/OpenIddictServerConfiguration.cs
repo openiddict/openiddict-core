@@ -35,6 +35,11 @@ namespace OpenIddict.Server
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (options.SecurityTokenHandler == null)
+            {
+                throw new InvalidOperationException("The security token handler cannot be null.");
+            }
+
             // Ensure at least one flow has been enabled.
             if (options.GrantTypes.Count == 0)
             {

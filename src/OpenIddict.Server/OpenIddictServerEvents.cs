@@ -283,12 +283,12 @@ namespace OpenIddict.Server
         /// <summary>
         /// Represents an event called when processing an errored response.
         /// </summary>
-        public class ProcessErrorResponseContext : BaseRequestContext
+        public class ProcessErrorContext : BaseRequestContext
         {
             /// <summary>
-            /// Creates a new instance of the <see cref="ProcessErrorResponseContext"/> class.
+            /// Creates a new instance of the <see cref="ProcessErrorContext"/> class.
             /// </summary>
-            public ProcessErrorResponseContext([NotNull] OpenIddictServerTransaction transaction)
+            public ProcessErrorContext([NotNull] OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }

@@ -30,5 +30,30 @@ namespace OpenIddict.Server.DataProtection
             public const string TokenId = ".token_id";
             public const string TokenUsage = ".token_usage";
         }
+
+        public static class Purposes
+        {
+            public static class Features
+            {
+                public const string ReferenceTokens = "UseReferenceTokens";
+            }
+
+            public static class Formats
+            {
+                public const string AccessToken = "AccessTokenFormat";
+                public const string AuthorizationCode = "AuthorizationCodeFormat";
+                public const string RefreshToken = "RefreshTokenFormat";
+            }
+
+            public static class Handlers
+            {
+                public const string Server = "OpenIdConnectServerHandler";
+            }
+
+            public static class Schemes
+            {
+                public const string Server = "ASOS";
+            }
+        }
     }
 }

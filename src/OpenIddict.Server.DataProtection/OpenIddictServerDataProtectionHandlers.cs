@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.IO;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -18,14 +19,15 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants;
 using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHandlerFilters;
-using static OpenIddict.Server.OpenIddictServerConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerHandlers;
 
 namespace OpenIddict.Server.DataProtection
 {
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static partial class OpenIddictServerDataProtectionHandlers
     {
         public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } = ImmutableArray.Create(
@@ -81,7 +83,7 @@ namespace OpenIddict.Server.DataProtection
                     .AddFilter<RequireTokenStorageEnabled>()
                     .AddFilter<RequireReferenceTokensEnabled>()
                     .UseScopedHandler<ValidateReferenceDataProtectionToken>()
-                    .SetOrder(ValidateReferenceToken.Descriptor.Order - 500)
+                    .SetOrder(ValidateReferenceToken.Descriptor.Order + 500)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -247,7 +249,7 @@ namespace OpenIddict.Server.DataProtection
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireReferenceTokensDisabled>()
                     .UseSingletonHandler<ValidateSelfContainedDataProtectionToken>()
-                    .SetOrder(ValidateSelfContainedToken.Descriptor.Order - 500)
+                    .SetOrder(ValidateSelfContainedToken.Descriptor.Order + 500)
                     .Build();
 
             /// <summary>
