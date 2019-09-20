@@ -1110,7 +1110,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Resource));
+            return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Private.Resource));
         }
 
         /// <summary>
@@ -1423,7 +1423,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.FindAll(Claims.Resource).Any();
+            return principal.FindAll(Claims.Private.Resource).Any();
         }
 
         /// <summary>
@@ -1611,7 +1611,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.SetClaims(Claims.Resource, resources.Distinct(StringComparer.Ordinal));
+            return principal.SetClaims(Claims.Private.Resource, resources.Distinct(StringComparer.Ordinal));
         }
 
         /// <summary>

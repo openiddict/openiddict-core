@@ -69,7 +69,6 @@ namespace OpenIddict.Abstractions
             public const string PreferredUsername = "preferred_username";
             public const string Profile = "profile";
             public const string Region = "region";
-            public const string Resource = "resource";
             public const string Role = "role";
             public const string Scope = "scope";
             public const string StreetAddress = "street_address";
@@ -97,6 +96,7 @@ namespace OpenIddict.Abstractions
                 public const string Nonce = "oi_nce";
                 public const string RedirectUri = "oi_reduri";
                 public const string RefreshTokenLifetime = "oi_reft_lft";
+                public const string Resource = "oi_rsrc";
                 public const string TokenUsage = "oi_tkn_use";
             }
         }
