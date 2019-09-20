@@ -43,6 +43,7 @@ namespace OpenIddict.Server
             ValidateSigninResponse.Descriptor,
             AttachDefaultScopes.Descriptor,
             AttachDefaultPresenters.Descriptor,
+            InferResources.Descriptor,
             EvaluateReturnedTokens.Descriptor,
             AttachAccessToken.Descriptor,
             AttachAuthorizationCode.Descriptor,
@@ -301,6 +302,47 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Contains the logic responsible of inferring resources from the audience claims if necessary.
+        /// </summary>
+        public class InferResources : IOpenIddictServerHandler<ProcessSigninContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
+                    .UseSingletonHandler<InferResources>()
+                    .SetOrder(AttachDefaultPresenters.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // When a "resources" property cannot be found in the ticket, infer it from the "audiences" property.
+                if (context.Principal.HasAudience() && !context.Principal.HasResource())
+                {
+                    context.Principal.SetResources(context.Principal.GetAudiences());
+                }
+
+                // Reset the audiences collection, as it's later set, based on the token type.
+                context.Principal.SetAudiences(Array.Empty<string>());
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of selecting the token types returned to the client application.
         /// </summary>
         public class EvaluateReturnedTokens : IOpenIddictServerHandler<ProcessSigninContext>
@@ -311,7 +353,7 @@ namespace OpenIddict.Server
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .UseSingletonHandler<EvaluateReturnedTokens>()
-                    .SetOrder(AttachDefaultPresenters.Descriptor.Order + 1_000)
+                    .SetOrder(InferResources.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -448,6 +490,12 @@ namespace OpenIddict.Server
                     return true;
                 });
 
+                // Remove the destinations from the claim properties.
+                foreach (var claim in principal.Claims)
+                {
+                    claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
+                }
+
                 principal.SetTokenId(Guid.NewGuid().ToString()).SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetAccessTokenLifetime() ?? context.Options.AccessTokenLifetime;
@@ -456,11 +504,8 @@ namespace OpenIddict.Server
                     principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
                 }
 
-                // Remove the destinations from the claim properties.
-                foreach (var claim in principal.Claims)
-                {
-                    claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
-                }
+                // Set the audiences collection using the private resource claims stored in the principal.
+                principal.SetAudiences(context.Principal.GetResources());
 
                 // When receiving a grant_type=refresh_token request, determine whether the client application
                 // requests a limited set of scopes and immediately replace the scopes collection if necessary.
@@ -702,13 +747,13 @@ namespace OpenIddict.Server
                     return true;
                 });
 
-                principal.SetTokenId(Guid.NewGuid().ToString()).SetCreationDate(DateTimeOffset.UtcNow);
-
                 // Remove the destinations from the claim properties.
                 foreach (var claim in principal.Claims)
                 {
                     claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
                 }
+
+                principal.SetTokenId(Guid.NewGuid().ToString()).SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetIdentityTokenLifetime() ?? context.Options.IdentityTokenLifetime;
                 if (lifetime.HasValue)
