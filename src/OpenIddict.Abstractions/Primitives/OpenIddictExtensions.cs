@@ -1246,11 +1246,41 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Gets the unique identifier associated with the claims principal.
+        /// Gets the internal authorization identifier associated with the claims principal.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
-        public static string GetTokenId([NotNull] this ClaimsPrincipal principal)
+        public static string GetInternalAuthorizationId([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return principal.GetClaim(Claims.Private.AuthorizationId);
+        }
+
+        /// <summary>
+        /// Gets the internal token identifier associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
+        public static string GetInternalTokenId([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return principal.GetClaim(Claims.Private.TokenId);
+        }
+
+        /// <summary>
+        /// Gets the public token identifier associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
+        public static string GetPublicTokenId([NotNull] this ClaimsPrincipal principal)
         {
             if (principal == null)
             {
@@ -1731,12 +1761,44 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Sets the unique identifier associated with the claims principal.
+        /// Sets the internal authorization identifier associated with the claims principal.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <param name="identifier">The unique identifier to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
+        public static ClaimsPrincipal SetInternalAuthorizationId([NotNull] this ClaimsPrincipal principal, string identifier)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return principal.SetClaim(Claims.Private.AuthorizationId, identifier);
+        }
+
+        /// <summary>
+        /// Sets the internal token identifier associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="identifier">The unique identifier to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetInternalTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return principal.SetClaim(Claims.Private.TokenId, identifier);
+        }
+
+        /// <summary>
+        /// Sets the public token identifier associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="identifier">The unique identifier to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetPublicTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
         {
             if (principal == null)
             {

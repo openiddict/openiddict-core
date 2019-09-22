@@ -88,6 +88,7 @@ namespace OpenIddict.Abstractions
             public static class Private
             {
                 public const string AccessTokenLifetime = "oi_act_lft";
+                public const string AuthorizationId = "oi_au_id";
                 public const string AuthorizationCodeLifetime = "oi_auc_lft";
                 public const string ClaimDestinations = "oi_cl_dstn";
                 public const string CodeChallenge = "oi_cd_chlg";
@@ -97,6 +98,7 @@ namespace OpenIddict.Abstractions
                 public const string RedirectUri = "oi_reduri";
                 public const string RefreshTokenLifetime = "oi_reft_lft";
                 public const string Resource = "oi_rsrc";
+                public const string TokenId = "oi_tkn_id";
                 public const string TokenUsage = "oi_tkn_use";
             }
         }

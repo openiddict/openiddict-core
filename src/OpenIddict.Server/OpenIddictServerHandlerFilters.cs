@@ -48,6 +48,22 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if authorization storage was not enabled.
+        /// </summary>
+        public class RequireAuthorizationStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(!context.Options.DisableAuthorizationStorage);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers when no client identifier is received.
         /// </summary>
         public class RequireClientIdParameter : IOpenIddictServerHandlerFilter<BaseContext>

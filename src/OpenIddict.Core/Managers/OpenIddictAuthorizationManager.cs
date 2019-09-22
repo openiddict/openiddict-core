@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -165,7 +166,7 @@ namespace OpenIddict.Core
         /// <summary>
         /// Creates a new permanent authorization based on the specified parameters.
         /// </summary>
-        /// <param name="claims">The claims associated with the authorization.</param>
+        /// <param name="principal">The principal associated with the authorization.</param>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="type">The authorization type.</param>
@@ -175,12 +176,12 @@ namespace OpenIddict.Core
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
         public virtual ValueTask<TAuthorization> CreateAsync(
-            [NotNull] ImmutableDictionary<string, object> claims, [NotNull] string subject,
-            [NotNull] string client, [NotNull] string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
+            [NotNull] ClaimsPrincipal principal, [NotNull] string subject, [NotNull] string client,
+            [NotNull] string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
         {
-            if (claims == null)
+            if (principal == null)
             {
-                throw new ArgumentNullException(nameof(claims));
+                throw new ArgumentNullException(nameof(principal));
             }
 
             if (string.IsNullOrEmpty(subject))
@@ -201,17 +202,13 @@ namespace OpenIddict.Core
             var descriptor = new OpenIddictAuthorizationDescriptor
             {
                 ApplicationId = client,
+                Principal = principal,
                 Status = OpenIddictConstants.Statuses.Valid,
                 Subject = subject,
                 Type = type
             };
 
             descriptor.Scopes.UnionWith(scopes);
-
-            foreach (var claim in claims)
-            {
-                descriptor.Claims.Add(claim);
-            }
 
             return CreateAsync(descriptor, cancellationToken);
         }
@@ -1035,8 +1032,6 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            var builder = ImmutableArray.CreateBuilder<ValidationResult>();
-
             var type = await Store.GetTypeAsync(authorization, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
@@ -1084,8 +1079,8 @@ namespace OpenIddict.Core
         ValueTask<long> IOpenIddictAuthorizationManager.CountAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => CountAsync(query, cancellationToken);
 
-        async ValueTask<object> IOpenIddictAuthorizationManager.CreateAsync(ImmutableDictionary<string, object> claims, string subject, string client, string type, ImmutableArray<string> scopes, CancellationToken cancellationToken)
-            => await CreateAsync(claims, subject, client, type, scopes, cancellationToken);
+        async ValueTask<object> IOpenIddictAuthorizationManager.CreateAsync(ClaimsPrincipal principal, string subject, string client, string type, ImmutableArray<string> scopes, CancellationToken cancellationToken)
+            => await CreateAsync(principal, subject, client, type, scopes, cancellationToken);
 
         async ValueTask<object> IOpenIddictAuthorizationManager.CreateAsync(OpenIddictAuthorizationDescriptor descriptor, CancellationToken cancellationToken)
             => await CreateAsync(descriptor, cancellationToken);

@@ -18,6 +18,8 @@ namespace OpenIddict.Server.DataProtection
             public const string DataProtector = ".data_protector";
             public const string Expires = ".expires";
             public const string IdentityTokenLifetime = ".identity_token_lifetime";
+            public const string InternalAuthorizationId = ".internal_authorization_id";
+            public const string InternalTokenId = ".internal_token_id";
             public const string Issued = ".issued";
             public const string Nonce = ".nonce";
             public const string OriginalRedirectUri = ".original_redirect_uri";

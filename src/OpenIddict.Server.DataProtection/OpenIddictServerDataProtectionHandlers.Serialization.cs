@@ -116,20 +116,31 @@ namespace OpenIddict.Server.DataProtection
 
                     SetProperty(properties, Properties.AccessTokenLifetime,
                         context.Principal.GetClaim(Claims.Private.AccessTokenLifetime));
+
                     SetProperty(properties, Properties.AuthorizationCodeLifetime,
                         context.Principal.GetClaim(Claims.Private.AuthorizationCodeLifetime));
+
                     SetProperty(properties, Properties.CodeChallenge,
                         context.Principal.GetClaim(Claims.Private.CodeChallenge));
+
                     SetProperty(properties, Properties.CodeChallengeMethod,
                         context.Principal.GetClaim(Claims.Private.CodeChallengeMethod));
+
                     SetProperty(properties, Properties.Expires,
                         context.Principal.GetExpirationDate()?.ToString("r", CultureInfo.InvariantCulture));
+
                     SetProperty(properties, Properties.IdentityTokenLifetime,
                         context.Principal.GetClaim(Claims.Private.IdentityTokenLifetime));
+
+                    SetProperty(properties, Properties.InternalAuthorizationId, context.Principal.GetInternalAuthorizationId());
+                    SetProperty(properties, Properties.InternalTokenId, context.Principal.GetInternalTokenId());
+
                     SetProperty(properties, Properties.Issued,
                         context.Principal.GetCreationDate()?.ToString("r", CultureInfo.InvariantCulture));
+
                     SetProperty(properties, Properties.OriginalRedirectUri,
                         context.Principal.GetClaim(Claims.Private.RedirectUri));
+
                     SetProperty(properties, Properties.RefreshTokenLifetime,
                         context.Principal.GetClaim(Claims.Private.RefreshTokenLifetime));
 
@@ -342,11 +353,13 @@ namespace OpenIddict.Server.DataProtection
 
                             .SetClaim(Claims.Private.AccessTokenLifetime, GetProperty(properties, Properties.AccessTokenLifetime))
                             .SetClaim(Claims.Private.AuthorizationCodeLifetime, GetProperty(properties, Properties.AuthorizationCodeLifetime))
+                            .SetClaim(Claims.Private.AuthorizationId, GetProperty(properties, Properties.InternalAuthorizationId))
                             .SetClaim(Claims.Private.CodeChallenge, GetProperty(properties, Properties.CodeChallenge))
                             .SetClaim(Claims.Private.CodeChallengeMethod, GetProperty(properties, Properties.CodeChallengeMethod))
                             .SetClaim(Claims.Private.IdentityTokenLifetime, GetProperty(properties, Properties.IdentityTokenLifetime))
                             .SetClaim(Claims.Private.RedirectUri, GetProperty(properties, Properties.OriginalRedirectUri))
                             .SetClaim(Claims.Private.RefreshTokenLifetime, GetProperty(properties, Properties.RefreshTokenLifetime))
+                            .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
 
                             // Note: since the data format relies on a data protector using different "purposes" strings
                             // per token type, the token processed at this stage is guaranteed to be of the expected type.
