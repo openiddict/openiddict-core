@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -45,7 +46,7 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Creates a new permanent authorization based on the specified parameters.
         /// </summary>
-        /// <param name="claims">The claims associated with the authorization.</param>
+        /// <param name="principal">The principal associated with the authorization.</param>
         /// <param name="subject">The subject associated with the authorization.</param>
         /// <param name="client">The client associated with the authorization.</param>
         /// <param name="type">The authorization type.</param>
@@ -55,7 +56,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation, whose result returns the authorization.
         /// </returns>
         ValueTask<object> CreateAsync(
-            [NotNull] ImmutableDictionary<string, object> claims, [NotNull] string subject, [NotNull] string client,
+            [NotNull] ClaimsPrincipal principal, [NotNull] string subject, [NotNull] string client,
             [NotNull] string type, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
 
         /// <summary>

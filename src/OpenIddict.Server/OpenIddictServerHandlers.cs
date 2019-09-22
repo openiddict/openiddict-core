@@ -45,6 +45,7 @@ namespace OpenIddict.Server
             AttachDefaultPresenters.Descriptor,
             InferResources.Descriptor,
             EvaluateReturnedTokens.Descriptor,
+            AttachAuthorization.Descriptor,
             AttachAccessToken.Descriptor,
             AttachAuthorizationCode.Descriptor,
             AttachRefreshToken.Descriptor,
@@ -429,6 +430,117 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Contains the logic responsible of creating an ad-hoc authorization, if necessary.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public class AttachAuthorization : IOpenIddictServerHandler<ProcessSigninContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictAuthorizationManager _authorizationManager;
+
+            public AttachAuthorization() => throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                .ToString());
+
+            public AttachAuthorization(
+                [NotNull] IOpenIddictApplicationManager applicationManager,
+                [NotNull] IOpenIddictAuthorizationManager authorizationManager)
+            {
+                _applicationManager = applicationManager;
+                _authorizationManager = authorizationManager;
+            }
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireAuthorizationStorageEnabled>()
+                    .UseScopedHandler<AttachAuthorization>()
+                    .SetOrder(EvaluateReturnedTokens.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // If no authorization code or refresh token is returned, don't create an authorization.
+                if (!context.IncludeAuthorizationCode && !context.IncludeRefreshToken)
+                {
+                    return;
+                }
+
+                // If an authorization identifier was explicitly specified, don't create an ad-hoc authorization.
+                if (!string.IsNullOrEmpty(context.Principal.GetInternalAuthorizationId()))
+                {
+                    return;
+                }
+
+                var descriptor = new OpenIddictAuthorizationDescriptor
+                {
+                    Principal = context.Principal,
+                    Status = Statuses.Valid,
+                    Subject = context.Principal.GetClaim(Claims.Subject),
+                    Type = AuthorizationTypes.AdHoc
+                };
+
+                descriptor.Scopes.UnionWith(context.Principal.GetScopes());
+
+                // If the client application is known, associate it to the authorization.
+                if (!string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                    }
+
+                    descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
+                }
+
+                var authorization = await _authorizationManager.CreateAsync(descriptor);
+                if (authorization == null)
+                {
+                    return;
+                }
+
+                var identifier = await _authorizationManager.GetIdAsync(authorization);
+
+                if (string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    context.Logger.LogInformation("An ad hoc authorization was automatically created and " +
+                                                  "associated with an unknown application: {Identifier}.", identifier);
+                }
+
+                else
+                {
+                    context.Logger.LogInformation("An ad hoc authorization was automatically created and " +
+                                                  "associated with the '{ClientId}' application: {Identifier}.",
+                                                  context.Request.ClientId, identifier);
+                }
+
+                // Attach the unique identifier of the ad hoc authorization to the authentication principal
+                // so that it is attached to all the derived tokens, allowing batched revocations support.
+                context.Principal.SetInternalAuthorizationId(identifier);
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of generating and attaching an access token.
         /// </summary>
         public class AttachAccessToken : IOpenIddictServerHandler<ProcessSigninContext>
@@ -445,7 +557,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
                     .AddFilter<RequireAccessTokenIncluded>()
                     .UseScopedHandler<AttachAccessToken>()
-                    .SetOrder(EvaluateReturnedTokens.Descriptor.Order + 1_000)
+                    .SetOrder(AttachAuthorization.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -496,7 +608,7 @@ namespace OpenIddict.Server
                     claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
                 }
 
-                principal.SetTokenId(Guid.NewGuid().ToString()).SetCreationDate(DateTimeOffset.UtcNow);
+                principal.SetPublicTokenId(Guid.NewGuid().ToString()).SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetAccessTokenLifetime() ?? context.Options.AccessTokenLifetime;
                 if (lifetime.HasValue)
@@ -583,7 +695,7 @@ namespace OpenIddict.Server
                 }
 
                 var principal = context.Principal.Clone(_ => true)
-                    .SetTokenId(Guid.NewGuid().ToString())
+                    .SetPublicTokenId(Guid.NewGuid().ToString())
                     .SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetAuthorizationCodeLifetime() ?? context.Options.AuthorizationCodeLifetime;
@@ -664,7 +776,7 @@ namespace OpenIddict.Server
                 }
 
                 var principal = context.Principal.Clone(_ => true)
-                    .SetTokenId(Guid.NewGuid().ToString())
+                    .SetPublicTokenId(Guid.NewGuid().ToString())
                     .SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetRefreshTokenLifetime() ?? context.Options.RefreshTokenLifetime;
@@ -753,7 +865,7 @@ namespace OpenIddict.Server
                     claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
                 }
 
-                principal.SetTokenId(Guid.NewGuid().ToString()).SetCreationDate(DateTimeOffset.UtcNow);
+                principal.SetPublicTokenId(Guid.NewGuid().ToString()).SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetIdentityTokenLifetime() ?? context.Options.IdentityTokenLifetime;
                 if (lifetime.HasValue)

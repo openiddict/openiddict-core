@@ -45,6 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Register the built-in filters used by the default OpenIddict server event handlers.
             builder.Services.TryAddSingleton<RequireAccessTokenIncluded>();
             builder.Services.TryAddSingleton<RequireAuthorizationCodeIncluded>();
+            builder.Services.TryAddSingleton<RequireAuthorizationStorageEnabled>();
             builder.Services.TryAddSingleton<RequireClientIdParameter>();
             builder.Services.TryAddSingleton<RequireDegradedModeDisabled>();
             builder.Services.TryAddSingleton<RequireEndpointPermissionsEnabled>();

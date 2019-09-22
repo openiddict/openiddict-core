@@ -208,6 +208,8 @@ namespace OpenIddict.Server
                             {
                                 context.Logger.LogTrace("The token '{Token}' could not be validated.", context.Token);
                             }
+
+                            return default;
                         }
 
                         var assertion = ((JsonWebToken) result.SecurityToken)?.InnerToken ?? (JsonWebToken) result.SecurityToken;

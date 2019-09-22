@@ -48,6 +48,7 @@ namespace OpenIddict.Server
                 ValidateEndpointPermissions.Descriptor,
                 ValidateToken.Descriptor,
                 ValidateAuthorizedParty.Descriptor,
+                ValidateAuthorization.Descriptor,
 
                 /*
                  * Introspection request handling:
@@ -919,6 +920,65 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting introspection requests that use
+            /// a token whose associated authorization is no longer valid (e.g was revoked).
+            /// Note: this handler is not used when the degraded mode is enabled.
+            /// </summary>
+            public class ValidateAuthorization : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+            {
+                private readonly IOpenIddictAuthorizationManager _authorizationManager;
+
+                public ValidateAuthorization() => throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                    .ToString());
+
+                public ValidateAuthorization([NotNull] IOpenIddictAuthorizationManager authorizationManager)
+                    => _authorizationManager = authorizationManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .AddFilter<RequireAuthorizationStorageEnabled>()
+                        .UseScopedHandler<ValidateAuthorization>()
+                        .SetOrder(ValidateAuthorizedParty.Descriptor.Order + 1_000)
+                        .Build();
+
+                public async ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    var identifier = context.Principal.GetInternalAuthorizationId();
+                    if (string.IsNullOrEmpty(identifier))
+                    {
+                        return;
+                    }
+
+                    var authorization = await _authorizationManager.FindByIdAsync(identifier);
+                    if (authorization == null || !await _authorizationManager.IsValidAsync(authorization))
+                    {
+                        context.Logger.LogError("The token '{Identifier}' was rejected because the associated " +
+                                                "authorization was no longer valid.", context.Principal.GetPublicTokenId());
+
+                        context.Reject(
+                            error: Errors.InvalidGrant,
+                            description: "The authorization associated with the token is no longer valid.");
+
+                        return;
+                    }
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of attaching the principal
             /// extracted from the introspected token to the event context.
             /// </summary>
@@ -984,7 +1044,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    context.TokenId = context.Principal.GetTokenId();
+                    context.TokenId = context.Principal.GetPublicTokenId();
                     context.TokenUsage = context.Principal.GetTokenUsage();
                     context.Subject = context.Principal.GetClaim(Claims.Subject);
 
