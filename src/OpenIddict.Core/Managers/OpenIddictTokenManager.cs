@@ -18,6 +18,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Core
 {
@@ -192,27 +193,6 @@ namespace OpenIddict.Core
             }
 
             await Store.DeleteAsync(token, cancellationToken);
-        }
-
-        /// <summary>
-        /// Extends the specified token by replacing its expiration date.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="date">The date on which the token will no longer be considered valid.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>
-        /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-        /// </returns>
-        public virtual async ValueTask ExtendAsync([NotNull] TToken token,
-            [CanBeNull] DateTimeOffset? date, CancellationToken cancellationToken = default)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            await Store.SetExpirationDateAsync(token, date, cancellationToken);
-            await UpdateAsync(token, cancellationToken);
         }
 
         /// <summary>
@@ -949,48 +929,6 @@ namespace OpenIddict.Core
             => Store.PruneAsync(cancellationToken);
 
         /// <summary>
-        /// Redeems a token.
-        /// </summary>
-        /// <param name="token">The token to redeem.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask RedeemAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            var status = await Store.GetStatusAsync(token, cancellationToken);
-            if (!string.Equals(status, OpenIddictConstants.Statuses.Redeemed, StringComparison.OrdinalIgnoreCase))
-            {
-                await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Redeemed, cancellationToken);
-                await UpdateAsync(token, cancellationToken);
-            }
-        }
-
-        /// <summary>
-        /// Revokes a token.
-        /// </summary>
-        /// <param name="token">The token to revoke.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask RevokeAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            var status = await Store.GetStatusAsync(token, cancellationToken);
-            if (!string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
-            {
-                await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Revoked, cancellationToken);
-                await UpdateAsync(token, cancellationToken);
-            }
-        }
-
-        /// <summary>
         /// Sets the application identifier associated with a token.
         /// </summary>
         /// <param name="token">The token.</param>
@@ -1030,6 +968,162 @@ namespace OpenIddict.Core
 
             await Store.SetAuthorizationIdAsync(token, identifier, cancellationToken);
             await UpdateAsync(token, cancellationToken);
+        }
+
+        /// <summary>
+        /// Tries to extend the specified token by replacing its expiration date.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="date">The date on which the token will no longer be considered valid.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the token was successfully extended, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> TryExtendAsync([NotNull] TToken token,
+            [CanBeNull] DateTimeOffset? date, CancellationToken cancellationToken = default)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (date == await Store.GetExpirationDateAsync(token, cancellationToken))
+            {
+                return true;
+            }
+
+            await Store.SetExpirationDateAsync(token, date, cancellationToken);
+
+            try
+            {
+                await UpdateAsync(token, cancellationToken);
+
+                if (date != null)
+                {
+                    Logger.LogInformation("The expiration date of the refresh token '{Identifier}' was successfully updated: {Date}.",
+                                          await Store.GetIdAsync(token, cancellationToken), date);
+                }
+
+                else
+                {
+                    Logger.LogInformation("The expiration date of the refresh token '{Identifier}' was successfully removed.",
+                                          await Store.GetIdAsync(token, cancellationToken));
+                }
+
+                return true;
+            }
+
+            catch (ConcurrencyException exception)
+            {
+                Logger.LogDebug(exception, "A concurrency exception occurred while trying to update the " +
+                                           "expiration date of the token '{Identifier}'.",
+                                           await Store.GetIdAsync(token, cancellationToken));
+
+                return false;
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogWarning(exception, "An exception occurred while trying to update the " +
+                                             "expiration date of the token '{Identifier}'.",
+                                             await Store.GetIdAsync(token, cancellationToken));
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tries to redeem a token.
+        /// </summary>
+        /// <param name="token">The token to redeem.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> TryRedeemAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            var status = await Store.GetStatusAsync(token, cancellationToken);
+            if (string.Equals(status, OpenIddictConstants.Statuses.Redeemed, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Redeemed, cancellationToken);
+
+            try
+            {
+                await UpdateAsync(token, cancellationToken);
+
+                Logger.LogInformation("The token '{Identifier}' was successfully marked as redeemed.",
+                                      await Store.GetIdAsync(token, cancellationToken));
+
+                return true;
+            }
+
+            catch (ConcurrencyException exception)
+            {
+                Logger.LogDebug(exception, "A concurrency exception occurred while trying to redeem the token '{Identifier}'.",
+                                           await Store.GetIdAsync(token, cancellationToken));
+
+                return false;
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogWarning(exception, "An exception occurred while trying to redeem the token '{Identifier}'.",
+                                             await Store.GetIdAsync(token, cancellationToken));
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tries to revoke a token.
+        /// </summary>
+        /// <param name="token">The token to revoke.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the token was successfully revoked, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> TryRevokeAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            var status = await Store.GetStatusAsync(token, cancellationToken);
+            if (string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Revoked, cancellationToken);
+
+            try
+            {
+                await UpdateAsync(token, cancellationToken);
+
+                Logger.LogInformation("The token '{Identifier}' was successfully revoked.",
+                                      await Store.GetIdAsync(token, cancellationToken));
+
+                return true;
+            }
+
+            catch (ConcurrencyException exception)
+            {
+                Logger.LogDebug(exception, "A concurrency exception occurred while trying to revoke the token '{Identifier}'.",
+                                           await Store.GetIdAsync(token, cancellationToken));
+
+                return false;
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogWarning(exception, "An exception occurred while trying to revoke the token '{Identifier}'.",
+                                             await Store.GetIdAsync(token, cancellationToken));
+
+                return false;
+            }
         }
 
         /// <summary>
@@ -1201,9 +1295,6 @@ namespace OpenIddict.Core
         ValueTask IOpenIddictTokenManager.DeleteAsync(object token, CancellationToken cancellationToken)
             => DeleteAsync((TToken) token, cancellationToken);
 
-        ValueTask IOpenIddictTokenManager.ExtendAsync(object token, DateTimeOffset? date, CancellationToken cancellationToken)
-            => ExtendAsync((TToken) token, date, cancellationToken);
-
         IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync(string subject, string client, CancellationToken cancellationToken)
             => FindAsync(subject, client, cancellationToken).OfType<object>();
 
@@ -1291,17 +1382,20 @@ namespace OpenIddict.Core
         ValueTask IOpenIddictTokenManager.PruneAsync(CancellationToken cancellationToken)
             => PruneAsync(cancellationToken);
 
-        ValueTask IOpenIddictTokenManager.RedeemAsync(object token, CancellationToken cancellationToken)
-            => RedeemAsync((TToken) token, cancellationToken);
-
-        ValueTask IOpenIddictTokenManager.RevokeAsync(object token, CancellationToken cancellationToken)
-            => RevokeAsync((TToken) token, cancellationToken);
-
         ValueTask IOpenIddictTokenManager.SetApplicationIdAsync(object token, string identifier, CancellationToken cancellationToken)
             => SetApplicationIdAsync((TToken) token, identifier, cancellationToken);
 
         ValueTask IOpenIddictTokenManager.SetAuthorizationIdAsync(object token, string identifier, CancellationToken cancellationToken)
             => SetAuthorizationIdAsync((TToken) token, identifier, cancellationToken);
+
+        ValueTask<bool> IOpenIddictTokenManager.TryExtendAsync(object token, DateTimeOffset? date, CancellationToken cancellationToken)
+            => TryExtendAsync((TToken) token, date, cancellationToken);
+
+        ValueTask<bool> IOpenIddictTokenManager.TryRedeemAsync(object token, CancellationToken cancellationToken)
+            => TryRedeemAsync((TToken) token, cancellationToken);
+
+        ValueTask<bool> IOpenIddictTokenManager.TryRevokeAsync(object token, CancellationToken cancellationToken)
+            => TryRevokeAsync((TToken) token, cancellationToken);
 
         ValueTask IOpenIddictTokenManager.UpdateAsync(object token, CancellationToken cancellationToken)
             => UpdateAsync((TToken) token, cancellationToken);

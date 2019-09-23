@@ -39,7 +39,7 @@ namespace OpenIddict.Server
                  * Userinfo request validation:
                  */
                 ValidateAccessTokenParameter.Descriptor,
-                ValidateAccessToken.Descriptor,
+                ValidateToken.Descriptor,
 
                 /*
                  * Userinfo request handling:
@@ -392,13 +392,13 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting userinfo requests that specify an invalid access token.
+            /// Contains the logic responsible of rejecting userinfo requests that don't specify a valid token.
             /// </summary>
-            public class ValidateAccessToken : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
+            public class ValidateToken : IOpenIddictServerHandler<ValidateUserinfoRequestContext>
             {
                 private readonly IOpenIddictServerProvider _provider;
 
-                public ValidateAccessToken([NotNull] IOpenIddictServerProvider provider)
+                public ValidateToken([NotNull] IOpenIddictServerProvider provider)
                     => _provider = provider;
 
                 /// <summary>
@@ -406,8 +406,8 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateUserinfoRequestContext>()
-                        .UseScopedHandler<ValidateAccessToken>()
-                        .SetOrder(100_000)
+                        .UseScopedHandler<ValidateToken>()
+                        .SetOrder(ValidateAccessTokenParameter.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -424,38 +424,34 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    var notification = new DeserializeAccessTokenContext(context.Transaction)
-                    {
-                        Token = context.Request.AccessToken
-                    };
-
+                    var notification = new ProcessAuthenticationContext(context.Transaction);
                     await _provider.DispatchAsync(notification);
 
-                    if (notification.Principal == null)
+                    if (notification.IsRequestHandled)
                     {
-                        context.Logger.LogError("The userinfo request was rejected because the access token was invalid.");
-
-                        context.Reject(
-                            error: Errors.InvalidToken,
-                            description: "The specified access token is invalid.");
-
+                        context.HandleRequest();
                         return;
                     }
 
-                    var date = notification.Principal.GetExpirationDate();
-                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
+                    else if (notification.IsRequestSkipped)
                     {
-                        context.Logger.LogError("The userinfo request was rejected because the access token was expired.");
-
-                        context.Reject(
-                            error: Errors.InvalidToken,
-                            description: "The specified access token is no longer valid.");
-
+                        context.SkipRequest();
                         return;
                     }
 
-                    // Attach the principal extracted from the authorization code to the parent event context.
+                    else if (notification.IsRejected)
+                    {
+                        context.Reject(
+                            error: notification.Error ?? Errors.InvalidRequest,
+                            description: notification.ErrorDescription,
+                            uri: notification.ErrorUri);
+                        return;
+                    }
+
+                    // Attach the security principal extracted from the token to the
+                    // validation context and store it as an environment property.
                     context.Principal = notification.Principal;
+                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
                 }
             }
 

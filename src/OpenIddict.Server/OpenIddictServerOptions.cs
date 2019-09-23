@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 
@@ -84,24 +83,12 @@ namespace OpenIddict.Server
         public IList<Uri> UserinfoEndpointUris { get; } = new List<Uri>();
 
         /// <summary>
-        /// Gets or sets the security token handler used to protect and unprotect authorization codes.
+        /// Gets or sets the security token handler used to protect and unprotect tokens.
         /// </summary>
-        public JsonWebTokenHandler AuthorizationCodeHandler { get; set; } = new JsonWebTokenHandler();
-
-        /// <summary>
-        /// Gets or sets the security token handler used to protect and unprotect access tokens.
-        /// </summary>
-        public JsonWebTokenHandler AccessTokenHandler { get; set; } = new JsonWebTokenHandler();
-
-        /// <summary>
-        /// Gets or sets the security token handler used to protect and unprotect identity tokens.
-        /// </summary>
-        public JsonWebTokenHandler IdentityTokenHandler { get; set; } = new JsonWebTokenHandler();
-
-        /// <summary>
-        /// Gets or sets the security token handler used to protect and unprotect refresh tokens.
-        /// </summary>
-        public JsonWebTokenHandler RefreshTokenHandler { get; set; } = new JsonWebTokenHandler();
+        public OpenIddictServerTokenHandler SecurityTokenHandler { get; set; } = new OpenIddictServerTokenHandler
+        {
+            SetDefaultTimesOnTokenCreation = false
+        };
 
         /// <summary>
         /// Gets or sets the period of time the authorization codes remain valid after being issued.

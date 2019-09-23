@@ -95,9 +95,11 @@ namespace OpenIddict.Abstractions
                 public const string CodeChallengeMethod = "oi_cd_chlg_meth";
                 public const string IdentityTokenLifetime = "oi_idt_lft";
                 public const string Nonce = "oi_nce";
+                public const string Presenters = "oi_prst";
                 public const string RedirectUri = "oi_reduri";
                 public const string RefreshTokenLifetime = "oi_reft_lft";
-                public const string Resource = "oi_rsrc";
+                public const string Resources = "oi_rsrc";
+                public const string Scopes = "oi_scp";
                 public const string TokenId = "oi_tkn_id";
                 public const string TokenUsage = "oi_tkn_use";
             }

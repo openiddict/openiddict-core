@@ -46,7 +46,9 @@ namespace OpenIddict.Server
             if (options.AuthorizationEndpointUris.Count == 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
                                                                  options.GrantTypes.Contains(GrantTypes.Implicit)))
             {
-                throw new InvalidOperationException("The authorization endpoint must be enabled to use the authorization code and implicit flows.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .Append("The authorization endpoint must be enabled to use the authorization code and implicit flows.")
+                    .ToString());
             }
 
             // Ensure the token endpoint has been enabled when the authorization code,
@@ -56,11 +58,13 @@ namespace OpenIddict.Server
                                                          options.GrantTypes.Contains(GrantTypes.Password) ||
                                                          options.GrantTypes.Contains(GrantTypes.RefreshToken)))
             {
-                throw new InvalidOperationException(
-                    "The token endpoint must be enabled to use the authorization code, client credentials, password and refresh token flows.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .Append("The token endpoint must be enabled to use the authorization code, ")
+                    .Append("client credentials, password and refresh token flows.")
+                    .ToString());
             }
 
-            if (options.DisableTokenStorage && options.RevocationEndpointUris.Count != 0)
+            if (options.RevocationEndpointUris.Count != 0 && options.DisableTokenStorage)
             {
                 throw new InvalidOperationException("The revocation endpoint cannot be enabled when token storage is disabled.");
             }
@@ -70,15 +74,11 @@ namespace OpenIddict.Server
                 throw new InvalidOperationException("Reference tokens cannot be used when disabling token storage.");
             }
 
-            if (options.UseReferenceTokens && options.AccessTokenHandler != null)
-            {
-                throw new InvalidOperationException("Reference tokens cannot be used when configuring JWT as the access token format.");
-            }
-
             if (options.UseSlidingExpiration && options.DisableTokenStorage && !options.UseRollingTokens)
             {
-                throw new InvalidOperationException(
-                    "Sliding expiration must be disabled when turning off token storage if rolling tokens are not used.");
+                throw new InvalidOperationException(new StringBuilder()
+                    .Append("Sliding expiration must be disabled when turning off token storage if rolling tokens are not used.")
+                    .ToString());
             }
 
             if (options.EncryptionCredentials.Count == 0)

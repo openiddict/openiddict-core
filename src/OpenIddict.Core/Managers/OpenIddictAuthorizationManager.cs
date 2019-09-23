@@ -18,6 +18,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Core
 {
@@ -912,27 +913,6 @@ namespace OpenIddict.Core
             => Store.PruneAsync(cancellationToken);
 
         /// <summary>
-        /// Revokes an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization to revoke.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual async ValueTask RevokeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
-        {
-            if (authorization == null)
-            {
-                throw new ArgumentNullException(nameof(authorization));
-            }
-
-            var status = await Store.GetStatusAsync(authorization, cancellationToken);
-            if (!string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
-            {
-                await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Revoked, cancellationToken);
-                await UpdateAsync(authorization, cancellationToken);
-            }
-        }
-
-        /// <summary>
         /// Sets the application identifier associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -951,6 +931,54 @@ namespace OpenIddict.Core
 
             await Store.SetApplicationIdAsync(authorization, identifier, cancellationToken);
             await UpdateAsync(authorization, cancellationToken);
+        }
+
+        /// <summary>
+        /// Tries to revoke an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization to revoke.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the authorization was successfully revoked, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> TryRevokeAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            var status = await Store.GetStatusAsync(authorization, cancellationToken);
+            if (string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Revoked, cancellationToken);
+
+            try
+            {
+                await UpdateAsync(authorization, cancellationToken);
+
+                Logger.LogInformation("The authorization '{Identifier}' was successfully revoked.",
+                                      await Store.GetIdAsync(authorization, cancellationToken));
+
+                return true;
+            }
+
+            catch (ConcurrencyException exception)
+            {
+                Logger.LogDebug(exception, "A concurrency exception occurred while trying to revoke the authorization '{Identifier}'.",
+                                           await Store.GetIdAsync(authorization, cancellationToken));
+
+                return false;
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogWarning(exception, "An exception occurred while trying to revoke the authorization '{Identifier}'.",
+                                             await Store.GetIdAsync(authorization, cancellationToken));
+
+                return false;
+            }
         }
 
         /// <summary>
@@ -1169,11 +1197,11 @@ namespace OpenIddict.Core
         ValueTask IOpenIddictAuthorizationManager.PruneAsync(CancellationToken cancellationToken)
             => PruneAsync(cancellationToken);
 
-        ValueTask IOpenIddictAuthorizationManager.RevokeAsync(object authorization, CancellationToken cancellationToken)
-            => RevokeAsync((TAuthorization) authorization, cancellationToken);
-
         ValueTask IOpenIddictAuthorizationManager.SetApplicationIdAsync(object authorization, string identifier, CancellationToken cancellationToken)
             => SetApplicationIdAsync((TAuthorization) authorization, identifier, cancellationToken);
+
+        ValueTask<bool> IOpenIddictAuthorizationManager.TryRevokeAsync(object authorization, CancellationToken cancellationToken)
+            => TryRevokeAsync((TAuthorization) authorization, cancellationToken);
 
         ValueTask IOpenIddictAuthorizationManager.UpdateAsync(object authorization, CancellationToken cancellationToken)
             => UpdateAsync((TAuthorization) authorization, cancellationToken);

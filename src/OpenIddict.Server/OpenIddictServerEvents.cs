@@ -371,6 +371,30 @@ namespace OpenIddict.Server
             /// recommended, except when dealing with non-standard clients.
             /// </summary>
             public bool IncludeRefreshToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal containing the claims that
+            /// will be used to create the access token, if applicable.
+            /// </summary>
+            public ClaimsPrincipal AccessTokenPrincipal { get; set; }
+            
+            /// <summary>
+            /// Gets or sets the principal containing the claims that
+            /// will be used to create the authorization code, if applicable.
+            /// </summary>
+            public ClaimsPrincipal AuthorizationCodePrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal containing the claims that
+            /// will be used to create the identity token, if applicable.
+            /// </summary>
+            public ClaimsPrincipal IdentityTokenPrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal containing the claims that
+            /// will be used to create the refresh token, if applicable.
+            /// </summary>
+            public ClaimsPrincipal RefreshTokenPrincipal { get; set; }
         }
 
         /// <summary>

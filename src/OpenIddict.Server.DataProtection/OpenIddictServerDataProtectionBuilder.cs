@@ -66,6 +66,21 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Configures OpenIddict to use a specific formatter instead of relying on the default instance.
+        /// </summary>
+        /// <param name="formatter">The formatter used to read and write tokens.</param>
+        /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
+        public OpenIddictServerDataProtectionBuilder UseFormatter([NotNull] IOpenIddictServerDataProtectionFormatter formatter)
+        {
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+
+            return Configure(options => options.Formatter = formatter);
+        }
+
+        /// <summary>
         /// Configures OpenIddict to use the Data Protection format when
         /// issuing new access tokens, refresh tokens and authorization codes.
         /// </summary>

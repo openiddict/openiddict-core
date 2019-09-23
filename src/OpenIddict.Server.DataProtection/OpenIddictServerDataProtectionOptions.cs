@@ -27,5 +27,12 @@ namespace OpenIddict.Server.DataProtection
         /// and authorization codes. This property is set to <c>false</c> by default.
         /// </summary>
         public bool PreferDataProtectionFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the formatter used to read and write Data Protection tokens,
+        /// serialized using the same format as the ASP.NET Core authentication tickets.
+        /// </summary>
+        public IOpenIddictServerDataProtectionFormatter Formatter { get; set; }
+            = new OpenIddictServerDataProtectionFormatter();
     }
 }

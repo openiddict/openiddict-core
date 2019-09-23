@@ -104,40 +104,22 @@ namespace OpenIddict.Server.Owin
             return false;
         }
 
-        protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
+        protected override Task<AuthenticationTicket> AuthenticateCoreAsync()
         {
             var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
-            if (transaction?.Request == null)
+            if (transaction == null)
             {
                 throw new InvalidOperationException("An identity cannot be extracted from this request.");
             }
 
-            var context = new ProcessAuthenticationContext(transaction);
-            await _provider.DispatchAsync(context);
-
-            if (context.Principal == null || context.IsRequestHandled || context.IsRequestSkipped)
+            if (transaction.Properties.TryGetValue(OpenIddictServerConstants.Properties.AmbientPrincipal, out var principal))
             {
-                return null;
+                return Task.FromResult(new AuthenticationTicket(
+                    (ClaimsIdentity) ((ClaimsPrincipal) principal).Identity,
+                    new AuthenticationProperties()));
             }
 
-            else if (context.IsRejected)
-            {
-                _logger.LogError("An error occurred while authenticating the current request: {Error} ; {Description}",
-                                 /* Error: */ context.Error ?? Errors.InvalidToken,
-                                 /* Description: */ context.ErrorDescription);
-
-                return new AuthenticationTicket(identity: null, new AuthenticationProperties
-                {
-                    Dictionary =
-                    {
-                        [Parameters.Error] = context.Error,
-                        [Parameters.ErrorDescription] = context.ErrorDescription,
-                        [Parameters.ErrorUri] = context.ErrorUri
-                    }
-                });
-            }
-
-            return new AuthenticationTicket((ClaimsIdentity) context.Principal.Identity, new AuthenticationProperties());
+            return Task.FromResult<AuthenticationTicket>(null);
         }
 
         protected override async Task TeardownCoreAsync()

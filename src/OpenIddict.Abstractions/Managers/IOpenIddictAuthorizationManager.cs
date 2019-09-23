@@ -366,14 +366,6 @@ namespace OpenIddict.Abstractions
         ValueTask PruneAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Revokes an authorization.
-        /// </summary>
-        /// <param name="authorization">The authorization to revoke.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask RevokeAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Sets the application identifier associated with an authorization.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
@@ -383,6 +375,14 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         ValueTask SetApplicationIdAsync([NotNull] object authorization, [CanBeNull] string identifier, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Tries to revoke an authorization.
+        /// </summary>
+        /// <param name="authorization">The authorization to revoke.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the authorization was successfully revoked, <c>false</c> otherwise.</returns>
+        ValueTask<bool> TryRevokeAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates an existing authorization.

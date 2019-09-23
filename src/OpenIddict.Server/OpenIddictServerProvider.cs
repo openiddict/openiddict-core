@@ -72,14 +72,6 @@ namespace OpenIddict.Server
                         _logger.LogDebug("Authentication was handled in user code.");
                         return;
 
-                    case BaseDeserializingContext notification when notification.IsHandled:
-                        _logger.LogDebug("Token deserialization was handled in user code.");
-                        return;
-
-                    case BaseSerializingContext notification when notification.IsHandled:
-                        _logger.LogDebug("Token serialization was handled in user code.");
-                        return;
-
                     default: continue;
                 }
             }

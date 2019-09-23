@@ -48,6 +48,7 @@ namespace OpenIddict.Server
                  * Revocation request handling:
                  */
                 AttachPrincipal.Descriptor,
+                RevokeToken.Descriptor,
 
                 /*
                  * Revocation response handling:
@@ -602,7 +603,7 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting revocation requests that specify an invalid token.
+            /// Contains the logic responsible of rejecting revocation requests that don't specify a valid token.
             /// </summary>
             public class ValidateToken : IOpenIddictServerHandler<ValidateRevocationRequestContext>
             {
@@ -617,11 +618,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
                         .UseScopedHandler<ValidateToken>()
-                        // This handler is deliberately registered with a high order to ensure it runs
-                        // after custom handlers registered with the default order and prevent the token
-                        // endpoint from disclosing whether the revoked token is valid before
-                        // the caller's identity can first be fully verified by the other handlers.
-                        .SetOrder(100_000)
+                        .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -638,117 +635,34 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    // Note: use the "token_type_hint" parameter specified by the client application
-                    // to try to determine the type of the token sent by the client application.
-                    // See https://tools.ietf.org/html/rfc7662#section-2.1 for more information.
-                    var principal = context.Request.TokenTypeHint switch
+                    var notification = new ProcessAuthenticationContext(context.Transaction);
+                    await _provider.DispatchAsync(notification);
+
+                    if (notification.IsRequestHandled)
                     {
-                        TokenTypeHints.AccessToken       => await DeserializeAccessTokenAsync(),
-                        TokenTypeHints.AuthorizationCode => await DeserializeAuthorizationCodeAsync(),
-                        TokenTypeHints.IdToken           => await DeserializeIdentityTokenAsync(),
-                        TokenTypeHints.RefreshToken      => await DeserializeRefreshTokenAsync(),
-
-                        _ => null
-                    };
-
-                    // Note: if the revoked token can't be found using "token_type_hint",
-                    // the search must be extended to all supported token types.
-                    // See https://tools.ietf.org/html/rfc7662#section-2.1 for more information.
-                    // To avoid calling the same deserialization methods twice, an additional check
-                    // is made to exclude the corresponding call when a token_type_hint was specified.
-                    principal ??= context.Request.TokenTypeHint switch
-                    {
-                        TokenTypeHints.AccessToken       => await DeserializeAuthorizationCodeAsync() ??
-                                                            await DeserializeIdentityTokenAsync() ??
-                                                            await DeserializeRefreshTokenAsync(),
-
-                        TokenTypeHints.AuthorizationCode => await DeserializeAccessTokenAsync() ??
-                                                            await DeserializeIdentityTokenAsync() ??
-                                                            await DeserializeRefreshTokenAsync(),
-
-                        TokenTypeHints.IdToken           => await DeserializeAccessTokenAsync() ??
-                                                            await DeserializeAuthorizationCodeAsync() ??
-                                                            await DeserializeRefreshTokenAsync(),
-
-                        TokenTypeHints.RefreshToken      => await DeserializeAccessTokenAsync() ??
-                                                            await DeserializeAuthorizationCodeAsync() ??
-                                                            await DeserializeIdentityTokenAsync(),
-
-                        _                                => await DeserializeAccessTokenAsync() ??
-                                                            await DeserializeAuthorizationCodeAsync() ??
-                                                            await DeserializeIdentityTokenAsync() ??
-                                                            await DeserializeRefreshTokenAsync()
-                    };
-
-                    if (principal == null)
-                    {
-                        context.Logger.LogError("The revocation request was rejected because the token was invalid.");
-
-                        context.Reject(
-                            error: Errors.InvalidToken,
-                            description: "The specified token is invalid.");
-
+                        context.HandleRequest();
                         return;
                     }
 
-                    var date = principal.GetExpirationDate();
-                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
+                    else if (notification.IsRequestSkipped)
                     {
-                        context.Logger.LogError("The revocation request was rejected because the token was expired.");
-
-                        context.Reject(
-                            error: Errors.InvalidToken,
-                            description: "The specified token is no longer valid.");
-
+                        context.SkipRequest();
                         return;
                     }
 
-                    // Attach the principal extracted from the token to the parent event context.
-                    context.Principal = principal;
-
-                    async ValueTask<ClaimsPrincipal> DeserializeAccessTokenAsync()
+                    else if (notification.IsRejected)
                     {
-                        var notification = new DeserializeAccessTokenContext(context.Transaction)
-                        {
-                            Token = context.Request.Token
-                        };
-
-                        await _provider.DispatchAsync(notification);
-                        return notification.Principal;
+                        context.Reject(
+                            error: notification.Error ?? Errors.InvalidRequest,
+                            description: notification.ErrorDescription,
+                            uri: notification.ErrorUri);
+                        return;
                     }
 
-                    async ValueTask<ClaimsPrincipal> DeserializeAuthorizationCodeAsync()
-                    {
-                        var notification = new DeserializeAuthorizationCodeContext(context.Transaction)
-                        {
-                            Token = context.Request.Token
-                        };
-
-                        await _provider.DispatchAsync(notification);
-                        return notification.Principal;
-                    }
-
-                    async ValueTask<ClaimsPrincipal> DeserializeIdentityTokenAsync()
-                    {
-                        var notification = new DeserializeIdentityTokenContext(context.Transaction)
-                        {
-                            Token = context.Request.Token
-                        };
-
-                        await _provider.DispatchAsync(notification);
-                        return notification.Principal;
-                    }
-
-                    async ValueTask<ClaimsPrincipal> DeserializeRefreshTokenAsync()
-                    {
-                        var notification = new DeserializeRefreshTokenContext(context.Transaction)
-                        {
-                            Token = context.Request.Token
-                        };
-
-                        await _provider.DispatchAsync(notification);
-                        return notification.Principal;
-                    }
+                    // Attach the security principal extracted from the token to the
+                    // validation context and store it as an environment property.
+                    context.Principal = notification.Principal;
+                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
                 }
             }
 
@@ -900,6 +814,111 @@ namespace OpenIddict.Server
                     }
 
                     return default;
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of revoking the token sent by the client application.
+            /// Note: this handler is not used when the degraded mode is enabled.
+            /// </summary>
+            public class RevokeToken : IOpenIddictServerHandler<HandleRevocationRequestContext>
+            {
+                private readonly IOpenIddictTokenManager _tokenManager;
+
+                public RevokeToken() => throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                    .ToString());
+
+                public RevokeToken([NotNull] IOpenIddictTokenManager tokenManager)
+                    => _tokenManager = tokenManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleRevocationRequestContext>()
+                        .UseScopedHandler<RevokeToken>()
+                        .SetOrder(AttachPrincipal.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public async ValueTask HandleAsync([NotNull] HandleRevocationRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    // If the received token is not an authorization code or a refresh token,
+                    // return an error to indicate that the token cannot be revoked.
+                    if (context.Principal.IsIdentityToken())
+                    {
+                        context.Logger.LogError("The revocation request was rejected because identity tokens are not revocable.");
+
+                        context.Reject(
+                            error: Errors.UnsupportedTokenType,
+                            description: "The specified token cannot be revoked.");
+
+                        return;
+                    }
+
+                    // If the received token is an access token, return an error if reference tokens are not enabled.
+                    if (context.Principal.IsAccessToken() && !context.Options.UseReferenceTokens)
+                    {
+                        context.Logger.LogError("The revocation request was rejected because the access token was not revocable.");
+
+                        context.Reject(
+                            error: Errors.UnsupportedTokenType,
+                            description: "The specified token cannot be revoked.");
+
+                        return;
+                    }
+
+                    // Extract the token identifier from the authentication principal.
+                    var identifier = context.Principal.GetInternalTokenId();
+                    if (string.IsNullOrEmpty(identifier))
+                    {
+                        context.Logger.LogError("The revocation request was rejected because the token had no internal identifier.");
+
+                        context.Reject(
+                            error: Errors.UnsupportedTokenType,
+                            description: "The specified token cannot be revoked.");
+
+                        return;
+                    }
+
+                    var token = await _tokenManager.FindByIdAsync(identifier);
+                    if (token == null || await _tokenManager.IsRevokedAsync(token))
+                    {
+                        context.Logger.LogInformation("The token '{Identifier}' was not revoked because " +
+                                                      "it was already marked as invalid.", identifier);
+
+                        context.Reject(
+                            error: Errors.InvalidToken,
+                            description: "The specified token is invalid.");
+
+                        return;
+                    }
+
+                    // Try to revoke the token. If an error occurs, return an error.
+                    if (!await _tokenManager.TryRevokeAsync(token))
+                    {
+                        context.Reject(
+                            error: Errors.UnsupportedTokenType,
+                            description: "The specified token cannot be revoked.");
+
+                        return;
+                    }
                 }
             }
 
