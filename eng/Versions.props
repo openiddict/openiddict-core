@@ -6,21 +6,19 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <AspNetCoreVersion>3.0.0-preview8.19405.7</AspNetCoreVersion>
-    <BclAsyncInterfacesVersion>1.0.0-preview8.19405.3</BclAsyncInterfacesVersion>
+    <AspNetCoreVersion>3.0.0</AspNetCoreVersion>
+    <BclAsyncInterfacesVersion>1.0.0</BclAsyncInterfacesVersion>
     <BouncyCastleVersion>1.8.5</BouncyCastleVersion>
-    <CoreFxVersion>4.4.0</CoreFxVersion>
-    <CryptoHelperVersion>3.0.2</CryptoHelperVersion>
     <DataAnnotationsVersion>4.4.0</DataAnnotationsVersion>
-    <EntityFrameworkVersion>6.3.0-preview8-19405-04</EntityFrameworkVersion>
-    <EntityFrameworkCoreVersion>3.0.0-preview8.19405.11</EntityFrameworkCoreVersion>
-    <ExtensionsVersion>3.0.0-preview8.19405.4</ExtensionsVersion>
+    <EntityFrameworkVersion>6.3.0</EntityFrameworkVersion>
+    <EntityFrameworkCoreVersion>3.0.0</EntityFrameworkCoreVersion>
+    <ExtensionsVersion>3.0.0</ExtensionsVersion>
     <JetBrainsVersion>2019.1.3</JetBrainsVersion>
     <JsonNetVersion>12.0.2</JsonNetVersion>
     <JsonNetBsonVersion>1.0.2</JsonNetBsonVersion>
     <IdentityModelVersion>6.2.0-preview-60906195846</IdentityModelVersion>
     <ImmutableCollectionsVersion>1.5.0</ImmutableCollectionsVersion>
-    <LinqAsyncVersion>4.0.0-preview.6.build.801</LinqAsyncVersion>
+    <LinqAsyncVersion>4.0.0</LinqAsyncVersion>
     <MongoDbVersion>2.9.0</MongoDbVersion>
     <MoqVersion>4.7.63</MoqVersion>
     <NHibernateVersion>5.2.2</NHibernateVersion>
