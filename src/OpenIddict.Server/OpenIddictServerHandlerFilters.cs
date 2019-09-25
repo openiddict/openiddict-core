@@ -160,6 +160,38 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if reference tokens are enabled.
+        /// </summary>
+        public class RequireReferenceTokensDisabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(!context.Options.UseReferenceTokens);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if reference tokens are disabled.
+        /// </summary>
+        public class RequireReferenceTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.Options.UseReferenceTokens);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if no refresh token is returned.
         /// </summary>
         public class RequireRefreshTokenIncluded : IOpenIddictServerHandlerFilter<ProcessSigninContext>
@@ -172,6 +204,38 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(context.IncludeRefreshToken);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if rolling tokens were enabled.
+        /// </summary>
+        public class RequireRollingTokensDisabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(!context.Options.UseRollingTokens);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if rolling tokens were not enabled.
+        /// </summary>
+        public class RequireRollingTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.Options.UseRollingTokens);
             }
         }
 
@@ -204,6 +268,38 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(!context.Options.DisableScopeValidation);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if sliding expiration was disabled.
+        /// </summary>
+        public class RequireSlidingExpirationEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.Options.UseSlidingExpiration);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if token storage was not enabled.
+        /// </summary>
+        public class RequireTokenStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(!context.Options.DisableTokenStorage);
             }
         }
     }

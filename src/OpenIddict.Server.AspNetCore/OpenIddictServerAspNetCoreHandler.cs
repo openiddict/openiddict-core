@@ -106,65 +106,22 @@ namespace OpenIddict.Server.AspNetCore
             return false;
         }
 
-        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction;
-            if (transaction?.Request == null)
+            if (transaction == null)
             {
                 throw new InvalidOperationException("An identity cannot be extracted from this request.");
             }
 
-            var context = new ProcessAuthenticationContext(transaction);
-            await _provider.DispatchAsync(context);
-
-            if (context.Principal == null || context.IsRequestHandled || context.IsRequestSkipped)
+            if (transaction.Properties.TryGetValue(OpenIddictServerConstants.Properties.AmbientPrincipal, out var principal))
             {
-                return AuthenticateResult.NoResult();
+                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(
+                    (ClaimsPrincipal) principal,
+                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)));
             }
 
-            else if (context.IsRejected)
-            {
-                var builder = new StringBuilder();
-
-                if (!string.IsNullOrEmpty(context.Error))
-                {
-                    builder.AppendLine("An error occurred while authenticating the current request:");
-                    builder.AppendFormat("Error code: ", context.Error);
-
-                    if (!string.IsNullOrEmpty(context.ErrorDescription))
-                    {
-                        builder.AppendLine();
-                        builder.AppendFormat("Error description: ", context.ErrorDescription);
-                    }
-
-                    if (!string.IsNullOrEmpty(context.ErrorUri))
-                    {
-                        builder.AppendLine();
-                        builder.AppendFormat("Error URI: ", context.ErrorUri);
-                    }
-                }
-
-                else
-                {
-                    builder.Append("An unknown error occurred while authenticating the current request.");
-                }
-
-                return AuthenticateResult.Fail(new Exception(builder.ToString())
-                {
-                    // Note: the error details are stored as additional exception properties,
-                    // which is similar to what other ASP.NET Core security handlers do.
-                    Data =
-                    {
-                        [Parameters.Error] = context.Error,
-                        [Parameters.ErrorDescription] = context.ErrorDescription,
-                        [Parameters.ErrorUri] = context.ErrorUri
-                    }
-                });
-            }
-
-            return AuthenticateResult.Success(new AuthenticationTicket(
-                context.Principal,
-                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
+            return Task.FromResult(AuthenticateResult.NoResult());
         }
 
         protected override async Task HandleChallengeAsync([CanBeNull] AuthenticationProperties properties)

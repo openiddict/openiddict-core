@@ -11,8 +11,34 @@ namespace OpenIddict.Server
         public static class Properties
         {
             public const string AmbientPrincipal = ".ambient_principal";
+            public const string OriginalPrincipal = ".original_principal";
             public const string ValidatedPostLogoutRedirectUri = ".validated_post_logout_redirect_uri";
             public const string ValidatedRedirectUri = ".validated_redirect_uri";
+        }
+
+        public static class Purposes
+        {
+            public static class Features
+            {
+                public const string ReferenceTokens = "UseReferenceTokens";
+            }
+
+            public static class Formats
+            {
+                public const string AccessToken = "AccessTokenFormat";
+                public const string AuthorizationCode = "AuthorizationCodeFormat";
+                public const string RefreshToken = "RefreshTokenFormat";
+            }
+
+            public static class Handlers
+            {
+                public const string Server = "OpenIdConnectServerHandler";
+            }
+
+            public static class Schemes
+            {
+                public const string Server = "ASOS";
+            }
         }
     }
 }

@@ -444,23 +444,29 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    var notification = new DeserializeIdentityTokenContext(context.Transaction)
-                    {
-                        Token = context.Request.IdTokenHint
-                    };
-
+                    var notification = new ProcessAuthenticationContext(context.Transaction);
                     await _provider.DispatchAsync(notification);
 
-                    if (notification.Principal == null)
+                    if (notification.IsRequestHandled)
                     {
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: "The specified 'id_token_hint' parameter is invalid or malformed.");
-
+                        context.HandleRequest();
                         return;
                     }
 
-                    // Note: the expiration date associated with an identity token used as an id_token_hint is deliberately ignored.
+                    else if (notification.IsRequestSkipped)
+                    {
+                        context.SkipRequest();
+                        return;
+                    }
+
+                    else if (notification.IsRejected)
+                    {
+                        context.Reject(
+                            error: notification.Error ?? Errors.InvalidRequest,
+                            description: notification.ErrorDescription,
+                            uri: notification.ErrorUri);
+                        return;
+                    }
 
                     // Attach the security principal extracted from the identity token to the
                     // validation context and store it as an environment property.

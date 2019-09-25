@@ -78,12 +78,6 @@ namespace OpenIddict.Server
             /// </summary>
             public IDictionary<string, object> Claims { get; }
                 = new Dictionary<string, object>(StringComparer.Ordinal);
-
-            /// <summary>
-            /// Gets or sets a boolean indicating whether
-            /// the token was successfully revoked.
-            /// </summary>
-            public bool Revoked { get; set; }
         }
 
         /// <summary>

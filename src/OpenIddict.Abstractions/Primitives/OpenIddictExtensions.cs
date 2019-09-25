@@ -1095,7 +1095,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.AuthorizedParty));
+            return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Private.Presenters));
         }
 
         /// <summary>
@@ -1110,7 +1110,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Private.Resource));
+            return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Private.Resources));
         }
 
         /// <summary>
@@ -1125,16 +1125,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            // Note: scopes are deliberately formatted as a single space-separated
-            // string to respect the usual representation of the standard scope claim.
-            // See https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02.
-            var value = principal.GetClaim(Claims.Scope);
-            if (string.IsNullOrEmpty(value))
-            {
-                return ImmutableHashSet.Create<string>(StringComparer.Ordinal);
-            }
-
-            return ImmutableHashSet.CreateRange(StringComparer.Ordinal, GetValues(value, Separators.Space));
+            return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Private.Scopes));
         }
 
         /// <summary>
@@ -1276,21 +1267,6 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Gets the public token identifier associated with the claims principal.
-        /// </summary>
-        /// <param name="principal">The claims principal.</param>
-        /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
-        public static string GetPublicTokenId([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.GetClaim(Claims.JwtId);
-        }
-
-        /// <summary>
         /// Gets the token usage associated with the claims principal.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
@@ -1417,7 +1393,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.FindAll(Claims.AuthorizedParty).Any();
+            return principal.FindAll(Claims.Private.Presenters).Any();
         }
 
         /// <summary>
@@ -1453,7 +1429,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.FindAll(Claims.Private.Resource).Any();
+            return principal.FindAll(Claims.Private.Resources).Any();
         }
 
         /// <summary>
@@ -1489,7 +1465,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.FindAll(Claims.Scope).Any();
+            return principal.FindAll(Claims.Private.Scopes).Any();
         }
 
         /// <summary>
@@ -1530,7 +1506,8 @@ namespace OpenIddict.Abstractions
 
             if (date.HasValue)
             {
-                var claim = new Claim(Claims.IssuedAt, date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64);
+                var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+                var claim = new Claim(Claims.IssuedAt, value, ClaimValueTypes.Integer64);
                 ((ClaimsIdentity) principal.Identity).AddClaim(claim);
             }
 
@@ -1554,7 +1531,8 @@ namespace OpenIddict.Abstractions
 
             if (date.HasValue)
             {
-                var claim = new Claim(Claims.ExpiresAt, date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64);
+                var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+                var claim = new Claim(Claims.ExpiresAt, value, ClaimValueTypes.Integer64);
                 ((ClaimsIdentity) principal.Identity).AddClaim(claim);
             }
 
@@ -1609,7 +1587,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.SetClaims(Claims.AuthorizedParty, presenters.Distinct(StringComparer.Ordinal));
+            return principal.SetClaims(Claims.Private.Presenters, presenters.Distinct(StringComparer.Ordinal));
         }
 
         /// <summary>
@@ -1641,7 +1619,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.SetClaims(Claims.Private.Resource, resources.Distinct(StringComparer.Ordinal));
+            return principal.SetClaims(Claims.Private.Resources, resources.Distinct(StringComparer.Ordinal));
         }
 
         /// <summary>
@@ -1672,15 +1650,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            if (scopes == null)
-            {
-                return principal.RemoveClaims(Claims.Scope);
-            }
-
-            // Note: scopes are deliberately formatted as a single space-separated
-            // string to respect the usual representation of the standard scope claim.
-            // See https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02.
-            return principal.SetClaim(Claims.Scope, string.Join(" ", scopes.Distinct(StringComparer.Ordinal)));
+            return principal.SetClaims(Claims.Private.Scopes, scopes.Distinct(StringComparer.Ordinal));
         }
 
         /// <summary>
@@ -1790,22 +1760,6 @@ namespace OpenIddict.Abstractions
             }
 
             return principal.SetClaim(Claims.Private.TokenId, identifier);
-        }
-
-        /// <summary>
-        /// Sets the public token identifier associated with the claims principal.
-        /// </summary>
-        /// <param name="principal">The claims principal.</param>
-        /// <param name="identifier">The unique identifier to store.</param>
-        /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetPublicTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.SetClaim(Claims.JwtId, identifier);
         }
 
         private static IEnumerable<string> GetValues(string source, char[] separators)

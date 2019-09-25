@@ -54,13 +54,11 @@ namespace OpenIddict.Server
                 ValidateEndpointPermissions.Descriptor,
                 ValidateGrantTypePermissions.Descriptor,
                 ValidateScopePermissions.Descriptor,
-                ValidateAuthorizationCode.Descriptor,
-                ValidateRefreshToken.Descriptor,
+                ValidateToken.Descriptor,
                 ValidatePresenters.Descriptor,
                 ValidateRedirectUri.Descriptor,
                 ValidateCodeVerifier.Descriptor,
                 ValidateGrantedScopes.Descriptor,
-                ValidateAuthorization.Descriptor,
 
                 /*
                  * Token request handling:
@@ -1186,13 +1184,14 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting token requests that specify an invalid authorization code.
+            /// Contains the logic responsible of rejecting token requests
+            /// that don't specify a valid authorization code or refresh token.
             /// </summary>
-            public class ValidateAuthorizationCode : IOpenIddictServerHandler<ValidateTokenRequestContext>
+            public class ValidateToken : IOpenIddictServerHandler<ValidateTokenRequestContext>
             {
                 private readonly IOpenIddictServerProvider _provider;
 
-                public ValidateAuthorizationCode([NotNull] IOpenIddictServerProvider provider)
+                public ValidateToken([NotNull] IOpenIddictServerProvider provider)
                     => _provider = provider;
 
                 /// <summary>
@@ -1200,12 +1199,8 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                        .UseScopedHandler<ValidateAuthorizationCode>()
-                        // This handler is deliberately registered with a high order to ensure it runs
-                        // after custom handlers registered with the default order and prevent the token
-                        // endpoint from disclosing whether an authorization code or refresh token is
-                        // valid before the caller's identity can first be fully verified.
-                        .SetOrder(100_000)
+                        .UseScopedHandler<ValidateToken>()
+                        .SetOrder(ValidateScopePermissions.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -1222,116 +1217,40 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (!context.Request.IsAuthorizationCodeGrantType())
+                    if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
                     {
                         return;
                     }
 
-                    var notification = new DeserializeAuthorizationCodeContext(context.Transaction)
-                    {
-                        Token = context.Request.Code
-                    };
-
+                    var notification = new ProcessAuthenticationContext(context.Transaction);
                     await _provider.DispatchAsync(notification);
 
-                    if (notification.Principal == null)
+                    if (notification.IsRequestHandled)
                     {
-                        context.Logger.LogError("The token request was rejected because the authorization code was invalid.");
-
-                        context.Reject(
-                            error: Errors.InvalidGrant,
-                            description: "The specified authorization code is invalid.");
-
+                        context.HandleRequest();
                         return;
                     }
 
-                    var date = notification.Principal.GetExpirationDate();
-                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
+                    else if (notification.IsRequestSkipped)
                     {
-                        context.Logger.LogError("The token request was rejected because the authorization code was expired.");
-
-                        context.Reject(
-                            error: Errors.InvalidGrant,
-                            description: "The specified authorization code is no longer valid.");
-
+                        context.SkipRequest();
                         return;
                     }
 
-                    // Attach the principal extracted from the authorization code to the parent event context.
+                    else if (notification.IsRejected)
+                    {
+                        context.Reject(
+                            error: notification.Error ?? Errors.InvalidRequest,
+                            description: notification.ErrorDescription,
+                            uri: notification.ErrorUri);
+                        return;
+                    }
+
+                    // Attach the security principal extracted from the token to the
+                    // validation context and store it as an environment property.
                     context.Principal = notification.Principal;
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of rejecting token requests that specify an invalid refresh token.
-            /// </summary>
-            public class ValidateRefreshToken : IOpenIddictServerHandler<ValidateTokenRequestContext>
-            {
-                private readonly IOpenIddictServerProvider _provider;
-
-                public ValidateRefreshToken([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
-
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                        .UseScopedHandler<ValidateRefreshToken>()
-                        .SetOrder(ValidateAuthorizationCode.Descriptor.Order + 1_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateTokenRequestContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (!context.Request.IsRefreshTokenGrantType())
-                    {
-                        return;
-                    }
-
-                    var notification = new DeserializeRefreshTokenContext(context.Transaction)
-                    {
-                        Token = context.Request.RefreshToken
-                    };
-
-                    await _provider.DispatchAsync(notification);
-
-                    if (notification.Principal == null)
-                    {
-                        context.Logger.LogError("The token request was rejected because the refresh token was invalid.");
-
-                        context.Reject(
-                            error: Errors.InvalidGrant,
-                            description: "The specified refresh token is invalid.");
-
-                        return;
-                    }
-
-                    var date = notification.Principal.GetExpirationDate();
-                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
-                    {
-                        context.Logger.LogError("The token request was rejected because the refresh token was expired.");
-
-                        context.Reject(
-                            error: Errors.InvalidGrant,
-                            description: "The specified refresh token is no longer valid.");
-
-                        return;
-                    }
-
-                    // Attach the principal extracted from the refresh token to the parent event context.
-                    context.Principal = notification.Principal;
+                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
+                    context.Transaction.Properties[Properties.OriginalPrincipal] = notification.Principal.Clone(_ => true);
                 }
             }
 
@@ -1347,7 +1266,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                         .UseSingletonHandler<ValidatePresenters>()
-                        .SetOrder(ValidateRefreshToken.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateToken.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -1685,67 +1604,6 @@ namespace OpenIddict.Server
                     }
 
                     return default;
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of rejecting token requests that use an authorization code
-            /// or refresh token whose associated authorization is no longer valid (e.g was revoked).
-            /// Note: this handler is not used when the degraded mode is enabled.
-            /// </summary>
-            public class ValidateAuthorization : IOpenIddictServerHandler<ValidateTokenRequestContext>
-            {
-                private readonly IOpenIddictAuthorizationManager _authorizationManager;
-
-                public ValidateAuthorization() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
-
-                public ValidateAuthorization([NotNull] IOpenIddictAuthorizationManager authorizationManager)
-                    => _authorizationManager = authorizationManager;
-
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                        .AddFilter<RequireDegradedModeDisabled>()
-                        .AddFilter<RequireAuthorizationStorageEnabled>()
-                        .UseScopedHandler<ValidateAuthorization>()
-                        .SetOrder(ValidateGrantedScopes.Descriptor.Order + 1_000)
-                        .Build();
-
-                public async ValueTask HandleAsync([NotNull] ValidateTokenRequestContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    var identifier = context.Principal.GetInternalAuthorizationId();
-                    if (string.IsNullOrEmpty(identifier))
-                    {
-                        return;
-                    }
-
-                    var authorization = await _authorizationManager.FindByIdAsync(identifier);
-                    if (authorization == null || !await _authorizationManager.IsValidAsync(authorization))
-                    {
-                        context.Logger.LogError("The token '{Identifier}' was rejected because the associated " +
-                                                "authorization was no longer valid.", context.Principal.GetPublicTokenId());
-
-                        context.Reject(
-                            error: Errors.InvalidGrant,
-                            description: context.Request.IsAuthorizationCodeGrantType() ?
-                                "The authorization associated with the authorization code is no longer valid." :
-                                "The authorization associated with the refresh token is no longer valid.");
-
-                        return;
-                    }
                 }
             }
 

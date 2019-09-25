@@ -48,7 +48,6 @@ namespace OpenIddict.Server
                 ValidateEndpointPermissions.Descriptor,
                 ValidateToken.Descriptor,
                 ValidateAuthorizedParty.Descriptor,
-                ValidateAuthorization.Descriptor,
 
                 /*
                  * Introspection request handling:
@@ -656,7 +655,7 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting introspection requests that specify an invalid token.
+            /// Contains the logic responsible of rejecting introspection requests that don't specify a valid token.
             /// </summary>
             public class ValidateToken : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
             {
@@ -671,11 +670,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
                         .UseScopedHandler<ValidateToken>()
-                        // This handler is deliberately registered with a high order to ensure it runs
-                        // after custom handlers registered with the default order and prevent the token
-                        // endpoint from disclosing whether the introspected token is valid before
-                        // the caller's identity can first be fully verified by the other handlers.
-                        .SetOrder(100_000)
+                        .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -692,117 +687,34 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    // Note: use the "token_type_hint" parameter specified by the client application
-                    // to try to determine the type of the token sent by the client application.
-                    // See https://tools.ietf.org/html/rfc7662#section-2.1 for more information.
-                    var principal = context.Request.TokenTypeHint switch
+                    var notification = new ProcessAuthenticationContext(context.Transaction);
+                    await _provider.DispatchAsync(notification);
+
+                    if (notification.IsRequestHandled)
                     {
-                        TokenTypeHints.AccessToken       => await DeserializeAccessTokenAsync(),
-                        TokenTypeHints.AuthorizationCode => await DeserializeAuthorizationCodeAsync(),
-                        TokenTypeHints.IdToken           => await DeserializeIdentityTokenAsync(),
-                        TokenTypeHints.RefreshToken      => await DeserializeRefreshTokenAsync(),
-
-                        _ => null
-                    };
-
-                    // Note: if the introspected token can't be found using "token_type_hint",
-                    // the search must be extended to all supported token types.
-                    // See https://tools.ietf.org/html/rfc7662#section-2.1 for more information.
-                    // To avoid calling the same deserialization methods twice, an additional check
-                    // is made to exclude the corresponding call when a token_type_hint was specified.
-                    principal ??= context.Request.TokenTypeHint switch
-                    {
-                        TokenTypeHints.AccessToken       => await DeserializeAuthorizationCodeAsync() ??
-                                                            await DeserializeIdentityTokenAsync() ??
-                                                            await DeserializeRefreshTokenAsync(),
-
-                        TokenTypeHints.AuthorizationCode => await DeserializeAccessTokenAsync() ??
-                                                            await DeserializeIdentityTokenAsync() ??
-                                                            await DeserializeRefreshTokenAsync(),
-
-                        TokenTypeHints.IdToken           => await DeserializeAccessTokenAsync() ??
-                                                            await DeserializeAuthorizationCodeAsync() ??
-                                                            await DeserializeRefreshTokenAsync(),
-
-                        TokenTypeHints.RefreshToken      => await DeserializeAccessTokenAsync() ??
-                                                            await DeserializeAuthorizationCodeAsync() ??
-                                                            await DeserializeIdentityTokenAsync(),
-
-                        _                                => await DeserializeAccessTokenAsync() ??
-                                                            await DeserializeAuthorizationCodeAsync() ??
-                                                            await DeserializeIdentityTokenAsync() ??
-                                                            await DeserializeRefreshTokenAsync()
-                    };
-
-                    if (principal == null)
-                    {
-                        context.Logger.LogError("The introspection request was rejected because the token was invalid.");
-
-                        context.Reject(
-                            error: Errors.InvalidToken,
-                            description: "The specified token is invalid.");
-
+                        context.HandleRequest();
                         return;
                     }
 
-                    var date = principal.GetExpirationDate();
-                    if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
+                    else if (notification.IsRequestSkipped)
                     {
-                        context.Logger.LogError("The introspection request was rejected because the token was expired.");
-
-                        context.Reject(
-                            error: Errors.InvalidToken,
-                            description: "The specified token is no longer valid.");
-
+                        context.SkipRequest();
                         return;
                     }
 
-                    // Attach the principal extracted from the token to the parent event context.
-                    context.Principal = principal;
-
-                    async ValueTask<ClaimsPrincipal> DeserializeAccessTokenAsync()
+                    else if (notification.IsRejected)
                     {
-                        var notification = new DeserializeAccessTokenContext(context.Transaction)
-                        {
-                            Token = context.Request.Token
-                        };
-
-                        await _provider.DispatchAsync(notification);
-                        return notification.Principal;
+                        context.Reject(
+                            error: notification.Error ?? Errors.InvalidRequest,
+                            description: notification.ErrorDescription,
+                            uri: notification.ErrorUri);
+                        return;
                     }
 
-                    async ValueTask<ClaimsPrincipal> DeserializeAuthorizationCodeAsync()
-                    {
-                        var notification = new DeserializeAuthorizationCodeContext(context.Transaction)
-                        {
-                            Token = context.Request.Token
-                        };
-
-                        await _provider.DispatchAsync(notification);
-                        return notification.Principal;
-                    }
-
-                    async ValueTask<ClaimsPrincipal> DeserializeIdentityTokenAsync()
-                    {
-                        var notification = new DeserializeIdentityTokenContext(context.Transaction)
-                        {
-                            Token = context.Request.Token
-                        };
-
-                        await _provider.DispatchAsync(notification);
-                        return notification.Principal;
-                    }
-
-                    async ValueTask<ClaimsPrincipal> DeserializeRefreshTokenAsync()
-                    {
-                        var notification = new DeserializeRefreshTokenContext(context.Transaction)
-                        {
-                            Token = context.Request.Token
-                        };
-
-                        await _provider.DispatchAsync(notification);
-                        return notification.Principal;
-                    }
+                    // Attach the security principal extracted from the token to the
+                    // validation context and store it as an environment property.
+                    context.Principal = notification.Principal;
+                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
                 }
             }
 
@@ -822,7 +734,7 @@ namespace OpenIddict.Server
                         // In this case, the returned claims are limited by AttachApplicationClaims to limit exposure.
                         .AddFilter<RequireClientIdParameter>()
                         .UseSingletonHandler<ValidateAuthorizedParty>()
-                        .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateExpirationDate.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -920,65 +832,6 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting introspection requests that use
-            /// a token whose associated authorization is no longer valid (e.g was revoked).
-            /// Note: this handler is not used when the degraded mode is enabled.
-            /// </summary>
-            public class ValidateAuthorization : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
-            {
-                private readonly IOpenIddictAuthorizationManager _authorizationManager;
-
-                public ValidateAuthorization() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
-
-                public ValidateAuthorization([NotNull] IOpenIddictAuthorizationManager authorizationManager)
-                    => _authorizationManager = authorizationManager;
-
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
-                        .AddFilter<RequireDegradedModeDisabled>()
-                        .AddFilter<RequireAuthorizationStorageEnabled>()
-                        .UseScopedHandler<ValidateAuthorization>()
-                        .SetOrder(ValidateAuthorizedParty.Descriptor.Order + 1_000)
-                        .Build();
-
-                public async ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    var identifier = context.Principal.GetInternalAuthorizationId();
-                    if (string.IsNullOrEmpty(identifier))
-                    {
-                        return;
-                    }
-
-                    var authorization = await _authorizationManager.FindByIdAsync(identifier);
-                    if (authorization == null || !await _authorizationManager.IsValidAsync(authorization))
-                    {
-                        context.Logger.LogError("The token '{Identifier}' was rejected because the associated " +
-                                                "authorization was no longer valid.", context.Principal.GetPublicTokenId());
-
-                        context.Reject(
-                            error: Errors.InvalidGrant,
-                            description: "The authorization associated with the token is no longer valid.");
-
-                        return;
-                    }
-                }
-            }
-
-            /// <summary>
             /// Contains the logic responsible of attaching the principal
             /// extracted from the introspected token to the event context.
             /// </summary>
@@ -1044,7 +897,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    context.TokenId = context.Principal.GetPublicTokenId();
+                    context.TokenId = context.Principal.GetClaim(Claims.JwtId);
                     context.TokenUsage = context.Principal.GetTokenUsage();
                     context.Subject = context.Principal.GetClaim(Claims.Subject);
 
