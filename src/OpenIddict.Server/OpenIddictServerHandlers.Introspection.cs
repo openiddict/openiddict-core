@@ -734,7 +734,7 @@ namespace OpenIddict.Server
                         // In this case, the returned claims are limited by AttachApplicationClaims to limit exposure.
                         .AddFilter<RequireClientIdParameter>()
                         .UseSingletonHandler<ValidateAuthorizedParty>()
-                        .SetOrder(ValidateExpirationDate.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateToken.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
