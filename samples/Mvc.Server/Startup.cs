@@ -109,6 +109,18 @@ namespace Mvc.Server
                     // options.IgnoreEndpointPermissions()
                     //        .IgnoreGrantTypePermissions()
                     //        .IgnoreScopePermissions();
+                })
+
+                .AddValidation(options =>
+                {
+                    // Configure the audience accepted by this resource server.
+                    options.AddAudiences("resource_server");
+
+                    // Import the configuration from the local OpenIddict server instance.
+                    options.UseLocalServer();
+
+                    // Register the ASP.NET Core host.
+                    options.UseAspNetCore();
                 });
 
             services.AddTransient<IEmailSender, AuthMessageSender>();

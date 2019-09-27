@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenIddict\OpenIddict.csproj" />
     <ProjectReference Include="..\OpenIddict.Server.Owin\OpenIddict.Server.Owin.csproj" />
+    <ProjectReference Include="..\OpenIddict.Validation.Owin\OpenIddict.Validation.Owin.csproj" />
   </ItemGroup>
 
 </Project>

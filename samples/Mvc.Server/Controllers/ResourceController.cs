@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Models;
+using OpenIddict.Validation.AspNetCore;
 
 namespace Mvc.Server.Controllers
 {
@@ -15,14 +17,14 @@ namespace Mvc.Server.Controllers
             _userManager = userManager;
         }
 
-        //[Authorize(AuthenticationSchemes = OpenIddictValidationDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
         [HttpGet("message")]
         public async Task<IActionResult> GetMessage()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return BadRequest();
+                return Challenge(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
             }
 
             return Content($"{user.UserName} has been successfully authenticated.");

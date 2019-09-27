@@ -32,7 +32,7 @@ namespace OpenIddict.Server
                 ValidateUserinfoRequest.Descriptor,
                 HandleUserinfoRequest.Descriptor,
                 ApplyUserinfoResponse<ProcessChallengeContext>.Descriptor,
-                ApplyUserinfoResponse<ProcessErrorResponseContext>.Descriptor,
+                ApplyUserinfoResponse<ProcessErrorContext>.Descriptor,
                 ApplyUserinfoResponse<ProcessRequestContext>.Descriptor,
 
                 /*

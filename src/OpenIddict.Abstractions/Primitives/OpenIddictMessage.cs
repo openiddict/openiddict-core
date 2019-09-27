@@ -296,6 +296,22 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Tries to get the value corresponding to a given parameter.
+        /// </summary>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="value">The parameter value.</param>
+        /// <returns><c>true</c> if the parameter could be found, <c>false</c> otherwise.</returns>
+        public bool TryGetParameter([NotNull] string name, out OpenIddictParameter value)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("The parameter name cannot be null or empty.", nameof(name));
+            }
+
+            return Parameters.TryGetValue(name, out value);
+        }
+
+        /// <summary>
         /// Returns a <see cref="string"/> representation of the current instance that can be used in logs.
         /// Note: sensitive parameters like client secrets are automatically removed for security reasons.
         /// </summary>

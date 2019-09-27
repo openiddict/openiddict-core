@@ -34,7 +34,7 @@ namespace OpenIddict.Server
                 ExtractConfigurationRequest.Descriptor,
                 ValidateConfigurationRequest.Descriptor,
                 HandleConfigurationRequest.Descriptor,
-                ApplyConfigurationResponse<ProcessErrorResponseContext>.Descriptor,
+                ApplyConfigurationResponse<ProcessErrorContext>.Descriptor,
                 ApplyConfigurationResponse<ProcessRequestContext>.Descriptor,
 
                 /*
@@ -58,7 +58,7 @@ namespace OpenIddict.Server
                 ExtractCryptographyRequest.Descriptor,
                 ValidateCryptographyRequest.Descriptor,
                 HandleCryptographyRequest.Descriptor,
-                ApplyCryptographyResponse<ProcessErrorResponseContext>.Descriptor,
+                ApplyCryptographyResponse<ProcessErrorContext>.Descriptor,
                 ApplyCryptographyResponse<ProcessRequestContext>.Descriptor,
 
                 /*

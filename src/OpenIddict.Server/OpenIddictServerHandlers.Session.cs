@@ -30,7 +30,7 @@ namespace OpenIddict.Server
                 ExtractLogoutRequest.Descriptor,
                 ValidateLogoutRequest.Descriptor,
                 HandleLogoutRequest.Descriptor,
-                ApplyLogoutResponse<ProcessErrorResponseContext>.Descriptor,
+                ApplyLogoutResponse<ProcessErrorContext>.Descriptor,
                 ApplyLogoutResponse<ProcessRequestContext>.Descriptor,
                 ApplyLogoutResponse<ProcessSignoutContext>.Descriptor,
 

@@ -74,7 +74,7 @@ namespace OpenIddict.Server.AspNetCore
 
             else if (context.IsRejected)
             {
-                var notification = new ProcessErrorResponseContext(transaction)
+                var notification = new ProcessErrorContext(transaction)
                 {
                     Response = new OpenIddictResponse
                     {
@@ -151,7 +151,7 @@ namespace OpenIddict.Server.AspNetCore
 
             else if (context.IsRejected)
             {
-                var notification = new ProcessErrorResponseContext(transaction)
+                var notification = new ProcessErrorContext(transaction)
                 {
                     Response = new OpenIddictResponse
                     {
@@ -210,7 +210,7 @@ namespace OpenIddict.Server.AspNetCore
 
             else if (context.IsRejected)
             {
-                var notification = new ProcessErrorResponseContext(transaction)
+                var notification = new ProcessErrorContext(transaction)
                 {
                     Response = new OpenIddictResponse
                     {
@@ -257,7 +257,7 @@ namespace OpenIddict.Server.AspNetCore
 
             else if (context.IsRejected)
             {
-                var notification = new ProcessErrorResponseContext(transaction)
+                var notification = new ProcessErrorContext(transaction)
                 {
                     Response = new OpenIddictResponse
                     {

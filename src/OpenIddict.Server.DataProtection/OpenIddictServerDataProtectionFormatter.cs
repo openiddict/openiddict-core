@@ -22,7 +22,7 @@ namespace OpenIddict.Server.DataProtection
 {
     public class OpenIddictServerDataProtectionFormatter : IOpenIddictServerDataProtectionFormatter
     {
-        public ClaimsPrincipal ReadToken(BinaryReader reader)
+        public ClaimsPrincipal ReadToken([NotNull] BinaryReader reader)
         {
             if (reader == null)
             {

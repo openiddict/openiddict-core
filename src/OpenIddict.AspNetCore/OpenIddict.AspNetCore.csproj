@@ -15,6 +15,8 @@
     <ProjectReference Include="..\OpenIddict\OpenIddict.csproj" />
     <ProjectReference Include="..\OpenIddict.Server.AspNetCore\OpenIddict.Server.AspNetCore.csproj" />
     <ProjectReference Include="..\OpenIddict.Server.DataProtection\OpenIddict.Server.DataProtection.csproj" />
+    <ProjectReference Include="..\OpenIddict.Validation.AspNetCore\OpenIddict.Validation.AspNetCore.csproj" />
+    <ProjectReference Include="..\OpenIddict.Validation.DataProtection\OpenIddict.Validation.DataProtection.csproj" />
   </ItemGroup>
 
 </Project>

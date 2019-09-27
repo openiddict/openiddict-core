@@ -793,8 +793,7 @@ namespace OpenIddict.Server
                 var authorization = await _authorizationManager.FindByIdAsync(identifier);
                 if (authorization == null || !await _authorizationManager.IsValidAsync(authorization))
                 {
-                    context.Logger.LogError("The authorization associated with token '{Identifier}' " +
-                                            "was no longer valid.", context.Principal.GetInternalTokenId());
+                    context.Logger.LogError("The authorization '{Identifier}' was no longer valid.", identifier);
 
                     context.Reject(
                         error: context.EndpointType switch
@@ -1406,8 +1405,9 @@ namespace OpenIddict.Server
                 // Actors identities are also filtered (delegation scenarios).
                 var principal = context.Principal.Clone(claim =>
                 {
-                    // Never exclude the subject claim.
-                    if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase))
+                    // Never exclude the subject and authorization identifier claims.
+                    if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -1655,13 +1655,14 @@ namespace OpenIddict.Server
                 // Actors identities are also filtered (delegation scenarios).
                 var principal = context.Principal.Clone(claim =>
                 {
-                    // Never exclude the subject claim.
-                    if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase))
+                    // Never exclude the subject and authorization identifier claims.
+                    if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
 
-                    // Always exclude private claims, whose values must generally be kept secret.
+                    // Always exclude private claims by default, whose values must generally be kept secret.
                     if (claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
@@ -2056,16 +2057,17 @@ namespace OpenIddict.Server
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
                 }
 
-                descriptor.Payload = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(new SecurityTokenDescriptor
-                {
-                    Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken },
-                    EncryptingCredentials = context.Options.EncryptionCredentials.FirstOrDefault(
-                        credentials => credentials.Key is SymmetricSecurityKey),
-                    Issuer = context.Issuer?.AbsoluteUri,
-                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
-                    Subject = (ClaimsIdentity) context.AccessTokenPrincipal.Identity
-                });
+                descriptor.Payload = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                    new SecurityTokenDescriptor
+                    {
+                        Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken },
+                        EncryptingCredentials = context.Options.EncryptionCredentials.FirstOrDefault(
+                            credentials => credentials.Key is SymmetricSecurityKey),
+                        Issuer = context.Issuer?.AbsoluteUri,
+                        SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
+                            credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                        Subject = (ClaimsIdentity) context.AccessTokenPrincipal.Identity
+                    });
 
                 await _tokenManager.CreateAsync(descriptor);
 
@@ -2166,16 +2168,17 @@ namespace OpenIddict.Server
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
                 }
 
-                descriptor.Payload = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(new SecurityTokenDescriptor
-                {
-                    Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AuthorizationCode },
-                    EncryptingCredentials = context.Options.EncryptionCredentials.FirstOrDefault(
-                        credentials => credentials.Key is SymmetricSecurityKey),
-                    Issuer = context.Issuer?.AbsoluteUri,
-                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
-                    Subject = (ClaimsIdentity) context.AuthorizationCodePrincipal.Identity
-                });
+                descriptor.Payload = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                    new SecurityTokenDescriptor
+                    {
+                        Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AuthorizationCode },
+                        EncryptingCredentials = context.Options.EncryptionCredentials.FirstOrDefault(
+                            credentials => credentials.Key is SymmetricSecurityKey),
+                        Issuer = context.Issuer?.AbsoluteUri,
+                        SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
+                            credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                        Subject = (ClaimsIdentity) context.AuthorizationCodePrincipal.Identity
+                    });
 
                 await _tokenManager.CreateAsync(descriptor);
 
@@ -2276,15 +2279,16 @@ namespace OpenIddict.Server
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
                 }
 
-                descriptor.Payload = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(new SecurityTokenDescriptor
-                {
-                    Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.RefreshToken },
-                    EncryptingCredentials = context.Options.EncryptionCredentials[0],
-                    Issuer = context.Issuer?.AbsoluteUri,
-                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
-                    Subject = (ClaimsIdentity) context.RefreshTokenPrincipal.Identity
-                });
+                descriptor.Payload = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                    new SecurityTokenDescriptor
+                    {
+                        Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.RefreshToken },
+                        EncryptingCredentials = context.Options.EncryptionCredentials[0],
+                        Issuer = context.Issuer?.AbsoluteUri,
+                        SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
+                            credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                        Subject = (ClaimsIdentity) context.RefreshTokenPrincipal.Identity
+                    });
 
                 await _tokenManager.CreateAsync(descriptor);
 

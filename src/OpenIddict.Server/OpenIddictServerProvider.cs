@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -85,8 +84,11 @@ namespace OpenIddict.Server
                 descriptors.AddRange(_options.CurrentValue.CustomHandlers);
                 descriptors.AddRange(_options.CurrentValue.DefaultHandlers);
 
-                foreach (var descriptor in descriptors.OrderBy(descriptor => descriptor.Order))
+                descriptors.Sort((left, right) => left.Order.CompareTo(right.Order));
+
+                for (var index = 0; index < descriptors.Count; index++)
                 {
+                    var descriptor = descriptors[index];
                     if (descriptor.ContextType != typeof(TContext) || !await IsActiveAsync(descriptor))
                     {
                         continue;

@@ -81,6 +81,11 @@ namespace OpenIddict.Server
                 throw new ArgumentNullException(nameof(parameters));
             }
 
+            if (parameters.PropertyBag == null)
+            {
+                throw new InvalidOperationException("The property bag cannot be null.");
+            }
+
             if (!parameters.PropertyBag.TryGetValue(Claims.Private.TokenUsage, out var type) || string.IsNullOrEmpty((string) type))
             {
                 throw new InvalidOperationException("The token usage cannot be null or empty.");
