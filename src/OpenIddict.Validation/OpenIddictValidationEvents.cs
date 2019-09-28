@@ -266,16 +266,24 @@ public static partial class OpenIddictValidationEvents
         public string? AccessToken { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an access
+        /// token should be extracted from the current context.
+        /// Note: overriding the value of this property is generally not
+        /// recommended, except when dealing with non-standard clients.
+        /// </summary>
+        public bool ExtractAccessToken { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an access token
-        /// must be resolved for the authentication to considered valid.
+        /// must be resolved for the authentication to be considered valid.
         /// Note: overriding the value of this property is generally not
         /// recommended, except when dealing with non-standard clients.
         /// </summary>
         public bool RequireAccessToken { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether an access token
-        /// should be extracted from the current context and validated.
+        /// Gets or sets a boolean indicating whether the access
+        /// token extracted from the current context should be validated.
         /// Note: overriding the value of this property is generally not
         /// recommended, except when dealing with non-standard clients.
         /// </summary>

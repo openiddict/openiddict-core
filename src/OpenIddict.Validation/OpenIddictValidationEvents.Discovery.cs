@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Validation;
@@ -126,7 +125,7 @@ public static partial class OpenIddictValidationEvents
         /// <summary>
         /// Gets the OpenID Connect configuration.
         /// </summary>
-        public OpenIdConnectConfiguration Configuration { get; } = new OpenIdConnectConfiguration();
+        public OpenIddictConfiguration Configuration { get; } = new OpenIddictConfiguration();
     }
 
     /// <summary>

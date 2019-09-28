@@ -114,7 +114,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 parameters.ValidAudience = context.Issuer?.AbsoluteUri;
                 parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.LogoutRequest };
 
-                var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
+                var result = await context.Options.JsonWebTokenHandler.ValidateTokenAsync(token, parameters);
                 if (!result.IsValid)
                 {
                     context.Logger.LogInformation(SR.GetResourceString(SR.ID6150), Parameters.RequestId);

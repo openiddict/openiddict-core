@@ -117,7 +117,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                 .AddFilter<RequireHttpMetadataAddress>()
                 .UseSingletonHandler<AttachQueryStringParameters<TContext>>()
-                .SetOrder(AttachFormParameters<TContext>.Descriptor.Order - 100_000)
+                .SetOrder(AttachFormParameters<TContext>.Descriptor.Order - 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 

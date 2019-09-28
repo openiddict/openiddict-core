@@ -1263,6 +1263,14 @@ public static class OpenIddictExtensions
         => GetLifetime(principal, Claims.Private.RefreshTokenLifetime);
 
     /// <summary>
+    /// Gets the state token lifetime associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <returns>The state token lifetime or <c>null</c> if the claim cannot be found.</returns>
+    public static TimeSpan? GetStateTokenLifetime(this ClaimsPrincipal principal)
+        => GetLifetime(principal, Claims.Private.StateTokenLifetime);
+
+    /// <summary>
     /// Gets the user code lifetime associated with the claims principal.
     /// </summary>
     /// <param name="principal">The claims principal.</param>
@@ -1581,6 +1589,15 @@ public static class OpenIddictExtensions
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetRefreshTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
         => principal.SetClaim(Claims.Private.RefreshTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+
+    /// <summary>
+    /// Sets the state token lifetime associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <param name="lifetime">The state token lifetime to store.</param>
+    /// <returns>The claims principal.</returns>
+    public static ClaimsPrincipal SetStateTokenLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
+        => principal.SetClaim(Claims.Private.StateTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
     /// <summary>
     /// Sets the user code lifetime associated with the claims principal.

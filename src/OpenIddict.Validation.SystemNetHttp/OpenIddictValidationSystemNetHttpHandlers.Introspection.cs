@@ -74,6 +74,12 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                 var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
+                // Ensure the issuer resolved from the configuration matches the expected value.
+                if (context.Options.Issuer is not null && configuration.Issuer != context.Options.Issuer)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
+                }
+
                 // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
                 // However, this authentication method is known to have compatibility issues with the way the
                 // client credentials are encoded (they MUST be formURL-encoded before being base64-encoded).

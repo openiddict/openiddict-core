@@ -63,6 +63,7 @@ public static class OpenIddictConstants
         public const string AuthenticationContextReference = "acr";
         public const string AuthenticationMethodReference = "amr";
         public const string AuthenticationTime = "auth_time";
+        public const string AuthorizationServer = "as";
         public const string AuthorizedParty = "azp";
         public const string Birthdate = "birthdate";
         public const string ClientId = "client_id";
@@ -93,10 +94,12 @@ public static class OpenIddictConstants
         public const string PreferredUsername = "preferred_username";
         public const string Profile = "profile";
         public const string Region = "region";
+        public const string RequestForgeryProtection = "rfp";
         public const string Role = "role";
         public const string Scope = "scope";
         public const string StreetAddress = "street_address";
         public const string Subject = "sub";
+        public const string TargetLinkUri = "target_link_uri";
         public const string TokenType = "token_type";
         public const string TokenUsage = "token_usage";
         public const string UpdatedAt = "updated_at";
@@ -118,17 +121,22 @@ public static class OpenIddictConstants
             public const string ClaimDestinationsMap = "oi_cl_dstn";
             public const string CodeChallenge = "oi_cd_chlg";
             public const string CodeChallengeMethod = "oi_cd_chlg_meth";
+            public const string CodeVerifier = "oi_cd_vrf";
             public const string CreationDate = "oi_crt_dt";
             public const string DeviceCodeId = "oi_dvc_id";
             public const string DeviceCodeLifetime = "oi_dvc_lft";
             public const string ExpirationDate = "oi_exp_dt";
+            public const string GrantType = "oi_grt_typ";
             public const string IdentityTokenLifetime = "oi_idt_lft";
             public const string Nonce = "oi_nce";
             public const string Presenter = "oi_prst";
             public const string RedirectUri = "oi_reduri";
             public const string RefreshTokenLifetime = "oi_reft_lft";
             public const string Resource = "oi_rsrc";
+            public const string ResponseType = "oi_rsp_typ";
+            public const string SigningAlgorithm = "oi_sign_alg";
             public const string Scope = "oi_scp";
+            public const string StateTokenLifetime = "oi_stet_lft";
             public const string TokenId = "oi_tkn_id";
             public const string TokenType = "oi_tkn_typ";
             public const string UserCodeLifetime = "oi_usrc_lft";
@@ -223,6 +231,7 @@ public static class OpenIddictConstants
             public const string AuthorizationCode = "oi_auc+jwt";
             public const string DeviceCode = "oi_dvc+jwt";
             public const string RefreshToken = "oi_reft+jwt";
+            public const string StateToken = "oi_stet+jwt";
             public const string UserCode = "oi_usrc+jwt";
         }
     }
@@ -231,6 +240,7 @@ public static class OpenIddictConstants
     {
         public const string AcrValuesSupported = "acr_values_supported";
         public const string AuthorizationEndpoint = "authorization_endpoint";
+        public const string AuthorizationResponseIssParameterSupported = "authorization_response_iss_parameter_supported";
         public const string ClaimsLocalesSupported = "claims_locales_supported";
         public const string ClaimsParameterSupported = "claims_parameter_supported";
         public const string ClaimsSupported = "claims_supported";
@@ -301,6 +311,7 @@ public static class OpenIddictConstants
         public const string IdentityProvider = "identity_provider";
         public const string IdToken = "id_token";
         public const string IdTokenHint = "id_token_hint";
+        public const string Iss = "iss";
         public const string LoginHint = "login_hint";
         public const string Keys = "keys";
         public const string MaxAge = "max_age";
@@ -427,6 +438,7 @@ public static class OpenIddictConstants
     {
         public static readonly char[] Ampersand = { '&' };
         public static readonly char[] Dash = { '-' };
+        public static readonly char[] Dot = { '.' };
         public static readonly char[] Space = { ' ' };
     }
 
@@ -469,6 +481,7 @@ public static class OpenIddictConstants
         public const string DeviceCode = "device_code";
         public const string IdToken = "id_token";
         public const string RefreshToken = "refresh_token";
+        public const string StateToken = "state_token";
         public const string UserCode = "user_code";
     }
 

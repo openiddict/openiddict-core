@@ -198,32 +198,32 @@ public class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddictServe
             // Attach the tokens to allow any ASP.NET Core component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
 
-            if (context.AccessTokenPrincipal is not null && !string.IsNullOrEmpty(context.AccessToken))
+            if (!string.IsNullOrEmpty(context.AccessToken))
             {
                 properties.Dictionary[TokenTypeHints.AccessToken] = context.AccessToken;
             }
 
-            if (context.AuthorizationCodePrincipal is not null && !string.IsNullOrEmpty(context.AuthorizationCode))
+            if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
                 properties.Dictionary[TokenTypeHints.AuthorizationCode] = context.AuthorizationCode;
             }
 
-            if (context.DeviceCodePrincipal is not null && !string.IsNullOrEmpty(context.DeviceCode))
+            if (!string.IsNullOrEmpty(context.DeviceCode))
             {
                 properties.Dictionary[TokenTypeHints.DeviceCode] = context.DeviceCode;
             }
 
-            if (context.IdentityTokenPrincipal is not null && !string.IsNullOrEmpty(context.IdentityToken))
+            if (!string.IsNullOrEmpty(context.IdentityToken))
             {
                 properties.Dictionary[TokenTypeHints.IdToken] = context.IdentityToken;
             }
 
-            if (context.RefreshTokenPrincipal is not null && !string.IsNullOrEmpty(context.RefreshToken))
+            if (!string.IsNullOrEmpty(context.RefreshToken))
             {
                 properties.Dictionary[TokenTypeHints.RefreshToken] = context.RefreshToken;
             }
 
-            if (context.UserCodePrincipal is not null && !string.IsNullOrEmpty(context.UserCode))
+            if (!string.IsNullOrEmpty(context.UserCode))
             {
                 properties.Dictionary[TokenTypeHints.UserCode] = context.UserCode;
             }

@@ -12,6 +12,22 @@ namespace OpenIddict.Validation;
 public static class OpenIddictValidationHandlerFilters
 {
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no access token is extracted.
+    /// </summary>
+    public class RequireAccessTokenExtracted : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>
+    {
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return new ValueTask<bool>(context.ExtractAccessToken);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no access token is validated.
     /// </summary>
     public class RequireAccessTokenValidated : IOpenIddictValidationHandlerFilter<ProcessAuthenticationContext>

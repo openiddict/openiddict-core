@@ -6,7 +6,6 @@
 
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Validation;
@@ -93,13 +92,13 @@ public class OpenIddictValidationOptions
     /// <summary>
     /// Gets or sets the OAuth 2.0/OpenID Connect static server configuration, if applicable.
     /// </summary>
-    public OpenIdConnectConfiguration? Configuration { get; set; }
+    public OpenIddictConfiguration? Configuration { get; set; }
 
     /// <summary>
     /// Gets or sets the configuration manager used to retrieve
     /// and cache the OAuth 2.0/OpenID Connect server configuration.
     /// </summary>
-    public IConfigurationManager<OpenIdConnectConfiguration> ConfigurationManager { get; set; } = default!;
+    public IConfigurationManager<OpenIddictConfiguration> ConfigurationManager { get; set; } = default!;
 
     /// <summary>
     /// Gets the intended audiences of this resource server.

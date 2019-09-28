@@ -61,10 +61,16 @@ public static partial class OpenIddictValidationHandlers
                 var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
+                // Ensure the issuer resolved from the configuration matches the expected value.
+                if (context.Options.Issuer is not null && configuration.Issuer != context.Options.Issuer)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
+                }
+
                 // Clone the token validation parameters and set the issuer using the value found in the
                 // OpenID Connect server configuration (that can be static or retrieved using discovery).
                 var parameters = context.Options.TokenValidationParameters.Clone();
-                parameters.ValidIssuer ??= configuration.Issuer ?? context.Issuer?.AbsoluteUri;
+                parameters.ValidIssuer ??= configuration.Issuer?.AbsoluteUri ?? context.Issuer?.AbsoluteUri;
                 parameters.ValidateIssuer = !string.IsNullOrEmpty(parameters.ValidIssuer);
 
                 // Combine the signing keys registered statically in the token validation parameters
@@ -191,7 +197,7 @@ public static partial class OpenIddictValidationHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context)
             {
                 if (context is null)
                 {
@@ -201,16 +207,16 @@ public static partial class OpenIddictValidationHandlers
                 // If a principal was already attached, don't overwrite it.
                 if (context.Principal is not null)
                 {
-                    return default;
+                    return;
                 }
 
                 // If the token cannot be read, don't return an error to allow another handler to validate it.
                 if (!context.SecurityTokenHandler.CanReadToken(context.Token))
                 {
-                    return default;
+                    return;
                 }
 
-                var result = context.SecurityTokenHandler.ValidateToken(context.Token, context.TokenValidationParameters);
+                var result = await context.SecurityTokenHandler.ValidateTokenAsync(context.Token, context.TokenValidationParameters);
                 if (!result.IsValid)
                 {
                     // If validation failed because of an unrecognized key identifier, inform the configuration manager
@@ -243,7 +249,7 @@ public static partial class OpenIddictValidationHandlers
                             _ => SR.FormatID8000(SR.ID2004)
                         });
 
-                    return default;
+                    return;
                 }
 
                 // Attach the principal extracted from the token to the parent event context and store
@@ -260,8 +266,6 @@ public static partial class OpenIddictValidationHandlers
                 });
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
-
-                return default;
             }
         }
 
@@ -305,23 +309,24 @@ public static partial class OpenIddictValidationHandlers
                 var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
 
-                if (string.IsNullOrEmpty(configuration.IntrospectionEndpoint) ||
-                    !Uri.TryCreate(configuration.IntrospectionEndpoint, UriKind.Absolute, out Uri? address) ||
-                    !address.IsWellFormedOriginalString())
+                // Ensure the issuer resolved from the configuration matches the expected value.
+                if (context.Options.Issuer is not null && configuration.Issuer != context.Options.Issuer)
                 {
-                    context.Reject(
-                        error: Errors.ServerError,
-                        description: SR.GetResourceString(SR.ID2092),
-                        uri: SR.FormatID8000(SR.ID2092));
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0307));
+                }
 
-                    return;
+                // Ensure the introspection endpoint is present and is a valid absolute URL.
+                if (configuration.IntrospectionEndpoint is not { IsAbsoluteUri: true } ||
+                   !configuration.IntrospectionEndpoint.IsWellFormedOriginalString())
+                {
+                    throw new InvalidOperationException(SR.FormatID0301(Metadata.IntrospectionEndpoint));
                 }
 
                 ClaimsPrincipal principal;
 
                 try
                 {
-                    principal = await _service.IntrospectTokenAsync(address, context.Token, context.ValidTokenTypes.Count switch
+                    principal = await _service.IntrospectTokenAsync(configuration.IntrospectionEndpoint, context.Token, context.ValidTokenTypes.Count switch
                     {
                         // Infer the token type hint sent to the authorization server to help speed up
                         // the token resolution lookup. If multiple types are accepted, no hint is sent.

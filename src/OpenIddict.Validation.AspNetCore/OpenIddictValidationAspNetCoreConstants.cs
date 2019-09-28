@@ -25,4 +25,9 @@ public static class OpenIddictValidationAspNetCoreConstants
         public const string ErrorUri = ".error_uri";
         public const string Scope = ".scope";
     }
+
+    public static class Tokens
+    {
+        public const string AccessToken = "access_token";
+    }
 }

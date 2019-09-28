@@ -134,7 +134,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireHttpRequest>()
-                .AddFilter<RequireAccessTokenValidated>()
+                .AddFilter<RequireAccessTokenExtracted>()
                 .UseSingletonHandler<ExtractAccessTokenFromAuthorizationHeader>()
                 .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 500)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -188,7 +188,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireHttpRequest>()
-                .AddFilter<RequireAccessTokenValidated>()
+                .AddFilter<RequireAccessTokenExtracted>()
                 .UseSingletonHandler<ExtractAccessTokenFromBodyForm>()
                 .SetOrder(ExtractAccessTokenFromAuthorizationHeader.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
@@ -246,7 +246,7 @@ public static partial class OpenIddictValidationAspNetCoreHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireHttpRequest>()
-                .AddFilter<RequireAccessTokenValidated>()
+                .AddFilter<RequireAccessTokenExtracted>()
                 .UseSingletonHandler<ExtractAccessTokenFromQueryString>()
                 .SetOrder(ExtractAccessTokenFromBodyForm.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)

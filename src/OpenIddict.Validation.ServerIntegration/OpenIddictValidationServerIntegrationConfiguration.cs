@@ -5,7 +5,6 @@
  */
 
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using OpenIddict.Server;
 
 namespace OpenIddict.Validation.ServerIntegration;
@@ -39,9 +38,9 @@ public class OpenIddictValidationServerIntegrationConfiguration : IConfigureOpti
 
         // Note: the issuer may be null. In this case, it will be usually provided by
         // a validation handler registered by the host (e.g ASP.NET Core or OWIN/Katana).
-        options.Configuration = new OpenIdConnectConfiguration
+        options.Configuration = new OpenIddictConfiguration
         {
-            Issuer = _options.CurrentValue.Issuer?.AbsoluteUri
+            Issuer = _options.CurrentValue.Issuer
         };
 
         // Import the signing keys from the server configuration.

@@ -17,6 +17,7 @@ public static partial class OpenIddictValidationHandlers
          * Authentication processing:
          */
         EvaluateValidatedTokens.Descriptor,
+        ValidateRequiredTokens.Descriptor,
         ValidateAccessToken.Descriptor,
 
         /*
@@ -51,7 +52,7 @@ public static partial class OpenIddictValidationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            (context.ValidateAccessToken, context.RequireAccessToken) = context.EndpointType switch
+            (context.ExtractAccessToken, context.RequireAccessToken, context.ValidateAccessToken) = context.EndpointType switch
             {
                 // The validation handler is responsible of validating access tokens for endpoints
                 // it doesn't manage (typically, API endpoints using token authentication).
@@ -59,15 +60,52 @@ public static partial class OpenIddictValidationHandlers
                 // As such, sending an access token is not mandatory: API endpoints that require
                 // authentication can set up an authorization policy to reject such requests later
                 // in the request processing pipeline (typically, via the authorization middleware).
-                OpenIddictValidationEndpointType.Unknown => (true, false),
+                OpenIddictValidationEndpointType.Unknown => (true, false, true),
 
-                _ => (false, false)
+                _ => (false, false, false)
             };
 
             // Note: unlike the equivalent event in the server stack, authentication can be triggered for
             // arbitrary requests (typically, API endpoints that are not owned by the validation stack).
             // As such, the token is not directly resolved from the request, that may be null at this stage.
             // Instead, the token is expected to be populated by one or multiple handlers provided by the host.
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of rejecting authentication demands that lack required tokens.
+    /// </summary>
+    public class ValidateRequiredTokens : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<EvaluateValidatedTokens>()
+                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.RequireAccessToken && string.IsNullOrEmpty(context.AccessToken))
+            {
+                context.Reject(
+                    error: Errors.MissingToken,
+                    description: SR.GetResourceString(SR.ID2000),
+                    uri: SR.FormatID8000(SR.ID2000));
+
+                return default;
+            }
 
             return default;
         }
@@ -90,7 +128,7 @@ public static partial class OpenIddictValidationHandlers
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAccessTokenValidated>()
                 .UseScopedHandler<ValidateAccessToken>()
-                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 1_000)
+                .SetOrder(ValidateRequiredTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
 
@@ -102,23 +140,8 @@ public static partial class OpenIddictValidationHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.AccessTokenPrincipal is not null)
+            if (context.AccessTokenPrincipal is not null || string.IsNullOrEmpty(context.AccessToken))
             {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(context.AccessToken))
-            {
-                if (context.RequireAccessToken)
-                {
-                    context.Reject(
-                        error: Errors.MissingToken,
-                        description: SR.GetResourceString(SR.ID2000),
-                        uri: SR.FormatID8000(SR.ID2000));
-
-                    return;
-                }
-
                 return;
             }
 

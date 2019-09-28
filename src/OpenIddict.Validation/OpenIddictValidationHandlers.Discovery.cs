@@ -21,6 +21,7 @@ public static partial class OpenIddictValidationHandlers
             ValidateIssuer.Descriptor,
             ExtractCryptographyEndpoint.Descriptor,
             ExtractIntrospectionEndpoint.Descriptor,
+            ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor,
 
             /*
              * Cryptography response handling:
@@ -74,17 +75,7 @@ public static partial class OpenIddictValidationHandlers
                     return default;
                 }
 
-                if (context.Issuer is not null && context.Issuer != address)
-                {
-                    context.Reject(
-                        error: Errors.ServerError,
-                        description: SR.GetResourceString(SR.ID2098),
-                        uri: SR.FormatID8000(SR.ID2098));
-
-                    return default;
-                }
-
-                context.Configuration.Issuer = issuer;
+                context.Configuration.Issuer = address;
 
                 return default;
             }
@@ -126,17 +117,17 @@ public static partial class OpenIddictValidationHandlers
                     return default;
                 }
 
-                if (!Uri.IsWellFormedUriString(address, UriKind.Absolute))
+                if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
                 {
                     context.Reject(
                         error: Errors.ServerError,
-                        description: SR.GetResourceString(SR.ID2100),
+                        description: SR.FormatID2100(Metadata.JwksUri),
                         uri: SR.FormatID8000(SR.ID2100));
 
                     return default;
                 }
 
-                context.Configuration.JwksUri = address;
+                context.Configuration.JwksUri = uri;
 
                 return default;
             }
@@ -166,30 +157,61 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 var address = (string?) context.Response[Metadata.IntrospectionEndpoint];
-                if (!string.IsNullOrEmpty(address) && !Uri.IsWellFormedUriString(address, UriKind.Absolute))
+                if (!string.IsNullOrEmpty(address))
                 {
-                    context.Reject(
-                        error: Errors.ServerError,
-                        description: SR.GetResourceString(SR.ID2101),
-                        uri: SR.FormatID8000(SR.ID2101));
+                    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri) || !uri.IsWellFormedOriginalString())
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2100(Metadata.IntrospectionEndpoint),
+                            uri: SR.FormatID8000(SR.ID2100));
 
-                    return default;
+                        return default;
+                    }
+
+                    context.Configuration.IntrospectionEndpoint = uri;
                 }
 
-                context.Configuration.IntrospectionEndpoint = address;
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of extracting the authentication methods
+        /// supported by the introspection endpoint from the discovery document.
+        /// </summary>
+        public class ExtractIntrospectionEndpointClientAuthenticationMethods : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractIntrospectionEndpoint>()
+                    .SetOrder(ExtractIntrospectionEndpoint.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                if (context is null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
 
                 // Resolve the client authentication methods supported by the introspection endpoint, if available.
-                if (context.Response.TryGetParameter(Metadata.IntrospectionEndpointAuthMethodsSupported, out var methods))
+                var methods = context.Response[Metadata.IntrospectionEndpointAuthMethodsSupported]?.GetUnnamedParameters();
+                if (methods is { Count: > 0 })
                 {
-                    foreach (var method in methods.GetUnnamedParameters())
+                    for (var index = 0; index < methods.Count; index++)
                     {
-                        var value = (string?) method;
-                        if (string.IsNullOrEmpty(value))
+                        // Note: custom values are allowed in this case.
+                        var method = (string?) methods[index];
+                        if (!string.IsNullOrEmpty(method))
                         {
-                            continue;
+                            context.Configuration.IntrospectionEndpointAuthMethodsSupported.Add(method);
                         }
-
-                        context.Configuration.IntrospectionEndpointAuthMethodsSupported.Add(value);
                     }
                 }
 
@@ -221,7 +243,7 @@ public static partial class OpenIddictValidationHandlers
                 }
 
                 var keys = context.Response[JsonWebKeySetParameterNames.Keys]?.GetUnnamedParameters();
-                if (keys is null || keys.Count == 0)
+                if (keys is not { Count: > 0 })
                 {
                     context.Reject(
                         error: Errors.ServerError,

@@ -8,11 +8,12 @@
 
   <PropertyGroup>
     <Description>Versatile OpenID Connect stack for ASP.NET Core.</Description>
-    <PackageTags>$(PackageTags);aspnetcore;server;validation</PackageTags>
+    <PackageTags>$(PackageTags);aspnetcore;client;server;validation</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OpenIddict\OpenIddict.csproj" />
+    <ProjectReference Include="..\OpenIddict.Client.AspNetCore\OpenIddict.Client.AspNetCore.csproj" />
     <ProjectReference Include="..\OpenIddict.Server.AspNetCore\OpenIddict.Server.AspNetCore.csproj" />
     <ProjectReference Include="..\OpenIddict.Server.DataProtection\OpenIddict.Server.DataProtection.csproj" />
     <ProjectReference Include="..\OpenIddict.Validation.AspNetCore\OpenIddict.Validation.AspNetCore.csproj" />

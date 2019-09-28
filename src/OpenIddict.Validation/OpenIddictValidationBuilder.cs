@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Validation;
 
@@ -404,7 +403,7 @@ public class OpenIddictValidationBuilder
     /// </summary>
     /// <param name="configuration">The server configuration.</param>
     /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-    public OpenIddictValidationBuilder SetConfiguration(OpenIdConnectConfiguration configuration)
+    public OpenIddictValidationBuilder SetConfiguration(OpenIddictConfiguration configuration)
     {
         if (configuration is null)
         {

@@ -6,7 +6,6 @@
 
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Validation;
@@ -90,7 +89,8 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
         {
             if (options.Configuration is not null)
             {
-                options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(options.Configuration);
+                options.Configuration.Issuer = options.Issuer;
+                options.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(options.Configuration);
             }
 
             else
@@ -133,11 +133,11 @@ public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddic
                     options.MetadataAddress = new Uri(issuer, options.MetadataAddress);
                 }
 
-                options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                options.ConfigurationManager = new ConfigurationManager<OpenIddictConfiguration>(
                     options.MetadataAddress.AbsoluteUri, new OpenIddictValidationRetriever(_service))
                 {
-                    AutomaticRefreshInterval = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval,
-                    RefreshInterval = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval
+                    AutomaticRefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultAutomaticRefreshInterval,
+                    RefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultRefreshInterval
                 };
             }
         }

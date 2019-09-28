@@ -244,6 +244,15 @@ public class OpenIddictRequest : OpenIddictMessage
     }
 
     /// <summary>
+    /// Gets or sets the "id_token" parameter.
+    /// </summary>
+    public string? IdToken
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.IdToken);
+        set => SetParameter(OpenIddictConstants.Parameters.IdToken, value);
+    }
+
+    /// <summary>
     /// Gets or sets the "id_token_hint" parameter.
     /// </summary>
     public string? IdTokenHint
