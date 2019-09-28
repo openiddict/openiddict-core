@@ -7,7 +7,6 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Validation;
@@ -29,7 +28,7 @@ public class OpenIddictValidationService
     /// <param name="address">The address of the remote metadata endpoint.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
-    public async ValueTask<OpenIdConnectConfiguration> GetConfigurationAsync(Uri address, CancellationToken cancellationToken = default)
+    public async ValueTask<OpenIddictConfiguration> GetConfigurationAsync(Uri address, CancellationToken cancellationToken = default)
     {
         if (address is null)
         {
@@ -93,6 +92,7 @@ public class OpenIddictValidationService
             {
                 var context = new ApplyConfigurationRequestContext(transaction)
                 {
+                    Address = address,
                     Request = request
                 };
 
@@ -112,6 +112,7 @@ public class OpenIddictValidationService
             {
                 var context = new ExtractConfigurationResponseContext(transaction)
                 {
+                    Address = address,
                     Request = request
                 };
 
@@ -129,10 +130,11 @@ public class OpenIddictValidationService
                 return context.Response;
             }
 
-            async ValueTask<OpenIdConnectConfiguration> HandleConfigurationResponseAsync()
+            async ValueTask<OpenIddictConfiguration> HandleConfigurationResponseAsync()
             {
                 var context = new HandleConfigurationResponseContext(transaction)
                 {
+                    Address = address,
                     Request = request,
                     Response = response
                 };
@@ -235,6 +237,7 @@ public class OpenIddictValidationService
             {
                 var context = new ApplyCryptographyRequestContext(transaction)
                 {
+                    Address = address,
                     Request = request
                 };
 
@@ -254,6 +257,7 @@ public class OpenIddictValidationService
             {
                 var context = new ExtractCryptographyResponseContext(transaction)
                 {
+                    Address = address,
                     Request = request
                 };
 
@@ -396,6 +400,7 @@ public class OpenIddictValidationService
             {
                 var context = new ApplyIntrospectionRequestContext(transaction)
                 {
+                    Address = address,
                     Request = request
                 };
 
@@ -415,6 +420,7 @@ public class OpenIddictValidationService
             {
                 var context = new ExtractIntrospectionResponseContext(transaction)
                 {
+                    Address = address,
                     Request = request
                 };
 
@@ -436,6 +442,7 @@ public class OpenIddictValidationService
             {
                 var context = new HandleIntrospectionResponseContext(transaction)
                 {
+                    Address = address,
                     Request = request,
                     Response = response,
                     Token = token

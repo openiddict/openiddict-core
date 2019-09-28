@@ -25,6 +25,7 @@ public static partial class OpenIddictServerHandlers
         ValidateAuthenticationDemand.Descriptor,
         EvaluateValidatedTokens.Descriptor,
         ResolveValidatedTokens.Descriptor,
+        ValidateRequiredTokens.Descriptor,
         ValidateAccessToken.Descriptor,
         ValidateAuthorizationCode.Descriptor,
         ValidateDeviceCode.Descriptor,
@@ -164,63 +165,77 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            (context.ValidateAccessToken, context.RequireAccessToken) = context.EndpointType switch
+            (context.ExtractAccessToken,
+             context.RequireAccessToken,
+             context.ValidateAccessToken) = context.EndpointType switch
             {
                 // The userinfo endpoint requires sending a valid access token.
-                OpenIddictServerEndpointType.Userinfo => (true, true),
+                OpenIddictServerEndpointType.Userinfo => (true, true, true),
 
-                _ => (false, false)
+                _ => (false, false, false)
             };
 
-            (context.ValidateAuthorizationCode, context.RequireAuthorizationCode) = context.EndpointType switch
+            (context.ExtractAuthorizationCode,
+             context.RequireAuthorizationCode,
+             context.ValidateAuthorizationCode) = context.EndpointType switch
             {
                 // The authorization code grant requires sending a valid authorization code.
-                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType() => (true, true),
+                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType() => (true, true, true),
 
-                _ => (false, false)
+                _ => (false, false, false)
             };
 
-            (context.ValidateDeviceCode, context.RequireDeviceCode) = context.EndpointType switch
+            (context.ExtractDeviceCode,
+             context.RequireDeviceCode,
+             context.ValidateDeviceCode) = context.EndpointType switch
             {
                 // The device code grant requires sending a valid device code.
-                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType() => (true, true),
+                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType() => (true, true, true),
 
-                _ => (false, false)
+                _ => (false, false, false)
             };
 
-            (context.ValidateGenericToken, context.RequireGenericToken) = context.EndpointType switch
+            (context.ExtractGenericToken,
+             context.RequireGenericToken,
+             context.ValidateGenericToken) = context.EndpointType switch
             {
                 // Tokens received by the introspection and revocation endpoints can be of any type.
                 // Additional token type filtering is made by the endpoint themselves, if needed.
-                OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation => (true, true),
+                OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation => (true, true, true),
 
-                _ => (false, false)
+                _ => (false, false, false)
             };
 
-            (context.ValidateIdentityToken, context.RequireIdentityToken) = context.EndpointType switch
+            (context.ExtractIdentityToken,
+             context.RequireIdentityToken,
+             context.ValidateIdentityToken) = context.EndpointType switch
             {
                 // The identity token received by the authorization and logout
                 // endpoints are not required and serve as optional hints.
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout => (true, false),
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.Logout => (true, false, true),
 
-                _ => (false, false)
+                _ => (false, false, true)
             };
 
-            (context.ValidateRefreshToken, context.RequireRefreshToken) = context.EndpointType switch
+            (context.ExtractRefreshToken,
+             context.RequireRefreshToken,
+             context.ValidateRefreshToken) = context.EndpointType switch
             {
                 // The refresh token grant requires sending a valid refresh token.
-                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() => (true, true),
+                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType() => (true, true, true),
 
-                _ => (false, false)
+                _ => (false, false, false)
             };
 
-            (context.ValidateUserCode, context.RequireUserCode) = context.EndpointType switch
+            (context.ExtractUserCode,
+             context.RequireUserCode,
+             context.ValidateUserCode) = context.EndpointType switch
             {
                 // Note: the verification endpoint can be accessed without specifying a
                 // user code (that can be later set by the user using a form, for instance).
-                OpenIddictServerEndpointType.Verification => (true, false),
+                OpenIddictServerEndpointType.Verification => (true, false, true),
 
-                _ => (false, false)
+                _ => (false, false, false)
             };
 
             return default;
@@ -252,21 +267,24 @@ public static partial class OpenIddictServerHandlers
 
             context.AccessToken = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Userinfo when context.ValidateAccessToken => context.Request.AccessToken,
+                OpenIddictServerEndpointType.Userinfo when context.ExtractAccessToken
+                    => context.Request.AccessToken,
 
                 _ => null
             };
 
             context.AuthorizationCode = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Token when context.ValidateAuthorizationCode => context.Request.Code,
+                OpenIddictServerEndpointType.Token when context.ExtractAuthorizationCode
+                    => context.Request.Code,
 
                 _ => null
             };
 
             context.DeviceCode = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Token when context.ValidateDeviceCode => context.Request.DeviceCode,
+                OpenIddictServerEndpointType.Token when context.ExtractDeviceCode
+                    => context.Request.DeviceCode,
 
                 _ => null
             };
@@ -274,8 +292,8 @@ public static partial class OpenIddictServerHandlers
             (context.GenericToken, context.GenericTokenTypeHint) = context.EndpointType switch
             {
                 OpenIddictServerEndpointType.Introspection or
-                OpenIddictServerEndpointType.Revocation
-                    when context.ValidateGenericToken => (context.Request.Token, context.Request.TokenTypeHint),
+                OpenIddictServerEndpointType.Revocation when context.ExtractGenericToken
+                    => (context.Request.Token, context.Request.TokenTypeHint),
 
                 _ => (null, null)
             };
@@ -283,25 +301,70 @@ public static partial class OpenIddictServerHandlers
             context.IdentityToken = context.EndpointType switch
             {
                 OpenIddictServerEndpointType.Authorization or
-                OpenIddictServerEndpointType.Logout
-                    when context.ValidateIdentityToken => context.Request.IdTokenHint,
+                OpenIddictServerEndpointType.Logout when context.ExtractIdentityToken
+                    => context.Request.IdTokenHint,
 
                 _ => null
             };
 
             context.RefreshToken = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Token when context.ValidateRefreshToken => context.Request.RefreshToken,
+                OpenIddictServerEndpointType.Token when context.ExtractRefreshToken
+                    => context.Request.RefreshToken,
 
                 _ => null
             };
 
             context.UserCode = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Verification when context.ValidateUserCode => context.Request.UserCode,
+                OpenIddictServerEndpointType.Verification when context.ExtractUserCode
+                    => context.Request.UserCode,
 
                 _ => null
             };
+
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible of rejecting authentication demands that lack required tokens.
+    /// </summary>
+    public class ValidateRequiredTokens : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<EvaluateValidatedTokens>()
+                .SetOrder(EvaluateValidatedTokens.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if ((context.RequireAccessToken       && string.IsNullOrEmpty(context.AccessToken))       ||
+                (context.RequireAuthorizationCode && string.IsNullOrEmpty(context.AuthorizationCode)) ||
+                (context.RequireDeviceCode        && string.IsNullOrEmpty(context.DeviceCode))        ||
+                (context.RequireGenericToken      && string.IsNullOrEmpty(context.GenericToken))      ||
+                (context.RequireIdentityToken     && string.IsNullOrEmpty(context.IdentityToken))     ||
+                (context.RequireRefreshToken      && string.IsNullOrEmpty(context.RefreshToken))      ||
+                (context.RequireUserCode          && string.IsNullOrEmpty(context.UserCode)))
+            {
+                context.Reject(
+                    error: Errors.MissingToken,
+                    description: SR.GetResourceString(SR.ID2000),
+                    uri: SR.FormatID8000(SR.ID2000));
+
+                return default;
+            }
 
             return default;
         }
@@ -324,7 +387,7 @@ public static partial class OpenIddictServerHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAccessTokenValidated>()
                 .UseScopedHandler<ValidateAccessToken>()
-                .SetOrder(ResolveValidatedTokens.Descriptor.Order + 1_000)
+                .SetOrder(ValidateRequiredTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
@@ -336,23 +399,8 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.AccessTokenPrincipal is not null)
+            if (context.AccessTokenPrincipal is not null || string.IsNullOrEmpty(context.AccessToken))
             {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(context.AccessToken))
-            {
-                if (context.RequireAccessToken)
-                {
-                    context.Reject(
-                        error: Errors.MissingToken,
-                        description: SR.GetResourceString(SR.ID2000),
-                        uri: SR.FormatID8000(SR.ID2000));
-
-                    return;
-                }
-
                 return;
             }
 
@@ -418,23 +466,8 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.AuthorizationCodePrincipal is not null)
+            if (context.AuthorizationCodePrincipal is not null || string.IsNullOrEmpty(context.AuthorizationCode))
             {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(context.AuthorizationCode))
-            {
-                if (context.RequireAuthorizationCode)
-                {
-                    context.Reject(
-                        error: Errors.MissingToken,
-                        description: SR.GetResourceString(SR.ID2000),
-                        uri: SR.FormatID8000(SR.ID2000));
-
-                    return;
-                }
-
                 return;
             }
 
@@ -500,23 +533,8 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.DeviceCodePrincipal is not null)
+            if (context.DeviceCodePrincipal is not null || string.IsNullOrEmpty(context.DeviceCode))
             {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(context.DeviceCode))
-            {
-                if (context.RequireDeviceCode)
-                {
-                    context.Reject(
-                        error: Errors.MissingToken,
-                        description: SR.GetResourceString(SR.ID2000),
-                        uri: SR.FormatID8000(SR.ID2000));
-
-                    return;
-                }
-
                 return;
             }
 
@@ -582,23 +600,8 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.GenericTokenPrincipal is not null)
+            if (context.GenericTokenPrincipal is not null || string.IsNullOrEmpty(context.GenericToken))
             {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(context.GenericToken))
-            {
-                if (context.RequireGenericToken)
-                {
-                    context.Reject(
-                        error: Errors.MissingToken,
-                        description: SR.GetResourceString(SR.ID2000),
-                        uri: SR.FormatID8000(SR.ID2000));
-
-                    return;
-                }
-
                 return;
             }
 
@@ -671,23 +674,8 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.IdentityTokenPrincipal is not null)
+            if (context.IdentityTokenPrincipal is not null || string.IsNullOrEmpty(context.IdentityToken))
             {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(context.IdentityToken))
-            {
-                if (context.RequireIdentityToken)
-                {
-                    context.Reject(
-                        error: Errors.MissingToken,
-                        description: SR.GetResourceString(SR.ID2000),
-                        uri: SR.FormatID8000(SR.ID2000));
-
-                    return;
-                }
-
                 return;
             }
 
@@ -756,23 +744,8 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.RefreshTokenPrincipal is not null)
+            if (context.RefreshTokenPrincipal is not null || string.IsNullOrEmpty(context.RefreshToken))
             {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(context.RefreshToken))
-            {
-                if (context.RequireRefreshToken)
-                {
-                    context.Reject(
-                        error: Errors.MissingToken,
-                        description: SR.GetResourceString(SR.ID2000),
-                        uri: SR.FormatID8000(SR.ID2000));
-
-                    return;
-                }
-
                 return;
             }
 
@@ -838,23 +811,8 @@ public static partial class OpenIddictServerHandlers
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.UserCodePrincipal is not null)
+            if (context.UserCodePrincipal is not null || string.IsNullOrEmpty(context.UserCode))
             {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(context.UserCode))
-            {
-                if (context.RequireUserCode)
-                {
-                    context.Reject(
-                        error: Errors.MissingToken,
-                        description: SR.GetResourceString(SR.ID2000),
-                        uri: SR.FormatID8000(SR.ID2000));
-
-                    return;
-                }
-
                 return;
             }
 
@@ -2649,22 +2607,22 @@ public static partial class OpenIddictServerHandlers
                 return default;
             }
 
-            var credentials = context.Options.SigningCredentials.FirstOrDefault(
+            var credentials = context.Options.SigningCredentials.Find(
                 credentials => credentials.Key is AsymmetricSecurityKey);
             if (credentials is null)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0266));
             }
 
-            using var hash = GetHashAlgorithm(credentials);
-            if (hash is null || hash is KeyedHashAlgorithm)
+            using var algorithm = GetHashAlgorithm(credentials);
+            if (algorithm is null || algorithm is KeyedHashAlgorithm)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0267));
             }
 
             if (!string.IsNullOrEmpty(context.AccessToken))
             {
-                var digest = hash.ComputeHash(Encoding.ASCII.GetBytes(context.AccessToken));
+                var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.AccessToken));
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
@@ -2673,7 +2631,7 @@ public static partial class OpenIddictServerHandlers
 
             if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
-                var digest = hash.ComputeHash(Encoding.ASCII.GetBytes(context.AuthorizationCode));
+                var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.AuthorizationCode));
 
                 // Note: only the left-most half of the hash is used.
                 // See http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken

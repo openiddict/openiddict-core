@@ -5,11 +5,10 @@
  */
 
 using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OpenIddict.Validation;
 
-public class OpenIddictValidationRetriever : IConfigurationRetriever<OpenIdConnectConfiguration>
+public class OpenIddictValidationRetriever : IConfigurationRetriever<OpenIddictConfiguration>
 {
     private readonly OpenIddictValidationService _service;
 
@@ -27,7 +26,7 @@ public class OpenIddictValidationRetriever : IConfigurationRetriever<OpenIdConne
     /// <param name="retriever">The retriever used by IdentityModel.</param>
     /// <param name="cancel">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The OpenID Connect server configuration retrieved from the remote server.</returns>
-    async Task<OpenIdConnectConfiguration> IConfigurationRetriever<OpenIdConnectConfiguration>.GetConfigurationAsync(string address, IDocumentRetriever retriever, CancellationToken cancel)
+    async Task<OpenIddictConfiguration> IConfigurationRetriever<OpenIddictConfiguration>.GetConfigurationAsync(string address, IDocumentRetriever retriever, CancellationToken cancel)
     {
         if (string.IsNullOrEmpty(address))
         {
@@ -44,12 +43,12 @@ public class OpenIddictValidationRetriever : IConfigurationRetriever<OpenIdConne
         var configuration = await _service.GetConfigurationAsync(uri, cancel) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0145));
 
-        if (!Uri.TryCreate(configuration.JwksUri, UriKind.Absolute, out uri) || !uri.IsWellFormedOriginalString())
+        if (configuration.JwksUri is null)
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0146));
         }
 
-        configuration.JsonWebKeySet = await _service.GetSecurityKeysAsync(uri, cancel) ??
+        configuration.JsonWebKeySet = await _service.GetSecurityKeysAsync(configuration.JwksUri, cancel) ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0147));
 
         // Copy the signing keys found in the JSON Web Key Set to the SigningKeys collection.

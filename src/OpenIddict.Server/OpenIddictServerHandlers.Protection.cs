@@ -255,7 +255,7 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context)
             {
                 if (context is null)
                 {
@@ -265,13 +265,13 @@ public static partial class OpenIddictServerHandlers
                 // If a principal was already attached, don't overwrite it.
                 if (context.Principal is not null)
                 {
-                    return default;
+                    return;
                 }
 
                 // If the token cannot be read, don't return an error to allow another handler to validate it.
                 if (!context.SecurityTokenHandler.CanReadToken(context.Token))
                 {
-                    return default;
+                    return;
                 }
 
                 // Special endpoints like introspection or revocation use a single parameter to convey
@@ -290,7 +290,7 @@ public static partial class OpenIddictServerHandlers
                 // For more information, see https://datatracker.ietf.org/doc/html/rfc7009#section-2.1
                 // and https://datatracker.ietf.org/doc/html/rfc7662#section-2.1.
 
-                var result = context.SecurityTokenHandler.ValidateToken(context.Token, context.TokenValidationParameters);
+                var result = await context.SecurityTokenHandler.ValidateTokenAsync(context.Token, context.TokenValidationParameters);
                 if (!result.IsValid)
                 {
                     context.Logger.LogTrace(result.Exception, SR.GetResourceString(SR.ID6000), context.Token);
@@ -348,7 +348,7 @@ public static partial class OpenIddictServerHandlers
                             _ => SR.FormatID8000(SR.ID2004)
                         });
 
-                    return default;
+                    return;
                 }
 
                 // Get the JWT token. If the token is encrypted using JWE, retrieve the inner token.
@@ -387,8 +387,6 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 context.Logger.LogTrace(SR.GetResourceString(SR.ID6001), context.Token, context.Principal.Claims);
-
-                return default;
             }
         }
 

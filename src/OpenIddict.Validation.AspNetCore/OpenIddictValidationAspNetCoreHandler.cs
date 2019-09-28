@@ -7,6 +7,7 @@
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreConstants;
 using Properties = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreConstants.Properties;
 
 namespace OpenIddict.Validation.AspNetCore;
@@ -168,12 +169,12 @@ public class OpenIddictValidationAspNetCoreHandler : AuthenticationHandler<OpenI
             // Attach the tokens to allow any ASP.NET Core component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
 
-            if (context.AccessTokenPrincipal is not null && !string.IsNullOrEmpty(context.AccessToken))
+            if (!string.IsNullOrEmpty(context.AccessToken))
             {
                 tokens ??= new(capacity: 1);
                 tokens.Add(new AuthenticationToken
                 {
-                    Name = TokenTypeHints.AccessToken,
+                    Name = Tokens.AccessToken,
                     Value = context.AccessToken
                 });
 

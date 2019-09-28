@@ -1119,6 +1119,75 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID0287" xml:space="preserve">
     <value>The payload of this authentication ticket was serialized using an unsupported formatter version.</value>
   </data>
+  <data name="ID0288" xml:space="preserve">
+    <value>The OpenIddict ASP.NET Core client handler cannot be registered as an authentication scheme.
+This may indicate that an instance of another handler was registered with the same scheme.</value>
+  </data>
+  <data name="ID0289" xml:space="preserve">
+    <value>The OpenIddict ASP.NET Core client handler cannot be used as the default authentication/sign-in/sign-out handler.
+Make sure that neither DefaultAuthenticateScheme, DefaultSignInScheme, DefaultSignOutScheme nor DefaultScheme point to an instance of the OpenIddict ASP.NET Core client handler.</value>
+  </data>
+  <data name="ID0290" xml:space="preserve">
+    <value>An identity cannot be extracted from this request.
+This generally indicates that the OpenIddict client stack was asked to validate a token for an endpoint it doesn't manage.
+To validate tokens received by custom API endpoints, the OpenIddict validation handler (e.g OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme or OpenIddictValidationOwinDefaults.AuthenticationType) must be used instead.</value>
+  </data>
+  <data name="ID0291" xml:space="preserve">
+    <value>The authorization server information cannot be extracted from the state principal.</value>
+  </data>
+  <data name="ID0292" xml:space="preserve">
+    <value>The client registration corresponding to the specified issuer cannot be found in the client options.</value>
+  </data>
+  <data name="ID0293" xml:space="preserve">
+    <value>The signing algorithm cannot be resolved from the specified frontchannel identity token.</value>
+  </data>
+  <data name="ID0294" xml:space="preserve">
+    <value>The negotiated grant type cannot be extracted from the state principal.</value>
+  </data>
+  <data name="ID0295" xml:space="preserve">
+    <value>The signing algorithm cannot be resolved from the specified backchannel identity token.</value>
+  </data>
+  <data name="ID0296" xml:space="preserve">
+    <value>The specified grant type is not supported.</value>
+  </data>
+  <data name="ID0297" xml:space="preserve">
+    <value>A common grant type supported by both the client and the server couldn't be negotiated automatically. If the error persists, consider specifying a list of allowed grant types in the client registration and ensure the supported grant types listed in the authorization server configuration are appropriate.</value>
+  </data>
+  <data name="ID0298" xml:space="preserve">
+    <value>A common response type combination supported by both the client and the server couldn't be negotiated automatically. If the error persists, consider specifying a list of allowed response type combinations in the client registration and ensure the supported response type combinations listed in the authorization server configuration are appropriate.</value>
+  </data>
+  <data name="ID0299" xml:space="preserve">
+    <value>A common response mode supported by both the client and the server couldn't be negotiated automatically. If the error persists, consider specifying a list of allowed response modes in the client registration and ensure the supported response modes listed in the authorization server configuration are appropriate.</value>
+  </data>
+  <data name="ID0300" xml:space="preserve">
+    <value>A redirection URI must be specified in the client registration options when using OpenID Connect.</value>
+  </data>
+  <data name="ID0301" xml:space="preserve">
+    <value>The '{0}' cannot be resolved from the authorization server configuration or doesn't represent a valid absolute URI, which may indicate this endpoint is not supported or is not enabled in the server configuration.</value>
+  </data>
+  <data name="ID0302" xml:space="preserve">
+    <value>The redirection request was not correctly extracted.
+To extract authorization requests, create a class implementing 'IOpenIddictClientHandler&lt;ExtractRedirectionRequestContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0303" xml:space="preserve">
+    <value>The redirection response was not correctly applied.
+To apply redirection responses, create a class implementing 'IOpenIddictClientHandler&lt;ApplyRedirectionResponseContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0304" xml:space="preserve">
+    <value>No client registration was found in the client options. To add a registration, use 'services.AddOpenIddict().AddClient().AddRegistration()'.</value>
+  </data>
+  <data name="ID0305" xml:space="preserve">
+    <value>No issuer was specified in the challenge properties. When multiple clients are registered, an issuer must be specified in the challenge properties.</value>
+  </data>
+  <data name="ID0306" xml:space="preserve">
+    <value>The specified issuer is not a valid or absolute URL.</value>
+  </data>
+  <data name="ID0307" xml:space="preserve">
+    <value>The issuer extracted from the server configuration metadata doesn't match the expected value.</value>
+  </data>
+  <data name="ID0308" xml:space="preserve">
+    <value>The specified list of valid token types is not valid.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -1420,10 +1489,7 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
     <value>No JWKS endpoint could be found in the server configuration.</value>
   </data>
   <data name="ID2100" xml:space="preserve">
-    <value>A server configuration containing an invalid JWKS endpoint URL was returned.</value>
-  </data>
-  <data name="ID2101" xml:space="preserve">
-    <value>A server configuration containing an invalid introspection endpoint URL was returned.</value>
+    <value>A server configuration containing an invalid '{0}' URL was returned.</value>
   </data>
   <data name="ID2102" xml:space="preserve">
     <value>The JWKS document didn't contain a valid '{0}' node with at least one key.</value>
@@ -1476,6 +1542,42 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   <data name="ID2118" xml:space="preserve">
     <value>The token usage returned by the authorization server is not supported.</value>
   </data>
+  <data name="ID2119" xml:space="preserve">
+    <value>The specified '{0}' parameter doesn't match the authorization server the authorization request was initially sent to.</value>
+  </data>
+  <data name="ID2120" xml:space="preserve">
+    <value>The '{0}' parameter cannot be used when '{1}' is not supported by the authorization server.</value>
+  </data>
+  <data name="ID2121" xml:space="preserve">
+    <value>The '{0}' claim extracted from the specified frontchannel identity token is malformed or isn't of the expected type.</value>
+  </data>
+  <data name="ID2122" xml:space="preserve">
+    <value>The mandatory '{0}' claim cannot be found in the specified frontchannel identity token.</value>
+  </data>
+  <data name="ID2123" xml:space="preserve">
+    <value>The specified frontchannel identity token cannot be used with this client application.</value>
+  </data>
+  <data name="ID2124" xml:space="preserve">
+    <value>The '{0}' claim returned in the specified frontchannel identity token doesn't match the expected value.</value>
+  </data>
+  <data name="ID2125" xml:space="preserve">
+    <value>The '{0}' claim extracted from the specified backchannel identity token is malformed or isn't of the expected type.</value>
+  </data>
+  <data name="ID2126" xml:space="preserve">
+    <value>The mandatory '{0}' claim cannot be found in the specified backchannel identity token.</value>
+  </data>
+  <data name="ID2127" xml:space="preserve">
+    <value>The specified backchannel identity token cannot be used with this client application.</value>
+  </data>
+  <data name="ID2128" xml:space="preserve">
+    <value>The '{0}' claim returned in the specified backchannel identity token doesn't match the expected value.</value>
+  </data>
+  <data name="ID2129" xml:space="preserve">
+    <value>No correlation cookie associated with the specified state can be found. Please try logging in again. If the error persists, please contact the website owner.</value>
+  </data>
+  <data name="ID2130" xml:space="preserve">
+    <value>The specified state token is not valid in this context.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -1514,6 +1616,9 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   </data>
   <data name="ID4012" xml:space="preserve">
     <value>EC-based keys should have a non-null OID raw value or friendly name.</value>
+  </data>
+  <data name="ID4013" xml:space="preserve">
+    <value>The issuer should be a valid absolute URL at this point.</value>
   </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
@@ -2008,6 +2113,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6177" xml:space="preserve">
     <value>The authorization request was rejected because the application '{ClientId}' was not allowed to use the '{ResponseType}' response type.</value>
+  </data>
+  <data name="ID6178" xml:space="preserve">
+    <value>The redirection request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID6179" xml:space="preserve">
+    <value>The redirection request was successfully validated.</value>
+  </data>
+  <data name="ID6180" xml:space="preserve">
+    <value>The redirection request was successfully validated.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

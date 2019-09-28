@@ -290,7 +290,7 @@ public class OpenIddictServerBuilderTests
         var options = GetOptions(services);
 
         // Assert
-        Assert.Single(options.EncryptionCredentials);
+        Assert.NotEmpty(options.EncryptionCredentials);
         Assert.Equal(SecurityAlgorithms.RsaOAEP, options.EncryptionCredentials[0].Alg);
         Assert.Equal(SecurityAlgorithms.Aes256CbcHmacSha512, options.EncryptionCredentials[0].Enc);
         Assert.NotNull(options.EncryptionCredentials[0].Key.KeyId);
@@ -341,7 +341,7 @@ public class OpenIddictServerBuilderTests
         var options = GetOptions(services);
 
         // Assert
-        Assert.Single(options.SigningCredentials);
+        Assert.NotEmpty(options.SigningCredentials);
         Assert.Equal(SecurityAlgorithms.RsaSha256, options.SigningCredentials[0].Algorithm);
         Assert.NotNull(options.SigningCredentials[0].Kid);
     }

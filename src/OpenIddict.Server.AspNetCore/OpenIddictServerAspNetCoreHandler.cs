@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants;
 using Properties = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.Properties;
 
 namespace OpenIddict.Server.AspNetCore;
@@ -191,72 +192,72 @@ public class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<OpenIddic
             // Attach the tokens to allow any ASP.NET Core component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
 
-            if (context.AccessTokenPrincipal is not null && !string.IsNullOrEmpty(context.AccessToken))
+            if (!string.IsNullOrEmpty(context.AccessToken))
             {
                 tokens ??= new(capacity: 1);
                 tokens.Add(new AuthenticationToken
                 {
-                    Name = TokenTypeHints.AccessToken,
+                    Name = Tokens.AccessToken,
                     Value = context.AccessToken
                 });
 
                 properties.SetParameter(Properties.AccessTokenPrincipal, context.AccessTokenPrincipal);
             }
 
-            if (context.AuthorizationCodePrincipal is not null && !string.IsNullOrEmpty(context.AuthorizationCode))
+            if (!string.IsNullOrEmpty(context.AuthorizationCode))
             {
                 tokens ??= new(capacity: 1);
                 tokens.Add(new AuthenticationToken
                 {
-                    Name = TokenTypeHints.AuthorizationCode,
+                    Name = Tokens.AuthorizationCode,
                     Value = context.AuthorizationCode
                 });
 
                 properties.SetParameter(Properties.AuthorizationCodePrincipal, context.AuthorizationCodePrincipal);
             }
 
-            if (context.DeviceCodePrincipal is not null && !string.IsNullOrEmpty(context.DeviceCode))
+            if (!string.IsNullOrEmpty(context.DeviceCode))
             {
                 tokens ??= new(capacity: 1);
                 tokens.Add(new AuthenticationToken
                 {
-                    Name = TokenTypeHints.DeviceCode,
+                    Name = Tokens.DeviceCode,
                     Value = context.DeviceCode
                 });
 
                 properties.SetParameter(Properties.DeviceCodePrincipal, context.DeviceCodePrincipal);
             }
 
-            if (context.IdentityTokenPrincipal is not null && !string.IsNullOrEmpty(context.IdentityToken))
+            if (!string.IsNullOrEmpty(context.IdentityToken))
             {
                 tokens ??= new(capacity: 1);
                 tokens.Add(new AuthenticationToken
                 {
-                    Name = TokenTypeHints.IdToken,
+                    Name = Tokens.IdentityToken,
                     Value = context.IdentityToken
                 });
 
                 properties.SetParameter(Properties.IdentityTokenPrincipal, context.IdentityTokenPrincipal);
             }
 
-            if (context.RefreshTokenPrincipal is not null && !string.IsNullOrEmpty(context.RefreshToken))
+            if (!string.IsNullOrEmpty(context.RefreshToken))
             {
                 tokens ??= new(capacity: 1);
                 tokens.Add(new AuthenticationToken
                 {
-                    Name = TokenTypeHints.RefreshToken,
+                    Name = Tokens.RefreshToken,
                     Value = context.RefreshToken
                 });
 
                 properties.SetParameter(Properties.RefreshTokenPrincipal, context.RefreshTokenPrincipal);
             }
 
-            if (context.UserCodePrincipal is not null && !string.IsNullOrEmpty(context.UserCode))
+            if (!string.IsNullOrEmpty(context.UserCode))
             {
                 tokens ??= new(capacity: 1);
                 tokens.Add(new AuthenticationToken
                 {
-                    Name = TokenTypeHints.UserCode,
+                    Name = Tokens.UserCode,
                     Value = context.UserCode
                 });
 
