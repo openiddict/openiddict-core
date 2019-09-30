@@ -1221,7 +1221,29 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException("The client application details cannot be found in the database.");
                     }
 
-                    // Ensure that the specified redirect_uri is valid and is associated with the client application.
+                    // If no explicit redirect_uri was specified, retrieve the addresses associated with
+                    // the client and ensure exactly one redirect_uri was attached to the client definition.
+                    if (string.IsNullOrEmpty(context.RedirectUri))
+                    {
+                        var addresses = await _applicationManager.GetRedirectUrisAsync(application);
+                        if (addresses.Length != 1)
+                        {
+                            context.Logger.LogError("The authorization request was rejected because " +
+                                                    "the mandatory 'redirect_uri' parameter was missing.");
+
+                            context.Reject(
+                                error: Errors.InvalidRequest,
+                                description: "The mandatory 'redirect_uri' parameter is missing.");
+
+                            return;
+                        }
+
+                        context.SetRedirectUri(addresses[0]);
+
+                        return;
+                    }
+
+                    // Otherwise, ensure that the specified redirect_uri is valid and is associated with the client application.
                     if (!await _applicationManager.ValidateRedirectUriAsync(application, context.RedirectUri))
                     {
                         context.Logger.LogError("The authorization request was rejected because the redirect_uri " +
