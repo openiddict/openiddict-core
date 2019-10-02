@@ -44,11 +44,9 @@ namespace OpenIddict.Validation.ServerIntegration
             options.Issuer = _options.CurrentValue.Issuer;
 
             // Import the token validation parameters from the server configuration.
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                IssuerSigningKeys = (from credentials in _options.CurrentValue.SigningCredentials
-                                     select credentials.Key).ToList()
-            };
+            options.TokenValidationParameters.IssuerSigningKeys =
+                (from credentials in _options.CurrentValue.SigningCredentials
+                 select credentials.Key).ToList();
 
             // Import the symmetric encryption keys from the server configuration.
             foreach (var credentials in _options.CurrentValue.EncryptionCredentials)

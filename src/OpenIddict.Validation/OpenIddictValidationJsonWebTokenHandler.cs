@@ -13,67 +13,10 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Validation
 {
-    public class OpenIddictServerTokenHandler : JsonWebTokenHandler
+    public class OpenIddictValidationJsonWebTokenHandler : JsonWebTokenHandler
     {
-        public ValueTask<string> CreateTokenFromDescriptorAsync(SecurityTokenDescriptor descriptor)
-        {
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            if (descriptor.Subject == null)
-            {
-                throw new ArgumentException("The subject associated with a descriptor cannot be null.", nameof(descriptor));
-            }
-
-            if (descriptor.Claims == null)
-            {
-                throw new InvalidOperationException("The claims collection cannot be null or empty.");
-            }
-
-            if (!descriptor.Claims.TryGetValue(Claims.Private.TokenUsage, out var type) || string.IsNullOrEmpty((string) type))
-            {
-                throw new InvalidOperationException("The token usage cannot be null or empty.");
-            }
-
-            var destinations = new Dictionary<string, string[]>(StringComparer.Ordinal);
-            foreach (var group in descriptor.Subject.Claims.GroupBy(claim => claim.Type))
-            {
-                var collection = group.ToList();
-
-                // Note: destinations are attached to claims as special CLR properties. Such properties can't be serialized
-                // as part of classic JWT tokens. To work around this limitation, claim destinations are added to a special
-                // claim named oi_cl_dstn that contains a map of all the claims and their attached destinations, if any.
-
-                var set = new HashSet<string>(collection[0].GetDestinations(), StringComparer.OrdinalIgnoreCase);
-                if (set.Count != 0)
-                {
-                    // Ensure the other claims of the same type use the same exact destinations.
-                    for (var index = 0; index < collection.Count; index++)
-                    {
-                        if (!set.SetEquals(collection[index].GetDestinations()))
-                        {
-                            throw new InvalidOperationException($"Conflicting destinations for the claim '{group.Key}' were specified.");
-                        }
-                    }
-
-                    destinations[group.Key] = set.ToArray();
-                }
-            }
-
-            // Unless at least one claim was added to the claim destinations map,
-            // don't add the special claim to avoid adding a useless empty claim.
-            if (destinations.Count != 0)
-            {
-                descriptor.Claims[Claims.Private.ClaimDestinations] = destinations;
-            }
-
-            return new ValueTask<string>(base.CreateToken(descriptor));
-        }
-
         public ValueTask<TokenValidationResult> ValidateTokenStringAsync(string token, TokenValidationParameters parameters)
         {
             if (parameters == null)

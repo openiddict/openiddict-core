@@ -28,7 +28,6 @@ namespace OpenIddict.Validation
             /*
              * Authentication processing:
              */
-            ValidateTokenValidationParameters.Descriptor,
             ValidateAccessTokenParameter.Descriptor,
             ValidateReferenceToken.Descriptor,
             ValidateSelfContainedToken.Descriptor,
@@ -43,64 +42,6 @@ namespace OpenIddict.Validation
             AttachDefaultChallengeError.Descriptor);
 
         /// <summary>
-        /// Contains the logic responsible of ensuring the token validation parameters are populated.
-        /// </summary>
-        public class ValidateTokenValidationParameters : IOpenIddictValidationHandler<ProcessAuthenticationContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                    .UseSingletonHandler<ValidateTokenValidationParameters>()
-                    .SetOrder(int.MinValue + 100_000)
-                    .Build();
-
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // Note: at this stage, throw an exception if the token validation parameters cannot be found.
-                var parameters = context.TokenValidationParameters ?? context.Options.TokenValidationParameters;
-                if (parameters == null)
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The token validation parameters cannot be retrieved.")
-                        .Append("To register the default client, reference the 'OpenIddict.Validation.SystemNetHttp' package ")
-                        .AppendLine("and call 'services.AddOpenIddict().AddValidation().UseSystemNetHttp()'.")
-                        .Append("Alternatively, you can manually provide the token validation parameters ")
-                        .Append("by calling 'services.AddOpenIddict().AddValidation().SetTokenValidationParameters()'.")
-                        .ToString());
-                }
-
-                // Clone the token validation parameters before mutating them to ensure the
-                // shared token validation parameters registered as options are not modified.
-                parameters = parameters.Clone();
-                parameters.NameClaimType = Claims.Name;
-                parameters.PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken };
-                parameters.RoleClaimType = Claims.Role;
-                parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
-                parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
-                parameters.ValidateAudience = false;
-                parameters.ValidateLifetime = false;
-
-                context.TokenValidationParameters = parameters;
-
-                return default;
-            }
-        }
-
-        /// <summary>
         /// Contains the logic responsible of validating the access token resolved from the current request.
         /// </summary>
         public class ValidateAccessTokenParameter : IOpenIddictValidationHandler<ProcessAuthenticationContext>
@@ -111,7 +52,7 @@ namespace OpenIddict.Validation
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateAccessTokenParameter>()
-                    .SetOrder(ValidateTokenValidationParameters.Descriptor.Order + 1_000)
+                    .SetOrder(int.MinValue + 100_000)
                     .Build();
 
             /// <summary>
@@ -205,15 +146,27 @@ namespace OpenIddict.Validation
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                if (!context.Options.SecurityTokenHandler.CanReadToken(payload))
+                if (!context.Options.JsonWebTokenHandler.CanReadToken(payload))
                 {
                     return;
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                var result = await context.Options.SecurityTokenHandler.ValidateTokenStringAsync(
-                    payload, context.TokenValidationParameters);
+                // If no issuer signing key was attached, don't return an error to allow another handle to validate it.
+                var parameters = context.TokenValidationParameters;
+                if (parameters?.IssuerSigningKeys == null)
+                {
+                    return;
+                }
 
+                // Clone the token validation parameters before mutating them to ensure the
+                // shared token validation parameters registered as options are not modified.
+                parameters = parameters.Clone();
+                parameters.PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken };
+                parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
+                parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
+
+                // If the token cannot be validated, don't return an error to allow another handle to validate it.
+                var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(payload, parameters);
                 if (result.ClaimsIdentity == null)
                 {
                     return;
@@ -265,15 +218,26 @@ namespace OpenIddict.Validation
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                if (!context.Options.SecurityTokenHandler.CanReadToken(context.Request.AccessToken))
+                if (!context.Options.JsonWebTokenHandler.CanReadToken(context.Request.AccessToken))
                 {
                     return;
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                var result = await context.Options.SecurityTokenHandler.ValidateTokenStringAsync(
-                    context.Request.AccessToken, context.TokenValidationParameters);
+                // If no issuer signing key was attached, don't return an error to allow another handle to validate it.
+                var parameters = context.TokenValidationParameters;
+                if (parameters?.IssuerSigningKeys == null)
+                {
+                    return;
+                }
 
+                // Clone the token validation parameters before mutating them.
+                parameters = parameters.Clone();
+                parameters.PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken };
+                parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
+                parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
+
+                // If the token cannot be validated, don't return an error to allow another handle to validate it.
+                var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(context.Request.AccessToken, parameters);
                 if (result.ClaimsIdentity == null)
                 {
                     return;
@@ -295,7 +259,7 @@ namespace OpenIddict.Validation
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidatePrincipal>()
-                    .SetOrder(ValidateSelfContainedToken.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateReferenceToken.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>

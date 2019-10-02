@@ -77,7 +77,9 @@ namespace OpenIddict.Server
             AttachSelfContainedRefreshToken.Descriptor,
 
             AttachTokenDigests.Descriptor,
-            AttachSelfContainedIdentityToken.Descriptor)
+            AttachSelfContainedIdentityToken.Descriptor,
+            
+            AttachAdditionalProperties.Descriptor)
 
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
@@ -229,7 +231,7 @@ namespace OpenIddict.Server
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                if (!context.Options.SecurityTokenHandler.CanReadToken(payload))
+                if (!context.Options.JsonWebTokenHandler.CanReadToken(payload))
                 {
                     return;
                 }
@@ -267,15 +269,9 @@ namespace OpenIddict.Server
 
                 async ValueTask<TokenValidationResult> ValidateTokenAsync(string token, string type)
                 {
-                    var parameters = new TokenValidationParameters
-                    {
-                        NameClaimType = Claims.Name,
-                        PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = type },
-                        RoleClaimType = Claims.Role,
-                        ValidIssuer = context.Issuer?.AbsoluteUri,
-                        ValidateAudience = false,
-                        ValidateLifetime = false
-                    };
+                    var parameters = context.Options.TokenValidationParameters.Clone();
+                    parameters.PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = type };
+                    parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
 
                     parameters.IssuerSigningKeys = type switch
                     {
@@ -298,7 +294,7 @@ namespace OpenIddict.Server
                         _ => Array.Empty<SecurityKey>()
                     };
 
-                    return await context.Options.SecurityTokenHandler.ValidateTokenStringAsync(token, parameters);
+                    return await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(token, parameters);
                 }
 
                 async ValueTask<TokenValidationResult> ValidateAnyTokenAsync(string token)
@@ -406,7 +402,7 @@ namespace OpenIddict.Server
                 };
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                if (string.IsNullOrEmpty(token) || !context.Options.SecurityTokenHandler.CanReadToken(token))
+                if (string.IsNullOrEmpty(token) || !context.Options.JsonWebTokenHandler.CanReadToken(token))
                 {
                     return;
                 }
@@ -450,15 +446,9 @@ namespace OpenIddict.Server
 
                 async ValueTask<TokenValidationResult> ValidateTokenAsync(string token, string type)
                 {
-                    var parameters = new TokenValidationParameters
-                    {
-                        NameClaimType = Claims.Name,
-                        PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = type },
-                        RoleClaimType = Claims.Role,
-                        ValidIssuer = context.Issuer?.AbsoluteUri,
-                        ValidateAudience = false,
-                        ValidateLifetime = false
-                    };
+                    var parameters = context.Options.TokenValidationParameters.Clone();
+                    parameters.PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = type };
+                    parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
 
                     parameters.IssuerSigningKeys = type switch
                     {
@@ -485,7 +475,7 @@ namespace OpenIddict.Server
                         _ => Array.Empty<SecurityKey>()
                     };
 
-                    return await context.Options.SecurityTokenHandler.ValidateTokenStringAsync(token, parameters);
+                    return await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(token, parameters);
                 }
 
                 async ValueTask<TokenValidationResult> ValidateAnyTokenAsync(string token)
@@ -1413,6 +1403,14 @@ namespace OpenIddict.Server
                         return true;
                     }
 
+                    // Never include the public or internal token identifiers to ensure the identifiers
+                    // that are automatically inherited from the parent token are not reused for the new token.
+                    if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
                     // Always exclude private claims, whose values must generally be kept secret.
                     if (claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1437,11 +1435,8 @@ namespace OpenIddict.Server
                     claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
                 }
 
-                // Note: the internal token identifier is automatically reset to ensure
-                // the identifier inherited from the parent token is not automatically reused.
-                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString())
-                         .SetCreationDate(DateTimeOffset.UtcNow)
-                         .SetInternalTokenId(identifier: null);
+                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
+                principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetAccessTokenLifetime() ?? context.Options.AccessTokenLifetime;
                 if (lifetime.HasValue)
@@ -1512,12 +1507,24 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: the internal token identifier is automatically reset to ensure
-                // the identifier inherited from the parent token is not automatically reused.
-                var principal = context.Principal.Clone(_ => true)
-                    .SetClaim(Claims.JwtId, Guid.NewGuid().ToString())
-                    .SetCreationDate(DateTimeOffset.UtcNow)
-                    .SetInternalTokenId(identifier: null);
+                // Create a new principal containing only the filtered claims.
+                // Actors identities are also filtered (delegation scenarios).
+                var principal = context.Principal.Clone(claim =>
+                {
+                    // Never include the public or internal token identifiers to ensure the identifiers
+                    // that are automatically inherited from the parent token are not reused for the new token.
+                    if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
+                    // Other claims are always included in the authorization code, even private claims.
+                    return true;
+                });
+
+                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
+                principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetAuthorizationCodeLifetime() ?? context.Options.AuthorizationCodeLifetime;
                 if (lifetime.HasValue)
@@ -1587,12 +1594,24 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: the internal token identifier is automatically reset to ensure
-                // the identifier inherited from the parent token is not automatically reused.
-                var principal = context.Principal.Clone(_ => true)
-                    .SetClaim(Claims.JwtId, Guid.NewGuid().ToString())
-                    .SetCreationDate(DateTimeOffset.UtcNow)
-                    .SetInternalTokenId(identifier: null);
+                // Create a new principal containing only the filtered claims.
+                // Actors identities are also filtered (delegation scenarios).
+                var principal = context.Principal.Clone(claim =>
+                {
+                    // Never include the public or internal token identifiers to ensure the identifiers
+                    // that are automatically inherited from the parent token are not reused for the new token.
+                    if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
+                    // Other claims are always included in the refresh token, even private claims.
+                    return true;
+                });
+
+                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
+                principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 // When sliding expiration is disabled, the expiration date of generated refresh tokens is fixed
                 // and must exactly match the expiration date of the refresh token used in the token request.
@@ -1663,6 +1682,14 @@ namespace OpenIddict.Server
                         return true;
                     }
 
+                    // Never include the public or internal token identifiers to ensure the identifiers
+                    // that are automatically inherited from the parent token are not reused for the new token.
+                    if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
                     // Always exclude private claims by default, whose values must generally be kept secret.
                     if (claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1687,11 +1714,8 @@ namespace OpenIddict.Server
                     claim.Properties.Remove(OpenIddictConstants.Properties.Destinations);
                 }
 
-                // Note: the internal token identifier is automatically reset to ensure
-                // the identifier inherited from the parent token is not automatically reused.
-                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString())
-                         .SetCreationDate(DateTimeOffset.UtcNow)
-                         .SetInternalTokenId(identifier: null);
+                principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
+                principal.SetCreationDate(DateTimeOffset.UtcNow);
 
                 var lifetime = context.Principal.GetIdentityTokenLifetime() ?? context.Options.IdentityTokenLifetime;
                 if (lifetime.HasValue)
@@ -2058,7 +2082,7 @@ namespace OpenIddict.Server
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
                 }
 
-                descriptor.Payload = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                descriptor.Payload = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
                         Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken },
@@ -2169,7 +2193,7 @@ namespace OpenIddict.Server
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
                 }
 
-                descriptor.Payload = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                descriptor.Payload = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
                         Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AuthorizationCode },
@@ -2280,7 +2304,7 @@ namespace OpenIddict.Server
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
                 }
 
-                descriptor.Payload = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                descriptor.Payload = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
                         Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.RefreshToken },
@@ -2510,7 +2534,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                context.Response.AccessToken = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                context.Response.AccessToken = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
                         Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken },
@@ -2561,7 +2585,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                context.Response.Code = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                context.Response.Code = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
                         Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AuthorizationCode },
@@ -2612,7 +2636,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                context.Response.RefreshToken = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                context.Response.RefreshToken = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
                         Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.RefreshToken },
@@ -2793,7 +2817,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                context.Response.IdToken = await context.Options.SecurityTokenHandler.CreateTokenFromDescriptorAsync(
+                context.Response.IdToken = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
                         Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.IdToken },
@@ -2850,7 +2874,7 @@ namespace OpenIddict.Server
 
                 // If the granted access token scopes differ from the requested scopes, return the granted scopes
                 // list as a parameter to inform the client application of the fact the scopes set will be reduced.
-                if (context.Request.IsAuthorizationCodeGrantType() ||
+                if ((context.EndpointType == OpenIddictServerEndpointType.Token && context.Request.IsAuthorizationCodeGrantType()) ||
                    !context.AccessTokenPrincipal.GetScopes().SetEquals(context.Request.GetScopes()))
                 {
                     context.Response.Scope = string.Join(" ", context.AccessTokenPrincipal.GetScopes());

@@ -84,11 +84,24 @@ namespace OpenIddict.Server
         public IList<Uri> UserinfoEndpointUris { get; } = new List<Uri>();
 
         /// <summary>
-        /// Gets or sets the security token handler used to protect and unprotect tokens.
+        /// Gets or sets the JWT handler used to protect and unprotect tokens.
         /// </summary>
-        public OpenIddictServerTokenHandler SecurityTokenHandler { get; set; } = new OpenIddictServerTokenHandler
+        public OpenIddictServerJsonWebTokenHandler JsonWebTokenHandler { get; set; } = new OpenIddictServerJsonWebTokenHandler
         {
             SetDefaultTimesOnTokenCreation = false
+        };
+
+        /// <summary>
+        /// Gets the token validation parameters used by the OpenIddict server services.
+        /// </summary>
+        public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
+        {
+            ClockSkew = TimeSpan.Zero,
+            NameClaimType = OpenIddictConstants.Claims.Name,
+            RoleClaimType = OpenIddictConstants.Claims.Role,
+            // Note: audience and lifetime are manually validated by OpenIddict itself.
+            ValidateAudience = false,
+            ValidateLifetime = false
         };
 
         /// <summary>

@@ -7,7 +7,6 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -32,25 +31,13 @@ namespace OpenIddict.Validation
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.SecurityTokenHandler == null)
+            if (options.JsonWebTokenHandler == null)
             {
                 throw new InvalidOperationException("The security token handler cannot be null.");
             }
 
-            if (options.TokenValidationParameters == null)
+            if (options.Issuer != null || options.MetadataAddress != null)
             {
-                if (options.Issuer == null && options.MetadataAddress == null)
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The authority or an absolute metadata endpoint address must be provided.")
-                        .Append("Alternatively, token validation parameters can be manually set by calling ")
-                        .AppendLine("'services.AddOpenIddict().AddValidation().SetTokenValidationParameters()'.")
-                        .Append("To use the server configuration of a local OpenIddict server instance, ")
-                        .Append("reference the 'OpenIddict.Validation.ServerIntegration' package ")
-                        .Append("and call 'services.AddOpenIddict().AddValidation().UseLocalServer()'.")
-                        .ToString());
-                }
-
                 if (options.MetadataAddress == null)
                 {
                     options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
