@@ -345,6 +345,12 @@ namespace OpenIddict.Server
                         context.SkipRequest();
                         return;
                     }
+
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("The userinfo response was not correctly applied. To apply userinfo response, ")
+                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyUserinfoResponseContext>' ")
+                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
+                        .ToString());
                 }
             }
 

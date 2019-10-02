@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 
@@ -123,6 +124,7 @@ namespace OpenIddict.Server
         /// This option MUST be enabled with extreme caution and custom handlers MUST be registered to
         /// properly validate OpenID Connect requests.
         /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
         public bool EnableDegradedMode { get; set; }
 
         /// <summary>
@@ -188,6 +190,22 @@ namespace OpenIddict.Server
         /// Gets the OAuth 2.0/OpenID Connect flows enabled for this application.
         /// </summary>
         public ISet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets the OAuth 2.0/OpenID Connect response types enabled for this application.
+        /// Response types are automatically inferred from the supported standard grant types,
+        /// but additional values can be added for advanced scenarios (e.g custom type support).
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public ISet<string> ResponseTypes { get; } = new HashSet<string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets the OAuth 2.0/OpenID Connect response modes enabled for this application.
+        /// Response modes are automatically inferred from the supported standard grant types,
+        /// but additional values can be added for advanced scenarios (e.g custom mode support).
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public ISet<string> ResponseModes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets a boolean indicating whether endpoint permissions should be ignored.

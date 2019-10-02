@@ -369,6 +369,12 @@ namespace OpenIddict.Server
                         context.SkipRequest();
                         return;
                     }
+
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("The introspection response was not correctly applied. To apply introspection response, ")
+                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyIntrospectionResponseContext>' ")
+                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
+                        .ToString());
                 }
             }
 

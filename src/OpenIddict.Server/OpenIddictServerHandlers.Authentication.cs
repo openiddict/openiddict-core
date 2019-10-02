@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,6 +45,7 @@ namespace OpenIddict.Server
                 ValidateRedirectUriParameter.Descriptor,
                 ValidateResponseTypeParameter.Descriptor,
                 ValidateResponseModeParameter.Descriptor,
+                ValidateScopeParameter.Descriptor,
                 ValidateNonceParameter.Descriptor,
                 ValidatePromptParameter.Descriptor,
                 ValidateCodeChallengeParameters.Descriptor,
@@ -363,6 +365,12 @@ namespace OpenIddict.Server
                         context.SkipRequest();
                         return;
                     }
+
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("The authorization response was not correctly applied. To apply authorization response, ")
+                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyAuthorizationResponseContext>' ")
+                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
+                        .ToString());
                 }
             }
 
@@ -632,32 +640,10 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    // Reject requests containing the id_token response_type if no openid scope has been received.
-                    if (context.Request.HasResponseType(ResponseTypes.IdToken) && !context.Request.HasScope(Scopes.OpenId))
-                    {
-                        context.Logger.LogError("The authorization request was rejected because the 'openid' scope was missing.");
-
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: "The mandatory 'openid' scope is missing.");
-
-                        return default;
-                    }
-
-                    // Reject requests containing the code response_type if the token endpoint has been disabled.
-                    if (context.Request.HasResponseType(ResponseTypes.Code) && context.Options.TokenEndpointUris.Count == 0)
-                    {
-                        context.Logger.LogError("The authorization request was rejected because the authorization code flow was disabled.");
-
-                        context.Reject(
-                            error: Errors.UnsupportedResponseType,
-                            description: "The specified 'response_type' is not supported by this server.");
-
-                        return default;
-                    }
-
                     // Reject requests that specify an unsupported response_type.
-                    if (!context.Request.IsAuthorizationCodeFlow() && !context.Request.IsHybridFlow() && !context.Request.IsImplicitFlow())
+                    var types = context.Request.GetResponseTypes();
+                    if (!context.Options.ResponseTypes.Any(type =>
+                        types.SetEquals(type.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries))))
                     {
                         context.Logger.LogError("The authorization request was rejected because the '{ResponseType}' " +
                                                 "response type is not supported.", context.Request.ResponseType);
@@ -665,55 +651,6 @@ namespace OpenIddict.Server
                         context.Reject(
                             error: Errors.UnsupportedResponseType,
                             description: "The specified 'response_type' parameter is not supported.");
-
-                        return default;
-                    }
-
-                    // Reject code flow authorization requests if the authorization code flow is not enabled.
-                    if (context.Request.IsAuthorizationCodeFlow() && !context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
-                    {
-                        context.Logger.LogError("The authorization request was rejected because " +
-                                                "the authorization code flow was not enabled.");
-
-                        context.Reject(
-                            error: Errors.UnsupportedResponseType,
-                            description: "The specified 'response_type' parameter is not allowed.");
-
-                        return default;
-                    }
-
-                    // Reject implicit flow authorization requests if the implicit flow is not enabled.
-                    if (context.Request.IsImplicitFlow() && !context.Options.GrantTypes.Contains(GrantTypes.Implicit))
-                    {
-                        context.Logger.LogError("The authorization request was rejected because the implicit flow was not enabled.");
-
-                        context.Reject(
-                            error: Errors.UnsupportedResponseType,
-                            description: "The specified 'response_type' parameter is not allowed.");
-
-                        return default;
-                    }
-
-                    // Reject hybrid flow authorization requests if the authorization code or the implicit flows are not enabled.
-                    if (context.Request.IsHybridFlow() && (!context.Options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
-                                                           !context.Options.GrantTypes.Contains(GrantTypes.Implicit)))
-                    {
-                        context.Logger.LogError("The authorization request was rejected because the " +
-                                                "authorization code flow or the implicit flow was not enabled.");
-
-                        context.Reject(
-                            error: Errors.UnsupportedResponseType,
-                            description: "The specified 'response_type' parameter is not allowed.");
-
-                        return default;
-                    }
-
-                    // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
-                    if (context.Request.HasScope(Scopes.OfflineAccess) && !context.Options.GrantTypes.Contains(GrantTypes.RefreshToken))
-                    {
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: "The 'offline_access' scope is not allowed.");
 
                         return default;
                     }
@@ -767,10 +704,9 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    // Reject requests that specify an unsupported response_mode.
-                    if (!string.IsNullOrEmpty(context.Request.ResponseMode) && !context.Request.IsFormPostResponseMode() &&
-                                                                               !context.Request.IsFragmentResponseMode() &&
-                                                                               !context.Request.IsQueryResponseMode())
+                    // Reject requests that specify an unsupported response_mode or don't specify a different response_mode
+                    // if the default response_mode inferred from the response_type was explicitly disabled in the options.
+                    if (!ValidateResponseMode(context.Request, context.Options))
                     {
                         context.Logger.LogError("The authorization request was rejected because the '{ResponseMode}' " +
                                                 "response mode is not supported.", context.Request.ResponseMode);
@@ -778,6 +714,85 @@ namespace OpenIddict.Server
                         context.Reject(
                             error: Errors.InvalidRequest,
                             description: "The specified 'response_mode' parameter is not supported.");
+
+                        return default;
+                    }
+
+                    return default;
+
+                    static bool ValidateResponseMode(OpenIddictRequest request, OpenIddictServerOptions options)
+                    {
+                        // Note: both the fragment and query response modes are used as default response modes
+                        // when using the implicit/hybrid and code flows if no explicit value was set.
+                        // To ensure requests are rejected if the default response mode was manually disabled,
+                        // the fragment and query response modes are checked first using the appropriate extensions.
+
+                        if (request.IsFragmentResponseMode())
+                        {
+                            return options.ResponseModes.Contains(ResponseModes.Fragment);
+                        }
+
+                        if (request.IsQueryResponseMode())
+                        {
+                            return options.ResponseModes.Contains(ResponseModes.Query);
+                        }
+
+                        if (string.IsNullOrEmpty(request.ResponseMode))
+                        {
+                            return true;
+                        }
+
+                        return options.ResponseModes.Contains(request.ResponseMode);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of rejecting authorization requests that don't specify a valid scope parameter.
+            /// </summary>
+            public class ValidateScopeParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                        .UseSingletonHandler<ValidateScopeParameter>()
+                        .SetOrder(ValidateResponseModeParameter.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public ValueTask HandleAsync([NotNull] ValidateAuthorizationRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    // Reject authorization requests containing the id_token response_type if no openid scope has been received.
+                    if (context.Request.HasResponseType(ResponseTypes.IdToken) && !context.Request.HasScope(Scopes.OpenId))
+                    {
+                        context.Logger.LogError("The authorization request was rejected because the 'openid' scope was missing.");
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The mandatory 'openid' scope is missing.");
+
+                        return default;
+                    }
+
+                    // Reject authorization requests that specify scope=offline_access if the refresh token flow is not enabled.
+                    if (context.Request.HasScope(Scopes.OfflineAccess) && !context.Options.GrantTypes.Contains(GrantTypes.RefreshToken))
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The 'offline_access' scope is not allowed.");
 
                         return default;
                     }
@@ -797,7 +812,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
                         .UseSingletonHandler<ValidateNonceParameter>()
-                        .SetOrder(ValidateResponseModeParameter.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateScopeParameter.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>

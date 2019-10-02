@@ -172,6 +172,36 @@ namespace OpenIddict.Server
                 options.Scopes.Add(Scopes.OfflineAccess);
             }
 
+            if (options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
+            {
+                options.ResponseTypes.Add(ResponseTypes.Code);
+            }
+
+            if (options.GrantTypes.Contains(GrantTypes.Implicit))
+            {
+                options.ResponseTypes.Add(ResponseTypes.IdToken);
+                options.ResponseTypes.Add(ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
+                options.ResponseTypes.Add(ResponseTypes.Token);
+            }
+
+            if (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) && options.GrantTypes.Contains(GrantTypes.Implicit))
+            {
+                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken);
+                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
+                options.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.Token);
+            }
+
+            if (options.ResponseTypes.Count != 0)
+            {
+                options.ResponseModes.Add(ResponseModes.FormPost);
+                options.ResponseModes.Add(ResponseModes.Fragment);
+
+                if (options.ResponseTypes.Contains(ResponseTypes.Code))
+                {
+                    options.ResponseModes.Add(ResponseModes.Query);
+                }
+            }
+
             foreach (var key in options.EncryptionCredentials
                 .Select(credentials => credentials.Key)
                 .Concat(options.SigningCredentials.Select(credentials => credentials.Key)))

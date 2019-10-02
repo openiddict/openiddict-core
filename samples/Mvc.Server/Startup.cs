@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -134,6 +135,16 @@ namespace Mvc.Server
             app.UseStaticFiles();
 
             app.UseStatusCodePagesWithReExecute("/error");
+
+            // Note: ASP.NET Core is impacted by a bug that prevents the status code pages
+            // from working correctly with endpoint routing. For more information, visit
+            // https://github.com/aspnet/AspNetCore/issues/13715#issuecomment-528929683.
+            app.Use((context, next) =>
+            {
+                context.SetEndpoint(null);
+
+                return next();
+            });
 
             app.UseRouting();
 
