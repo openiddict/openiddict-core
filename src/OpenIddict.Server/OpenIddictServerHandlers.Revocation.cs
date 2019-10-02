@@ -317,6 +317,12 @@ namespace OpenIddict.Server
                         context.SkipRequest();
                         return;
                     }
+
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("The revocation response was not correctly applied. To apply revocation response, ")
+                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyRevocationResponseContext>' ")
+                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
+                        .ToString());
                 }
             }
 

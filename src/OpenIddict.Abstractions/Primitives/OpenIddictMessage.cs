@@ -231,8 +231,7 @@ namespace OpenIddict.Abstractions
         /// Gets all the parameters associated with this instance.
         /// </summary>
         /// <returns>The parameters associated with this instance.</returns>
-        public ImmutableDictionary<string, OpenIddictParameter> GetParameters()
-            => Parameters.ToImmutableDictionary(StringComparer.Ordinal);
+        public IReadOnlyDictionary<string, OpenIddictParameter> GetParameters() => Parameters;
 
         /// <summary>
         /// Determines whether the current message contains the specified parameter.

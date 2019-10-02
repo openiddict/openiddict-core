@@ -80,6 +80,25 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Extracts the response types from an <see cref="OpenIddictRequest"/>.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        public static ImmutableHashSet<string> GetResponseTypes([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (string.IsNullOrEmpty(request.ResponseType))
+            {
+                return ImmutableHashSet.Create<string>(StringComparer.Ordinal);
+            }
+
+            return ImmutableHashSet.CreateRange(StringComparer.Ordinal, GetValues(request.ResponseType, Separators.Space));
+        }
+
+        /// <summary>
         /// Extracts the scopes from an <see cref="OpenIddictRequest"/>.
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>

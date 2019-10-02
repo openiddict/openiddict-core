@@ -353,6 +353,12 @@ namespace OpenIddict.Server
                         context.SkipRequest();
                         return;
                     }
+
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("The configuration response was not correctly applied. To apply configuration response, ")
+                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyConfigurationResponseContext>' ")
+                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
+                        .ToString());
                 }
             }
 
@@ -499,11 +505,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    // Only populate grant_type_supported if the authorization or token endpoints are enabled.
-                    if (context.AuthorizationEndpoint != null || context.TokenEndpoint != null)
-                    {
-                        context.GrantTypes.UnionWith(context.Options.GrantTypes);
-                    }
+                    context.GrantTypes.UnionWith(context.Options.GrantTypes);
 
                     return default;
                 }
@@ -537,13 +539,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    // Only populate response_modes_supported if the authorization endpoint is enabled.
-                    if (context.AuthorizationEndpoint != null)
-                    {
-                        context.ResponseModes.Add(ResponseModes.FormPost);
-                        context.ResponseModes.Add(ResponseModes.Fragment);
-                        context.ResponseModes.Add(ResponseModes.Query);
-                    }
+                    context.ResponseModes.UnionWith(context.Options.ResponseModes);
 
                     return default;
                 }
@@ -577,25 +573,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.GrantTypes.Contains(GrantTypes.AuthorizationCode))
-                    {
-                        context.ResponseTypes.Add(ResponseTypes.Code);
-                    }
-
-                    if (context.GrantTypes.Contains(GrantTypes.AuthorizationCode) &&
-                        context.GrantTypes.Contains(GrantTypes.Implicit))
-                    {
-                        context.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken);
-                        context.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
-                        context.ResponseTypes.Add(ResponseTypes.Code + ' ' + ResponseTypes.Token);
-                    }
-
-                    if (context.GrantTypes.Contains(GrantTypes.Implicit))
-                    {
-                        context.ResponseTypes.Add(ResponseTypes.IdToken);
-                        context.ResponseTypes.Add(ResponseTypes.IdToken + ' ' + ResponseTypes.Token);
-                        context.ResponseTypes.Add(ResponseTypes.Token);
-                    }
+                    context.ResponseTypes.UnionWith(context.Options.ResponseTypes);
 
                     return default;
                 }
@@ -1224,6 +1202,12 @@ namespace OpenIddict.Server
                         context.SkipRequest();
                         return;
                     }
+
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("The cryptography response was not correctly applied. To apply cryptography response, ")
+                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyCryptographyResponseContext>' ")
+                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
+                        .ToString());
                 }
             }
 
