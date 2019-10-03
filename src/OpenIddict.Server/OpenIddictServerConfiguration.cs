@@ -35,7 +35,7 @@ namespace OpenIddict.Server
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.SecurityTokenHandler == null)
+            if (options.JsonWebTokenHandler == null)
             {
                 throw new InvalidOperationException("The security token handler cannot be null.");
             }

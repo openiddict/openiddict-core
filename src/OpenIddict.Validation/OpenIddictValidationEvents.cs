@@ -240,13 +240,12 @@ namespace OpenIddict.Validation
             /// </summary>
             public ProcessAuthenticationContext([NotNull] OpenIddictValidationTransaction transaction)
                 : base(transaction)
-            {
-            }
+                => TokenValidationParameters = transaction.Options.TokenValidationParameters.Clone();
 
             /// <summary>
-            /// Gets or sets the token validation parameters used for the current request.
+            /// Gets the token validation parameters used for the current request.
             /// </summary>
-            public TokenValidationParameters TokenValidationParameters { get; set; }
+            public TokenValidationParameters TokenValidationParameters { get; }
 
             /// <summary>
             /// Gets or sets the security principal.

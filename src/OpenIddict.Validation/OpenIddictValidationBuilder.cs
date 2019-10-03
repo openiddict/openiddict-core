@@ -605,18 +605,18 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Sets the static token validation parameters.
+        /// Updates the token validation parameters using the specified delegate.
         /// </summary>
-        /// <param name="parameters">The issuer address.</param>
+        /// <param name="configuration">The configuration delegate.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder SetTokenValidationParameters([NotNull] TokenValidationParameters parameters)
+        public OpenIddictValidationBuilder SetTokenValidationParameters([NotNull] Action<TokenValidationParameters> configuration)
         {
-            if (parameters == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException(nameof(parameters));
+                throw new ArgumentNullException(nameof(configuration));
             }
 
-            return Configure(options => options.TokenValidationParameters = parameters);
+            return Configure(options => configuration(options.TokenValidationParameters));
         }
 
         /// <summary>

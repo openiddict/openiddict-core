@@ -23,6 +23,7 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.OpenIddictValidationHandlers;
 using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpConstants;
+using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlerFilters;
 
 namespace OpenIddict.Validation.SystemNetHttp
 {
@@ -33,79 +34,33 @@ namespace OpenIddict.Validation.SystemNetHttp
             /*
              * Authentication processing:
              */
-            PopulateTokenValidationParametersFromMemoryCache.Descriptor,
-            PopulateTokenValidationParametersFromProviderConfiguration.Descriptor,
-            CacheTokenValidationParameters.Descriptor);
-
-        /// <summary>
-        /// Contains the logic responsible of populating the token validation parameters from the memory cache.
-        /// </summary>
-        public class PopulateTokenValidationParametersFromMemoryCache : IOpenIddictValidationHandler<ProcessAuthenticationContext>
-        {
-            private readonly IMemoryCache _cache;
-
-            public PopulateTokenValidationParametersFromMemoryCache([NotNull] IMemoryCache cache)
-                => _cache = cache;
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                    .UseSingletonHandler<PopulateTokenValidationParametersFromMemoryCache>()
-                    .SetOrder(PopulateTokenValidationParametersFromProviderConfiguration.Descriptor.Order - 1_000)
-                    .Build();
-
-            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // If token validation parameters were already attached, don't overwrite them.
-                if (context.TokenValidationParameters != null)
-                {
-                    return default;
-                }
-
-                // If the metadata address is not an HTTP/HTTPS address, let another handler populate the validation parameters.
-                if (!string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-                {
-                    return default;
-                }
-
-                // Resolve the token validation parameters from the memory cache.
-                if (_cache.TryGetValue(
-                    key: string.Concat("af84c073-c27c-49fd-a54f-584fd60320d3", "\x1e", context.Issuer?.AbsoluteUri),
-                    value: out TokenValidationParameters parameters))
-                {
-                    context.TokenValidationParameters = parameters;
-                }
-
-                return default;
-            }
-        }
+            PopulateTokenValidationParameters.Descriptor);
 
         /// <summary>
         /// Contains the logic responsible of populating the token validation
         /// parameters using OAuth 2.0/OpenID Connect discovery.
         /// </summary>
-        public class PopulateTokenValidationParametersFromProviderConfiguration : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        public class PopulateTokenValidationParameters : IOpenIddictValidationHandler<ProcessAuthenticationContext>
         {
+            private readonly IMemoryCache _cache;
             private readonly IHttpClientFactory _factory;
 
-            public PopulateTokenValidationParametersFromProviderConfiguration([NotNull] IHttpClientFactory factory)
-                => _factory = factory;
+            public PopulateTokenValidationParameters(
+                [NotNull] IMemoryCache cache,
+                [NotNull] IHttpClientFactory factory)
+            {
+                _cache = cache;
+                _factory = factory;
+            }
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                    .UseSingletonHandler<PopulateTokenValidationParametersFromProviderConfiguration>()
-                    .SetOrder(ValidateTokenValidationParameters.Descriptor.Order - 1_000)
+                    .AddFilter<RequireHttpMetadataAddress>()
+                    .UseSingletonHandler<PopulateTokenValidationParameters>()
+                    .SetOrder(ValidateSelfContainedToken.Descriptor.Order - 500)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -115,42 +70,45 @@ namespace OpenIddict.Validation.SystemNetHttp
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // If token validation parameters were already attached, don't overwrite them.
-                if (context.TokenValidationParameters != null)
+                var parameters = await _cache.GetOrCreateAsync(
+                    key: string.Concat("af84c073-c27c-49fd-a54f-584fd60320d3", "\x1e", context.Issuer?.AbsoluteUri),
+                    factory: async entry =>
+                    {
+                        entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
+                        entry.SetPriority(CacheItemPriority.NeverRemove);
+
+                        return await GetTokenValidationParametersAsync();
+                    });
+
+                context.TokenValidationParameters.ValidIssuer = parameters.ValidIssuer;
+                context.TokenValidationParameters.IssuerSigningKeys = parameters.IssuerSigningKeys;
+
+                async ValueTask<TokenValidationParameters> GetTokenValidationParametersAsync()
                 {
-                    return;
+                    using var client = _factory.CreateClient(Clients.Discovery);
+                    var response = await SendHttpRequestMessageAsync(client, context.Options.MetadataAddress);
+
+                    // Ensure the JWKS endpoint URL is present and valid.
+                    if (!response.TryGetParameter(Metadata.JwksUri, out var endpoint) || OpenIddictParameter.IsNullOrEmpty(endpoint))
+                    {
+                        throw new InvalidOperationException("A discovery response containing an empty JWKS endpoint URL was returned.");
+                    }
+
+                    if (!Uri.TryCreate((string) endpoint, UriKind.Absolute, out Uri uri))
+                    {
+                        throw new InvalidOperationException("A discovery response containing an invalid JWKS endpoint URL was returned.");
+                    }
+
+                    return new TokenValidationParameters
+                    {
+                        ValidIssuer = (string) response[Metadata.Issuer],
+                        IssuerSigningKeys = await GetSigningKeysAsync(client, uri).ToListAsync()
+                    };
                 }
 
-                // If the metadata address is not an HTTP/HTTPS address, let another handler populate the validation parameters.
-                if (!string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+                async IAsyncEnumerable<SecurityKey> GetSigningKeysAsync(HttpClient client, Uri address)
                 {
-                    return;
-                }
-
-                using var client = _factory.CreateClient(Clients.Discovery);
-                var response = await SendHttpRequestMessageAsync(context.Options.MetadataAddress);
-
-                // Ensure the JWKS endpoint URL is present and valid.
-                if (!response.TryGetParameter(Metadata.JwksUri, out var endpoint) || OpenIddictParameter.IsNullOrEmpty(endpoint))
-                {
-                    throw new InvalidOperationException("A discovery response containing an empty JWKS endpoint URL was returned.");
-                }
-
-                if (!Uri.TryCreate((string) endpoint, UriKind.Absolute, out Uri uri))
-                {
-                    throw new InvalidOperationException("A discovery response containing an invalid JWKS endpoint URL was returned.");
-                }
-
-                context.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidIssuer = (string) response[Metadata.Issuer],
-                    IssuerSigningKeys = await GetSigningKeysAsync(uri).ToListAsync()
-                };
-
-                async IAsyncEnumerable<SecurityKey> GetSigningKeysAsync(Uri address)
-                {
-                    var response = await SendHttpRequestMessageAsync(address);
+                    var response = await SendHttpRequestMessageAsync(client, address);
 
                     var keys = response[JsonWebKeySetParameterNames.Keys];
                     if (keys == null)
@@ -208,7 +166,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     }
                 }
 
-                async ValueTask<OpenIddictResponse> SendHttpRequestMessageAsync(Uri address)
+                static async ValueTask<OpenIddictResponse> SendHttpRequestMessageAsync(HttpClient client, Uri address)
                 {
                     using var request = new HttpRequestMessage(HttpMethod.Get, address);
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -241,59 +199,6 @@ namespace OpenIddict.Validation.SystemNetHttp
                     var serializer = JsonSerializer.CreateDefault();
                     return serializer.Deserialize<OpenIddictResponse>(reader);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible of caching the token validation parameters.
-        /// </summary>
-        public class CacheTokenValidationParameters : IOpenIddictValidationHandler<ProcessAuthenticationContext>
-        {
-            private readonly IMemoryCache _cache;
-
-            public CacheTokenValidationParameters([NotNull] IMemoryCache cache)
-                => _cache = cache;
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
-                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                    .UseSingletonHandler<CacheTokenValidationParameters>()
-                    .SetOrder(ValidateTokenValidationParameters.Descriptor.Order + 500)
-                    .Build();
-
-            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.TokenValidationParameters == null)
-                {
-                    return default;
-                }
-
-                // If the metadata address is not an HTTP/HTTPS address, let another handler populate the validation parameters.
-                if (!string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-                {
-                    return default;
-                }
-
-                // Store the token validation parameters in the memory cache.
-                _ = _cache.GetOrCreate(
-                    key: string.Concat("af84c073-c27c-49fd-a54f-584fd60320d3", "\x1e", context.Issuer?.AbsoluteUri),
-                    factory: entry =>
-                    {
-                        entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
-                        entry.SetPriority(CacheItemPriority.NeverRemove);
-
-                        return context.TokenValidationParameters;
-                    });
-
-                return default;
             }
         }
     }

@@ -34,10 +34,6 @@ namespace OpenIddict.Validation.DataProtection
                 throw new ArgumentNullException(nameof(options));
             }
 
-            // Use empty token validation parameters to ensure the core OpenIddict validation components
-            // don't throw an exception stating that an issuer or a metadata address was not set.
-            options.TokenValidationParameters = new TokenValidationParameters();
-
             // Register the built-in event handlers used by the OpenIddict Data Protection validation components.
             foreach (var handler in OpenIddictValidationDataProtectionHandlers.DefaultHandlers)
             {

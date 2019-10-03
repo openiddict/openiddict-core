@@ -1683,6 +1683,21 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Updates the token validation parameters using the specified delegate.
+        /// </summary>
+        /// <param name="configuration">The configuration delegate.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetTokenValidationParameters([NotNull] Action<TokenValidationParameters> configuration)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            return Configure(options => configuration(options.TokenValidationParameters));
+        }
+
+        /// <summary>
         /// Configures OpenIddict to use reference tokens, so that authorization codes,
         /// access tokens and refresh tokens are stored as ciphertext in the database
         /// (only an identifier is returned to the client application). Enabling this option

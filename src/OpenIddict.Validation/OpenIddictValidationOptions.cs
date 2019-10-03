@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Abstractions;
 
 namespace OpenIddict.Validation
 {
@@ -22,9 +23,9 @@ namespace OpenIddict.Validation
         public IList<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
 
         /// <summary>
-        /// Gets or sets the security token handler used to protect and unprotect tokens.
+        /// Gets or sets the JWT handler used to protect and unprotect tokens.
         /// </summary>
-        public OpenIddictValidationTokenHandler SecurityTokenHandler { get; set; } = new OpenIddictValidationTokenHandler
+        public OpenIddictValidationJsonWebTokenHandler JsonWebTokenHandler { get; set; } = new OpenIddictValidationJsonWebTokenHandler
         {
             SetDefaultTimesOnTokenCreation = false
         };
@@ -79,8 +80,16 @@ namespace OpenIddict.Validation
         public ISet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Gets or sets the token validation parameters used by the OpenIddict validation services.
+        /// Gets the token validation parameters used by the OpenIddict validation services.
         /// </summary>
-        public TokenValidationParameters TokenValidationParameters { get; set; }
+        public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
+        {
+            ClockSkew = TimeSpan.Zero,
+            NameClaimType = OpenIddictConstants.Claims.Name,
+            RoleClaimType = OpenIddictConstants.Claims.Role,
+            // Note: audience and lifetime are manually validated by OpenIddict itself.
+            ValidateAudience = false,
+            ValidateLifetime = false
+        };
     }
 }
