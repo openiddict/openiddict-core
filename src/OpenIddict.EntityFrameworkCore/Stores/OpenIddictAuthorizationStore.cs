@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -247,7 +248,14 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the authorizations corresponding
         /// to the specified subject and associated with the application identifier.
         /// </summary>
-        private static readonly Func<TContext, TKey, string, IAsyncEnumerable<TAuthorization>> FindBySubjectAndClient =
+        private static readonly
+#if SUPPORTS_BCL_ASYNC_ENUMERABLE
+            Func<TContext, TKey, string, IAsyncEnumerable<TAuthorization>>
+#else
+            Func<TContext, TKey, string, AsyncEnumerable<TAuthorization>>
+#endif
+            FindBySubjectAndClient =
+
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -282,13 +290,24 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The client cannot be null or empty.", nameof(client));
             }
 
-            return FindBySubjectAndClient(Context, ConvertIdentifierFromString(client), subject);
+            return FindBySubjectAndClient(Context, ConvertIdentifierFromString(client), subject)
+#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
+                .AsAsyncEnumerable(cancellationToken)
+#endif
+                ;
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the authorizations matching the specified parameters.
         /// </summary>
-        private static readonly Func<TContext, TKey, string, string, IAsyncEnumerable<TAuthorization>> FindBySubjectClientAndStatus =
+        private static readonly
+#if SUPPORTS_BCL_ASYNC_ENUMERABLE
+            Func<TContext, TKey, string, string, IAsyncEnumerable<TAuthorization>>
+#else
+            Func<TContext, TKey, string, string, AsyncEnumerable<TAuthorization>>
+#endif
+            FindBySubjectClientAndStatus =
+
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -329,13 +348,24 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            return FindBySubjectClientAndStatus(Context, ConvertIdentifierFromString(client), subject, status);
+            return FindBySubjectClientAndStatus(Context, ConvertIdentifierFromString(client), subject, status)
+#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
+                .AsAsyncEnumerable(cancellationToken)
+#endif
+                ;
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve the authorizations matching the specified parameters.
         /// </summary>
-        private static readonly Func<TContext, TKey, string, string, string, IAsyncEnumerable<TAuthorization>> FindBySubjectClientStatusAndType =
+        private static readonly
+#if SUPPORTS_BCL_ASYNC_ENUMERABLE
+            Func<TContext, TKey, string, string, string, IAsyncEnumerable<TAuthorization>>
+#else
+            Func<TContext, TKey, string, string, string, AsyncEnumerable<TAuthorization>>
+#endif
+            FindBySubjectClientStatusAndType =
+
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -384,7 +414,11 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            return FindBySubjectClientStatusAndType(Context, ConvertIdentifierFromString(client), subject, status, type);
+            return FindBySubjectClientStatusAndType(Context, ConvertIdentifierFromString(client), subject, status, type)
+#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
+                .AsAsyncEnumerable(cancellationToken)
+#endif
+                ;
         }
 
         /// <summary>
@@ -409,7 +443,14 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve the list of
         /// authorizations corresponding to the specified application identifier.
         /// </summary>
-        private static readonly Func<TContext, TKey, IAsyncEnumerable<TAuthorization>> FindByApplicationId =
+        private static readonly
+#if SUPPORTS_BCL_ASYNC_ENUMERABLE
+            Func<TContext, TKey, IAsyncEnumerable<TAuthorization>>
+#else
+            Func<TContext, TKey, AsyncEnumerable<TAuthorization>>
+#endif
+            FindByApplicationId =
+
             // Note: due to a bug in Entity Framework Core's query visitor, the authorizations can't be
             // filtered using authorization.Application.Id.Equals(key). To work around this issue,
             // this compiled query uses an explicit join before applying the equality check.
@@ -436,7 +477,11 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return FindByApplicationId(Context, ConvertIdentifierFromString(identifier));
+            return FindByApplicationId(Context, ConvertIdentifierFromString(identifier))
+#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
+                .AsAsyncEnumerable(cancellationToken)
+#endif
+                ;
         }
 
         /// <summary>
@@ -470,7 +515,14 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve all the
         /// authorizations corresponding to the specified subject.
         /// </summary>
-        private static readonly Func<TContext, string, IAsyncEnumerable<TAuthorization>> FindBySubject =
+        private static readonly
+#if SUPPORTS_BCL_ASYNC_ENUMERABLE
+            Func<TContext, string, IAsyncEnumerable<TAuthorization>>
+#else
+            Func<TContext, string, AsyncEnumerable<TAuthorization>>
+#endif
+            FindBySubject =
+
             EF.CompileAsyncQuery((TContext context, string subject) =>
                 from authorization in context.Set<TAuthorization>()
                     .Include(authorization => authorization.Application)
@@ -492,7 +544,11 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            return FindBySubject(Context, subject);
+            return FindBySubject(Context, subject)
+#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
+                .AsAsyncEnumerable(cancellationToken)
+#endif
+                ;
         }
 
         /// <summary>
