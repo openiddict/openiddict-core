@@ -12,4 +12,18 @@
     <Copyright>$(_ProjectCopyright)</Copyright>
   </PropertyGroup>
 
+  <!--
+    Note: Entity Framework Core 2.x references System.Interactive.Async 3.x, that includes
+    its own IAsyncEnumerable. To work around collisions between this type and the new type
+    now included in the BCL (System.Runtime), an alias is added to System.Interactive.Async.
+  -->
+
+  <Target Name="AddAssemblyAliasToReactiveAsync" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <ReferencePath Condition=" '%(FileName)' == 'System.Interactive.Async' ">
+        <Aliases>reactive</Aliases>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
+
 </Project>

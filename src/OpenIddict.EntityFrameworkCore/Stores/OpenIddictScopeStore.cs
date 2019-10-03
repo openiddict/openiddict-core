@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -235,8 +236,13 @@ namespace OpenIddict.EntityFrameworkCore
         /// <summary>
         /// Exposes a compiled query allowing to retrieve a list of scopes using their name.
         /// </summary>
-        private static readonly Func<TContext, ImmutableArray<string>, IAsyncEnumerable<TScope>> FindByNames =
-            EF.CompileAsyncQuery((TContext context, ImmutableArray<string> names) =>
+        private static readonly
+#if SUPPORTS_BCL_ASYNC_ENUMERABLE
+            Func<TContext, ImmutableArray<string>, IAsyncEnumerable<TScope>>
+#else
+            Func<TContext, ImmutableArray<string>, AsyncEnumerable<TScope>>
+#endif
+            FindByNames = EF.CompileAsyncQuery((TContext context, ImmutableArray<string> names) =>
                 from scope in context.Set<TScope>().AsTracking()
                 where names.Contains(scope.Name)
                 select scope);
@@ -255,13 +261,24 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
-            return FindByNames(Context, names);
+            return FindByNames(Context, names)
+#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
+                .AsAsyncEnumerable(cancellationToken)
+#endif
+                ;
         }
 
         /// <summary>
         /// Exposes a compiled query allowing to retrieve all the scopes that contain the specified resource.
         /// </summary>
-        private static readonly Func<TContext, string, IAsyncEnumerable<TScope>> FindByResource =
+        private static readonly
+#if SUPPORTS_BCL_ASYNC_ENUMERABLE
+            Func<TContext, string, IAsyncEnumerable<TScope>>
+#else
+            Func<TContext, string, AsyncEnumerable<TScope>>
+#endif
+            FindByResource =
+
             // To optimize the efficiency of the query a bit, only scopes whose stringified
             // Resources column contains the specified resource are returned. Once the scopes
             // are retrieved, a second pass is made to ensure only valid elements are returned.
@@ -287,6 +304,9 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return FindByResource(Context, resource)
+#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
+                .AsAsyncEnumerable(cancellationToken)
+#endif
                 .WhereAwait(async scope => (await GetResourcesAsync(scope, cancellationToken)).Contains(resource, StringComparer.Ordinal));
         }
 

@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -327,7 +328,14 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve all the applications
         /// associated with the specified post_logout_redirect_uri.
         /// </summary>
-        private static readonly Func<TContext, string, IAsyncEnumerable<TApplication>> FindByPostLogoutRedirectUri =
+        private static readonly 
+#if SUPPORTS_BCL_ASYNC_ENUMERABLE
+            Func<TContext, string, IAsyncEnumerable<TApplication>>
+#else
+            Func<TContext, string, AsyncEnumerable<TApplication>>
+#endif
+            FindByPostLogoutRedirectUri =
+
             // To optimize the efficiency of the query a bit, only applications whose stringified
             // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
             // are retrieved, a second pass is made to ensure only valid elements are returned.
@@ -353,6 +361,9 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return FindByPostLogoutRedirectUri(Context, address)
+#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
+                .AsAsyncEnumerable(cancellationToken)
+#endif
                 .WhereAwait(async application => (await GetPostLogoutRedirectUrisAsync(application, cancellationToken))
                     .Contains(address, StringComparer.Ordinal));
         }
@@ -361,7 +372,14 @@ namespace OpenIddict.EntityFrameworkCore
         /// Exposes a compiled query allowing to retrieve all the
         /// applications associated with the specified redirect_uri.
         /// </summary>
-        private static readonly Func<TContext, string, IAsyncEnumerable<TApplication>> FindByRedirectUri =
+        private static readonly 
+#if SUPPORTS_BCL_ASYNC_ENUMERABLE
+            Func<TContext, string, IAsyncEnumerable<TApplication>>
+#else
+            Func<TContext, string, AsyncEnumerable<TApplication>>
+#endif
+            FindByRedirectUri =
+
             // To optimize the efficiency of the query a bit, only applications whose stringified
             // RedirectUris property contains the specified URL are returned. Once the applications
             // are retrieved, a second pass is made to ensure only valid elements are returned.
@@ -387,6 +405,9 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             return FindByRedirectUri(Context, address)
+#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
+                .AsAsyncEnumerable(cancellationToken)
+#endif
                 .WhereAwait(async application => (await GetRedirectUrisAsync(application, cancellationToken))
                     .Contains(address, StringComparer.Ordinal));
         }
