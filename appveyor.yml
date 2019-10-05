@@ -1,0 +1,19 @@
+version: '{build}'
+image: Visual Studio 2017
+
+build_script:
+- cmd: eng\common\cibuild.cmd -configuration Release -prepareMachine
+
+test: off
+
+artifacts:
+- path: artifacts\packages\Release\Shipping\*.nupkg
+  name: NuGet
+
+deploy:
+- provider: NuGet
+  server: https://www.myget.org/F/openiddict/api/v2/package
+  api_key:
+    secure: 0ZVg9vnH4PzTu0CXjTZyDmvvzPMt1R8Yl1ObxleO8dAMk6M1AqmU3YmoaQkc2VNi
+  skip_symbols: false
+  symbol_server: https://www.myget.org/F/openiddict/api/v2/package
