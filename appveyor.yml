@@ -1,0 +1,30 @@
+version: '{build}'
+image: Visual Studio 2017
+
+build_script:
+- cmd: >-
+    set CONFIGURATION=Release
+
+    set BUILDNUMBER=000%APPVEYOR_BUILD_NUMBER%
+
+    set BUILDNUMBER=%BUILDNUMBER:~-4%
+
+    set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+
+    set DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+    build.cmd
+
+test: off
+
+artifacts:
+- path: artifacts\build\*.nupkg
+  name: NuGet
+
+deploy:
+- provider: NuGet
+  server: https://www.myget.org/F/openiddict/api/v2/package
+  api_key:
+    secure: 0ZVg9vnH4PzTu0CXjTZyDmvvzPMt1R8Yl1ObxleO8dAMk6M1AqmU3YmoaQkc2VNi
+  skip_symbols: false
+  symbol_server: https://www.myget.org/F/openiddict/api/v2/package
