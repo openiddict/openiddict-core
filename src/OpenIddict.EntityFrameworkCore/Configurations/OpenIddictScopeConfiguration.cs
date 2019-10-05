@@ -36,7 +36,10 @@ namespace OpenIddict.EntityFrameworkCore
 
             builder.HasKey(scope => scope.Id);
 
-            builder.HasIndex(scope => scope.Name)
+            // Warning: the non-generic overlord is deliberately used to work around
+            // a breaking change introduced in Entity Framework Core 3.x (where a
+            // generic entity type builder is now returned by the HasIndex() method).
+            builder.HasIndex(nameof(OpenIddictScope.Name))
                    .IsUnique();
 
             builder.Property(scope => scope.ConcurrencyToken)
