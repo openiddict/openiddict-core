@@ -40,7 +40,10 @@ namespace OpenIddict.EntityFrameworkCore
 
             builder.HasKey(application => application.Id);
 
-            builder.HasIndex(application => application.ClientId)
+            // Warning: the non-generic overlord is deliberately used to work around
+            // a breaking change introduced in Entity Framework Core 3.x (where a
+            // generic entity type builder is now returned by the HasIndex() method).
+            builder.HasIndex(nameof(OpenIddictApplication.ClientId))
                    .IsUnique();
 
             builder.Property(application => application.ClientId)

@@ -909,7 +909,13 @@ namespace OpenIddict.EntityFrameworkCore
 
             if (!string.IsNullOrEmpty(identifier))
             {
-                var application = await Applications.FindAsync(new object[] { ConvertIdentifierFromString(identifier) }, cancellationToken);
+                var key = ConvertIdentifierFromString(identifier);
+
+                // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
+                // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
+                var application = await Applications.AsQueryable()
+                    .FirstOrDefaultAsync(element => element.Id.Equals(key), cancellationToken);
+
                 if (application == null)
                 {
                     throw new InvalidOperationException("The application associated with the token cannot be found.");
@@ -955,7 +961,13 @@ namespace OpenIddict.EntityFrameworkCore
 
             if (!string.IsNullOrEmpty(identifier))
             {
-                var authorization = await Authorizations.FindAsync(new object[] { ConvertIdentifierFromString(identifier) }, cancellationToken);
+                var key = ConvertIdentifierFromString(identifier);
+
+                // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
+                // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
+                var authorization = await Authorizations.AsQueryable()
+                    .FirstOrDefaultAsync(element => element.Id.Equals(key), cancellationToken);
+
                 if (authorization == null)
                 {
                     throw new InvalidOperationException("The authorization associated with the token cannot be found.");
