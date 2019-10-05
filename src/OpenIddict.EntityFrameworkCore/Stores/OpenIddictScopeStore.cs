@@ -14,7 +14,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -178,15 +177,6 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Exposes a compiled query allowing to retrieve a scope using its unique identifier.
-        /// </summary>
-        private static readonly Func<TContext, TKey, Task<TScope>> FindById =
-            EF.CompileAsyncQuery((TContext context, TKey identifier) =>
-                (from scope in context.Set<TScope>().AsTracking()
-                 where scope.Id.Equals(identifier)
-                 select scope).FirstOrDefault());
-
-        /// <summary>
         /// Retrieves a scope using its unique identifier.
         /// </summary>
         /// <param name="identifier">The unique identifier associated with the scope.</param>
@@ -195,24 +185,19 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the identifier.
         /// </returns>
-        public virtual ValueTask<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TScope> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return new ValueTask<TScope>(FindById(Context, ConvertIdentifierFromString(identifier)));
-        }
+            var key = ConvertIdentifierFromString(identifier);
 
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve a scope using its name.
-        /// </summary>
-        private static readonly Func<TContext, string, Task<TScope>> FindByName =
-            EF.CompileAsyncQuery((TContext context, string name) =>
-                (from scope in context.Set<TScope>().AsTracking()
-                 where scope.Name == name
-                 select scope).FirstOrDefault());
+            return await (from scope in Scopes.AsTracking()
+                          where scope.Id.Equals(key)
+                          select scope).FirstOrDefaultAsync(cancellationToken);
+        }
 
         /// <summary>
         /// Retrieves a scope using its name.
@@ -223,29 +208,17 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the scope corresponding to the specified name.
         /// </returns>
-        public virtual ValueTask<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
+        public virtual async ValueTask<TScope> FindByNameAsync([NotNull] string name, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
             }
 
-            return new ValueTask<TScope>(FindByName(Context, name));
+            return await (from scope in Scopes.AsTracking()
+                          where scope.Name == name
+                          select scope).FirstOrDefaultAsync(cancellationToken);
         }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve a list of scopes using their name.
-        /// </summary>
-        private static readonly
-#if SUPPORTS_BCL_ASYNC_ENUMERABLE
-            Func<TContext, ImmutableArray<string>, IAsyncEnumerable<TScope>>
-#else
-            Func<TContext, ImmutableArray<string>, AsyncEnumerable<TScope>>
-#endif
-            FindByNames = EF.CompileAsyncQuery((TContext context, ImmutableArray<string> names) =>
-                from scope in context.Set<TScope>().AsTracking()
-                where names.Contains(scope.Name)
-                select scope);
 
         /// <summary>
         /// Retrieves a list of scopes using their name.
@@ -261,33 +234,10 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
-            return FindByNames(Context, names)
-#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
-                .AsAsyncEnumerable(cancellationToken)
-#endif
-                ;
+            return (from scope in Scopes.AsTracking()
+                    where names.Contains(scope.Name)
+                    select scope).AsAsyncEnumerable();
         }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve all the scopes that contain the specified resource.
-        /// </summary>
-        private static readonly
-#if SUPPORTS_BCL_ASYNC_ENUMERABLE
-            Func<TContext, string, IAsyncEnumerable<TScope>>
-#else
-            Func<TContext, string, AsyncEnumerable<TScope>>
-#endif
-            FindByResource =
-
-            // To optimize the efficiency of the query a bit, only scopes whose stringified
-            // Resources column contains the specified resource are returned. Once the scopes
-            // are retrieved, a second pass is made to ensure only valid elements are returned.
-            // Implementers that use this query in a hot path may want to override this method
-            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            EF.CompileAsyncQuery((TContext context, string resource) =>
-                from scope in context.Set<TScope>().AsTracking()
-                where scope.Resources.Contains(resource)
-                select scope);
 
         /// <summary>
         /// Retrieves all the scopes that contain the specified resource.
@@ -303,11 +253,12 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
             }
 
-            return FindByResource(Context, resource)
-#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
-                .AsAsyncEnumerable(cancellationToken)
-#endif
-                .WhereAwait(async scope => (await GetResourcesAsync(scope, cancellationToken)).Contains(resource, StringComparer.Ordinal));
+            var scopes = (from scope in Scopes.AsTracking()
+                          where scope.Resources.Contains(resource)
+                          select scope).AsAsyncEnumerable();
+
+            return scopes.WhereAwait(async scope =>
+                (await GetResourcesAsync(scope, cancellationToken)).Contains(resource, StringComparer.Ordinal));
         }
 
         /// <summary>

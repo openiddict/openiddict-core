@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -269,15 +268,6 @@ namespace OpenIddict.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Exposes a compiled query allowing to retrieve an application using its client identifier.
-        /// </summary>
-        private static readonly Func<TContext, string, Task<TApplication>> FindByClientId =
-            EF.CompileAsyncQuery((TContext context, string identifier) =>
-                (from application in context.Set<TApplication>().AsTracking()
-                 where application.ClientId == identifier
-                 select application).FirstOrDefault());
-
-        /// <summary>
         /// Retrieves an application using its client identifier.
         /// </summary>
         /// <param name="identifier">The client identifier associated with the application.</param>
@@ -286,24 +276,17 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual ValueTask<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TApplication> FindByClientIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return new ValueTask<TApplication>(FindByClientId(Context, identifier));
+            return await (from application in Applications.AsTracking()
+                          where application.ClientId == identifier
+                          select application).FirstOrDefaultAsync(cancellationToken);
         }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve an application using its unique identifier.
-        /// </summary>
-        private static readonly Func<TContext, TKey, Task<TApplication>> FindById =
-            EF.CompileAsyncQuery((TContext context, TKey identifier) =>
-                (from application in context.Set<TApplication>().AsTracking()
-                 where application.Id.Equals(identifier)
-                 select application).FirstOrDefault());
 
         /// <summary>
         /// Retrieves an application using its unique identifier.
@@ -314,37 +297,19 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the client application corresponding to the identifier.
         /// </returns>
-        public virtual ValueTask<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TApplication> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return new ValueTask<TApplication>(FindById(Context, ConvertIdentifierFromString(identifier)));
+            var key = ConvertIdentifierFromString(identifier);
+
+            return await (from application in Applications.AsTracking()
+                          where application.Id.Equals(key)
+                          select application).FirstOrDefaultAsync(cancellationToken);
         }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve all the applications
-        /// associated with the specified post_logout_redirect_uri.
-        /// </summary>
-        private static readonly 
-#if SUPPORTS_BCL_ASYNC_ENUMERABLE
-            Func<TContext, string, IAsyncEnumerable<TApplication>>
-#else
-            Func<TContext, string, AsyncEnumerable<TApplication>>
-#endif
-            FindByPostLogoutRedirectUri =
-
-            // To optimize the efficiency of the query a bit, only applications whose stringified
-            // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
-            // are retrieved, a second pass is made to ensure only valid elements are returned.
-            // Implementers that use this query in a hot path may want to override this method
-            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            EF.CompileAsyncQuery((TContext context, string address) =>
-                from application in context.Set<TApplication>().AsTracking()
-                where application.PostLogoutRedirectUris.Contains(address)
-                select application);
 
         /// <summary>
         /// Retrieves all the applications associated with the specified post_logout_redirect_uri.
@@ -360,35 +325,18 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            return FindByPostLogoutRedirectUri(Context, address)
-#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
-                .AsAsyncEnumerable(cancellationToken)
-#endif
-                .WhereAwait(async application => (await GetPostLogoutRedirectUrisAsync(application, cancellationToken))
-                    .Contains(address, StringComparer.Ordinal));
-        }
-
-        /// <summary>
-        /// Exposes a compiled query allowing to retrieve all the
-        /// applications associated with the specified redirect_uri.
-        /// </summary>
-        private static readonly 
-#if SUPPORTS_BCL_ASYNC_ENUMERABLE
-            Func<TContext, string, IAsyncEnumerable<TApplication>>
-#else
-            Func<TContext, string, AsyncEnumerable<TApplication>>
-#endif
-            FindByRedirectUri =
-
             // To optimize the efficiency of the query a bit, only applications whose stringified
-            // RedirectUris property contains the specified URL are returned. Once the applications
+            // PostLogoutRedirectUris contains the specified URL are returned. Once the applications
             // are retrieved, a second pass is made to ensure only valid elements are returned.
-            // Implementers that use this query in a hot path may want to override this method
+            // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            EF.CompileAsyncQuery((TContext context, string address) =>
-                from application in context.Set<TApplication>().AsTracking()
-                where application.RedirectUris.Contains(address)
-                select application);
+            var applications = (from application in Applications.AsTracking()
+                                where application.PostLogoutRedirectUris.Contains(address)
+                                select application).AsAsyncEnumerable();
+
+            return applications.WhereAwait(async application =>
+                (await GetPostLogoutRedirectUrisAsync(application, cancellationToken)).Contains(address, StringComparer.Ordinal));
+        }
 
         /// <summary>
         /// Retrieves all the applications associated with the specified redirect_uri.
@@ -404,12 +352,17 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            return FindByRedirectUri(Context, address)
-#if !SUPPORTS_BCL_ASYNC_ENUMERABLE
-                .AsAsyncEnumerable(cancellationToken)
-#endif
-                .WhereAwait(async application => (await GetRedirectUrisAsync(application, cancellationToken))
-                    .Contains(address, StringComparer.Ordinal));
+            // To optimize the efficiency of the query a bit, only applications whose stringified
+            // RedirectUris property contains the specified URL are returned. Once the applications
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this method in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
+            var applications = (from application in Applications.AsTracking()
+                                where application.RedirectUris.Contains(address)
+                                select application).AsAsyncEnumerable();
+
+            return applications.WhereAwait(async application =>
+                (await GetRedirectUrisAsync(application, cancellationToken)).Contains(address, StringComparer.Ordinal));
         }
 
         /// <summary>
