@@ -128,7 +128,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// whose result returns the number of authorizations in the database.
         /// </returns>
         public virtual Task<long> CountAsync(CancellationToken cancellationToken)
-            => Authorizations.LongCountAsync();
+            => Authorizations.LongCountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of authorizations that match the specified query.
@@ -147,7 +147,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Authorizations).LongCountAsync();
+            return query(Authorizations).LongCountAsync(cancellationToken);
         }
 
         /// <summary>
@@ -652,7 +652,7 @@ namespace OpenIddict.EntityFrameworkCore
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(authorization.Scopes)
-                    .Select(element => (string) element)
+                    .Select(scope => (string) scope)
                     .ToImmutableArray();
             });
 

@@ -107,7 +107,7 @@ namespace OpenIddict.EntityFramework
         /// whose result returns the number of applications in the database.
         /// </returns>
         public virtual Task<long> CountAsync(CancellationToken cancellationToken)
-            => Applications.LongCountAsync();
+            => Applications.LongCountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of applications that match the specified query.
@@ -126,7 +126,7 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Applications).LongCountAsync();
+            return query(Applications).LongCountAsync(cancellationToken);
         }
 
         /// <summary>
@@ -249,7 +249,7 @@ namespace OpenIddict.EntityFramework
 
             return (from application in Applications
                     where application.Id.Equals(key)
-                    select application).FirstOrDefaultAsync();
+                    select application).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace OpenIddict.EntityFramework
 
             return (from application in Applications
                     where application.ClientId == identifier
-                    select application).FirstOrDefaultAsync();
+                    select application).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -539,7 +539,7 @@ namespace OpenIddict.EntityFramework
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(application.Permissions)
-                    .Select(element => (string) element)
+                    .Select(permission => (string) permission)
                     .ToImmutableArray();
             });
 
@@ -576,7 +576,7 @@ namespace OpenIddict.EntityFramework
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(application.PostLogoutRedirectUris)
-                    .Select(element => (string) element)
+                    .Select(address => (string) address)
                     .ToImmutableArray();
             });
 
@@ -648,7 +648,7 @@ namespace OpenIddict.EntityFramework
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(application.RedirectUris)
-                    .Select(element => (string) element)
+                    .Select(address => (string) address)
                     .ToImmutableArray();
             });
 

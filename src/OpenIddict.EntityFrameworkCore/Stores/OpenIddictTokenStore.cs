@@ -128,7 +128,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// whose result returns the number of applications in the database.
         /// </returns>
         public virtual Task<long> CountAsync(CancellationToken cancellationToken)
-            => Tokens.LongCountAsync();
+            => Tokens.LongCountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of tokens that match the specified query.
@@ -147,7 +147,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Tokens).LongCountAsync();
+            return query(Tokens).LongCountAsync(cancellationToken);
         }
 
         /// <summary>

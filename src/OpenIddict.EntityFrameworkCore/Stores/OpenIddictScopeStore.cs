@@ -106,7 +106,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// whose result returns the number of scopes in the database.
         /// </returns>
         public virtual Task<long> CountAsync(CancellationToken cancellationToken)
-            => Scopes.LongCountAsync();
+            => Scopes.LongCountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of scopes that match the specified query.
@@ -125,7 +125,7 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return query(Scopes).LongCountAsync();
+            return query(Scopes).LongCountAsync(cancellationToken);
         }
 
         /// <summary>
@@ -240,9 +240,12 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
             }
 
+            // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
+            // ImmutableArray.Contains() (which is not fully supported by Entity Framework Core) is not used instead.
             return ImmutableArray.CreateRange(
                 await (from scope in Scopes.AsTracking()
                        where names.Contains(scope.Name)
+                       where Enumerable.Contains(names, scope.Name)
                        select scope).ToListAsync(cancellationToken));
         }
 
@@ -451,7 +454,7 @@ namespace OpenIddict.EntityFrameworkCore
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(scope.Resources)
-                    .Select(element => (string) element)
+                    .Select(resource => (string) resource)
                     .ToImmutableArray();
             });
 
