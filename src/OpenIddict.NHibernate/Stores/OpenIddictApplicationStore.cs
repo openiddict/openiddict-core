@@ -475,7 +475,7 @@ namespace OpenIddict.NHibernate
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(application.Permissions)
-                    .Select(element => (string) element)
+                    .Select(permission => (string) permission)
                     .ToImmutableArray();
             });
 
@@ -512,7 +512,7 @@ namespace OpenIddict.NHibernate
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(application.PostLogoutRedirectUris)
-                    .Select(element => (string) element)
+                    .Select(address => (string) address)
                     .ToImmutableArray();
             });
 
@@ -573,7 +573,7 @@ namespace OpenIddict.NHibernate
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(application.RedirectUris)
-                    .Select(element => (string) element)
+                    .Select(address => (string) address)
                     .ToImmutableArray();
             });
 

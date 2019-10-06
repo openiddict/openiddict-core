@@ -106,8 +106,8 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of applications in the database.
         /// </returns>
-        public virtual ValueTask<long> CountAsync(CancellationToken cancellationToken)
-            => new ValueTask<long>(Tokens.LongCountAsync());
+        public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
+            => await Tokens.LongCountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of tokens that match the specified query.
@@ -119,14 +119,14 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of tokens that match the specified query.
         /// </returns>
-        public virtual ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual async ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return new ValueTask<long>(query(Tokens).LongCountAsync());
+            return await query(Tokens).LongCountAsync(cancellationToken);
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace OpenIddict.EntityFramework
         /// <param name="token">The token to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask CreateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual async ValueTask CreateAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -144,7 +144,7 @@ namespace OpenIddict.EntityFramework
 
             Tokens.Add(token);
 
-            return new ValueTask(Context.SaveChangesAsync(cancellationToken));
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -338,7 +338,7 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the token corresponding to the unique identifier.
         /// </returns>
-        public virtual ValueTask<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TToken> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -347,9 +347,9 @@ namespace OpenIddict.EntityFramework
 
             var key = ConvertIdentifierFromString(identifier);
 
-            return new ValueTask<TToken>((from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
-                                          where token.Id.Equals(key)
-                                          select token).FirstOrDefaultAsync(cancellationToken));
+            return await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
+                          where token.Id.Equals(key)
+                          select token).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -362,16 +362,16 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the tokens corresponding to the specified reference identifier.
         /// </returns>
-        public virtual ValueTask<TToken> FindByReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TToken> FindByReferenceIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            return new ValueTask<TToken>((from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
-                                          where token.ReferenceId == identifier
-                                          select token).FirstOrDefaultAsync(cancellationToken));
+            return await (from token in Tokens.Include(token => token.Application).Include(token => token.Authorization)
+                          where token.ReferenceId == identifier
+                          select token).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -440,7 +440,7 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual ValueTask<TResult> GetAsync<TState, TResult>(
+        public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TToken>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -449,9 +449,9 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return new ValueTask<TResult>(query(
+            return await query(
                 Tokens.Include(token => token.Application)
-                      .Include(token => token.Authorization), state).FirstOrDefaultAsync(cancellationToken));
+                      .Include(token => token.Authorization), state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>

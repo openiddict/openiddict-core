@@ -62,7 +62,7 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-            return await collection.CountDocumentsAsync(FilterDefinition<TScope>.Empty);
+            return await collection.CountDocumentsAsync(FilterDefinition<TScope>.Empty, null, cancellationToken);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-            return await ((IMongoQueryable<TScope>) query(collection.AsQueryable())).LongCountAsync();
+            return await ((IMongoQueryable<TScope>) query(collection.AsQueryable())).LongCountAsync(cancellationToken);
         }
 
         /// <summary>
@@ -200,7 +200,9 @@ namespace OpenIddict.MongoDb
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TScope>(Options.CurrentValue.ScopesCollectionName);
 
-                await foreach (var scope in collection.Find(scope => names.Contains(scope.Name)).ToAsyncEnumerable(cancellationToken))
+                // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
+                // ImmutableArray.Contains() (which is not fully supported by MongoDB) is not used instead.
+                await foreach (var scope in collection.Find(scope => Enumerable.Contains(names, scope.Name)).ToAsyncEnumerable(cancellationToken))
                 {
                     yield return scope;
                 }

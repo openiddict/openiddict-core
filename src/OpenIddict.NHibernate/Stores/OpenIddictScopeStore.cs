@@ -235,8 +235,10 @@ namespace OpenIddict.NHibernate
             {
                 var session = await Context.GetSessionAsync(cancellationToken);
 
+                // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
+                // ImmutableArray.Contains() (which is not fully supported by NHibernate) is not used instead.
                 await foreach (var scope in (from scope in session.Query<TScope>()
-                                             where names.Contains(scope.Name)
+                                             where Enumerable.Contains(names, scope.Name)
                                              select scope).AsAsyncEnumerable(cancellationToken))
                 {
                     yield return scope;
@@ -433,7 +435,7 @@ namespace OpenIddict.NHibernate
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(scope.Resources)
-                    .Select(element => (string) element)
+                    .Select(resource => (string) resource)
                     .ToImmutableArray();
             });
 

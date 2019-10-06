@@ -551,7 +551,7 @@ namespace OpenIddict.NHibernate
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(authorization.Scopes)
-                    .Select(element => (string) element)
+                    .Select(scope => (string) scope)
                     .ToImmutableArray();
             });
 

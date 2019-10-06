@@ -62,7 +62,7 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-            return await collection.CountDocumentsAsync(FilterDefinition<TAuthorization>.Empty);
+            return await collection.CountDocumentsAsync(FilterDefinition<TAuthorization>.Empty, null, cancellationToken);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace OpenIddict.MongoDb
             var database = await Context.GetDatabaseAsync(cancellationToken);
             var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
 
-            return await ((IMongoQueryable<TAuthorization>) query(collection.AsQueryable())).LongCountAsync();
+            return await ((IMongoQueryable<TAuthorization>) query(collection.AsQueryable())).LongCountAsync(cancellationToken);
         }
 
         /// <summary>
