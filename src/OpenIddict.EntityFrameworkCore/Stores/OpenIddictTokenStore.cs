@@ -126,8 +126,8 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of applications in the database.
         /// </returns>
-        public virtual ValueTask<long> CountAsync(CancellationToken cancellationToken)
-            => new ValueTask<long>(Tokens.AsQueryable().LongCountAsync());
+        public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
+            => await Tokens.AsQueryable().LongCountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of tokens that match the specified query.
@@ -139,14 +139,14 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of tokens that match the specified query.
         /// </returns>
-        public virtual ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual async ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TToken>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return new ValueTask<long>(query(Tokens).LongCountAsync());
+            return await query(Tokens).LongCountAsync(cancellationToken);
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="token">The token to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask CreateAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual async ValueTask CreateAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -164,7 +164,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             Context.Add(token);
 
-            return new ValueTask(Context.SaveChangesAsync(cancellationToken));
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -914,7 +914,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
                 // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
                 var application = await Applications.AsQueryable()
-                    .FirstOrDefaultAsync(element => element.Id.Equals(key), cancellationToken);
+                    .FirstOrDefaultAsync(application => application.Id.Equals(key), cancellationToken);
 
                 if (application == null)
                 {
@@ -966,7 +966,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // Warning: FindAsync() is deliberately not used to work around a breaking change introduced
                 // in Entity Framework Core 3.x (where a ValueTask instead of a Task is now returned).
                 var authorization = await Authorizations.AsQueryable()
-                    .FirstOrDefaultAsync(element => element.Id.Equals(key), cancellationToken);
+                    .FirstOrDefaultAsync(authorization => authorization.Id.Equals(key), cancellationToken);
 
                 if (authorization == null)
                 {

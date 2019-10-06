@@ -106,8 +106,8 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations in the database.
         /// </returns>
-        public virtual ValueTask<long> CountAsync(CancellationToken cancellationToken)
-            => new ValueTask<long>(Authorizations.LongCountAsync());
+        public virtual async ValueTask<long> CountAsync(CancellationToken cancellationToken)
+            => await Authorizations.LongCountAsync(cancellationToken);
 
         /// <summary>
         /// Determines the number of authorizations that match the specified query.
@@ -119,14 +119,14 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the number of authorizations that match the specified query.
         /// </returns>
-        public virtual ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
+        public virtual async ValueTask<long> CountAsync<TResult>([NotNull] Func<IQueryable<TAuthorization>, IQueryable<TResult>> query, CancellationToken cancellationToken)
         {
             if (query == null)
             {
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return new ValueTask<long>(query(Authorizations).LongCountAsync());
+            return await query(Authorizations).LongCountAsync(cancellationToken);
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace OpenIddict.EntityFramework
         /// <param name="authorization">The authorization to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public virtual async ValueTask CreateAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -144,7 +144,7 @@ namespace OpenIddict.EntityFramework
 
             Authorizations.Add(authorization);
 
-            return new ValueTask(Context.SaveChangesAsync(cancellationToken));
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
         /// <summary>
@@ -366,7 +366,7 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the authorization corresponding to the identifier.
         /// </returns>
-        public virtual ValueTask<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
+        public virtual async ValueTask<TAuthorization> FindByIdAsync([NotNull] string identifier, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(identifier))
             {
@@ -375,9 +375,9 @@ namespace OpenIddict.EntityFramework
 
             var key = ConvertIdentifierFromString(identifier);
 
-            return new ValueTask<TAuthorization>((from authorization in Authorizations.Include(authorization => authorization.Application)
-                                                  where authorization.Id.Equals(key)
-                                                  select authorization).FirstOrDefaultAsync(cancellationToken));
+            return await (from authorization in Authorizations.Include(authorization => authorization.Application)
+                          where authorization.Id.Equals(key)
+                          select authorization).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns the first element returned when executing the query.
         /// </returns>
-        public virtual ValueTask<TResult> GetAsync<TState, TResult>(
+        public virtual async ValueTask<TResult> GetAsync<TState, TResult>(
             [NotNull] Func<IQueryable<TAuthorization>, TState, IQueryable<TResult>> query,
             [CanBeNull] TState state, CancellationToken cancellationToken)
         {
@@ -456,8 +456,8 @@ namespace OpenIddict.EntityFramework
                 throw new ArgumentNullException(nameof(query));
             }
 
-            return new ValueTask<TResult>(query(
-                Authorizations.Include(authorization => authorization.Application), state).FirstOrDefaultAsync(cancellationToken));
+            return await query(
+                Authorizations.Include(authorization => authorization.Application), state).FirstOrDefaultAsync(cancellationToken);
         }
 
         /// <summary>
@@ -544,7 +544,7 @@ namespace OpenIddict.EntityFramework
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
                 return JArray.Parse(authorization.Scopes)
-                    .Select(element => (string) element)
+                    .Select(scope => (string) scope)
                     .ToImmutableArray();
             });
 
