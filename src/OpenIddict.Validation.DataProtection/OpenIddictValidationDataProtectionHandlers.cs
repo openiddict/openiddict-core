@@ -126,7 +126,7 @@ namespace OpenIddict.Validation.DataProtection
 
                 catch (Exception exception)
                 {
-                    context.Logger.LogTrace(exception, "An exception occured while deserializing a token.");
+                    context.Logger.LogTrace(exception, "An exception occured while deserializing the token '{Token}'.", payload);
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
@@ -143,6 +143,9 @@ namespace OpenIddict.Validation.DataProtection
                     .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                     .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
                     .SetClaim(Claims.Private.TokenUsage, await _tokenManager.GetTypeAsync(token));
+
+                context.Logger.LogTrace("The reference DP token '{Token}' was successfully validated and the following " +
+                                        "claims could be extracted: {Claims}.", payload, context.Principal.Claims);
             }
         }
 
@@ -212,7 +215,7 @@ namespace OpenIddict.Validation.DataProtection
 
                 catch (Exception exception)
                 {
-                    context.Logger.LogTrace(exception, "An exception occured while deserializing a token.");
+                    context.Logger.LogTrace(exception, "An exception occured while deserializing the token '{Token}'.", token);
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
@@ -224,6 +227,9 @@ namespace OpenIddict.Validation.DataProtection
                 // Note: since the data format relies on a data protector using different "purposes" strings
                 // per token type, the token processed at this stage is guaranteed to be of the expected type.
                 context.Principal = principal.SetClaim(Claims.Private.TokenUsage, TokenUsages.AccessToken);
+
+                context.Logger.LogTrace("The self-contained DP token '{Token}' was successfully validated and the following " +
+                                        "claims could be extracted: {Claims}.", token, context.Principal.Claims);
 
                 return default;
             }

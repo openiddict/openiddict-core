@@ -169,6 +169,8 @@ namespace OpenIddict.Validation
                 var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(payload, parameters);
                 if (result.ClaimsIdentity == null)
                 {
+                    context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", payload);
+
                     return;
                 }
 
@@ -180,6 +182,9 @@ namespace OpenIddict.Validation
                     .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                     .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
                     .SetClaim(Claims.Private.TokenUsage, await _tokenManager.GetTypeAsync(token));
+
+                context.Logger.LogTrace("The reference JWT token '{Token}' was successfully validated and the following " +
+                                        "claims could be extracted: {Claims}.", payload, context.Principal.Claims);
             }
         }
 
@@ -240,11 +245,16 @@ namespace OpenIddict.Validation
                 var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(context.Request.AccessToken, parameters);
                 if (result.ClaimsIdentity == null)
                 {
+                    context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Request.AccessToken);
+
                     return;
                 }
 
                 // Attach the principal extracted from the token to the parent event context.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
+
+                context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
+                                        "claims could be extracted: {Claims}.", context.Request.AccessToken, context.Principal.Claims);
             }
         }
 

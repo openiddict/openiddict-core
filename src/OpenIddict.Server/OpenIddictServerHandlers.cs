@@ -267,6 +267,9 @@ namespace OpenIddict.Server
                     .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
                     .SetClaim(Claims.Private.TokenUsage, await _tokenManager.GetTypeAsync(token));
 
+                context.Logger.LogTrace("The reference JWT token '{Token}' was successfully validated and the following " +
+                                        "claims could be extracted: {Claims}.", payload, context.Principal.Claims);
+
                 async ValueTask<TokenValidationResult> ValidateTokenAsync(string token, string type)
                 {
                     var parameters = context.Options.TokenValidationParameters.Clone();
@@ -294,7 +297,13 @@ namespace OpenIddict.Server
                         _ => Array.Empty<SecurityKey>()
                     };
 
-                    return await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(token, parameters);
+                    var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(token, parameters);
+                    if (!result.IsValid)
+                    {
+                        context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", token);
+                    }
+
+                    return result;
                 }
 
                 async ValueTask<TokenValidationResult> ValidateAnyTokenAsync(string token)
@@ -444,6 +453,9 @@ namespace OpenIddict.Server
                 // Attach the principal extracted from the token to the parent event context.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
 
+                context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
+                                        "claims could be extracted: {Claims}.", token, context.Principal.Claims);
+
                 async ValueTask<TokenValidationResult> ValidateTokenAsync(string token, string type)
                 {
                     var parameters = context.Options.TokenValidationParameters.Clone();
@@ -475,7 +487,13 @@ namespace OpenIddict.Server
                         _ => Array.Empty<SecurityKey>()
                     };
 
-                    return await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(token, parameters);
+                    var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(token, parameters);
+                    if (!result.IsValid)
+                    {
+                        context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", token);
+                    }
+
+                    return result;
                 }
 
                 async ValueTask<TokenValidationResult> ValidateAnyTokenAsync(string token)
@@ -1411,6 +1429,15 @@ namespace OpenIddict.Server
                         return false;
                     }
 
+                    // Never include the creation and expiration dates that are automatically
+                    // inherited from the parent token are not reused for the new token.
+                    if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
                     // Always exclude private claims, whose values must generally be kept secret.
                     if (claim.Type.StartsWith(Claims.Prefixes.Private, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1519,6 +1546,15 @@ namespace OpenIddict.Server
                         return false;
                     }
 
+                    // Never include the creation and expiration dates that are automatically
+                    // inherited from the parent token are not reused for the new token.
+                    if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
                     // Other claims are always included in the authorization code, even private claims.
                     return true;
                 });
@@ -1606,6 +1642,15 @@ namespace OpenIddict.Server
                         return false;
                     }
 
+                    // Never include the creation and expiration dates that are automatically
+                    // inherited from the parent token are not reused for the new token.
+                    if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
                     // Other claims are always included in the refresh token, even private claims.
                     return true;
                 });
@@ -1686,6 +1731,15 @@ namespace OpenIddict.Server
                     // that are automatically inherited from the parent token are not reused for the new token.
                     if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(claim.Type, Claims.Private.TokenId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+
+                    // Never include the creation and expiration dates that are automatically
+                    // inherited from the parent token are not reused for the new token.
+                    if (string.Equals(claim.Type, Claims.ExpiresAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.IssuedAt, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.NotBefore, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -2056,15 +2110,13 @@ namespace OpenIddict.Server
                 using var generator = RandomNumberGenerator.Create();
                 generator.GetBytes(data);
 #endif
-                var identifier = Base64UrlEncoder.Encode(data);
-
                 var descriptor = new OpenIddictTokenDescriptor
                 {
                     AuthorizationId = context.AccessTokenPrincipal.GetInternalAuthorizationId(),
                     CreationDate = context.AccessTokenPrincipal.GetCreationDate(),
                     ExpirationDate = context.AccessTokenPrincipal.GetExpirationDate(),
                     Principal = context.AccessTokenPrincipal,
-                    ReferenceId = identifier,
+                    ReferenceId = Base64UrlEncoder.Encode(data),
                     Status = Statuses.Valid,
                     Subject = context.AccessTokenPrincipal.GetClaim(Claims.Subject),
                     Type = TokenUsages.AccessToken
@@ -2094,9 +2146,15 @@ namespace OpenIddict.Server
                         Subject = (ClaimsIdentity) context.AccessTokenPrincipal.Identity
                     });
 
-                await _tokenManager.CreateAsync(descriptor);
+                var token = await _tokenManager.CreateAsync(descriptor);
 
-                context.Response.AccessToken = identifier;
+                context.Response.AccessToken = descriptor.ReferenceId;
+
+                context.Logger.LogTrace("The reference access token '{Identifier}' was successfully created with the " +
+                                        "reference identifier '{ReferenceId}' and the following JWT payload: {Payload}. " +
+                                        "The principal used to create the token contained the following claims: {Claims}.",
+                                        await _tokenManager.GetIdAsync(token), descriptor.ReferenceId,
+                                        descriptor.Payload, context.AccessTokenPrincipal.Claims);
             }
         }
 
@@ -2167,15 +2225,13 @@ namespace OpenIddict.Server
                 using var generator = RandomNumberGenerator.Create();
                 generator.GetBytes(data);
 #endif
-                var identifier = Base64UrlEncoder.Encode(data);
-
                 var descriptor = new OpenIddictTokenDescriptor
                 {
                     AuthorizationId = context.AuthorizationCodePrincipal.GetInternalAuthorizationId(),
                     CreationDate = context.AuthorizationCodePrincipal.GetCreationDate(),
                     ExpirationDate = context.AuthorizationCodePrincipal.GetExpirationDate(),
                     Principal = context.AuthorizationCodePrincipal,
-                    ReferenceId = identifier,
+                    ReferenceId = Base64UrlEncoder.Encode(data),
                     Status = Statuses.Valid,
                     Subject = context.AuthorizationCodePrincipal.GetClaim(Claims.Subject),
                     Type = TokenUsages.AuthorizationCode
@@ -2205,9 +2261,15 @@ namespace OpenIddict.Server
                         Subject = (ClaimsIdentity) context.AuthorizationCodePrincipal.Identity
                     });
 
-                await _tokenManager.CreateAsync(descriptor);
+                var token = await _tokenManager.CreateAsync(descriptor);
 
-                context.Response.Code = identifier;
+                context.Response.Code = descriptor.ReferenceId;
+
+                context.Logger.LogTrace("The reference authorization code '{Identifier}' was successfully created with the " +
+                                        "reference identifier '{ReferenceId}' and the following payload: {Payload}. " +
+                                        "The principal used to create the token contained the following claims: {Claims}.",
+                                        await _tokenManager.GetIdAsync(token), descriptor.ReferenceId,
+                                        descriptor.Payload, context.AuthorizationCodePrincipal.Claims);
             }
         }
 
@@ -2278,15 +2340,13 @@ namespace OpenIddict.Server
                 using var generator = RandomNumberGenerator.Create();
                 generator.GetBytes(data);
 #endif
-                var identifier = Base64UrlEncoder.Encode(data);
-
                 var descriptor = new OpenIddictTokenDescriptor
                 {
                     AuthorizationId = context.RefreshTokenPrincipal.GetInternalAuthorizationId(),
                     CreationDate = context.RefreshTokenPrincipal.GetCreationDate(),
                     ExpirationDate = context.RefreshTokenPrincipal.GetExpirationDate(),
                     Principal = context.RefreshTokenPrincipal,
-                    ReferenceId = identifier,
+                    ReferenceId = Base64UrlEncoder.Encode(data),
                     Status = Statuses.Valid,
                     Subject = context.RefreshTokenPrincipal.GetClaim(Claims.Subject),
                     Type = TokenUsages.RefreshToken
@@ -2315,9 +2375,15 @@ namespace OpenIddict.Server
                         Subject = (ClaimsIdentity) context.RefreshTokenPrincipal.Identity
                     });
 
-                await _tokenManager.CreateAsync(descriptor);
+                var token = await _tokenManager.CreateAsync(descriptor);
 
-                context.Response.RefreshToken = identifier;
+                context.Response.RefreshToken = descriptor.ReferenceId;
+
+                context.Logger.LogTrace("The reference refresh token '{Identifier}' was successfully created with the " +
+                                        "reference identifier '{ReferenceId}' and the following payload: {Payload}. " +
+                                        "The principal used to create the token contained the following claims: {Claims}.",
+                                        await _tokenManager.GetIdAsync(token), descriptor.ReferenceId,
+                                        descriptor.Payload, context.RefreshTokenPrincipal.Claims);
             }
         }
 
@@ -2403,9 +2469,12 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
+                var identifier = await _tokenManager.GetIdAsync(token);
 
                 // Set the internal token identifier so that it can be added to the serialized code.
-                context.AuthorizationCodePrincipal.SetInternalTokenId(await _tokenManager.GetIdAsync(token));
+                context.AuthorizationCodePrincipal.SetInternalTokenId(identifier);
+
+                context.Logger.LogTrace("The entry for authorization code '{Identifier}' was successfully created.", identifier);
             }
         }
 
@@ -2491,9 +2560,12 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
+                var identifier = await _tokenManager.GetIdAsync(token);
 
                 // Set the internal token identifier so that it can be added to the serialized token.
-                context.RefreshTokenPrincipal.SetInternalTokenId(await _tokenManager.GetIdAsync(token));
+                context.RefreshTokenPrincipal.SetInternalTokenId(identifier);
+
+                context.Logger.LogTrace("The entry for refresh token '{Identifier}' was successfully created.", identifier);
             }
         }
 
@@ -2545,6 +2617,12 @@ namespace OpenIddict.Server
                             credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
                         Subject = (ClaimsIdentity) context.AccessTokenPrincipal.Identity
                     });
+
+                context.Logger.LogTrace("The access token '{Identifier}' was successfully created and the " +
+                                        "following JWT payload was attached to the OpenID Connect response: {Payload}. " +
+                                        "The principal used to create the token contained the following claims: {Claims}.",
+                                        context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
+                                        context.Response.AccessToken, context.AccessTokenPrincipal.Claims);
             }
         }
 
@@ -2596,6 +2674,12 @@ namespace OpenIddict.Server
                             credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
                         Subject = (ClaimsIdentity) context.AuthorizationCodePrincipal.Identity
                     });
+
+                context.Logger.LogTrace("The authorization code '{Identifier}' was successfully created and the " +
+                                        "following JWT payload was attached to the OpenID Connect response: {Payload}. " +
+                                        "The principal used to create the token contained the following claims: {Claims}.",
+                                        context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId),
+                                        context.Response.Code, context.AuthorizationCodePrincipal.Claims);
             }
         }
 
@@ -2646,6 +2730,12 @@ namespace OpenIddict.Server
                             credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
                         Subject = (ClaimsIdentity) context.RefreshTokenPrincipal.Identity
                     });
+
+                context.Logger.LogTrace("The refresh token '{Identifier}' was successfully created and the " +
+                                        "following JWT payload was attached to the OpenID Connect response: {Payload}. " +
+                                        "The principal used to create the token contained the following claims: {Claims}.",
+                                        context.RefreshTokenPrincipal.GetClaim(Claims.JwtId),
+                                        context.Response.RefreshToken, context.RefreshTokenPrincipal.Claims);
             }
         }
 
@@ -2826,6 +2916,12 @@ namespace OpenIddict.Server
                             credentials.Key is AsymmetricSecurityKey),
                         Subject = (ClaimsIdentity) context.IdentityTokenPrincipal.Identity
                     });
+
+                context.Logger.LogTrace("The identity token '{Identifier}' was successfully created and the " +
+                                        "following JWT payload was attached to the OpenID Connect response: {Payload}. " +
+                                        "The principal used to create the token contained the following claims: {Claims}.",
+                                        context.IdentityTokenPrincipal.GetClaim(Claims.JwtId),
+                                        context.Response.IdToken, context.IdentityTokenPrincipal.Claims);
             }
         }
 
