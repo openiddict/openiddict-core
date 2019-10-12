@@ -199,6 +199,8 @@ namespace OpenIddict.Server.Owin
                     return default;
                 }
 
+                context.Issuer = issuer;
+
                 return default;
             }
         }
