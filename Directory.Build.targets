@@ -6,10 +6,13 @@
     Note: Arcade automatically replaces copyrights defined in .props or .csproj files
     by the default Microsoft copyright. To ensure this doesn't happen, the replaced
     copyright is restored in this .targets file using the private variable set in .props.
+    Similarly, both delayed and public signing are disabled to override Arcade's defaults.
   -->
   
   <PropertyGroup>
     <Copyright>$(_ProjectCopyright)</Copyright>
+    <DelaySign>false</DelaySign>
+    <PublicSign>false</PublicSign>
   </PropertyGroup>
 
   <!--
