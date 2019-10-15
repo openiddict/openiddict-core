@@ -105,7 +105,7 @@ namespace OpenIddict.Server
         };
 
         /// <summary>
-        /// Gets or sets the period of time the authorization codes remain valid after being issued.
+        /// Gets or sets the period of time authorization codes remain valid after being issued. The default value is 5 minutes.
         /// While not recommended, this property can be set to <c>null</c> to issue codes that never expire.
         /// </summary>
         public TimeSpan? AuthorizationCodeLifetime { get; set; } = TimeSpan.FromMinutes(5);
