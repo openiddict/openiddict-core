@@ -816,7 +816,7 @@ namespace OpenIddict.Server
 
                     if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
                     {
-                        context.Principal ??= (ClaimsPrincipal) principal;
+                        context.Principal ??= (ClaimsPrincipal)principal;
                     }
 
                     return default;
@@ -847,6 +847,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleRevocationRequestContext>()
+                        .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<RevokeToken>()
                         .SetOrder(AttachPrincipal.Descriptor.Order + 1_000)
                         .Build();

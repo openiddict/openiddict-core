@@ -868,7 +868,7 @@ namespace OpenIddict.Server
 
                     if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
                     {
-                        context.Principal ??= (ClaimsPrincipal) principal;
+                        context.Principal ??= (ClaimsPrincipal)principal;
                     }
 
                     return default;
@@ -930,6 +930,7 @@ namespace OpenIddict.Server
 
             /// <summary>
             /// Contains the logic responsible of attaching the application-specific claims extracted from the token the event context.
+            /// Note: this handler is not used when the degraded mode is enabled.
             /// </summary>
             public class AttachApplicationClaims : IOpenIddictServerHandler<HandleIntrospectionRequestContext>
             {
@@ -1042,13 +1043,13 @@ namespace OpenIddict.Server
                     {
                         ClaimValueTypes.Boolean => bool.Parse(claim.Value),
 
-                        ClaimValueTypes.Integer   => int.Parse(claim.Value, CultureInfo.InvariantCulture),
+                        ClaimValueTypes.Integer => int.Parse(claim.Value, CultureInfo.InvariantCulture),
                         ClaimValueTypes.Integer32 => int.Parse(claim.Value, CultureInfo.InvariantCulture),
                         ClaimValueTypes.Integer64 => long.Parse(claim.Value, CultureInfo.InvariantCulture),
 
-                        JsonClaimValueTypes.Json      => JToken.Parse(claim.Value),
+                        JsonClaimValueTypes.Json => JToken.Parse(claim.Value),
                         JsonClaimValueTypes.JsonArray => JToken.Parse(claim.Value),
-                        
+
                         _ => new OpenIddictParameter(claim.Value)
                     };
                 }
