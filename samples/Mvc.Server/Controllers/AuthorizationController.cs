@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Helpers;
 using Mvc.Server.Models;
 using Mvc.Server.ViewModels.Authorization;
-using Mvc.Server.ViewModels.Shared;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore.Models;
@@ -42,36 +41,23 @@ namespace Mvc.Server
             _userManager = userManager;
         }
 
-        #region Authorization code, implicit and implicit flows
+        #region Authorization code, implicit and hybrid flows
         // Note: to support interactive flows like the code flow,
         // you must provide your own authorization endpoint action:
 
         [Authorize, HttpGet("~/connect/authorize")]
         public async Task<IActionResult> Authorize()
         {
-            var request = HttpContext.GetOpenIddictServerRequest();
-            if (request == null)
-            {
+            var request = HttpContext.GetOpenIddictServerRequest() ??
                 throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
-            }
 
             // Retrieve the application details from the database.
-            var application = await _applicationManager.FindByClientIdAsync(request.ClientId);
-            if (application == null)
-            {
-                return View("Error", new ErrorViewModel
-                {
-                    Error = Errors.InvalidClient,
-                    ErrorDescription = "Details concerning the calling client application cannot be found in the database"
-                });
-            }
+            var application = await _applicationManager.FindByClientIdAsync(request.ClientId) ??
+                throw new InvalidOperationException("Details concerning the calling client application cannot be found.");
 
-            // Flow the request_id to allow OpenIddict to restore
-            // the original authorization request from the cache.
             return View(new AuthorizeViewModel
             {
                 ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
-                Parameters = request.GetFlattenedParameters(),
                 Scope = request.Scope
             });
         }
@@ -80,22 +66,12 @@ namespace Mvc.Server
         [HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
         public async Task<IActionResult> Accept()
         {
-            var request = HttpContext.GetOpenIddictServerRequest();
-            if (request == null)
-            {
+            var request = HttpContext.GetOpenIddictServerRequest() ??
                 throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
-            }
 
             // Retrieve the profile of the logged in user.
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return View("Error", new ErrorViewModel
-                {
-                    Error = Errors.ServerError,
-                    ErrorDescription = "An internal error has occurred"
-                });
-            }
+            var user = await _userManager.GetUserAsync(User) ??
+                throw new InvalidOperationException("The user details cannot be retrieved.");
 
             var principal = await _signInManager.CreateUserPrincipalAsync(user);
 
@@ -119,26 +95,113 @@ namespace Mvc.Server
         // Notify OpenIddict that the authorization grant has been denied by the resource owner
         // to redirect the user agent to the client application using the appropriate response_mode.
         public IActionResult Deny() => Forbid(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        #endregion
 
+        #region Device flow
+        // Note: to support the device flow, you must provide your own verification endpoint action:
+        [Authorize, HttpGet("~/connect/verify")]
+        public async Task<IActionResult> Verify()
+        {
+            var request = HttpContext.GetOpenIddictServerRequest() ??
+                throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+
+            // If the user code was not specified in the query string (e.g as part of the verification_uri_complete),
+            // render a form to ask the user to enter the user code manually (non-digit chars are automatically ignored).
+            if (string.IsNullOrEmpty(request.UserCode))
+            {
+                return View(new VerifyViewModel());
+            }
+
+            // Retrieve the claims principal associated with the user code.
+            var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            if (result.Succeeded)
+            {
+                // Retrieve the application details from the database using the client_id stored in the principal.
+                var application = await _applicationManager.FindByClientIdAsync(result.Principal.GetClaim(Claims.ClientId)) ??
+                    throw new InvalidOperationException("Details concerning the calling client application cannot be found.");
+
+                // Render a form asking the user to confirm the authorization demand.
+                return View(new VerifyViewModel
+                {
+                    ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
+                    Scope = string.Join(" ", result.Principal.GetScopes()),
+                    UserCode = request.UserCode
+                });
+            }
+
+            // Redisplay the form when the user code is not valid.
+            return View(new VerifyViewModel
+            {
+                Error = result.Properties.GetString(OpenIddictServerAspNetCoreConstants.Properties.Error),
+                ErrorDescription = result.Properties.GetString(OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription)
+            });
+        }
+
+        [Authorize, FormValueRequired("submit.Accept")]
+        [HttpPost("~/connect/verify"), ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyAccept()
+        {
+            // Retrieve the profile of the logged in user.
+            var user = await _userManager.GetUserAsync(User) ??
+                throw new InvalidOperationException("The user details cannot be retrieved.");
+
+            // Retrieve the claims principal associated with the user code.
+            var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            if (result.Succeeded)
+            {
+                var principal = await _signInManager.CreateUserPrincipalAsync(user);
+
+                // Note: in this sample, the granted scopes match the requested scope
+                // but you may want to allow the user to uncheck specific scopes.
+                // For that, simply restrict the list of scopes before calling SetScopes.
+                principal.SetScopes(result.Principal.GetScopes());
+                principal.SetResources("resource_server");
+
+                foreach (var claim in principal.Claims)
+                {
+                    claim.SetDestinations(GetDestinations(claim, principal));
+                }
+
+                var properties = new AuthenticationProperties
+                {
+                    // This property points to the address OpenIddict will automatically
+                    // redirect the user to after validating the authorization demand.
+                    RedirectUri = "/"
+                };
+
+                return SignIn(principal, properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            }
+
+            // Redisplay the form when the user code is not valid.
+            return View(new VerifyViewModel
+            {
+                Error = result.Properties.GetString(OpenIddictServerAspNetCoreConstants.Properties.Error),
+                ErrorDescription = result.Properties.GetString(OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription)
+            });
+        }
+
+        [Authorize, FormValueRequired("submit.Deny")]
+        [HttpPost("~/connect/verify"), ValidateAntiForgeryToken]
+        // Notify OpenIddict that the authorization grant has been denied by the resource owner.
+        public IActionResult VerifyDeny()
+        {
+            var properties = new AuthenticationProperties
+            {
+                // This property points to the address OpenIddict will automatically
+                // redirect the user to after rejecting the authorization demand.
+                RedirectUri = "/"
+            };
+
+            return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
+        #endregion
+
+        #region Logout support for interactive flows like code and implicit
         // Note: the logout action is only useful when implementing interactive
         // flows like the authorization code flow or the implicit flow.
 
         [HttpGet("~/connect/logout")]
-        public IActionResult Logout()
-        {
-            var request = HttpContext.GetOpenIddictServerRequest();
-            if (request == null)
-            {
-                throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
-            }
-
-            // Flow the request_id to allow OpenIddict to restore
-            // the original logout request from the distributed cache.
-            return View(new LogoutViewModel
-            {
-                Parameters = request.GetFlattenedParameters()
-            });
-        }
+        public IActionResult Logout() => View();
 
         [ActionName(nameof(Logout)), HttpPost("~/connect/logout"), ValidateAntiForgeryToken]
         public async Task<IActionResult> LogoutPost()
@@ -148,24 +211,26 @@ namespace Mvc.Server
             // after a successful authentication flow (e.g Google or Facebook).
             await _signInManager.SignOutAsync();
 
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = "/"
+            };
+
             // Returning a SignOutResult will ask OpenIddict to redirect the user agent
             // to the post_logout_redirect_uri specified by the client application.
-            return SignOut(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            return SignOut(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
         #endregion
 
-        #region Password, authorization code and refresh token flows
+        #region Password, authorization code, device and refresh token flows
         // Note: to support non-interactive flows like password,
         // you must provide your own token endpoint action:
 
         [HttpPost("~/connect/token"), Produces("application/json")]
         public async Task<IActionResult> Exchange()
         {
-            var request = HttpContext.GetOpenIddictServerRequest();
-            if (request == null)
-            {
+            var request = HttpContext.GetOpenIddictServerRequest() ??
                 throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
-            }
 
             if (request.IsPasswordGrantType())
             {
@@ -211,9 +276,9 @@ namespace Mvc.Server
                 return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
             }
 
-            else if (request.IsAuthorizationCodeGrantType() || request.IsRefreshTokenGrantType())
+            else if (request.IsAuthorizationCodeGrantType() || request.IsDeviceCodeGrantType() || request.IsRefreshTokenGrantType())
             {
-                // Retrieve the claims principal stored in the authorization code/refresh token.
+                // Retrieve the claims principal stored in the authorization code/device code/refresh token.
                 var principal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
 
                 // Retrieve the user profile corresponding to the authorization code/refresh token.

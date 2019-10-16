@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -17,7 +18,6 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using Properties = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.Properties;
 
 namespace OpenIddict.Server.AspNetCore
 {
@@ -106,7 +106,7 @@ namespace OpenIddict.Server.AspNetCore
             return false;
         }
 
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction;
             if (transaction == null)
@@ -114,14 +114,36 @@ namespace OpenIddict.Server.AspNetCore
                 throw new InvalidOperationException("An identity cannot be extracted from this request.");
             }
 
-            if (transaction.Properties.TryGetValue(OpenIddictServerConstants.Properties.AmbientPrincipal, out var principal))
+            // Note: in many cases, the authentication token was already validated by the time this action is called
+            // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
+            // the authentication context is resolved from the transaction. If it's not available, a new one is created.
+            var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName);
+            if (context == null)
             {
-                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(
-                    (ClaimsPrincipal) principal,
-                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)));
+                context = new ProcessAuthenticationContext(transaction);
+                await _provider.DispatchAsync(context);
             }
 
-            return Task.FromResult(AuthenticateResult.NoResult());
+            if (context.IsRequestHandled || context.IsRequestSkipped)
+            {
+                return AuthenticateResult.NoResult();
+            }
+
+            else if (context.IsRejected)
+            {
+                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                {
+                    [OpenIddictServerAspNetCoreConstants.Properties.Error] = context.Error,
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = context.ErrorDescription,
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorUri] = context.ErrorUri
+                });
+
+                return AuthenticateResult.Fail("An unknown error occurred while authenticating the current request.", properties);
+            }
+
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                context.Principal,
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
         }
 
         protected override async Task HandleChallengeAsync([CanBeNull] AuthenticationProperties properties)
@@ -132,14 +154,11 @@ namespace OpenIddict.Server.AspNetCore
                 throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
             }
 
+            transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
+
             var context = new ProcessChallengeContext(transaction)
             {
-                Response = new OpenIddictResponse
-                {
-                    Error = GetProperty(properties, Properties.Error),
-                    ErrorDescription = GetProperty(properties, Properties.ErrorDescription),
-                    ErrorUri = GetProperty(properties, Properties.ErrorUri)
-                }
+                Response = new OpenIddictResponse()
             };
 
             await _provider.DispatchAsync(context);
@@ -174,9 +193,6 @@ namespace OpenIddict.Server.AspNetCore
                     .Append("was not registered or was explicitly removed from the handlers list.")
                     .ToString());
             }
-
-            static string GetProperty(AuthenticationProperties properties, string name)
-                => properties != null && properties.Items.TryGetValue(name, out string value) ? value : null;
         }
 
         protected override Task HandleForbiddenAsync([CanBeNull] AuthenticationProperties properties)
@@ -194,6 +210,8 @@ namespace OpenIddict.Server.AspNetCore
             {
                 throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
             }
+
+            transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
 
             var context = new ProcessSigninContext(transaction)
             {
@@ -247,6 +265,8 @@ namespace OpenIddict.Server.AspNetCore
             {
                 Response = new OpenIddictResponse()
             };
+
+            transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
 
             await _provider.DispatchAsync(context);
 

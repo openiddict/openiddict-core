@@ -270,36 +270,13 @@ namespace OpenIddict.Abstractions
         ValueTask<bool> HasScopesAsync([NotNull] object authorization, ImmutableArray<string> scopes, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Determines whether a given authorization is ad hoc.
+        /// Determines whether a given authorization has the specified status.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
+        /// <param name="status">The expected status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the authorization is ad hoc, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsAdHocAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Determines whether a given authorization is permanent.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the authorization is permanent, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsPermanentAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Determines whether a given authorization has been revoked.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the authorization has been revoked, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsRevokedAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Determines whether a given authorization is valid.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the authorization is valid, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsValidAsync([NotNull] object authorization, CancellationToken cancellationToken = default);
+        /// <returns><c>true</c> if the authorization has the specified status, <c>false</c> otherwise.</returns>
+        ValueTask<bool> HasStatusAsync([NotNull] object authorization, [NotNull] string status, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

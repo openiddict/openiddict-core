@@ -42,7 +42,9 @@ namespace OpenIddict.Server.DataProtection
             {
                 public const string AccessToken = "AccessTokenFormat";
                 public const string AuthorizationCode = "AuthorizationCodeFormat";
+                public const string DeviceCode = "DeviceCodeFormat";
                 public const string RefreshToken = "RefreshTokenFormat";
+                public const string UserCode = "UserCodeFormat";
             }
 
             public static class Handlers

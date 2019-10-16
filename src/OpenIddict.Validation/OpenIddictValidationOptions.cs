@@ -50,16 +50,14 @@ namespace OpenIddict.Validation
         public bool EnableAuthorizationValidation { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether reference tokens should be used.
-        /// When set to <c>true</c>, authorization codes, access tokens and refresh tokens
-        /// are stored as ciphertext in the database and a crypto-secure random identifier
-        /// is returned to the client application. Enabling this option is useful
-        /// to keep track of all the issued tokens, when storing a very large number
-        /// of claims in the authorization codes, access tokens and refresh tokens
+        /// Gets or sets a boolean indicating whether reference access tokens should be used.
+        /// When set to <c>true</c>, access tokens and are stored as ciphertext in the database
+        /// and a crypto-secure random identifier is returned to the client application.
+        /// Enabling this option is useful to keep track of all the issued access tokens,
+        /// when storing a very large number of claims in the access tokens
         /// or when immediate revocation of reference access tokens is desired.
-        /// Note: this option cannot be used when configuring JWT as the access token format.
         /// </summary>
-        public bool UseReferenceTokens { get; set; }
+        public bool UseReferenceAccessTokens { get; set; }
 
         /// <summary>
         /// Gets or sets the absolute URL of the OAuth 2.0/OpenID Connect server.

@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,6 @@ using Microsoft.Owin.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
-using OpenIddict.Abstractions;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -50,6 +50,7 @@ namespace OpenIddict.Server.Owin
                  */
                 RemoveCachedRequest.Descriptor,
                 ProcessQueryResponse.Descriptor,
+                ProcessHostRedirectionResponse<ApplyVerificationResponseContext>.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
                 ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
@@ -344,9 +345,14 @@ namespace OpenIddict.Server.Owin
                     // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
                     // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
                     // For consistency, multiple parameters with the same name are also supported by this endpoint.
-                    foreach (var parameter in context.Response.GetFlattenedParameters())
+                    foreach (var (key, value) in
+                        from parameter in context.Response.GetParameters()
+                        let values = (string[]) parameter.Value
+                        where values != null
+                        from value in values
+                        select (parameter.Key, Value: value))
                     {
-                        location = WebUtilities.AddQueryString(location, parameter.Key, parameter.Value);
+                        location = WebUtilities.AddQueryString(location, key, value);
                     }
 
                     response.Redirect(location);

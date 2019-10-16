@@ -64,7 +64,6 @@ namespace OpenIddict.Server.Owin
             // To work around this limitation, the server OWIN middleware is manually instantiated and invoked.
             var middleware = new OpenIddictServerOwinMiddleware(
                 next: Next,
-                logger: GetRequiredService<ILogger<OpenIddictServerOwinMiddleware>>(provider),
                 options: GetRequiredService<IOptionsMonitor<OpenIddictServerOwinOptions>>(provider),
                 provider: GetRequiredService<IOpenIddictServerProvider>(provider));
 

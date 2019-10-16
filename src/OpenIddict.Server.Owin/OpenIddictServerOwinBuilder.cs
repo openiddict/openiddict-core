@@ -110,6 +110,16 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.EnableUserinfoEndpointPassthrough = true);
 
         /// <summary>
+        /// Enables the pass-through mode for the OpenID Connect user verification endpoint.
+        /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+        /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+        /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+        public OpenIddictServerOwinBuilder EnableVerificationEndpointPassthrough()
+            => Configure(options => options.EnableVerificationEndpointPassthrough = true);
+
+        /// <summary>
         /// Enables request caching, so that both authorization and logout requests
         /// are automatically stored in the distributed cache, which allows flowing
         /// large payloads across requests. Enabling this option is recommended

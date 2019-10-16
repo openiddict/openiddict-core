@@ -64,7 +64,6 @@ namespace OpenIddict.Validation.Owin
             // To work around this limitation, the validation OWIN middleware is manually instantiated and invoked.
             var middleware = new OpenIddictValidationOwinMiddleware(
                 next: Next,
-                logger: GetRequiredService<ILogger<OpenIddictValidationOwinMiddleware>>(provider),
                 options: GetRequiredService<IOptionsMonitor<OpenIddictValidationOwinOptions>>(provider),
                 provider: GetRequiredService<IOpenIddictValidationProvider>(provider));
 

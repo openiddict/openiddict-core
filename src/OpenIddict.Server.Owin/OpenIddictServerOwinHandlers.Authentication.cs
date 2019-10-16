@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -20,7 +21,6 @@ using Microsoft.Owin.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
-using OpenIddict.Abstractions;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -364,12 +364,14 @@ namespace OpenIddict.Server.Owin
                         // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
                         // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
                         // For consistency, multiple parameters with the same name are also supported by this endpoint.
-                        foreach (var parameter in context.Response.GetFlattenedParameters())
+                        foreach (var (key, value) in
+                            from parameter in context.Response.GetParameters()
+                            let values = (string[]) parameter.Value
+                            where values != null
+                            from value in values
+                            select (parameter.Key, Value: value))
                         {
-                            var key = _encoder.Encode(parameter.Key);
-                            var value = _encoder.Encode(parameter.Value);
-
-                            writer.WriteLine($@"<input type=""hidden"" name=""{key}"" value=""{value}"" />");
+                            writer.WriteLine($@"<input type=""hidden"" name=""{_encoder.Encode(key)}"" value=""{_encoder.Encode(value)}"" />");
                         }
 
                         writer.WriteLine(@"<noscript>Click here to finish the authorization process: <input type=""submit"" /></noscript>");
@@ -448,9 +450,14 @@ namespace OpenIddict.Server.Owin
                     // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
                     // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
                     // For consistency, multiple parameters with the same name are also supported by this endpoint.
-                    foreach (var parameter in context.Response.GetFlattenedParameters())
+                    foreach (var (key, value) in
+                        from parameter in context.Response.GetParameters()
+                        let values = (string[]) parameter.Value
+                        where values != null
+                        from value in values
+                        select (parameter.Key, Value: value))
                     {
-                        location = WebUtilities.AddQueryString(location, parameter.Key, parameter.Value);
+                        location = WebUtilities.AddQueryString(location, key, value);
                     }
 
                     response.Redirect(location);
@@ -513,12 +520,17 @@ namespace OpenIddict.Server.Owin
                     // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
                     // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
                     // For consistency, multiple parameters with the same name are also supported by this endpoint.
-                    foreach (var parameter in context.Response.GetFlattenedParameters())
+                    foreach (var (key, value) in
+                        from parameter in context.Response.GetParameters()
+                        let values = (string[]) parameter.Value
+                        where values != null
+                        from value in values
+                        select (parameter.Key, Value: value))
                     {
                         builder.Append(Contains(builder, '#') ? '&' : '#')
-                               .Append(Uri.EscapeDataString(parameter.Key))
+                               .Append(Uri.EscapeDataString(key))
                                .Append('=')
-                               .Append(Uri.EscapeDataString(parameter.Value));
+                               .Append(Uri.EscapeDataString(value));
                     }
 
                     response.Redirect(builder.ToString());

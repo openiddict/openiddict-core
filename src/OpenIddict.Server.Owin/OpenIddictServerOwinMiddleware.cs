@@ -5,7 +5,6 @@
  */
 
 using JetBrains.Annotations;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Infrastructure;
@@ -20,32 +19,26 @@ namespace OpenIddict.Server.Owin
     /// </summary>
     public class OpenIddictServerOwinMiddleware : AuthenticationMiddleware<OpenIddictServerOwinOptions>
     {
-        private readonly ILogger<OpenIddictServerOwinMiddleware> _logger;
         private readonly IOpenIddictServerProvider _provider;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictServerOwinMiddleware"/> class.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline, if applicable.</param>
-        /// <param name="logger">The logger used by this middleware.</param>
         /// <param name="options">The OpenIddict server OWIN options.</param>
         /// <param name="provider">The OpenIddict server provider.</param>
         public OpenIddictServerOwinMiddleware(
             [CanBeNull] OwinMiddleware next,
-            [NotNull] ILogger<OpenIddictServerOwinMiddleware> logger,
             [NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options,
             [NotNull] IOpenIddictServerProvider provider)
             : base(next, options.CurrentValue)
-        {
-            _logger = logger;
-            _provider = provider;
-        }
+            => _provider = provider;
 
         /// <summary>
         /// Creates and returns a new <see cref="OpenIddictServerOwinHandler"/> instance.
         /// </summary>
         /// <returns>A new instance of the <see cref="OpenIddictServerOwinHandler"/> class.</returns>
         protected override AuthenticationHandler<OpenIddictServerOwinOptions> CreateHandler()
-            => new OpenIddictServerOwinHandler(_logger, _provider);
+            => new OpenIddictServerOwinHandler(_provider);
     }
 }

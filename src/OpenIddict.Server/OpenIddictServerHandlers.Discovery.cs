@@ -278,6 +278,7 @@ namespace OpenIddict.Server
                         [Metadata.EndSessionEndpoint] = notification.LogoutEndpoint?.AbsoluteUri,
                         [Metadata.RevocationEndpoint] = notification.RevocationEndpoint?.AbsoluteUri,
                         [Metadata.UserinfoEndpoint] = notification.UserinfoEndpoint?.AbsoluteUri,
+                        [Metadata.DeviceAuthorizationEndpoint] = notification.DeviceEndpoint?.AbsoluteUri,
                         [Metadata.JwksUri] = notification.CryptographyEndpoint?.AbsoluteUri,
                         [Metadata.GrantTypesSupported] = notification.GrantTypes.ToArray(),
                         [Metadata.ResponseTypesSupported] = notification.ResponseTypes.ToArray(),
@@ -394,6 +395,7 @@ namespace OpenIddict.Server
                     // and OpenID Connect discovery specifications only allow a single address per endpoint.
                     context.AuthorizationEndpoint ??= context.Options.AuthorizationEndpointUris.FirstOrDefault();
                     context.CryptographyEndpoint  ??= context.Options.CryptographyEndpointUris.FirstOrDefault();
+                    context.DeviceEndpoint        ??= context.Options.DeviceEndpointUris.FirstOrDefault();
                     context.IntrospectionEndpoint ??= context.Options.IntrospectionEndpointUris.FirstOrDefault();
                     context.LogoutEndpoint        ??= context.Options.LogoutEndpointUris.FirstOrDefault();
                     context.RevocationEndpoint    ??= context.Options.RevocationEndpointUris.FirstOrDefault();
@@ -421,6 +423,16 @@ namespace OpenIddict.Server
                         }
 
                         context.CryptographyEndpoint = new Uri(context.Issuer, context.CryptographyEndpoint);
+                    }
+
+                    if (context.DeviceEndpoint != null && !context.DeviceEndpoint.IsAbsoluteUri)
+                    {
+                        if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
+                        {
+                            throw new InvalidOperationException("An absolute URL cannot be built for the device endpoint path.");
+                        }
+
+                        context.DeviceEndpoint = new Uri(context.Issuer, context.DeviceEndpoint);
                     }
 
                     if (context.IntrospectionEndpoint != null && !context.IntrospectionEndpoint.IsAbsoluteUri)

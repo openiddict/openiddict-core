@@ -57,7 +57,7 @@ namespace OpenIddict.Validation.ServerIntegration
                 }
             }
 
-            options.UseReferenceTokens = _options.CurrentValue.UseReferenceTokens;
+            options.UseReferenceAccessTokens = _options.CurrentValue.UseReferenceAccessTokens;
         }
     }
 }

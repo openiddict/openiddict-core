@@ -172,6 +172,10 @@ namespace OpenIddict.Server
                     var notification = new ValidateRevocationRequestContext(context.Transaction);
                     await _provider.DispatchAsync(notification);
 
+                    // Store the context object in the transaction so it can be later retrieved by handlers
+                    // that want to access the principal without triggering a new validation process.
+                    context.Transaction.SetProperty(typeof(ValidateRevocationRequestContext).FullName, notification);
+
                     if (notification.IsRequestHandled)
                     {
                         context.HandleRequest();
@@ -192,9 +196,6 @@ namespace OpenIddict.Server
                             uri: notification.ErrorUri);
                         return;
                     }
-
-                    // Store the security principal extracted from the revoked token as an environment property.
-                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
 
                     context.Logger.LogInformation("The revocation request was successfully validated.");
                 }
@@ -750,10 +751,8 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    // Attach the security principal extracted from the token to the
-                    // validation context and store it as an environment property.
+                    // Attach the security principal extracted from the token to the validation context.
                     context.Principal = notification.Principal;
-                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
                 }
             }
 
@@ -899,10 +898,11 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
-                    {
-                        context.Principal ??= (ClaimsPrincipal) principal;
-                    }
+                    var notification = context.Transaction.GetProperty<ValidateRevocationRequestContext>(
+                        typeof(ValidateRevocationRequestContext).FullName) ??
+                        throw new InvalidOperationException("The authentication context cannot be found.");
+
+                    context.Principal ??= notification.Principal;
 
                     return default;
                 }
@@ -965,7 +965,7 @@ namespace OpenIddict.Server
                     }
 
                     // If the received token is an access token, return an error if reference tokens are not enabled.
-                    if (context.Principal.IsAccessToken() && !context.Options.UseReferenceTokens)
+                    if (context.Principal.IsAccessToken() && !context.Options.UseReferenceAccessTokens)
                     {
                         context.Logger.LogError("The revocation request was rejected because the access token was not revocable.");
 
@@ -990,10 +990,10 @@ namespace OpenIddict.Server
                     }
 
                     var token = await _tokenManager.FindByIdAsync(identifier);
-                    if (token == null || await _tokenManager.IsRevokedAsync(token))
+                    if (token == null || await _tokenManager.HasStatusAsync(token, Statuses.Revoked))
                     {
                         context.Logger.LogInformation("The token '{Identifier}' was not revoked because " +
-                                                      "it was already marked as invalid.", identifier);
+                                                      "it was already marked as revoked.", identifier);
 
                         context.Reject(
                             error: Errors.InvalidToken,

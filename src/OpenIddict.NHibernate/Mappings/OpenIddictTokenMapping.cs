@@ -59,11 +59,6 @@ namespace OpenIddict.NHibernate
                 map.NotNullable(true);
             });
 
-            Property(token => token.Subject, map =>
-            {
-                map.NotNullable(true);
-            });
-
             Property(token => token.Type, map =>
             {
                 map.NotNullable(true);

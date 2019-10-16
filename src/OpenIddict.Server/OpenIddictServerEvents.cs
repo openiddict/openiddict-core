@@ -62,12 +62,6 @@ namespace OpenIddict.Server
             public OpenIddictServerOptions Options => Transaction.Options;
 
             /// <summary>
-            /// Gets the dictionary containing the properties associated with this event.
-            /// </summary>
-            public IDictionary<string, object> Properties { get; }
-                = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-            /// <summary>
             /// Gets or sets the OpenIddict request or <c>null</c> if it couldn't be extracted.
             /// </summary>
             public OpenIddictRequest Request
@@ -311,6 +305,16 @@ namespace OpenIddict.Server
             /// Gets or sets the security principal.
             /// </summary>
             public ClaimsPrincipal Principal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the token to validate.
+            /// </summary>
+            public string Token { get; set; }
+
+            /// <summary>
+            /// Gets or sets the expected type of the token.
+            /// </summary>
+            public string TokenType { get; set; }
         }
 
         /// <summary>
@@ -357,6 +361,14 @@ namespace OpenIddict.Server
             public bool IncludeAuthorizationCode { get; set; }
 
             /// <summary>
+            /// Gets or sets a boolean indicating whether a device code
+            /// should be returned to the client application.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool IncludeDeviceCode { get; set; }
+
+            /// <summary>
             /// Gets or sets a boolean indicating whether an identity token
             /// should be returned to the client application.
             /// Note: overriding the value of this property is generally not
@@ -373,16 +385,30 @@ namespace OpenIddict.Server
             public bool IncludeRefreshToken { get; set; }
 
             /// <summary>
+            /// Gets or sets a boolean indicating whether a user code
+            /// should be returned to the client application.
+            /// Note: overriding the value of this property is generally not
+            /// recommended, except when dealing with non-standard clients.
+            /// </summary>
+            public bool IncludeUserCode { get; set; }
+
+            /// <summary>
             /// Gets or sets the principal containing the claims that
             /// will be used to create the access token, if applicable.
             /// </summary>
             public ClaimsPrincipal AccessTokenPrincipal { get; set; }
-            
+
             /// <summary>
             /// Gets or sets the principal containing the claims that
             /// will be used to create the authorization code, if applicable.
             /// </summary>
             public ClaimsPrincipal AuthorizationCodePrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal containing the claims that
+            /// will be used to create the device code, if applicable.
+            /// </summary>
+            public ClaimsPrincipal DeviceCodePrincipal { get; set; }
 
             /// <summary>
             /// Gets or sets the principal containing the claims that
@@ -395,6 +421,12 @@ namespace OpenIddict.Server
             /// will be used to create the refresh token, if applicable.
             /// </summary>
             public ClaimsPrincipal RefreshTokenPrincipal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the principal containing the claims that
+            /// will be used to create the user code, if applicable.
+            /// </summary>
+            public ClaimsPrincipal UserCodePrincipal { get; set; }
         }
 
         /// <summary>

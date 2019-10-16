@@ -60,7 +60,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<PopulateTokenValidationParameters>()
-                    .SetOrder(ValidateSelfContainedToken.Descriptor.Order - 500)
+                    .SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)

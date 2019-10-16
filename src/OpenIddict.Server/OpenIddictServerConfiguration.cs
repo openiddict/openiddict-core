@@ -56,34 +56,57 @@ namespace OpenIddict.Server
                     .ToString());
             }
 
+            // Ensure the device endpoint has been enabled when the device grant is supported.
+            if (options.DeviceEndpointUris.Count == 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
+            {
+                throw new InvalidOperationException("The device endpoint must be enabled to use the device flow.");
+            }
+
             // Ensure the token endpoint has been enabled when the authorization code,
-            // client credentials, password or refresh token grants are supported.
+            // client credentials, device, password or refresh token grants are supported.
             if (options.TokenEndpointUris.Count == 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
                                                          options.GrantTypes.Contains(GrantTypes.ClientCredentials) ||
+                                                         options.GrantTypes.Contains(GrantTypes.DeviceCode) ||
                                                          options.GrantTypes.Contains(GrantTypes.Password) ||
                                                          options.GrantTypes.Contains(GrantTypes.RefreshToken)))
             {
                 throw new InvalidOperationException(new StringBuilder()
                     .Append("The token endpoint must be enabled to use the authorization code, ")
-                    .Append("client credentials, password and refresh token flows.")
+                    .Append("client credentials, device, password and refresh token flows.")
                     .ToString());
             }
 
-            if (options.RevocationEndpointUris.Count != 0 && options.DisableTokenStorage)
+            // Ensure the verification endpoint has been enabled when the device grant is supported.
+            if (options.VerificationEndpointUris.Count == 0 && options.GrantTypes.Contains(GrantTypes.DeviceCode))
             {
-                throw new InvalidOperationException("The revocation endpoint cannot be enabled when token storage is disabled.");
+                throw new InvalidOperationException("The verification endpoint must be enabled to use the device flow.");
             }
 
-            if (options.UseReferenceTokens && options.DisableTokenStorage)
+            if (options.DisableTokenStorage)
             {
-                throw new InvalidOperationException("Reference tokens cannot be used when disabling token storage.");
-            }
+                if (options.DeviceEndpointUris.Count != 0 || options.VerificationEndpointUris.Count != 0)
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("The device and verification endpoints cannot be enabled when token storage is disabled.")
+                        .ToString());
+                }
 
-            if (options.UseSlidingExpiration && options.DisableTokenStorage && !options.UseRollingTokens)
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("Sliding expiration must be disabled when turning off token storage if rolling tokens are not used.")
-                    .ToString());
+                if (options.RevocationEndpointUris.Count != 0)
+                {
+                    throw new InvalidOperationException("The revocation endpoint cannot be enabled when token storage is disabled.");
+                }
+
+                if (options.UseReferenceAccessTokens)
+                {
+                    throw new InvalidOperationException("Reference tokens cannot be used when disabling token storage.");
+                }
+
+                if (options.UseSlidingExpiration && !options.UseRollingTokens)
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("Sliding expiration must be disabled when turning off token storage if rolling tokens are not used.")
+                        .ToString());
+                }
             }
 
             if (options.EncryptionCredentials.Count == 0)
@@ -106,10 +129,11 @@ namespace OpenIddict.Server
                     .ToString());
             }
 
-            // If the degraded mode was enabled, ensure custom validation handlers
-            // have been registered for the endpoints that require manual validation.
             if (options.EnableDegradedMode)
             {
+                // If the degraded mode was enabled, ensure custom validation handlers
+                // have been registered for the endpoints that require manual validation.
+
                 if (options.AuthorizationEndpointUris.Count != 0 && !options.CustomHandlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateAuthorizationRequestContext) &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
@@ -118,6 +142,17 @@ namespace OpenIddict.Server
                         .Append("No custom authorization request validation handler was found. When enabling the degraded mode, ")
                         .Append("a custom 'IOpenIddictServerHandler<ValidateAuthorizationRequestContext>' must be implemented ")
                         .Append("to validate authorization requests (e.g to ensure the client_id and redirect_uri are valid).")
+                        .ToString());
+                }
+
+                if (options.DeviceEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                    descriptor => descriptor.ContextType == typeof(ValidateDeviceRequestContext) &&
+                                  descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("No custom device request validation handler was found. When enabling the degraded mode, ")
+                        .Append("a custom 'IOpenIddictServerHandler<ValidateDeviceRequestContext>' must be implemented ")
+                        .Append("to validate device requests (e.g to ensure the client_id and client_secret are valid).")
                         .ToString());
                 }
 
@@ -163,6 +198,45 @@ namespace OpenIddict.Server
                         .Append("a custom 'IOpenIddictServerHandler<ValidateTokenRequestContext>' must be implemented ")
                         .Append("to validate token requests (e.g to ensure the client_id and client_secret are valid).")
                         .ToString());
+                }
+
+                if (options.VerificationEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                    descriptor => descriptor.ContextType == typeof(ValidateVerificationRequestContext) &&
+                                  descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .Append("No custom verification request validation handler was found. When enabling the degraded mode, ")
+                        .Append("a custom 'IOpenIddictServerHandler<ValidateVerificationRequestContext>' must be implemented ")
+                        .Append("to validate verification requests (e.g to ensure the user_code is valid).")
+                        .ToString());
+                }
+
+                // If the degraded mode was enabled, ensure custom authentication/sign-in handlers
+                // have been registered to deal with device/user codes validation and generation.
+
+                if (options.GrantTypes.Contains(GrantTypes.DeviceCode))
+                {
+                    if (!options.CustomHandlers.Any(
+                        descriptor => descriptor.ContextType == typeof(ProcessAuthenticationContext) &&
+                                      descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .Append("No custom verification authentication handler was found. When enabling the degraded mode, ")
+                            .Append("a custom 'IOpenIddictServerHandler<ProcessAuthenticationContext>' must be implemented ")
+                            .Append("to validate device and user codes (e.g by retrieving them from a database).")
+                            .ToString());
+                    }
+
+                    if (!options.CustomHandlers.Any(
+                        descriptor => descriptor.ContextType == typeof(ProcessSigninContext) &&
+                                      descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .Append("No custom verification sign-in handler was found. When enabling the degraded mode, ")
+                            .Append("a custom 'IOpenIddictServerHandler<ProcessSigninContext>' must be implemented ")
+                            .Append("to generate device and user codes (e.g by retrieving them from a database).")
+                            .ToString());
+                    }
                 }
             }
 

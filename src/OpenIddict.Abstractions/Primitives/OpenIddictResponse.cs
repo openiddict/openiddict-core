@@ -85,6 +85,15 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Gets or sets the "device_code" parameter.
+        /// </summary>
+        public string DeviceCode
+        {
+            get => (string) GetParameter(OpenIddictConstants.Parameters.DeviceCode);
+            set => SetParameter(OpenIddictConstants.Parameters.DeviceCode, value);
+        }
+
+        /// <summary>
         /// Gets or sets the "error" parameter.
         /// </summary>
         public string Error
@@ -163,6 +172,15 @@ namespace OpenIddict.Abstractions
         {
             get => (string) GetParameter(OpenIddictConstants.Parameters.TokenType);
             set => SetParameter(OpenIddictConstants.Parameters.TokenType, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the "user_code" parameter.
+        /// </summary>
+        public string UserCode
+        {
+            get => (string) GetParameter(OpenIddictConstants.Parameters.UserCode);
+            set => SetParameter(OpenIddictConstants.Parameters.UserCode, value);
         }
     }
 }

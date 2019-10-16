@@ -702,94 +702,26 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Determines whether a given authorization is ad hoc.
+        /// Determines whether a given authorization has the specified status.
         /// </summary>
         /// <param name="authorization">The authorization.</param>
+        /// <param name="status">The expected status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the authorization is ad hoc, <c>false</c> otherwise.</returns>
-        public async ValueTask<bool> IsAdHocAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
+        /// <returns><c>true</c> if the authorization has the specified status, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> HasStatusAsync([NotNull] TAuthorization authorization,
+            [NotNull] string status, CancellationToken cancellationToken = default)
         {
             if (authorization == null)
             {
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            var type = await GetTypeAsync(authorization, cancellationToken);
-            if (string.IsNullOrEmpty(type))
-            {
-                return false;
-            }
-
-            return string.Equals(type, OpenIddictConstants.AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Determines whether a given authorization is permanent.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the authorization is permanent, <c>false</c> otherwise.</returns>
-        public async ValueTask<bool> IsPermanentAsync(
-            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
-        {
-            if (authorization == null)
-            {
-                throw new ArgumentNullException(nameof(authorization));
-            }
-
-            var type = await GetTypeAsync(authorization, cancellationToken);
-            if (string.IsNullOrEmpty(type))
-            {
-                return false;
-            }
-
-            return string.Equals(type, OpenIddictConstants.AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Determines whether a given authorization has been revoked.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the authorization has been revoked, <c>false</c> otherwise.</returns>
-        public virtual async ValueTask<bool> IsRevokedAsync(
-            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
-        {
-            if (authorization == null)
-            {
-                throw new ArgumentNullException(nameof(authorization));
-            }
-
-            var status = await Store.GetStatusAsync(authorization, cancellationToken);
             if (string.IsNullOrEmpty(status))
             {
-                return false;
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            return string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Determines whether a given authorization is valid.
-        /// </summary>
-        /// <param name="authorization">The authorization.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the authorization is valid, <c>false</c> otherwise.</returns>
-        public virtual async ValueTask<bool> IsValidAsync(
-            [NotNull] TAuthorization authorization, CancellationToken cancellationToken = default)
-        {
-            if (authorization == null)
-            {
-                throw new ArgumentNullException(nameof(authorization));
-            }
-
-            var status = await Store.GetStatusAsync(authorization, cancellationToken);
-            if (string.IsNullOrEmpty(status))
-            {
-                return false;
-            }
-
-            return string.Equals(status, OpenIddictConstants.Statuses.Valid, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(await Store.GetStatusAsync(authorization, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1077,11 +1009,6 @@ namespace OpenIddict.Core
                 yield return new ValidationResult("The status cannot be null or empty.");
             }
 
-            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(authorization, cancellationToken)))
-            {
-                yield return new ValidationResult("The subject cannot be null or empty.");
-            }
-
             // Ensure that the scopes are not null or empty and do not contain spaces.
             foreach (var scope in await Store.GetScopesAsync(authorization, cancellationToken))
             {
@@ -1167,17 +1094,8 @@ namespace OpenIddict.Core
         ValueTask<bool> IOpenIddictAuthorizationManager.HasScopesAsync(object authorization, ImmutableArray<string> scopes, CancellationToken cancellationToken)
             => HasScopesAsync((TAuthorization) authorization, scopes, cancellationToken);
 
-        ValueTask<bool> IOpenIddictAuthorizationManager.IsAdHocAsync(object authorization, CancellationToken cancellationToken)
-            => IsAdHocAsync((TAuthorization) authorization, cancellationToken);
-
-        ValueTask<bool> IOpenIddictAuthorizationManager.IsPermanentAsync(object authorization, CancellationToken cancellationToken)
-            => IsPermanentAsync((TAuthorization) authorization, cancellationToken);
-
-        ValueTask<bool> IOpenIddictAuthorizationManager.IsRevokedAsync(object authorization, CancellationToken cancellationToken)
-            => IsRevokedAsync((TAuthorization) authorization, cancellationToken);
-
-        ValueTask<bool> IOpenIddictAuthorizationManager.IsValidAsync(object authorization, CancellationToken cancellationToken)
-            => IsValidAsync((TAuthorization) authorization, cancellationToken);
+        ValueTask<bool> IOpenIddictAuthorizationManager.HasStatusAsync(object authorization, string status, CancellationToken cancellationToken)
+            => HasStatusAsync((TAuthorization) authorization, status, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictAuthorizationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
             => ListAsync(count, offset, cancellationToken).OfType<object>();

@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,8 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.OpenIddictServerHandlers;
+using Properties = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.Properties;
 
 namespace OpenIddict.Server.AspNetCore
 {
@@ -34,8 +37,14 @@ namespace OpenIddict.Server.AspNetCore
              */
             InferEndpointType.Descriptor,
             InferIssuerFromHost.Descriptor,
-            ValidateTransportSecurityRequirement.Descriptor)
+            ValidateTransportSecurityRequirement.Descriptor,
+
+            /*
+             * Challenge processing:
+             */
+            AttachHostChallengeError.Descriptor)
             .AddRange(Authentication.DefaultHandlers)
+            .AddRange(Device.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
             .AddRange(Exchange.DefaultHandlers)
             .AddRange(Introspection.DefaultHandlers)
@@ -85,11 +94,13 @@ namespace OpenIddict.Server.AspNetCore
                     Matches(context.Options.AuthorizationEndpointUris) ? OpenIddictServerEndpointType.Authorization :
                     Matches(context.Options.ConfigurationEndpointUris) ? OpenIddictServerEndpointType.Configuration :
                     Matches(context.Options.CryptographyEndpointUris)  ? OpenIddictServerEndpointType.Cryptography  :
+                    Matches(context.Options.DeviceEndpointUris)        ? OpenIddictServerEndpointType.Device        :
                     Matches(context.Options.IntrospectionEndpointUris) ? OpenIddictServerEndpointType.Introspection :
                     Matches(context.Options.LogoutEndpointUris)        ? OpenIddictServerEndpointType.Logout        :
                     Matches(context.Options.RevocationEndpointUris)    ? OpenIddictServerEndpointType.Revocation    :
                     Matches(context.Options.TokenEndpointUris)         ? OpenIddictServerEndpointType.Token         :
                     Matches(context.Options.UserinfoEndpointUris)      ? OpenIddictServerEndpointType.Userinfo      :
+                    Matches(context.Options.VerificationEndpointUris)  ? OpenIddictServerEndpointType.Verification  :
                                                                          OpenIddictServerEndpointType.Unknown;
 
                 return default;
@@ -258,6 +269,48 @@ namespace OpenIddict.Server.AspNetCore
                         description: "This server only accepts HTTPS requests.");
 
                     return default;
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching the error details using the ASP.NET Core authentication properties.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class AttachHostChallengeError : IOpenIddictServerHandler<ProcessChallengeContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<AttachHostChallengeError>()
+                    .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessChallengeContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Transaction.Properties.TryGetValue(typeof(AuthenticationProperties).FullName, out var property) &&
+                    property is AuthenticationProperties properties)
+                {
+                    context.Response.Error = properties.GetString(Properties.Error);
+                    context.Response.ErrorDescription = properties.GetString(Properties.ErrorDescription);
+                    context.Response.ErrorUri = properties.GetString(Properties.ErrorUri);
                 }
 
                 return default;
@@ -679,6 +732,58 @@ namespace OpenIddict.Server.AspNetCore
                 }
 
                 context.SkipRequest();
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of processing empty OpenID Connect responses that should trigger a host redirection.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class ProcessHostRedirectionResponse<TContext> : IOpenIddictServerHandler<TContext>
+            where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<ProcessHostRedirectionResponse<TContext>>()
+                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                if (context.Transaction.Properties.TryGetValue(typeof(AuthenticationProperties).FullName, out var property) &&
+                    property is AuthenticationProperties properties && !string.IsNullOrEmpty(properties.RedirectUri))
+                {
+                    response.Redirect(properties.RedirectUri);
+
+                    context.Logger.LogInformation("The response was successfully returned as a 302 response.");
+                    context.HandleRequest();
+                }
 
                 return default;
             }

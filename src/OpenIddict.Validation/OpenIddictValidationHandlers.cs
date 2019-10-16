@@ -18,6 +18,7 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.OpenIddictValidationHandlerFilters;
+using Properties = OpenIddict.Validation.OpenIddictValidationConstants.Properties;
 
 namespace OpenIddict.Validation
 {
@@ -29,8 +30,9 @@ namespace OpenIddict.Validation
              * Authentication processing:
              */
             ValidateAccessTokenParameter.Descriptor,
-            ValidateReferenceToken.Descriptor,
-            ValidateSelfContainedToken.Descriptor,
+            ValidateReferenceTokenIdentifier.Descriptor,
+            ValidateIdentityModelToken.Descriptor,
+            RestoreReferenceTokenProperties.Descriptor,
             ValidatePrincipal.Descriptor,
             ValidateExpirationDate.Descriptor,
             ValidateAudience.Descriptor,
@@ -80,25 +82,27 @@ namespace OpenIddict.Validation
                     return default;
                 }
 
+                context.Token = context.Request.AccessToken;
+
                 return default;
             }
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands that use an invalid reference token.
+        /// Contains the logic responsible of validating reference token identifiers.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class ValidateReferenceToken : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        public class ValidateReferenceTokenIdentifier : IOpenIddictValidationHandler<ProcessAuthenticationContext>
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ValidateReferenceToken() => throw new InvalidOperationException(new StringBuilder()
+            public ValidateReferenceTokenIdentifier() => throw new InvalidOperationException(new StringBuilder()
                 .AppendLine("The core services must be registered when enabling reference tokens support.")
                 .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
                 .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
                 .ToString());
 
-            public ValidateReferenceToken([NotNull] IOpenIddictTokenManager tokenManager)
+            public ValidateReferenceTokenIdentifier([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
 
             /// <summary>
@@ -106,8 +110,8 @@ namespace OpenIddict.Validation
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                    .AddFilter<RequireReferenceTokensEnabled>()
-                    .UseScopedHandler<ValidateReferenceToken>()
+                    .AddFilter<RequireReferenceAccessTokensEnabled>()
+                    .UseScopedHandler<ValidateReferenceTokenIdentifier>()
                     .SetOrder(ValidateAccessTokenParameter.Descriptor.Order + 1_000)
                     .Build();
 
@@ -118,16 +122,15 @@ namespace OpenIddict.Validation
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // If a principal was already attached, don't overwrite it.
-                if (context.Principal != null)
+                // If the reference token cannot be found, don't return an error to allow another handle to validate it.
+                var token = await _tokenManager.FindByReferenceIdAsync(context.Token);
+                if (token == null)
                 {
                     return;
                 }
 
-                // If the reference token cannot be found, return a generic error.
-                var token = await _tokenManager.FindByReferenceIdAsync(context.Request.AccessToken);
-                if (token == null || !string.Equals(await _tokenManager.GetTypeAsync(token),
-                    TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase))
+                var type = await _tokenManager.GetTypeAsync(token);
+                if (!string.Equals(type, TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -145,61 +148,27 @@ namespace OpenIddict.Validation
                         .ToString());
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                if (!context.Options.JsonWebTokenHandler.CanReadToken(payload))
-                {
-                    return;
-                }
+                // Replace the token parameter by the payload resolved from the token entry.
+                context.Token = payload;
 
-                // If no issuer signing key was attached, don't return an error to allow another handle to validate it.
-                var parameters = context.TokenValidationParameters;
-                if (parameters?.IssuerSigningKeys == null)
-                {
-                    return;
-                }
-
-                // Clone the token validation parameters before mutating them to ensure the
-                // shared token validation parameters registered as options are not modified.
-                parameters = parameters.Clone();
-                parameters.PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken };
-                parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
-                parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
-
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(payload, parameters);
-                if (result.ClaimsIdentity == null)
-                {
-                    context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", payload);
-
-                    return;
-                }
-
-                // Attach the principal extracted from the authorization code to the parent event context
-                // and restore the creation/expiration dates/identifiers from the token entry metadata.
-                context.Principal = new ClaimsPrincipal(result.ClaimsIdentity)
-                    .SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
-                    .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
-                    .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
-                    .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                    .SetClaim(Claims.Private.TokenUsage, await _tokenManager.GetTypeAsync(token));
-
-                context.Logger.LogTrace("The reference JWT token '{Token}' was successfully validated and the following " +
-                                        "claims could be extracted: {Claims}.", payload, context.Principal.Claims);
+                // Store the identifier of the reference token in the transaction properties
+                // so it can be later used to restore the properties associated with the token.
+                context.Transaction.Properties[Properties.ReferenceTokenIdentifier] = await _tokenManager.GetIdAsync(token);
             }
         }
 
         /// <summary>
-        /// Contains the logic responsible of rejecting authentication demands that specify an invalid self-contained token.
+        /// Contains the logic responsible of validating tokens generated using IdentityModel.
         /// </summary>
-        public class ValidateSelfContainedToken : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        public class ValidateIdentityModelToken : IOpenIddictValidationHandler<ProcessAuthenticationContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                    .UseSingletonHandler<ValidateSelfContainedToken>()
-                    .SetOrder(ValidateReferenceToken.Descriptor.Order + 1_000)
+                    .UseSingletonHandler<ValidateIdentityModelToken>()
+                    .SetOrder(ValidateReferenceTokenIdentifier.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -223,7 +192,7 @@ namespace OpenIddict.Validation
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                if (!context.Options.JsonWebTokenHandler.CanReadToken(context.Request.AccessToken))
+                if (!context.Options.JsonWebTokenHandler.CanReadToken(context.Token))
                 {
                     return;
                 }
@@ -242,10 +211,10 @@ namespace OpenIddict.Validation
                 parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(context.Request.AccessToken, parameters);
+                var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(context.Token, parameters);
                 if (result.ClaimsIdentity == null)
                 {
-                    context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Request.AccessToken);
+                    context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Token);
 
                     return;
                 }
@@ -254,7 +223,67 @@ namespace OpenIddict.Validation
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
 
                 context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
-                                        "claims could be extracted: {Claims}.", context.Request.AccessToken, context.Principal.Claims);
+                                        "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of restoring the properties associated with a reference token entry.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public class RestoreReferenceTokenProperties : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        {
+            private readonly IOpenIddictTokenManager _tokenManager;
+
+            public RestoreReferenceTokenProperties() => throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling reference tokens support.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                .ToString());
+
+            public RestoreReferenceTokenProperties([NotNull] IOpenIddictTokenManager tokenManager)
+                => _tokenManager = tokenManager;
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                    .AddFilter<RequireReferenceAccessTokensEnabled>()
+                    .UseScopedHandler<RestoreReferenceTokenProperties>()
+                    .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
+                    .Build();
+
+            public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Principal == null)
+                {
+                    return;
+                }
+
+                if (!context.Transaction.Properties.TryGetValue(Properties.ReferenceTokenIdentifier, out var identifier))
+                {
+                    return;
+                }
+
+                var token = await _tokenManager.FindByIdAsync((string) identifier);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                }
+
+                // Restore the creation/expiration dates/identifiers from the token entry metadata.
+                context.Principal = context.Principal
+                    .SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
+                    .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
+                    .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
+                    .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
+                    .SetClaim(Claims.Private.TokenUsage, await _tokenManager.GetTypeAsync(token));
             }
         }
 
@@ -269,7 +298,7 @@ namespace OpenIddict.Validation
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidatePrincipal>()
-                    .SetOrder(ValidateSelfContainedToken.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -449,7 +478,7 @@ namespace OpenIddict.Validation
                 }
 
                 var authorization = await _authorizationManager.FindByIdAsync(identifier);
-                if (authorization == null || !await _authorizationManager.IsValidAsync(authorization))
+                if (authorization == null || !await _authorizationManager.HasStatusAsync(authorization, Statuses.Valid))
                 {
                     context.Logger.LogError("The authorization '{Identifier}' was no longer valid.", identifier);
 

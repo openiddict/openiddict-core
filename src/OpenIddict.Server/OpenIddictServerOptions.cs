@@ -59,6 +59,11 @@ namespace OpenIddict.Server
         };
 
         /// <summary>
+        /// Gets the absolute and relative URIs associated to the device endpoint.
+        /// </summary>
+        public IList<Uri> DeviceEndpointUris { get; } = new List<Uri>();
+
+        /// <summary>
         /// Gets the absolute and relative URIs associated to the introspection endpoint.
         /// </summary>
         public IList<Uri> IntrospectionEndpointUris { get; } = new List<Uri>();
@@ -82,6 +87,11 @@ namespace OpenIddict.Server
         /// Gets the absolute and relative URIs associated to the userinfo endpoint.
         /// </summary>
         public IList<Uri> UserinfoEndpointUris { get; } = new List<Uri>();
+
+        /// <summary>
+        /// Gets the absolute and relative URIs associated to the verification endpoint.
+        /// </summary>
+        public IList<Uri> VerificationEndpointUris { get; } = new List<Uri>();
 
         /// <summary>
         /// Gets or sets the JWT handler used to protect and unprotect tokens.
@@ -118,6 +128,14 @@ namespace OpenIddict.Server
         public TimeSpan? AccessTokenLifetime { get; set; } = TimeSpan.FromHours(1);
 
         /// <summary>
+        /// Gets or sets the period of time device codes remain valid after being issued. The default value is 10 minutes.
+        /// The client application is expected to start a whole new authentication flow after the device code has expired.
+        /// While not recommended, this property can be set to <c>null</c> to issue codes that never expire.
+        /// Note: the same value should be chosen for both <see cref="UserCodeLifetime"/> and this property.
+        /// </summary>
+        public TimeSpan? DeviceCodeLifetime { get; set; } = TimeSpan.FromMinutes(10);
+
+        /// <summary>
         /// Gets or sets the period of time identity tokens remain valid after being issued. The default value is 20 minutes.
         /// The client application is expected to refresh or acquire a new identity token after the token has expired.
         /// While not recommended, this property can be set to <c>null</c> to issue identity tokens that never expire.
@@ -130,6 +148,14 @@ namespace OpenIddict.Server
         /// While not recommended, this property can be set to <c>null</c> to issue refresh tokens that never expire.
         /// </summary>
         public TimeSpan? RefreshTokenLifetime { get; set; } = TimeSpan.FromDays(14);
+
+        /// <summary>
+        /// Gets or sets the period of time user codes remain valid after being issued. The default value is 10 minutes.
+        /// The client application is expected to start a whole new authentication flow after the user code has expired.
+        /// While not recommended, this property can be set to <c>null</c> to issue codes that never expire.
+        /// Note: the same value should be chosen for both <see cref="DeviceCodeLifetime"/> and this property.
+        /// </summary>
+        public TimeSpan? UserCodeLifetime { get; set; } = TimeSpan.FromMinutes(10);
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the degraded mode is enabled. When this degraded mode
@@ -155,8 +181,8 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets or sets a boolean indicating whether new refresh tokens should be issued during a refresh token request.
-        /// Set this property to <c>true</c> to issue a new refresh token, <c>false</c> to prevent the OpenID Connect
-        /// server middleware from issuing new refresh tokens when receiving a grant_type=refresh_token request.
+        /// Set this property to <c>true</c> to issue a new refresh token, <c>false</c> to prevent OpenIddict
+        /// from issuing new refresh tokens when receiving a grant_type=refresh_token request.
         /// </summary>
         public bool UseSlidingExpiration { get; set; } = true;
 
@@ -250,16 +276,14 @@ namespace OpenIddict.Server
         };
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether reference tokens should be used.
-        /// When set to <c>true</c>, authorization codes, access tokens and refresh tokens
-        /// are stored as ciphertext in the database and a crypto-secure random identifier
-        /// is returned to the client application. Enabling this option is useful
-        /// to keep track of all the issued tokens, when storing a very large number
-        /// of claims in the authorization codes, access tokens and refresh tokens
+        /// Gets or sets a boolean indicating whether reference access tokens should be used.
+        /// When set to <c>true</c>, access tokens and are stored as ciphertext in the database
+        /// and a crypto-secure random identifier is returned to the client application.
+        /// Enabling this option is useful to keep track of all the issued access tokens,
+        /// when storing a very large number of claims in the access tokens
         /// or when immediate revocation of reference access tokens is desired.
-        /// Note: this option cannot be used when configuring JWT as the access token format.
         /// </summary>
-        public bool UseReferenceTokens { get; set; }
+        public bool UseReferenceAccessTokens { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether rolling tokens should be used.

@@ -164,6 +164,10 @@ namespace OpenIddict.Server
                     var notification = new ValidateUserinfoRequestContext(context.Transaction);
                     await _provider.DispatchAsync(notification);
 
+                    // Store the context object in the transaction so it can be later retrieved by handlers
+                    // that want to access the principal without triggering a new validation process.
+                    context.Transaction.SetProperty(typeof(ValidateUserinfoRequestContext).FullName, notification);
+
                     if (notification.IsRequestHandled)
                     {
                         context.HandleRequest();
@@ -184,9 +188,6 @@ namespace OpenIddict.Server
                             uri: notification.ErrorUri);
                         return;
                     }
-
-                    // Store the security principal extracted from the authorization code/refresh token as an environment property.
-                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
 
                     context.Logger.LogInformation("The userinfo request was successfully validated.");
                 }
@@ -454,10 +455,8 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    // Attach the security principal extracted from the token to the
-                    // validation context and store it as an environment property.
+                    // Attach the security principal extracted from the token to the validation context.
                     context.Principal = notification.Principal;
-                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
                 }
             }
 
@@ -490,10 +489,11 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
-                    {
-                        context.Principal ??= (ClaimsPrincipal) principal;
-                    }
+                    var notification = context.Transaction.GetProperty<ValidateUserinfoRequestContext>(
+                        typeof(ValidateUserinfoRequestContext).FullName) ??
+                        throw new InvalidOperationException("The authentication context cannot be found.");
+
+                    context.Principal ??= notification.Principal;
 
                     return default;
                 }

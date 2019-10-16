@@ -736,69 +736,25 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
-        /// Determines whether a given token has already been redemeed.
+        /// Determines whether a given token has the specified status.
         /// </summary>
         /// <param name="token">The token.</param>
+        /// <param name="status">The expected status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the token has already been redemeed, <c>false</c> otherwise.</returns>
-        public virtual async ValueTask<bool> IsRedeemedAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
+        /// <returns><c>true</c> if the token has the specified status, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> HasStatusAsync([NotNull] TToken token, [NotNull] string status, CancellationToken cancellationToken = default)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var status = await Store.GetStatusAsync(token, cancellationToken);
             if (string.IsNullOrEmpty(status))
             {
-                return false;
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            return string.Equals(status, OpenIddictConstants.Statuses.Redeemed, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Determines whether a given token has been revoked.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the token has been revoked, <c>false</c> otherwise.</returns>
-        public virtual async ValueTask<bool> IsRevokedAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            var status = await Store.GetStatusAsync(token, cancellationToken);
-            if (string.IsNullOrEmpty(status))
-            {
-                return false;
-            }
-
-            return string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Determines whether a given token is valid.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the token is valid, <c>false</c> otherwise.</returns>
-        public virtual async ValueTask<bool> IsValidAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
-        {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            var status = await Store.GetStatusAsync(token, cancellationToken);
-            if (string.IsNullOrEmpty(status))
-            {
-                return false;
-            }
-
-            return string.Equals(status, OpenIddictConstants.Statuses.Valid, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(await Store.GetStatusAsync(token, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1079,6 +1035,54 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Tries to reject a token.
+        /// </summary>
+        /// <param name="token">The token to reject.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> TryRejectAsync([NotNull] TToken token, CancellationToken cancellationToken = default)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            var status = await Store.GetStatusAsync(token, cancellationToken);
+            if (string.Equals(status, OpenIddictConstants.Statuses.Rejected, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Rejected, cancellationToken);
+
+            try
+            {
+                await UpdateAsync(token, cancellationToken);
+
+                Logger.LogInformation("The token '{Identifier}' was successfully marked as rejected.",
+                                      await Store.GetIdAsync(token, cancellationToken));
+
+                return true;
+            }
+
+            catch (ConcurrencyException exception)
+            {
+                Logger.LogDebug(exception, "A concurrency exception occurred while trying to reject the token '{Identifier}'.",
+                                           await Store.GetIdAsync(token, cancellationToken));
+
+                return false;
+            }
+
+            catch (Exception exception)
+            {
+                Logger.LogWarning(exception, "An exception occurred while trying to reject the token '{Identifier}'.",
+                                             await Store.GetIdAsync(token, cancellationToken));
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Tries to revoke a token.
         /// </summary>
         /// <param name="token">The token to revoke.</param>
@@ -1242,7 +1246,9 @@ namespace OpenIddict.Core
 
             else if (!string.Equals(type, OpenIddictConstants.TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase) &&
                      !string.Equals(type, OpenIddictConstants.TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, OpenIddictConstants.TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase))
+                     !string.Equals(type, OpenIddictConstants.TokenUsages.DeviceCode, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, OpenIddictConstants.TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, OpenIddictConstants.TokenUsages.UserCode, StringComparison.OrdinalIgnoreCase))
             {
                 yield return new ValidationResult("The specified token type is not supported by the default token manager.");
             }
@@ -1252,7 +1258,9 @@ namespace OpenIddict.Core
                 yield return new ValidationResult("The status cannot be null or empty.");
             }
 
-            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(token, cancellationToken)))
+            if (string.IsNullOrEmpty(await Store.GetSubjectAsync(token, cancellationToken)) &&
+               !string.Equals(type, OpenIddictConstants.TokenUsages.DeviceCode, StringComparison.OrdinalIgnoreCase) &&
+               !string.Equals(type, OpenIddictConstants.TokenUsages.UserCode, StringComparison.OrdinalIgnoreCase))
             {
                 yield return new ValidationResult("The subject cannot be null or empty.");
             }
@@ -1355,14 +1363,8 @@ namespace OpenIddict.Core
         ValueTask<string> IOpenIddictTokenManager.GetTypeAsync(object token, CancellationToken cancellationToken)
             => GetTypeAsync((TToken) token, cancellationToken);
 
-        ValueTask<bool> IOpenIddictTokenManager.IsRedeemedAsync(object token, CancellationToken cancellationToken)
-            => IsRedeemedAsync((TToken) token, cancellationToken);
-
-        ValueTask<bool> IOpenIddictTokenManager.IsRevokedAsync(object token, CancellationToken cancellationToken)
-            => IsRevokedAsync((TToken) token, cancellationToken);
-
-        ValueTask<bool> IOpenIddictTokenManager.IsValidAsync(object token, CancellationToken cancellationToken)
-            => IsValidAsync((TToken) token, cancellationToken);
+        ValueTask<bool> IOpenIddictTokenManager.HasStatusAsync(object token, string status, CancellationToken cancellationToken)
+            => HasStatusAsync((TToken) token, status, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictTokenManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
             => ListAsync(count, offset, cancellationToken).OfType<object>();
@@ -1393,6 +1395,9 @@ namespace OpenIddict.Core
 
         ValueTask<bool> IOpenIddictTokenManager.TryRedeemAsync(object token, CancellationToken cancellationToken)
             => TryRedeemAsync((TToken) token, cancellationToken);
+
+        ValueTask<bool> IOpenIddictTokenManager.TryRejectAsync(object token, CancellationToken cancellationToken)
+            => TryRejectAsync((TToken) token, cancellationToken);
 
         ValueTask<bool> IOpenIddictTokenManager.TryRevokeAsync(object token, CancellationToken cancellationToken)
             => TryRevokeAsync((TToken) token, cancellationToken);

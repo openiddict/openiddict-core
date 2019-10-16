@@ -193,6 +193,15 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Gets or sets the "device_code" parameter.
+        /// </summary>
+        public string DeviceCode
+        {
+            get => (string) GetParameter(OpenIddictConstants.Parameters.DeviceCode);
+            set => SetParameter(OpenIddictConstants.Parameters.DeviceCode, value);
+        }
+
+        /// <summary>
         /// Gets or sets the "display" parameter.
         /// </summary>
         public string Display
@@ -406,6 +415,15 @@ namespace OpenIddict.Abstractions
         {
             get => (string) GetParameter(OpenIddictConstants.Parameters.UiLocales);
             set => SetParameter(OpenIddictConstants.Parameters.UiLocales, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the "user_code" parameter.
+        /// </summary>
+        public string UserCode
+        {
+            get => (string) GetParameter(OpenIddictConstants.Parameters.UserCode);
+            set => SetParameter(OpenIddictConstants.Parameters.UserCode, value);
         }
 
         /// <summary>

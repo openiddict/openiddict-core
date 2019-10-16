@@ -296,28 +296,13 @@ namespace OpenIddict.Abstractions
         ValueTask<string> GetTypeAsync([NotNull] object token, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Determines whether a given token has already been redemeed.
+        /// Determines whether a given token has the specified status.
         /// </summary>
         /// <param name="token">The token.</param>
+        /// <param name="status">The expected status.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the token has already been redemeed, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsRedeemedAsync([NotNull] object token, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Determines whether a given token has been revoked.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the token has been revoked, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsRevokedAsync([NotNull] object token, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Determines whether a given token is valid.
-        /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the token is valid, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsValidAsync([NotNull] object token, CancellationToken cancellationToken = default);
+        /// <returns><c>true</c> if the token has the specified status, <c>false</c> otherwise.</returns>
+        ValueTask<bool> HasStatusAsync([NotNull] object token, [NotNull] string status, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
@@ -421,6 +406,14 @@ namespace OpenIddict.Abstractions
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
         ValueTask<bool> TryRedeemAsync([NotNull] object token, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Tries to reject a token.
+        /// </summary>
+        /// <param name="token">The token to reject.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the token was successfully redemeed, <c>false</c> otherwise.</returns>
+        ValueTask<bool> TryRejectAsync([NotNull] object token, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Tries to revoke a token.

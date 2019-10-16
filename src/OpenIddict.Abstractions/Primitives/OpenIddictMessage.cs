@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -319,49 +318,49 @@ namespace OpenIddict.Abstractions
         {
             var builder = new StringBuilder();
 
-            using (var writer = new JsonTextWriter(new StringWriter(builder, CultureInfo.InvariantCulture)))
+            using var writer = new JsonTextWriter(new StringWriter(builder, CultureInfo.InvariantCulture))
             {
-                writer.Formatting = Formatting.Indented;
+                Formatting = Formatting.Indented
+            };
 
-                writer.WriteStartObject();
+            writer.WriteStartObject();
 
-                foreach (var parameter in Parameters)
+            foreach (var parameter in Parameters)
+            {
+                writer.WritePropertyName(parameter.Key);
+
+                // Remove sensitive parameters from the generated payload.
+                switch (parameter.Key)
                 {
-                    writer.WritePropertyName(parameter.Key);
-
-                    // Remove sensitive parameters from the generated payload.
-                    switch (parameter.Key)
+                    case OpenIddictConstants.Parameters.AccessToken:
+                    case OpenIddictConstants.Parameters.Assertion:
+                    case OpenIddictConstants.Parameters.ClientAssertion:
+                    case OpenIddictConstants.Parameters.ClientSecret:
+                    case OpenIddictConstants.Parameters.Code:
+                    case OpenIddictConstants.Parameters.IdToken:
+                    case OpenIddictConstants.Parameters.IdTokenHint:
+                    case OpenIddictConstants.Parameters.Password:
+                    case OpenIddictConstants.Parameters.RefreshToken:
+                    case OpenIddictConstants.Parameters.Token:
                     {
-                        case OpenIddictConstants.Parameters.AccessToken:
-                        case OpenIddictConstants.Parameters.Assertion:
-                        case OpenIddictConstants.Parameters.ClientAssertion:
-                        case OpenIddictConstants.Parameters.ClientSecret:
-                        case OpenIddictConstants.Parameters.Code:
-                        case OpenIddictConstants.Parameters.IdToken:
-                        case OpenIddictConstants.Parameters.IdTokenHint:
-                        case OpenIddictConstants.Parameters.Password:
-                        case OpenIddictConstants.Parameters.RefreshToken:
-                        case OpenIddictConstants.Parameters.Token:
-                        {
-                            writer.WriteValue("[removed for security reasons]");
-
-                            continue;
-                        }
-                    }
-
-                    var token = (JToken) parameter.Value;
-                    if (token == null)
-                    {
-                        writer.WriteNull();
+                        writer.WriteValue("[removed for security reasons]");
 
                         continue;
                     }
-
-                    token.WriteTo(writer);
                 }
 
-                writer.WriteEndObject();
+                var token = (JToken) parameter.Value;
+                if (token == null)
+                {
+                    writer.WriteNull();
+
+                    continue;
+                }
+
+                token.WriteTo(writer);
             }
+
+            writer.WriteEndObject();
 
             return builder.ToString();
         }

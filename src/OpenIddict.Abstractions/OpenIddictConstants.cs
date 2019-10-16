@@ -93,6 +93,8 @@ namespace OpenIddict.Abstractions
                 public const string ClaimDestinations = "oi_cl_dstn";
                 public const string CodeChallenge = "oi_cd_chlg";
                 public const string CodeChallengeMethod = "oi_cd_chlg_meth";
+                public const string DeviceCodeId = "oi_dvc_id";
+                public const string DeviceCodeLifetime = "oi_dvc_lft";
                 public const string IdentityTokenLifetime = "oi_idt_lft";
                 public const string Nonce = "oi_nce";
                 public const string Presenters = "oi_prst";
@@ -102,6 +104,7 @@ namespace OpenIddict.Abstractions
                 public const string Scopes = "oi_scp";
                 public const string TokenId = "oi_tkn_id";
                 public const string TokenUsage = "oi_tkn_use";
+                public const string UserCodeLifetime = "oi_usrc_lft";
             }
         }
 
@@ -141,7 +144,9 @@ namespace OpenIddict.Abstractions
         {
             public const string AccessDenied = "access_denied";
             public const string AccountSelectionRequired = "account_selection_required";
+            public const string AuthorizationPending = "authorization_pending";
             public const string ConsentRequired = "consent_required";
+            public const string ExpiredToken = "expired_token";
             public const string InteractionRequired = "interaction_required";
             public const string InvalidClient = "invalid_client";
             public const string InvalidGrant = "invalid_grant";
@@ -155,6 +160,7 @@ namespace OpenIddict.Abstractions
             public const string RequestNotSupported = "request_not_supported";
             public const string RequestUriNotSupported = "request_uri_not_supported";
             public const string ServerError = "server_error";
+            public const string SlowDown = "slow_down";
             public const string TemporarilyUnavailable = "temporarily_unavailable";
             public const string UnauthorizedClient = "unauthorized_client";
             public const string UnsupportedGrantType = "unsupported_grant_type";
@@ -166,6 +172,7 @@ namespace OpenIddict.Abstractions
         {
             public const string AuthorizationCode = "authorization_code";
             public const string ClientCredentials = "client_credentials";
+            public const string DeviceCode = "urn:ietf:params:oauth:grant-type:device_code";
             public const string Implicit = "implicit";
             public const string Password = "password";
             public const string RefreshToken = "refresh_token";
@@ -180,6 +187,7 @@ namespace OpenIddict.Abstractions
             public const string ClaimsSupported = "claims_supported";
             public const string ClaimTypesSupported = "claim_types_supported";
             public const string CodeChallengeMethodsSupported = "code_challenge_methods_supported";
+            public const string DeviceAuthorizationEndpoint = "device_authorization_endpoint";
             public const string DisplayValuesSupported = "display_values_supported";
             public const string EndSessionEndpoint = "end_session_endpoint";
             public const string GrantTypesSupported = "grant_types_supported";
@@ -234,6 +242,7 @@ namespace OpenIddict.Abstractions
             public const string CodeChallenge = "code_challenge";
             public const string CodeChallengeMethod = "code_challenge_method";
             public const string CodeVerifier = "code_verifier";
+            public const string DeviceCode = "device_code";
             public const string Display = "display";
             public const string Error = "error";
             public const string ErrorDescription = "error_description";
@@ -266,7 +275,10 @@ namespace OpenIddict.Abstractions
             public const string TokenType = "token_type";
             public const string TokenTypeHint = "token_type_hint";
             public const string UiLocales = "ui_locales";
+            public const string UserCode = "user_code";
             public const string Username = "username";
+            public const string VerificationUri = "verification_uri";
+            public const string VerificationUriComplete = "verification_uri_complete";
         }
 
         public static class Permissions
@@ -274,6 +286,7 @@ namespace OpenIddict.Abstractions
             public static class Endpoints
             {
                 public const string Authorization = "ept:authorization";
+                public const string Device = "ept:device";
                 public const string Introspection = "ept:introspection";
                 public const string Logout = "ept:logout";
                 public const string Revocation = "ept:revocation";
@@ -284,6 +297,7 @@ namespace OpenIddict.Abstractions
             {
                 public const string AuthorizationCode = "gt:authorization_code";
                 public const string ClientCredentials = "gt:client_credentials";
+                public const string DeviceCode = "gt:urn:ietf:params:oauth:grant-type:device_code";
                 public const string Implicit = "gt:implicit";
                 public const string Password = "gt:password";
                 public const string RefreshToken = "gt:refresh_token";
@@ -337,6 +351,7 @@ namespace OpenIddict.Abstractions
         public static class Separators
         {
             public static readonly char[] Ampersand = { '&' };
+            public static readonly char[] Dash = { '-' };
             public static readonly char[] Space = { ' ' };
         }
 
@@ -359,7 +374,9 @@ namespace OpenIddict.Abstractions
 
         public static class Statuses
         {
+            public const string Inactive = "inactive";
             public const string Redeemed = "redeemed";
+            public const string Rejected = "rejected";
             public const string Revoked = "revoked";
             public const string Valid = "valid";
         }
@@ -374,8 +391,10 @@ namespace OpenIddict.Abstractions
         {
             public const string AccessToken = "access_token";
             public const string AuthorizationCode = "authorization_code";
+            public const string DeviceCode = "device_code";
             public const string IdToken = "id_token";
             public const string RefreshToken = "refresh_token";
+            public const string UserCode = "user_code";
         }
 
         public static class TokenTypes
@@ -387,8 +406,10 @@ namespace OpenIddict.Abstractions
         {
             public const string AccessToken = "access_token";
             public const string AuthorizationCode = "authorization_code";
+            public const string DeviceCode = "device_code";
             public const string IdToken = "id_token";
             public const string RefreshToken = "refresh_token";
+            public const string UserCode = "user_code";
         }
     }
 }

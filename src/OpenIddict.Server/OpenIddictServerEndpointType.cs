@@ -54,6 +54,16 @@ namespace OpenIddict.Server
         /// <summary>
         /// Revocation endpoint.
         /// </summary>
-        Revocation = 8
+        Revocation = 8,
+
+        /// <summary>
+        /// Device endpoint.
+        /// </summary>
+        Device = 9,
+
+        /// <summary>
+        /// Verification endpoint.
+        /// </summary>
+        Verification = 10
     }
 }

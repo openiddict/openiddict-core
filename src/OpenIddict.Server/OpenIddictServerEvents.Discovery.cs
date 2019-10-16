@@ -75,6 +75,11 @@ namespace OpenIddict.Server
             public Uri CryptographyEndpoint { get; set; }
 
             /// <summary>
+            /// Gets or sets the device endpoint address.
+            /// </summary>
+            public Uri DeviceEndpoint { get; set; }
+
+            /// <summary>
             /// Gets or sets the introspection endpoint address.
             /// </summary>
             public Uri IntrospectionEndpoint { get; set; }
