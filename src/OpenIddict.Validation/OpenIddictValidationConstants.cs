@@ -4,9 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-namespace OpenIddict.Server
+namespace OpenIddict.Validation
 {
-    public static class OpenIddictServerConstants
+    public static class OpenIddictValidationConstants
     {
         public static class Properties
         {

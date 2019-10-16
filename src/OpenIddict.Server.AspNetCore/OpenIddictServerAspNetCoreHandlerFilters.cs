@@ -206,5 +206,27 @@ namespace OpenIddict.Server.AspNetCore
                 return new ValueTask<bool>(_options.CurrentValue.EnableUserinfoEndpointPassthrough);
             }
         }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if the
+        /// pass-through mode was not enabled for the verification endpoint.
+        /// </summary>
+        public class RequireVerificationEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
+
+            public RequireVerificationEndpointPassthroughEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+                => _options = options;
+
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(_options.CurrentValue.EnableVerificationEndpointPassthrough);
+            }
+        }
     }
 }

@@ -96,6 +96,22 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if no device code is returned.
+        /// </summary>
+        public class RequireDeviceCodeIncluded : IOpenIddictServerHandlerFilter<ProcessSigninContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.IncludeDeviceCode);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if endpoint permissions were disabled.
         /// </summary>
         public class RequireEndpointPermissionsEnabled : IOpenIddictServerHandlerFilter<BaseContext>
@@ -160,9 +176,9 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if reference tokens are enabled.
+        /// Represents a filter that excludes the associated handlers if reference access tokens are disabled.
         /// </summary>
-        public class RequireReferenceTokensDisabled : IOpenIddictServerHandlerFilter<BaseContext>
+        public class RequireReferenceAccessTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
             public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
@@ -171,23 +187,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(!context.Options.UseReferenceTokens);
-            }
-        }
-
-        /// <summary>
-        /// Represents a filter that excludes the associated handlers if reference tokens are disabled.
-        /// </summary>
-        public class RequireReferenceTokensEnabled : IOpenIddictServerHandlerFilter<BaseContext>
-        {
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                return new ValueTask<bool>(context.Options.UseReferenceTokens);
+                return new ValueTask<bool>(context.Options.UseReferenceAccessTokens);
             }
         }
 
@@ -300,6 +300,22 @@ namespace OpenIddict.Server
                 }
 
                 return new ValueTask<bool>(!context.Options.DisableTokenStorage);
+            }
+        }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if no user code is returned.
+        /// </summary>
+        public class RequireUserCodeIncluded : IOpenIddictServerHandlerFilter<ProcessSigninContext>
+        {
+            public ValueTask<bool> IsActiveAsync([NotNull] ProcessSigninContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(context.IncludeUserCode);
             }
         }
     }

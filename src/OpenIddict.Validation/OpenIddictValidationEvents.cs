@@ -251,6 +251,11 @@ namespace OpenIddict.Validation
             /// Gets or sets the security principal.
             /// </summary>
             public ClaimsPrincipal Principal { get; set; }
+
+            /// <summary>
+            /// Gets or sets the token to validate.
+            /// </summary>
+            public string Token { get; set; }
         }
 
         /// <summary>

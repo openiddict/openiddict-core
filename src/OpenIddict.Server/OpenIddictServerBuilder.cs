@@ -1068,6 +1068,14 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Enables device code flow support. For more information about this
+        /// specific OAuth 2.0 flow, visit https://tools.ietf.org/html/rfc8628.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder AllowDeviceCodeFlow()
+            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.DeviceCode));
+
+        /// <summary>
         /// Enables implicit flow support. For more information
         /// about this specific OAuth 2.0/OpenID Connect flow, visit
         /// https://tools.ietf.org/html/rfc6749#section-4.2 and
@@ -1245,6 +1253,58 @@ namespace Microsoft.Extensions.DependencyInjection
                 foreach (var address in addresses)
                 {
                     options.CryptographyEndpointUris.Add(address);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Sets the relative or absolute URLs associated to the device endpoint.
+        /// If an empty array is specified, the endpoint will be considered disabled.
+        /// Note: only the first address will be returned as part of the discovery document.
+        /// </summary>
+        /// <param name="addresses">The addresses associated to the endpoint.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetDeviceEndpointUris([NotNull] params string[] addresses)
+        {
+            if (addresses == null)
+            {
+                throw new ArgumentNullException(nameof(addresses));
+            }
+
+            return SetDeviceEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        }
+
+        /// <summary>
+        /// Sets the relative or absolute URLs associated to the device endpoint.
+        /// If an empty array is specified, the endpoint will be considered disabled.
+        /// Note: only the first address will be returned as part of the discovery document.
+        /// </summary>
+        /// <param name="addresses">The addresses associated to the endpoint.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetDeviceEndpointUris([NotNull] params Uri[] addresses)
+        {
+            if (addresses == null)
+            {
+                throw new ArgumentNullException(nameof(addresses));
+            }
+
+            if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+            {
+                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+            }
+
+            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
+            }
+
+            return Configure(options =>
+            {
+                options.DeviceEndpointUris.Clear();
+
+                foreach (var address in addresses)
+                {
+                    options.DeviceEndpointUris.Add(address);
                 }
             });
         }
@@ -1510,6 +1570,58 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Sets the relative or absolute URLs associated to the verification endpoint.
+        /// If an empty array is specified, the endpoint will be considered disabled.
+        /// Note: only the first address will be returned by the device endpoint.
+        /// </summary>
+        /// <param name="addresses">The addresses associated to the endpoint.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetVerificationEndpointUris([NotNull] params string[] addresses)
+        {
+            if (addresses == null)
+            {
+                throw new ArgumentNullException(nameof(addresses));
+            }
+
+            return SetVerificationEndpointUris(addresses.Select(address => new Uri(address, UriKind.RelativeOrAbsolute)).ToArray());
+        }
+
+        /// <summary>
+        /// Sets the relative or absolute URLs associated to the verification endpoint.
+        /// If an empty array is specified, the endpoint will be considered disabled.
+        /// Note: only the first address will be returned by the device endpoint.
+        /// </summary>
+        /// <param name="addresses">The addresses associated to the endpoint.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetVerificationEndpointUris([NotNull] params Uri[] addresses)
+        {
+            if (addresses == null)
+            {
+                throw new ArgumentNullException(nameof(addresses));
+            }
+
+            if (addresses.Any(address => !address.IsWellFormedOriginalString()))
+            {
+                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+            }
+
+            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
+            }
+
+            return Configure(options =>
+            {
+                options.VerificationEndpointUris.Clear();
+
+                foreach (var address in addresses)
+                {
+                    options.VerificationEndpointUris.Add(address);
+                }
+            });
+        }
+
+        /// <summary>
         /// Disables authorization storage so that ad-hoc authorizations are
         /// not created when an authorization code or refresh token is issued
         /// and can't be revoked to prevent associated tokens from being used.
@@ -1645,6 +1757,17 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.AuthorizationCodeLifetime = lifetime);
 
         /// <summary>
+        /// Sets the device code lifetime, after which client applications are unable to
+        /// send a grant_type=urn:ietf:params:oauth:grant-type:device_code token request.
+        /// Using short-lived device codes is strongly recommended.
+        /// While discouraged, <c>null</c> can be specified to issue codes that never expire.
+        /// </summary>
+        /// <param name="lifetime">The authorization code lifetime.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetDeviceCodeLifetime([CanBeNull] TimeSpan? lifetime)
+            => Configure(options => options.DeviceCodeLifetime = lifetime);
+
+        /// <summary>
         /// Sets the identity token lifetime, after which client
         /// applications should refuse processing identity tokens.
         /// While discouraged, <c>null</c> can be specified to issue tokens that never expire.
@@ -1665,6 +1788,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder SetRefreshTokenLifetime([CanBeNull] TimeSpan? lifetime)
             => Configure(options => options.RefreshTokenLifetime = lifetime);
+
+        /// <summary>
+        /// Sets the user code lifetime, after which they'll no longer be considered valid.
+        /// Using short-lived device codes is strongly recommended.
+        /// While discouraged, <c>null</c> can be specified to issue codes that never expire.
+        /// </summary>
+        /// <param name="lifetime">The authorization code lifetime.</param>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder SetUserCodeLifetime([CanBeNull] TimeSpan? lifetime)
+            => Configure(options => options.UserCodeLifetime = lifetime);
 
         /// <summary>
         /// Sets the issuer address, which is used as the base address
@@ -1698,17 +1831,14 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures OpenIddict to use reference tokens, so that authorization codes,
-        /// access tokens and refresh tokens are stored as ciphertext in the database
-        /// (only an identifier is returned to the client application). Enabling this option
-        /// is useful to keep track of all the issued tokens, when storing a very large
-        /// number of claims in the authorization codes, access tokens and refresh tokens
-        /// or when immediate revocation of reference access tokens is desired.
-        /// Note: this option cannot be used when configuring JWT as the access token format.
+        /// Configures OpenIddict to use reference tokens, so that access tokens are stored
+        /// as ciphertext in the database (only an identifier is returned to the client application).
+        /// Enabling this option is useful to keep track of all the issued tokens, when storing
+        /// a very large number of claims in the access tokens or when immediate revocation is desired.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder UseReferenceTokens()
-            => Configure(options => options.UseReferenceTokens = true);
+        public OpenIddictServerBuilder UseReferenceAccessTokens()
+            => Configure(options => options.UseReferenceAccessTokens = true);
 
         /// <summary>
         /// Configures OpenIddict to use rolling refresh tokens. When this option is enabled,

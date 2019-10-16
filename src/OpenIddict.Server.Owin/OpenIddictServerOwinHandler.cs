@@ -5,18 +5,17 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Infrastructure;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using Properties = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.Properties;
 
 namespace OpenIddict.Server.Owin
 {
@@ -25,21 +24,14 @@ namespace OpenIddict.Server.Owin
     /// </summary>
     public class OpenIddictServerOwinHandler : AuthenticationHandler<OpenIddictServerOwinOptions>
     {
-        private readonly ILogger _logger;
         private readonly IOpenIddictServerProvider _provider;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictServerOwinHandler"/> class.
         /// </summary>
-        /// <param name="logger">The logger used by this instance.</param>
         /// <param name="provider">The OpenIddict server OWIN provider used by this instance.</param>
-        public OpenIddictServerOwinHandler(
-            [NotNull] ILogger logger,
-            [NotNull] IOpenIddictServerProvider provider)
-        {
-            _logger = logger;
-            _provider = provider;
-        }
+        public OpenIddictServerOwinHandler([NotNull] IOpenIddictServerProvider provider)
+            => _provider = provider;
 
         public override async Task<bool> InvokeAsync()
         {
@@ -104,7 +96,7 @@ namespace OpenIddict.Server.Owin
             return false;
         }
 
-        protected override Task<AuthenticationTicket> AuthenticateCoreAsync()
+        protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
         {
             var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
             if (transaction == null)
@@ -112,14 +104,34 @@ namespace OpenIddict.Server.Owin
                 throw new InvalidOperationException("An identity cannot be extracted from this request.");
             }
 
-            if (transaction.Properties.TryGetValue(OpenIddictServerConstants.Properties.AmbientPrincipal, out var principal))
+            // Note: in many cases, the authentication token was already validated by the time this action is called
+            // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
+            // the authentication context is resolved from the transaction. If it's not available, a new one is created.
+            var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName);
+            if (context == null)
             {
-                return Task.FromResult(new AuthenticationTicket(
-                    (ClaimsIdentity) ((ClaimsPrincipal) principal).Identity,
-                    new AuthenticationProperties()));
+                context = new ProcessAuthenticationContext(transaction);
+                await _provider.DispatchAsync(context);
             }
 
-            return Task.FromResult<AuthenticationTicket>(null);
+            if (context.IsRequestHandled || context.IsRequestSkipped)
+            {
+                return null;
+            }
+
+            else if (context.IsRejected)
+            {
+                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                {
+                    [OpenIddictServerOwinConstants.Properties.Error] = context.Error,
+                    [OpenIddictServerOwinConstants.Properties.ErrorDescription] = context.ErrorDescription,
+                    [OpenIddictServerOwinConstants.Properties.ErrorUri] = context.ErrorUri
+                });
+
+                return new AuthenticationTicket(null, properties);
+            }
+
+            return null;
         }
 
         protected override async Task TeardownCoreAsync()
@@ -145,14 +157,11 @@ namespace OpenIddict.Server.Owin
                     throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
 
+                transaction.Properties[typeof(AuthenticationProperties).FullName] = challenge.Properties ?? new AuthenticationProperties();
+
                 var context = new ProcessChallengeContext(transaction)
                 {
-                    Response = new OpenIddictResponse
-                    {
-                        Error = GetProperty(challenge.Properties, Properties.Error),
-                        ErrorDescription = GetProperty(challenge.Properties, Properties.ErrorDescription),
-                        ErrorUri = GetProperty(challenge.Properties, Properties.ErrorUri)
-                    }
+                    Response = new OpenIddictResponse()
                 };
 
                 await _provider.DispatchAsync(context);
@@ -187,9 +196,6 @@ namespace OpenIddict.Server.Owin
                         .Append("was not registered or was explicitly removed from the handlers list.")
                         .ToString());
                 }
-
-                static string GetProperty(AuthenticationProperties properties, string name)
-                    => properties != null && properties.Dictionary.TryGetValue(name, out string value) ? value : null;
             }
 
             var signin = Helper.LookupSignIn(Options.AuthenticationType);
@@ -200,6 +206,8 @@ namespace OpenIddict.Server.Owin
                 {
                     throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
+
+                transaction.Properties[typeof(AuthenticationProperties).FullName] = signin.Properties ?? new AuthenticationProperties();
 
                 var context = new ProcessSigninContext(transaction)
                 {
@@ -249,6 +257,8 @@ namespace OpenIddict.Server.Owin
                 {
                     throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
+
+                transaction.Properties[typeof(AuthenticationProperties).FullName] = signout.Properties ?? new AuthenticationProperties();
 
                 var context = new ProcessSignoutContext(transaction)
                 {

@@ -54,8 +54,7 @@ namespace OpenIddict.EntityFramework
                 .IsRequired();
 
             Property(authorization => authorization.Subject)
-                .HasMaxLength(450)
-                .IsRequired();
+                .HasMaxLength(450);
 
             Property(authorization => authorization.Type)
                 .HasMaxLength(25)

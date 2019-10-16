@@ -66,13 +66,16 @@ namespace Mvc.Server
                 {
                     // Enable the authorization, logout, token and userinfo endpoints.
                     options.SetAuthorizationEndpointUris("/connect/authorize")
+                           .SetDeviceEndpointUris("/connect/device")
                            .SetLogoutEndpointUris("/connect/logout")
                            .SetTokenEndpointUris("/connect/token")
-                           .SetUserinfoEndpointUris("/connect/userinfo");
+                           .SetUserinfoEndpointUris("/connect/userinfo")
+                           .SetVerificationEndpointUris("/connect/verify");
 
                     // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
                     // can enable the other flows if you need to support implicit or client credentials.
                     options.AllowAuthorizationCodeFlow()
+                           .AllowDeviceCodeFlow()
                            .AllowPasswordFlow()
                            .AllowRefreshTokenFlow();
 
@@ -92,6 +95,7 @@ namespace Mvc.Server
                            .EnableLogoutEndpointPassthrough()
                            .EnableTokenEndpointPassthrough()
                            .EnableUserinfoEndpointPassthrough()
+                           .EnableVerificationEndpointPassthrough()
                            .DisableTransportSecurityRequirement(); // During development, you can disable the HTTPS requirement.
 
                     // Note: if you don't want to specify a client_id when sending
@@ -215,9 +219,12 @@ namespace Mvc.Server
                     Permissions =
                     {
                         OpenIddictConstants.Permissions.Endpoints.Authorization,
+                        OpenIddictConstants.Permissions.Endpoints.Device,
                         OpenIddictConstants.Permissions.Endpoints.Token,
                         OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+                        OpenIddictConstants.Permissions.GrantTypes.DeviceCode,
                         OpenIddictConstants.Permissions.GrantTypes.Password,
+                        OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
                         OpenIddictConstants.Permissions.Scopes.Email,
                         OpenIddictConstants.Permissions.Scopes.Profile,
                         OpenIddictConstants.Permissions.Scopes.Roles

@@ -48,12 +48,12 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireAuthorizationStorageEnabled>();
             builder.Services.TryAddSingleton<RequireClientIdParameter>();
             builder.Services.TryAddSingleton<RequireDegradedModeDisabled>();
+            builder.Services.TryAddSingleton<RequireDeviceCodeIncluded>();
             builder.Services.TryAddSingleton<RequireEndpointPermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireGrantTypePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireIdentityTokenIncluded>();
             builder.Services.TryAddSingleton<RequirePostLogoutRedirectUriParameter>();
-            builder.Services.TryAddSingleton<RequireReferenceTokensDisabled>();
-            builder.Services.TryAddSingleton<RequireReferenceTokensEnabled>();
+            builder.Services.TryAddSingleton<RequireReferenceAccessTokensEnabled>();
             builder.Services.TryAddSingleton<RequireRefreshTokenIncluded>();
             builder.Services.TryAddSingleton<RequireRollingTokensDisabled>();
             builder.Services.TryAddSingleton<RequireRollingTokensEnabled>();
@@ -61,6 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireScopePermissionsEnabled>();
             builder.Services.TryAddSingleton<RequireScopeValidationEnabled>();
             builder.Services.TryAddSingleton<RequireTokenStorageEnabled>();
+            builder.Services.TryAddSingleton<RequireUserCodeIncluded>();
 
             // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

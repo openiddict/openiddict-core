@@ -71,6 +71,14 @@ namespace OpenIddict.Server.Owin
         public bool EnableUserinfoEndpointPassthrough { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the user verification endpoint.
+        /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+        /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+        /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+        /// </summary>
+        public bool EnableVerificationEndpointPassthrough { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether request caching should be enabled.
         /// When enabled, both authorization and logout requests are automatically stored
         /// in the distributed cache, which allows flowing large payloads across requests.

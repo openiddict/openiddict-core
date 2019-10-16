@@ -76,13 +76,6 @@ namespace OpenIddict.Server
 
                 RedirectUri = address;
             }
-
-            /// <summary>
-            /// Gets or sets the security principal extracted from the id_token_hint, if available.
-            /// Note: the principal may not represent the user currently logged in,
-            /// so additional validation is strongly encouraged when using this property.
-            /// </summary>
-            public ClaimsPrincipal IdentityTokenHintPrincipal { get; set; }
         }
 
         /// <summary>
@@ -98,13 +91,6 @@ namespace OpenIddict.Server
                 : base(transaction)
             {
             }
-
-            /// <summary>
-            /// Gets or sets the security principal extracted from the id_token_hint, if available.
-            /// Note: the principal may not represent the user currently logged in,
-            /// so additional validation is strongly encouraged when using this property.
-            /// </summary>
-            public ClaimsPrincipal IdentityTokenHintPrincipal { get; set; }
         }
 
         /// <summary>

@@ -620,17 +620,14 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures OpenIddict to use reference tokens, so that authorization codes,
-        /// access tokens and refresh tokens are stored as ciphertext in the database
-        /// (only an identifier is returned to the client application). Enabling this option
-        /// is useful to keep track of all the issued tokens, when storing a very large
-        /// number of claims in the authorization codes, access tokens and refresh tokens
-        /// or when immediate revocation of reference access tokens is desired.
-        /// Note: this option cannot be used when configuring JWT as the access token format.
+        /// Configures OpenIddict to use reference tokens, so that access tokens are stored
+        /// as ciphertext in the database (only an identifier is returned to the client application).
+        /// Enabling this option is useful to keep track of all the issued tokens, when storing
+        /// a very large number of claims in the access tokens or when immediate revocation is desired.
         /// </summary>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder UseReferenceTokens()
-            => Configure(options => options.UseReferenceTokens = true);
+        public OpenIddictValidationBuilder UseReferenceAccessTokens()
+            => Configure(options => options.UseReferenceAccessTokens = true);
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object.

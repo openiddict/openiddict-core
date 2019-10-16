@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +21,6 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
-using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters;
@@ -50,6 +50,7 @@ namespace OpenIddict.Server.AspNetCore
                  */
                 RemoveCachedRequest.Descriptor,
                 ProcessQueryResponse.Descriptor,
+                ProcessHostRedirectionResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
                 ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
@@ -350,9 +351,14 @@ namespace OpenIddict.Server.AspNetCore
                     // Note: while initially not allowed by the core OAuth 2.0 specification, multiple parameters
                     // with the same name are used by derived drafts like the OAuth 2.0 token exchange specification.
                     // For consistency, multiple parameters with the same name are also supported by this endpoint.
-                    foreach (var parameter in context.Response.GetFlattenedParameters())
+                    foreach (var (key, value) in
+                        from parameter in context.Response.GetParameters()
+                        let values = (string[]) parameter.Value
+                        where values != null
+                        from value in values
+                        select (parameter.Key, Value: value))
                     {
-                        location = QueryHelpers.AddQueryString(location, parameter.Key, parameter.Value);
+                        location = QueryHelpers.AddQueryString(location, key, value);
                     }
 
                     response.Redirect(location);

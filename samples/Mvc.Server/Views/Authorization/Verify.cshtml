@@ -1,0 +1,49 @@
+﻿@using Microsoft.Extensions.Primitives
+@model VerifyViewModel
+
+<div class="jumbotron">
+    <h1>Authorization</h1>
+
+    @if (string.IsNullOrEmpty(Model.UserCode) || !string.IsNullOrEmpty(Model.Error))
+    {
+        @if (!string.IsNullOrEmpty(Model.Error) && !string.IsNullOrEmpty(Model.ErrorDescription))
+        {
+            <p class="lead text-center alert alert-warning">
+                An error occurred:
+                <br />
+                @Model.ErrorDescription (@Model.Error)
+            </p>
+        }
+
+        <p class="lead text-left">Enter the user code given by the client application:</p>
+
+        <form asp-controller="Authorization" asp-action="Verify" method="get">
+            <div class="form-check">
+                <input class="form-control" name="user_code" type="text" />
+            </div>
+
+            <input class="btn btn-lg btn-success" type="submit" value="Submit" />
+        </form>
+    }
+    else
+    {
+        <p class="lead text-left">Do you want to grant <strong>@Model.ApplicationName</strong> access to your data? (scopes requested: @Model.Scope)</p>
+        <p class="lead text-center alert alert-warning">
+            Make sure that the code displayed on the device is <strong>@Model.UserCode</strong>.
+            <br />
+            If the two codes don't match, press "No" to reject the authorization demand.
+        </p>
+
+        <form asp-controller="Authorization" asp-action="Verify" method="post">
+            @* Flow the request parameters so they can be received by the VerifyAccept/VerifyReject actions: *@
+            @foreach (var parameter in Context.Request.HasFormContentType ?
+                (IEnumerable<KeyValuePair<string, StringValues>>) Context.Request.Form : Context.Request.Query)
+            {
+                <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+            }
+
+            <input class="btn btn-lg btn-success" name="submit.Accept" type="submit" value="Yes" />
+            <input class="btn btn-lg btn-danger" name="submit.Deny" type="submit" value="No" />
+        </form>
+    }
+</div>

@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +17,6 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
-using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 
 namespace OpenIddict.Server
 {
@@ -45,6 +43,7 @@ namespace OpenIddict.Server
                 ValidateClientIdParameter.Descriptor,
                 ValidateAuthorizationCodeParameter.Descriptor,
                 ValidateClientCredentialsParameters.Descriptor,
+                ValidateDeviceCodeParameter.Descriptor,
                 ValidateRefreshTokenParameter.Descriptor,
                 ValidatePasswordParameters.Descriptor,
                 ValidateScopes.Descriptor,
@@ -181,6 +180,10 @@ namespace OpenIddict.Server
                     var notification = new ValidateTokenRequestContext(context.Transaction);
                     await _provider.DispatchAsync(notification);
 
+                    // Store the context object in the transaction so it can be later retrieved by handlers
+                    // that want to access the principal without triggering a new validation process.
+                    context.Transaction.SetProperty(typeof(ValidateTokenRequestContext).FullName, notification);
+
                     if (notification.IsRequestHandled)
                     {
                         context.HandleRequest();
@@ -201,9 +204,6 @@ namespace OpenIddict.Server
                             uri: notification.ErrorUri);
                         return;
                     }
-
-                    // Store the security principal extracted from the authorization code/refresh token as an environment property.
-                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
 
                     context.Logger.LogInformation("The token request was successfully validated.");
                 }
@@ -579,6 +579,50 @@ namespace OpenIddict.Server
 
             /// <summary>
             /// Contains the logic responsible of rejecting token requests that
+            /// don't specify a device code for the device code grant type.
+            /// </summary>
+            public class ValidateDeviceCodeParameter : IOpenIddictServerHandler<ValidateTokenRequestContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
+                        .UseSingletonHandler<ValidateDeviceCodeParameter>()
+                        .SetOrder(ValidateClientCredentialsParameters.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public ValueTask HandleAsync([NotNull] ValidateTokenRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    // Reject grant_type=urn:ietf:params:oauth:grant-type:device_code requests missing the device code.
+                    // See https://tools.ietf.org/html/rfc8628#section-3.4 for more information.
+                    if (context.Request.IsDeviceCodeGrantType() && string.IsNullOrEmpty(context.Request.DeviceCode))
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The 'device_code' parameter is required when using the device code grant.");
+
+                        return default;
+                    }
+
+                    return default;
+                }
+            }
+
+            /// <summary>
+            /// Contains the logic responsible of rejecting token requests that
             /// specify invalid parameters for the refresh token grant type.
             /// </summary>
             public class ValidateRefreshTokenParameter : IOpenIddictServerHandler<ValidateTokenRequestContext>
@@ -589,7 +633,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                         .UseSingletonHandler<ValidateRefreshTokenParameter>()
-                        .SetOrder(ValidateClientCredentialsParameters.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateDeviceCodeParameter.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -1190,8 +1234,8 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting token requests
-            /// that don't specify a valid authorization code or refresh token.
+            /// Contains the logic responsible of rejecting token requests that don't
+            /// specify a valid authorization code, device code or refresh token.
             /// </summary>
             public class ValidateToken : IOpenIddictServerHandler<ValidateTokenRequestContext>
             {
@@ -1223,13 +1267,19 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
+                    if (!context.Request.IsAuthorizationCodeGrantType() &&
+                        !context.Request.IsDeviceCodeGrantType() &&
+                        !context.Request.IsRefreshTokenGrantType())
                     {
                         return;
                     }
 
                     var notification = new ProcessAuthenticationContext(context.Transaction);
                     await _provider.DispatchAsync(notification);
+
+                    // Store the context object in the transaction so it can be later retrieved by handlers
+                    // that want to access the authentication result without triggering a new authentication flow.
+                    context.Transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName, notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -1252,17 +1302,14 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    // Attach the security principal extracted from the token to the
-                    // validation context and store it as an environment property.
+                    // Attach the security principal extracted from the token to the validation context.
                     context.Principal = notification.Principal;
-                    context.Transaction.Properties[Properties.AmbientPrincipal] = notification.Principal;
-                    context.Transaction.Properties[Properties.OriginalPrincipal] = notification.Principal.Clone(_ => true);
                 }
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting token requests that use an authorization code
-            /// or a refresh token that was issued for a different client application.
+            /// Contains the logic responsible of rejecting token requests that use an authorization code,
+            /// a device code or a refresh token that was issued for a different client application.
             /// </summary>
             public class ValidatePresenters : IOpenIddictServerHandler<ValidateTokenRequestContext>
             {
@@ -1289,7 +1336,9 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
+                    if (!context.Request.IsAuthorizationCodeGrantType() &&
+                        !context.Request.IsDeviceCodeGrantType() &&
+                        !context.Request.IsRefreshTokenGrantType())
                     {
                         return default;
                     }
@@ -1298,46 +1347,57 @@ namespace OpenIddict.Server
                     if (presenters.Count == 0)
                     {
                         // Note: presenters may be empty during a grant_type=refresh_token request if the refresh token
-                        // was issued to a public client but cannot be null for an authorization code grant request.
+                        // was issued to a public client but cannot be null for an authorization or device code grant request.
                         if (context.Request.IsAuthorizationCodeGrantType())
                         {
                             throw new InvalidOperationException("The presenters list cannot be extracted from the authorization code.");
                         }
 
+                        if (context.Request.IsDeviceCodeGrantType())
+                        {
+                            throw new InvalidOperationException("The presenters list cannot be extracted from the device code.");
+                        }
+
                         return default;
                     }
 
-                    // If at least one presenter was associated to the authorization code/refresh token,
+                    // If at least one presenter was associated to the authorization code/device code/refresh token,
                     // reject the request if the client_id of the caller cannot be retrieved or inferred.
                     if (string.IsNullOrEmpty(context.ClientId))
                     {
                         context.Logger.LogError("The token request was rejected because the client identifier of the application " +
                                                 "was not available and could not be compared to the presenters list stored " +
-                                                "in the authorization code or the refresh token.");
+                                                "in the authorization code, the device code or the refresh token.");
 
                         context.Reject(
                             error: Errors.InvalidGrant,
-                            description: context.Request.IsAuthorizationCodeGrantType() ?
-                                "The specified authorization code cannot be used without specifying a client identifier." :
-                                "The specified refresh token cannot be used without specifying a client identifier.");
+                            description:
+                                context.Request.IsAuthorizationCodeGrantType() ?
+                                    "The specified authorization code cannot be used without specifying a client identifier." :
+                                context.Request.IsDeviceCodeGrantType() ?
+                                    "The specified device code cannot be used without specifying a client identifier." :
+                                    "The specified refresh token cannot be used without specifying a client identifier.");
 
                         return default;
                     }
 
-                    // Ensure the authorization code/refresh token was issued to the client application making the token request.
+                    // Ensure the authorization code/device code/refresh token was issued to the client making the token request.
                     // Note: when using the refresh token grant, client_id is optional but MUST be validated if present.
                     // See https://tools.ietf.org/html/rfc6749#section-6
                     // and http://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken.
                     if (!presenters.Contains(context.ClientId))
                     {
-                        context.Logger.LogError("The token request was rejected because the authorization code " +
+                        context.Logger.LogError("The token request was rejected because the authorization code, the device code " +
                                                 "or the refresh token was issued to a different client application.");
 
                         context.Reject(
                             error: Errors.InvalidGrant,
-                            description: context.Request.IsAuthorizationCodeGrantType() ?
-                                "The specified authorization code cannot be used by this client application." :
-                                "The specified refresh token cannot be used by this client application.");
+                            description:
+                                context.Request.IsAuthorizationCodeGrantType() ?
+                                    "The specified authorization code cannot be used by this client application." :
+                                context.Request.IsDeviceCodeGrantType() ?
+                                    "The specified device code cannot be used by this client application." :
+                                    "The specified refresh token cannot be used by this client application.");
 
                         return default;
                     }
@@ -1647,10 +1707,11 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    if (context.Transaction.Properties.TryGetValue(Properties.AmbientPrincipal, out var principal))
-                    {
-                        context.Principal ??= (ClaimsPrincipal) principal;
-                    }
+                    var notification = context.Transaction.GetProperty<ValidateTokenRequestContext>(
+                        typeof(ValidateTokenRequestContext).FullName) ??
+                        throw new InvalidOperationException("The authentication context cannot be found.");
+
+                    context.Principal ??= notification.Principal;
 
                     return default;
                 }

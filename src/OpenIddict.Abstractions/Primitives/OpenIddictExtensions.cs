@@ -26,41 +26,6 @@ namespace OpenIddict.Abstractions
     public static class OpenIddictExtensions
     {
         /// <summary>
-        /// Gets all the parameters associated with the specified message as a flattened collection:
-        /// array parameters are automatically converted to multiple parameters and parameters that
-        /// can't be converted to string instances are ignored and excluded from the returned collection.
-        /// This extension is primarily intended to be used by components that need to represent
-        /// an OpenID Connect message as a query string or as a list of key/value pairs in a HTTP form.
-        /// </summary>
-        /// <param name="message">The <see cref="OpenIddictMessage"/> instance.</param>
-        /// <returns>The parameters, as a flattened collection.</returns>
-        public static ImmutableList<KeyValuePair<string, string>> GetFlattenedParameters([NotNull] this OpenIddictMessage message)
-        {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            var parameters = ImmutableList.CreateBuilder<KeyValuePair<string, string>>();
-
-            foreach (var parameter in message.GetParameters())
-            {
-                var values = (string[]) parameter.Value;
-                if (values == null)
-                {
-                    continue;
-                }
-
-                foreach (var value in values)
-                {
-                    parameters.Add(new KeyValuePair<string, string>(parameter.Key, value));
-                }
-            }
-
-            return parameters.ToImmutable();
-        }
-
-        /// <summary>
         /// Extracts the authentication context class values from an <see cref="OpenIddictRequest"/>.
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
@@ -504,6 +469,22 @@ namespace OpenIddict.Abstractions
             }
 
             return string.Equals(request.GrantType, GrantTypes.ClientCredentials, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Determines whether the "grant_type" parameter corresponds to the device code grant.
+        /// See https://tools.ietf.org/html/rfc8628 for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is a device code grant request, <c>false</c> otherwise.</returns>
+        public static bool IsDeviceCodeGrantType([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return string.Equals(request.GrantType, GrantTypes.DeviceCode, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -1202,6 +1183,33 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Gets the device code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The device code lifetime or <c>null</c> if the claim cannot be found.</returns>
+
+        public static TimeSpan? GetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            var value = principal.GetClaim(Claims.Private.DeviceCodeLifetime);
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+
+            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
+            {
+                return TimeSpan.FromSeconds(result);
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the identity token lifetime associated with the claims principal.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
@@ -1242,6 +1250,33 @@ namespace OpenIddict.Abstractions
             }
 
             var value = principal.GetClaim(Claims.Private.RefreshTokenLifetime);
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+
+            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
+            {
+                return TimeSpan.FromSeconds(result);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the user code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The user code lifetime or <c>null</c> if the claim cannot be found.</returns>
+
+        public static TimeSpan? GetUserCodeLifetime([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            var value = principal.GetClaim(Claims.Private.UserCodeLifetime);
             if (string.IsNullOrEmpty(value))
             {
                 return null;
@@ -1718,6 +1753,22 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Sets the device code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="lifetime">The device code lifetime to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return principal.SetClaim(Claims.Private.DeviceCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
         /// Sets the identity token lifetime associated with the claims principal.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
@@ -1747,6 +1798,22 @@ namespace OpenIddict.Abstractions
             }
 
             return principal.SetClaim(Claims.Private.RefreshTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// Sets the user code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="lifetime">The user code lifetime to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetUserCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return principal.SetClaim(Claims.Private.UserCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>

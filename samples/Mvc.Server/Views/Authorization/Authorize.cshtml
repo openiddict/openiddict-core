@@ -1,4 +1,5 @@
-﻿@model AuthorizeViewModel
+﻿@using Microsoft.Extensions.Primitives
+@model AuthorizeViewModel
 
 <div class="jumbotron">
     <h1>Authorization</h1>
@@ -6,7 +7,9 @@
     <p class="lead text-left">Do you want to grant <strong>@Model.ApplicationName</strong> access to your data? (scopes requested: @Model.Scope)</p>
 
     <form asp-controller="Authorization" asp-action="Authorize" method="post">
-        @foreach (var parameter in Model.Parameters)
+        @* Flow the request parameters so they can be received by the Accept/Reject actions: *@
+        @foreach (var parameter in Context.Request.HasFormContentType ?
+            (IEnumerable<KeyValuePair<string, StringValues>>) Context.Request.Form : Context.Request.Query)
         {
             <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
         }

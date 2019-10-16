@@ -254,7 +254,7 @@ namespace OpenIddict.Server.DataProtection
                 ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties)
             {
                 writer.Write(version);
-                writer.Write(scheme);
+                writer.Write(scheme ?? string.Empty);
 
                 // Write the number of identities contained in the principal.
                 writer.Write(principal.Identities.Count());

@@ -64,8 +64,7 @@ namespace OpenIddict.EntityFrameworkCore
                    .IsRequired();
 
             builder.Property(token => token.Subject)
-                   .HasMaxLength(450)
-                   .IsRequired();
+                   .HasMaxLength(450);
 
             builder.Property(token => token.Type)
                    .HasMaxLength(25)

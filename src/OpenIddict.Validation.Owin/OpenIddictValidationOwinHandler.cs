@@ -9,7 +9,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Infrastructure;
@@ -25,21 +24,14 @@ namespace OpenIddict.Validation.Owin
     /// </summary>
     public class OpenIddictValidationOwinHandler : AuthenticationHandler<OpenIddictValidationOwinOptions>
     {
-        private readonly ILogger _logger;
         private readonly IOpenIddictValidationProvider _provider;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictValidationOwinHandler"/> class.
         /// </summary>
-        /// <param name="logger">The logger used by this instance.</param>
         /// <param name="provider">The OpenIddict validation OWIN provider used by this instance.</param>
-        public OpenIddictValidationOwinHandler(
-            [NotNull] ILogger logger,
-            [NotNull] IOpenIddictValidationProvider provider)
-        {
-            _logger = logger;
-            _provider = provider;
-        }
+        public OpenIddictValidationOwinHandler([NotNull] IOpenIddictValidationProvider provider)
+            => _provider = provider;
 
         public override async Task<bool> InvokeAsync()
         {
@@ -122,10 +114,6 @@ namespace OpenIddict.Validation.Owin
 
             else if (context.IsRejected)
             {
-                _logger.LogError("An error occurred while authenticating the current request: {Error} ; {Description}",
-                                 /* Error: */ context.Error ?? Errors.InvalidToken,
-                                 /* Description: */ context.ErrorDescription);
-
                 return new AuthenticationTicket(identity: null, new AuthenticationProperties
                 {
                     Dictionary =
