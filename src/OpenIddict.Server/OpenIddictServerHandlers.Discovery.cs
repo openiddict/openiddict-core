@@ -355,7 +355,7 @@ namespace OpenIddict.Server
                     }
 
                     throw new InvalidOperationException(new StringBuilder()
-                        .Append("The configuration response was not correctly applied. To apply configuration response, ")
+                        .Append("The configuration response was not correctly applied. To apply configuration responses, ")
                         .Append("create a class implementing 'IOpenIddictServerHandler<ApplyConfigurationResponseContext>' ")
                         .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
                         .ToString());
@@ -1204,7 +1204,7 @@ namespace OpenIddict.Server
                     }
 
                     throw new InvalidOperationException(new StringBuilder()
-                        .Append("The cryptography response was not correctly applied. To apply cryptography response, ")
+                        .Append("The cryptography response was not correctly applied. To apply cryptography responses, ")
                         .Append("create a class implementing 'IOpenIddictServerHandler<ApplyCryptographyResponseContext>' ")
                         .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
                         .ToString());

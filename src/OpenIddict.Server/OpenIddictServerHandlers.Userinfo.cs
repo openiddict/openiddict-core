@@ -347,7 +347,7 @@ namespace OpenIddict.Server
                     }
 
                     throw new InvalidOperationException(new StringBuilder()
-                        .Append("The userinfo response was not correctly applied. To apply userinfo response, ")
+                        .Append("The userinfo response was not correctly applied. To apply userinfo responses, ")
                         .Append("create a class implementing 'IOpenIddictServerHandler<ApplyUserinfoResponseContext>' ")
                         .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
                         .ToString());

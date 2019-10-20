@@ -53,8 +53,8 @@ namespace OpenIddict.Server.Owin
                 ProcessFormPostResponse.Descriptor,
                 ProcessQueryResponse.Descriptor,
                 ProcessFragmentResponse.Descriptor,
-                ProcessPassthroughErrorResponse.Descriptor,
-                ProcessLocalErrorResponse.Descriptor);
+                ProcessPassthroughErrorResponse<ApplyAuthorizationResponseContext, RequireAuthorizationEndpointPassthroughEnabled>.Descriptor,
+                ProcessLocalErrorResponse<ApplyAuthorizationResponseContext>.Descriptor);
 
             /// <summary>
             /// Contains the logic responsible of restoring cached requests from the request_id, if specified.
@@ -473,7 +473,7 @@ namespace OpenIddict.Server.Owin
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                         .AddFilter<RequireOwinRequest>()
                         .UseSingletonHandler<ProcessFragmentResponse>()
-                        .SetOrder(ProcessLocalErrorResponse.Descriptor.Order - 1_000)
+                        .SetOrder(ProcessLocalErrorResponse<ApplyAuthorizationResponseContext>.Descriptor.Order - 1_000)
                         .Build();
 
                 /// <summary>
@@ -538,149 +538,6 @@ namespace OpenIddict.Server.Owin
 
                         return false;
                     }
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of processing authorization responses that must be handled by another
-            /// middleware in the pipeline at a later stage (e.g an ASP.NET MVC action or a NancyFX module).
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-            /// </summary>
-            public class ProcessPassthroughErrorResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
-                        .AddFilter<RequireOwinRequest>()
-                        .AddFilter<RequireErrorPassthroughEnabled>()
-                        .AddFilter<RequireAuthorizationEndpointPassthroughEnabled>()
-                        .UseSingletonHandler<ProcessPassthroughErrorResponse>()
-                        .SetOrder(ProcessLocalErrorResponse.Descriptor.Order - 1_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
-                    // this may indicate that the request was incorrectly processed by another server stack.
-                    var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                    if (response == null)
-                    {
-                        throw new InvalidOperationException("The OWIN request cannot be resolved.");
-                    }
-
-                    if (string.IsNullOrEmpty(context.Response.Error) || !string.IsNullOrEmpty(context.RedirectUri))
-                    {
-                        return default;
-                    }
-
-                    // Don't return the state originally sent by the client application.
-                    context.Response.State = null;
-
-                    // Apply a 400 status code by default.
-                    response.StatusCode = 400;
-
-                    context.SkipRequest();
-
-                    return default;
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of processing authorization responses that must be returned as plain-text.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-            /// </summary>
-            public class ProcessLocalErrorResponse : IOpenIddictServerHandler<ApplyAuthorizationResponseContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
-                        .AddFilter<RequireOwinRequest>()
-                        .UseSingletonHandler<ProcessLocalErrorResponse>()
-                        .SetOrder(int.MaxValue - 100_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ApplyAuthorizationResponseContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
-                    // this may indicate that the request was incorrectly processed by another server stack.
-                    var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                    if (response == null)
-                    {
-                        throw new InvalidOperationException("The OWIN request cannot be resolved.");
-                    }
-
-                    if (string.IsNullOrEmpty(context.Response.Error) || !string.IsNullOrEmpty(context.RedirectUri))
-                    {
-                        return;
-                    }
-
-                    // Don't return the state originally sent by the client application.
-                    context.Response.State = null;
-
-                    // Apply a 400 status code by default.
-                    response.StatusCode = 400;
-
-                    context.Logger.LogInformation("The authorization response was successfully returned " +
-                                                  "as a plain-text document: {Response}.", context.Response);
-
-                    using (var buffer = new MemoryStream())
-                    using (var writer = new StreamWriter(buffer))
-                    {
-                        foreach (var parameter in context.Response.GetParameters())
-                        {
-                            // Ignore null or empty parameters, including JSON
-                            // objects that can't be represented as strings.
-                            var value = (string) parameter.Value;
-                            if (string.IsNullOrEmpty(value))
-                            {
-                                continue;
-                            }
-
-                            writer.WriteLine("{0}:{1}", parameter.Key, value);
-                        }
-
-                        writer.Flush();
-
-                        response.ContentLength = buffer.Length;
-                        response.ContentType = "text/plain;charset=UTF-8";
-
-                        response.Headers["Cache-Control"] = "no-cache";
-                        response.Headers["Pragma"] = "no-cache";
-                        response.Headers["Expires"] = "Thu, 01 Jan 1970 00:00:00 GMT";
-
-                        buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                        await buffer.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
-                    }
-
-                    context.HandleRequest();
                 }
             }
         }
