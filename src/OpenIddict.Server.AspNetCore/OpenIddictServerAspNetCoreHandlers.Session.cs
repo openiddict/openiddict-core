@@ -12,13 +12,11 @@ using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
@@ -51,11 +49,11 @@ namespace OpenIddict.Server.AspNetCore
                  * Logout response processing:
                  */
                 RemoveCachedRequest.Descriptor,
-                ProcessEmptyResponse.Descriptor,
                 ProcessQueryResponse.Descriptor,
-                ProcessStatusCodePagesErrorResponse.Descriptor,
-                ProcessPassthroughErrorResponse.Descriptor,
-                ProcessLocalErrorResponse.Descriptor);
+                ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor,
+                ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
+                ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
+                ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
 
             /// <summary>
             /// Contains the logic responsible of restoring cached requests from the request_id, if specified.
@@ -302,56 +300,6 @@ namespace OpenIddict.Server.AspNetCore
             }
 
             /// <summary>
-            /// Contains the logic responsible of processing logout responses that don't specify a post_logout_redirect_uri.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-            /// </summary>
-            public class ProcessEmptyResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
-                        .AddFilter<RequireHttpRequest>()
-                        .UseSingletonHandler<ProcessQueryResponse>()
-                        .SetOrder(ProcessPassthroughErrorResponse.Descriptor.Order - 1_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-                    // this may indicate that the request was incorrectly processed by another server stack.
-                    var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                    if (response == null)
-                    {
-                        throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
-                    }
-
-                    if (!string.IsNullOrEmpty(context.PostLogoutRedirectUri))
-                    {
-                        return default;
-                    }
-
-                    context.Logger.LogInformation("The logout response was successfully returned: {Response}.", response);
-                    context.HandleRequest();
-
-                    return default;
-                }
-            }
-
-            /// <summary>
             /// Contains the logic responsible of processing logout responses.
             /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
             /// </summary>
@@ -364,7 +312,7 @@ namespace OpenIddict.Server.AspNetCore
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .AddFilter<RequireHttpRequest>()
                         .UseSingletonHandler<ProcessQueryResponse>()
-                        .SetOrder(ProcessEmptyResponse.Descriptor.Order - 1_000)
+                        .SetOrder(ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor.Order - 1_000)
                         .Build();
 
                 /// <summary>
@@ -411,216 +359,6 @@ namespace OpenIddict.Server.AspNetCore
                     context.HandleRequest();
 
                     return default;
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of processing logout responses that must be handled by another
-            /// middleware in the pipeline at a later stage (e.g an ASP.NET Core MVC action or a NancyFX module).
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-            /// </summary>
-            public class ProcessPassthroughErrorResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
-                        .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireErrorPassthroughEnabled>()
-                        .AddFilter<RequireLogoutEndpointPassthroughEnabled>()
-                        .UseSingletonHandler<ProcessPassthroughErrorResponse>()
-                        .SetOrder(ProcessStatusCodePagesErrorResponse.Descriptor.Order - 1_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-                    // this may indicate that the request was incorrectly processed by another server stack.
-                    var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                    if (response == null)
-                    {
-                        throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
-                    }
-
-                    if (string.IsNullOrEmpty(context.Response.Error) || !string.IsNullOrEmpty(context.PostLogoutRedirectUri))
-                    {
-                        return default;
-                    }
-
-                    // Apply a 400 status code by default.
-                    response.StatusCode = 400;
-
-                    context.SkipRequest();
-
-                    return default;
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of processing logout responses handled by the status code pages middleware.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-            /// </summary>
-            public class ProcessStatusCodePagesErrorResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
-                        .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireStatusCodePagesIntegrationEnabled>()
-                        .UseSingletonHandler<ProcessStatusCodePagesErrorResponse>()
-                        .SetOrder(ProcessLocalErrorResponse.Descriptor.Order - 1_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    if (context.Response == null)
-                    {
-                        throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
-                    }
-
-                    // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-                    // this may indicate that the request was incorrectly processed by another server stack.
-                    var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                    if (response == null)
-                    {
-                        throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
-                    }
-
-                    if (string.IsNullOrEmpty(context.Error) || !string.IsNullOrEmpty(context.PostLogoutRedirectUri))
-                    {
-                        return default;
-                    }
-
-                    // Determine if the status code pages middleware has been enabled for this request.
-                    // If it was not registered or enabled, let the default OpenIddict server handlers render
-                    // a default error page instead of delegating the rendering to the status code middleware.
-                    var feature = response.HttpContext.Features.Get<IStatusCodePagesFeature>();
-                    if (feature == null || !feature.Enabled)
-                    {
-                        return default;
-                    }
-
-                    // Replace the default status code to return a 400 response.
-                    response.StatusCode = 400;
-
-                    // Mark the request as fully handled to prevent the other OpenIddict server handlers
-                    // from displaying the default error page and to allow the status code pages middleware
-                    // to rewrite the response using the logic defined by the developer when registering it.
-                    context.HandleRequest();
-
-                    return default;
-                }
-            }
-
-            /// <summary>
-            /// Contains the logic responsible of processing logout responses that must be returned as plain-text.
-            /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
-            /// </summary>
-            public class ProcessLocalErrorResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
-            {
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
-                        .AddFilter<RequireHttpRequest>()
-                        .UseSingletonHandler<ProcessLocalErrorResponse>()
-                        .SetOrder(int.MaxValue - 100_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ApplyLogoutResponseContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-                    // this may indicate that the request was incorrectly processed by another server stack.
-                    var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                    if (response == null)
-                    {
-                        throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
-                    }
-
-                    if (string.IsNullOrEmpty(context.Response.Error) || !string.IsNullOrEmpty(context.PostLogoutRedirectUri))
-                    {
-                        return;
-                    }
-
-                    // Don't return the state originally sent by the client application.
-                    context.Response.State = null;
-
-                    // Apply a 400 status code by default.
-                    response.StatusCode = 400;
-
-                    context.Logger.LogInformation("The logout response was successfully returned " +
-                                                  "as a plain-text document: {Response}.", context.Response);
-
-                    using (var buffer = new MemoryStream())
-                    using (var writer = new StreamWriter(buffer))
-                    {
-                        foreach (var parameter in context.Response.GetParameters())
-                        {
-                            // Ignore null or empty parameters, including JSON
-                            // objects that can't be represented as strings.
-                            var value = (string) parameter.Value;
-                            if (string.IsNullOrEmpty(value))
-                            {
-                                continue;
-                            }
-
-                            writer.WriteLine("{0}:{1}", parameter.Key, value);
-                        }
-
-                        writer.Flush();
-
-                        response.ContentLength = buffer.Length;
-                        response.ContentType = "text/plain;charset=UTF-8";
-
-                        response.Headers[HeaderNames.CacheControl] = "no-cache";
-                        response.Headers[HeaderNames.Pragma] = "no-cache";
-                        response.Headers[HeaderNames.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
-
-                        buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                        await buffer.CopyToAsync(response.Body, 4096, response.HttpContext.RequestAborted);
-                    }
-
-                    context.HandleRequest();
                 }
             }
         }

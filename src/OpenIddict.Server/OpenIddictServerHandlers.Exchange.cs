@@ -357,7 +357,7 @@ namespace OpenIddict.Server
                     }
 
                     throw new InvalidOperationException(new StringBuilder()
-                        .Append("The token response was not correctly applied. To apply token response, ")
+                        .Append("The token response was not correctly applied. To apply token responses, ")
                         .Append("create a class implementing 'IOpenIddictServerHandler<ApplyTokenResponseContext>' ")
                         .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
                         .ToString());

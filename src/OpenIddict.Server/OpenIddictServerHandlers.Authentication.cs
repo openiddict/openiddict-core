@@ -367,7 +367,7 @@ namespace OpenIddict.Server
                     }
 
                     throw new InvalidOperationException(new StringBuilder()
-                        .Append("The authorization response was not correctly applied. To apply authorization response, ")
+                        .Append("The authorization response was not correctly applied. To apply authorization responses, ")
                         .Append("create a class implementing 'IOpenIddictServerHandler<ApplyAuthorizationResponseContext>' ")
                         .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
                         .ToString());
