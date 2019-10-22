@@ -44,6 +44,7 @@ namespace OpenIddict.Server
                 ValidateTokenParameter.Descriptor,
                 ValidateClientIdParameter.Descriptor,
                 ValidateClientId.Descriptor,
+                ValidateClientType.Descriptor,
                 ValidateClientSecret.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
                 ValidateToken.Descriptor,
@@ -528,6 +529,90 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting introspection requests made by applications
+            /// whose client type is not compatible with the presence or absence of a client secret.
+            /// Note: this handler is not used when the degraded mode is enabled.
+            /// </summary>
+            public class ValidateClientType : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+            {
+                private readonly IOpenIddictApplicationManager _applicationManager;
+
+                public ValidateClientType() => throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                    .ToString());
+
+                public ValidateClientType([NotNull] IOpenIddictApplicationManager applicationManager)
+                    => _applicationManager = applicationManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
+                        .AddFilter<RequireClientIdParameter>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .UseScopedHandler<ValidateClientType>()
+                        .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public async ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                    }
+
+                    if (await _applicationManager.IsPublicAsync(application))
+                    {
+                        // Reject introspection requests containing a client_secret when the client is a public application.
+                        if (!string.IsNullOrEmpty(context.ClientSecret))
+                        {
+                            context.Logger.LogError("The introspection request was rejected because the public application '{ClientId}' " +
+                                                    "was not allowed to send a client secret.", context.ClientId);
+
+                            context.Reject(
+                                error: Errors.InvalidRequest,
+                                description: "The 'client_secret' parameter is not valid for this client application.");
+
+                            return;
+                        }
+
+                        return;
+                    }
+
+                    // Confidential and hybrid applications MUST authenticate to protect them from impersonation attacks.
+                    if (string.IsNullOrEmpty(context.ClientSecret))
+                    {
+                        context.Logger.LogError("The introspection request was rejected because the confidential or hybrid application " +
+                                                "'{ClientId}' didn't specify a client secret.", context.ClientId);
+
+                        context.Reject(
+                            error: Errors.InvalidClient,
+                            description: "The 'client_secret' parameter required for this client application is missing.");
+
+                        return;
+                    }
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting introspection requests specifying an invalid client secret.
             /// Note: this handler is not used when the degraded mode is enabled.
             /// </summary>
@@ -554,7 +639,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireClientIdParameter>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateClientSecret>()
-                        .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>

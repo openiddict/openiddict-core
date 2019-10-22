@@ -1049,11 +1049,15 @@ namespace OpenIddict.Core
         /// whose result returns a boolean indicating whether the client secret was valid.
         /// </returns>
         public virtual async ValueTask<bool> ValidateClientSecretAsync(
-            [NotNull] TApplication application, string secret, CancellationToken cancellationToken = default)
+            [NotNull] TApplication application, [NotNull] string secret, CancellationToken cancellationToken = default)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
+            }
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
             }
 
             if (await IsPublicAsync(application, cancellationToken))
@@ -1067,7 +1071,8 @@ namespace OpenIddict.Core
             if (string.IsNullOrEmpty(value))
             {
                 Logger.LogError("Client authentication failed for {Client} because " +
-                                "no client secret was associated with the application.");
+                                "no client secret was associated with the application.",
+                                await GetClientIdAsync(application, cancellationToken));
 
                 return false;
             }

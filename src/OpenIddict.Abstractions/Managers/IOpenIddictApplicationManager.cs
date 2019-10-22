@@ -383,7 +383,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation,
         /// whose result returns a boolean indicating whether the client secret was valid.
         /// </returns>
-        ValueTask<bool> ValidateClientSecretAsync([NotNull] object application, string secret, CancellationToken cancellationToken = default);
+        ValueTask<bool> ValidateClientSecretAsync([NotNull] object application, [NotNull] string secret, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Validates the redirect_uri to ensure it's associated with an application.
