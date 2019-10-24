@@ -853,7 +853,7 @@ namespace OpenIddict.Server.DataProtection
                 context.Logger.LogTrace("The authorization code '{Identifier}' was successfully created and the " +
                                         "following JWT payload was attached to the OpenID Connect response: {Payload}. " +
                                         "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
+                                        context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId),
                                         context.Response.Code, context.AuthorizationCodePrincipal.Claims);
 
                 return default;
@@ -919,7 +919,7 @@ namespace OpenIddict.Server.DataProtection
                 context.Logger.LogTrace("The refresh token '{Identifier}' was successfully created and the " +
                                         "following JWT payload was attached to the OpenID Connect response: {Payload}. " +
                                         "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
+                                        context.RefreshTokenPrincipal.GetClaim(Claims.JwtId),
                                         context.Response.RefreshToken, context.RefreshTokenPrincipal.Claims);
 
                 return default;
