@@ -276,7 +276,7 @@ namespace OpenIddict.Server.Owin
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
-                    .UseSingletonHandler<ExtractGetOrPostRequest<TContext>>()
+                    .UseSingletonHandler<ExtractGetRequest<TContext>>()
                     .SetOrder(ValidateTransportSecurityRequirement.Descriptor.Order + 1_000)
                     .Build();
 

@@ -276,7 +276,7 @@ namespace OpenIddict.Server.AspNetCore
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpRequest>()
-                    .UseSingletonHandler<ExtractGetOrPostRequest<TContext>>()
+                    .UseSingletonHandler<ExtractGetRequest<TContext>>()
                     .SetOrder(ValidateTransportSecurityRequirement.Descriptor.Order + 1_000)
                     .Build();
 
