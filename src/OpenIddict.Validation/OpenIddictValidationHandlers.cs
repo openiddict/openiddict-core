@@ -269,7 +269,7 @@ namespace OpenIddict.Validation
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidatePrincipal>()
-                    .SetOrder(ValidateReferenceToken.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateSelfContainedToken.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
