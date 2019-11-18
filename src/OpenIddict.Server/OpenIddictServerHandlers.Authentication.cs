@@ -1629,7 +1629,7 @@ namespace OpenIddict.Server
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if an error
                     // is returned from the ExtractAuthorizationRequest/ValidateAuthorizationRequest events).
-                    if (!string.IsNullOrEmpty(notification?.RedirectUri))
+                    if (notification != null && !notification.IsRejected)
                     {
                         context.RedirectUri = notification.RedirectUri;
                     }

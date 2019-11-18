@@ -528,7 +528,7 @@ namespace OpenIddict.Server
 
                     // Note: at this stage, the validated redirect URI property may be null (e.g if
                     // an error is returned from the ExtractLogoutRequest/ValidateLogoutRequest events).
-                    if (!string.IsNullOrEmpty(notification?.PostLogoutRedirectUri))
+                    if (notification != null && !notification.IsRejected)
                     {
                         context.PostLogoutRedirectUri = notification.PostLogoutRedirectUri;
                     }
