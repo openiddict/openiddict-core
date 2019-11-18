@@ -116,6 +116,7 @@ namespace Mvc.Server
                     //        .IgnoreScopePermissions();
                 })
 
+                // Register the OpenIddict validation components.
                 .AddValidation(options =>
                 {
                     // Configure the audience accepted by this resource server.
