@@ -47,6 +47,18 @@ To use OpenIddict 3.x, you need to:
 
   - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
+  - **Create a `NuGet.config` file referencing the OpenIddict feed** (at the root of your solution):
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="nuget" value="https://api.nuget.org/v3/index.json" />
+    <add key="openiddict" value="https://www.myget.org/F/openiddict/api/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
   - **Update your `.csproj` file** to reference the `OpenIddict` packages:
 
 ```xml
