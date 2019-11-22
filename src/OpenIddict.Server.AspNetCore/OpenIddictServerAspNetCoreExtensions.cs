@@ -44,12 +44,13 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
             // Register the built-in filters used by the default OpenIddict ASP.NET Core server event handlers.
+            builder.Services.TryAddSingleton<RequireAuthorizationEndpointCachingEnabled>();
             builder.Services.TryAddSingleton<RequireAuthorizationEndpointPassthroughEnabled>();
             builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
             builder.Services.TryAddSingleton<RequireHttpRequest>();
+            builder.Services.TryAddSingleton<RequireLogoutEndpointCachingEnabled>();
             builder.Services.TryAddSingleton<RequireLogoutEndpointPassthroughEnabled>();
             builder.Services.TryAddSingleton<RequireTransportSecurityRequirementEnabled>();
-            builder.Services.TryAddSingleton<RequireRequestCachingEnabled>();
             builder.Services.TryAddSingleton<RequireStatusCodePagesIntegrationEnabled>();
             builder.Services.TryAddSingleton<RequireTokenEndpointPassthroughEnabled>();
             builder.Services.TryAddSingleton<RequireUserinfoEndpointPassthroughEnabled>();

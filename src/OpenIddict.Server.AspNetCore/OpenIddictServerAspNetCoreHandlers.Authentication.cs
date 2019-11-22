@@ -81,7 +81,7 @@ namespace OpenIddict.Server.AspNetCore
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractAuthorizationRequestContext>()
                         .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireRequestCachingEnabled>()
+                        .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<RestoreCachedRequestParameters>()
                         .SetOrder(ExtractGetOrPostRequest<ExtractAuthorizationRequestContext>.Descriptor.Order + 1_000)
                         .Build();
@@ -168,7 +168,7 @@ namespace OpenIddict.Server.AspNetCore
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractAuthorizationRequestContext>()
                         .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireRequestCachingEnabled>()
+                        .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<CacheRequestParameters>()
                         .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
                         .Build();
@@ -228,7 +228,7 @@ namespace OpenIddict.Server.AspNetCore
                     // Note: the cache key is always prefixed with a specific marker
                     // to avoid collisions with the other types of cached payloads.
                     await _cache.SetAsync(Cache.AuthorizationRequest + context.Request.RequestId,
-                        stream.ToArray(), _options.CurrentValue.RequestCachingPolicy);
+                        stream.ToArray(), _options.CurrentValue.AuthorizationEndpointCachingPolicy);
 
                     // Create a new GET authorization request containing only the request_id parameter.
                     var address = QueryHelpers.AddQueryString(
@@ -267,7 +267,7 @@ namespace OpenIddict.Server.AspNetCore
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                         .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireRequestCachingEnabled>()
+                        .AddFilter<RequireAuthorizationEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
                         .SetOrder(ProcessFormPostResponse.Descriptor.Order - 1_000)
                         .Build();

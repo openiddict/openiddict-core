@@ -21,6 +21,27 @@ namespace OpenIddict.Server.AspNetCore
     public static class OpenIddictServerAspNetCoreHandlerFilters
     {
         /// <summary>
+        /// Represents a filter that excludes the associated handlers if authorization endpoint caching was not enabled.
+        /// </summary>
+        public class RequireAuthorizationEndpointCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
+
+            public RequireAuthorizationEndpointCachingEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+                => _options = options;
+
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(_options.CurrentValue.EnableAuthorizationEndpointCaching);
+            }
+        }
+
+        /// <summary>
         /// Represents a filter that excludes the associated handlers if the
         /// pass-through mode was not enabled for the authorization endpoint.
         /// </summary>
@@ -78,6 +99,28 @@ namespace OpenIddict.Server.AspNetCore
                 return new ValueTask<bool>(context.Transaction.GetHttpRequest() != null);
             }
         }
+
+        /// <summary>
+        /// Represents a filter that excludes the associated handlers if logout endpoint caching was not enabled.
+        /// </summary>
+        public class RequireLogoutEndpointCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        {
+            private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
+
+            public RequireLogoutEndpointCachingEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+                => _options = options;
+
+            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                return new ValueTask<bool>(_options.CurrentValue.EnableLogoutEndpointCaching);
+            }
+        }
+
         /// <summary>
         /// Represents a filter that excludes the associated handlers if the
         /// pass-through mode was not enabled for the logout endpoint.
@@ -118,27 +161,6 @@ namespace OpenIddict.Server.AspNetCore
                 }
 
                 return new ValueTask<bool>(!_options.CurrentValue.DisableTransportSecurityRequirement);
-            }
-        }
-
-        /// <summary>
-        /// Represents a filter that excludes the associated handlers if request caching was not enabled.
-        /// </summary>
-        public class RequireRequestCachingEnabled : IOpenIddictServerHandlerFilter<BaseContext>
-        {
-            private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
-
-            public RequireRequestCachingEnabled([NotNull] IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
-                => _options = options;
-
-            public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                return new ValueTask<bool>(_options.CurrentValue.EnableRequestCaching);
             }
         }
 

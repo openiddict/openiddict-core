@@ -80,7 +80,7 @@ namespace OpenIddict.Server.AspNetCore
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
                         .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireRequestCachingEnabled>()
+                        .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<RestoreCachedRequestParameters>()
                         .SetOrder(ExtractGetOrPostRequest<ExtractLogoutRequestContext>.Descriptor.Order + 1_000)
                         .Build();
@@ -167,7 +167,7 @@ namespace OpenIddict.Server.AspNetCore
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ExtractLogoutRequestContext>()
                         .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireRequestCachingEnabled>()
+                        .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<CacheRequestParameters>()
                         .SetOrder(RestoreCachedRequestParameters.Descriptor.Order + 1_000)
                         .Build();
@@ -227,7 +227,7 @@ namespace OpenIddict.Server.AspNetCore
                     // Note: the cache key is always prefixed with a specific marker
                     // to avoid collisions with the other types of cached payloads.
                     await _cache.SetAsync(Cache.LogoutRequest + context.Request.RequestId,
-                        stream.ToArray(), _options.CurrentValue.RequestCachingPolicy);
+                        stream.ToArray(), _options.CurrentValue.LogoutEndpointCachingPolicy);
 
                     // Create a new GET logout request containing only the request_id parameter.
                     var address = QueryHelpers.AddQueryString(
@@ -266,7 +266,7 @@ namespace OpenIddict.Server.AspNetCore
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .AddFilter<RequireHttpRequest>()
-                        .AddFilter<RequireRequestCachingEnabled>()
+                        .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
                         .SetOrder(ProcessQueryResponse.Descriptor.Order - 1_000)
                         .Build();
