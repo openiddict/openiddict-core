@@ -120,31 +120,54 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.EnableVerificationEndpointPassthrough = true);
 
         /// <summary>
-        /// Enables request caching, so that both authorization and logout requests
+        /// Enables authorization endpoint caching, so that authorization requests
         /// are automatically stored in the distributed cache, which allows flowing
         /// large payloads across requests. Enabling this option is recommended
         /// when using external authentication providers or when large GET or POST
         /// OpenID Connect authorization requests support is required.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder EnableRequestCaching()
-            => Configure(options => options.EnableRequestCaching = true);
+        public OpenIddictServerOwinBuilder EnableAuthorizationEndpointCaching()
+            => Configure(options => options.EnableAuthorizationEndpointCaching = true);
 
         /// <summary>
-        /// Sets the caching policy used to determine how long the authorization and
-        /// end session requests should be cached by the distributed cache implementation.
-        /// Note: the specified policy is only used when request caching is explicitly enabled.
+        /// Enables logout endpoint caching, so that logout requests
+        /// are automatically stored in the distributed cache.
         /// </summary>
-        /// <param name="policy">The request caching policy.</param>
         /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
-        public OpenIddictServerOwinBuilder SetRequestCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
+        public OpenIddictServerOwinBuilder EnableLogoutEndpointCaching()
+            => Configure(options => options.EnableLogoutEndpointCaching = true);
+
+        /// <summary>
+        /// Sets the caching policy used by the authorization endpoint.
+        /// Note: the specified policy is only used when caching is explicitly enabled.
+        /// </summary>
+        /// <param name="policy">The caching policy.</param>
+        /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+        public OpenIddictServerOwinBuilder SetAuthorizationEndpointCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
         {
             if (policy == null)
             {
                 throw new ArgumentNullException(nameof(policy));
             }
 
-            return Configure(options => options.RequestCachingPolicy = policy);
+            return Configure(options => options.AuthorizationEndpointCachingPolicy = policy);
+        }
+
+        /// <summary>
+        /// Sets the caching policy used by the logout endpoint.
+        /// Note: the specified policy is only used when caching is explicitly enabled.
+        /// </summary>
+        /// <param name="policy">The caching policy.</param>
+        /// <returns>The <see cref="OpenIddictServerOwinBuilder"/>.</returns>
+        public OpenIddictServerOwinBuilder SetLogoutEndpointCachingPolicy([NotNull] DistributedCacheEntryOptions policy)
+        {
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
+            return Configure(options => options.LogoutEndpointCachingPolicy = policy);
         }
 
         /// <summary>
