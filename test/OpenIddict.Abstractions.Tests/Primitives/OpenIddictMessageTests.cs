@@ -369,6 +369,57 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.Empty(message.GetParameters());
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void TryGetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+        {
+            // Arrange
+            var message = new OpenIddictMessage();
+            OpenIddictParameter parameter;
+
+            // Act
+            var exception = Assert.Throws<ArgumentException>(() => message.TryGetParameter(name, out parameter));
+
+            // Assert
+            Assert.Equal("name", exception.ParamName);
+            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+        }
+
+        [Fact]
+        public void TryGetParameter_ReturnsTrueAndExpectedParameter()
+        {
+            // Arrange
+            var name = "paramName";
+            var val = "paramValue";
+            var message = new OpenIddictMessage();
+            OpenIddictParameter parameter;
+            message.SetParameter(name, val);
+
+            // Act
+            var success = message.TryGetParameter(name, out parameter);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal(val, (string)parameter.Value);
+        }
+
+        [Fact]
+        public void TryGetParameter_ReturnsFalse()
+        {
+            // Arrange
+            var name = "paramName";
+            var message = new OpenIddictMessage();
+            OpenIddictParameter parameter;
+
+            // Act
+            var success = message.TryGetParameter(name, out parameter);
+
+            // Assert
+            Assert.False(success);
+            Assert.Null(parameter.Value);
+        }
+
         [Fact]
         public void ToString_ReturnsJsonRepresentation()
         {
