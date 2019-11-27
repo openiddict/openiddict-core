@@ -45,8 +45,15 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 AcrValues = value
             };
 
-            // Act and assert
-            Assert.Equal(values, request.GetAcrValues());
+            // Act
+            var actualValues = request.GetAcrValues();
+
+            // Assert
+            Assert.Equal(values.Length, actualValues.Count);
+            foreach (var val in actualValues)
+            {
+                Assert.Contains(val, values);
+            }
         }
 
         [Fact]
@@ -83,8 +90,15 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 Scope = scope
             };
 
-            // Act and assert
-            Assert.Equal(scopes, request.GetScopes());
+            // Act
+            var actualScopes = request.GetScopes();
+
+            // Assert
+            Assert.Equal(scopes.Length, actualScopes.Count);
+            foreach (var scp in actualScopes)
+            {
+                Assert.Contains(scp, scopes);
+            }
         }
 
         [Fact]
