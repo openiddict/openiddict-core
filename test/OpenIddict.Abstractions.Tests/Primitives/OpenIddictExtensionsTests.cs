@@ -57,6 +57,49 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void GetResponseTypes_ThrowsAnExceptionForNullRequest()
+        {
+            // Arrange
+            var request = (OpenIddictRequest)null;
+
+            // Act
+            var exception = Assert.Throws<ArgumentNullException>(() => request.GetResponseTypes());
+
+            // Assert
+            Assert.Equal("request", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null, new string[0])]
+        [InlineData("code", new[] { "code" })]
+        [InlineData("code ", new[] { "code" })]
+        [InlineData(" code ", new[] { "code" })]
+        [InlineData("code id_token", new[] { "code", "id_token" })]
+        [InlineData("code     id_token", new[] { "code", "id_token" })]
+        [InlineData("code id_token ", new[] { "code", "id_token" })]
+        [InlineData(" code id_token", new[] { "code", "id_token" })]
+        [InlineData("code code id_token", new[] { "code", "id_token" })]
+        [InlineData("code CODE id_token", new[] { "code", "CODE", "id_token" })]
+        public void GetResponseTypes_ReturnsExpectedResponseTypes(string value, string[] responseTypes)
+        {
+            // Arrange
+            var request = new OpenIddictRequest
+            {
+                ResponseType = value
+            };
+
+            // Act
+            var actualResponseTypes = request.GetResponseTypes();
+
+            // Assert
+            Assert.Equal(responseTypes.Length, actualResponseTypes.Count);
+            foreach (var rt in actualResponseTypes)
+            {
+                Assert.Contains(rt, responseTypes);
+            }
+        }
+
+        [Fact]
         public void GetScopes_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
