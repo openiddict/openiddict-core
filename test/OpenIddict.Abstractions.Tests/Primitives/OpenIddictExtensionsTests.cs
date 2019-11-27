@@ -18,10 +18,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.GetAcrValues();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.GetAcrValues());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -106,10 +103,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.GetScopes();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.GetScopes());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -151,10 +145,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.HasAcrValue("mod-mf");
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.HasAcrValue("mod-mf"));
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -168,10 +159,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = new OpenIddictRequest();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                request.HasAcrValue(value);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => request.HasAcrValue(value));
 
             Assert.Equal("value", exception.ParamName);
             Assert.StartsWith("The value cannot be null or empty.", exception.Message);
@@ -218,7 +206,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
                 request.HasPrompt(OpenIddictConstants.Prompts.Consent);
             });
@@ -235,10 +223,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = new OpenIddictRequest();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                request.HasPrompt(prompt);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => request.HasPrompt(prompt));
 
             Assert.Equal("prompt", exception.ParamName);
             Assert.StartsWith("The prompt cannot be null or empty.", exception.Message);
@@ -285,7 +270,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
                 request.HasResponseType(OpenIddictConstants.ResponseTypes.Code);
             });
@@ -302,10 +287,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = new OpenIddictRequest();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                request.HasResponseType(type);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => request.HasResponseType(type));
 
             Assert.Equal("type", exception.ParamName);
             Assert.StartsWith("The response type cannot be null or empty.", exception.Message);
@@ -352,7 +334,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
                 request.HasScope(OpenIddictConstants.Scopes.OpenId);
             });
@@ -369,10 +351,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = new OpenIddictRequest();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                request.HasScope(scope);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => request.HasScope(scope));
 
             Assert.Equal("scope", exception.ParamName);
             Assert.StartsWith("The scope cannot be null or empty.", exception.Message);
@@ -417,10 +396,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsNoneFlow();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsNoneFlow());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -461,10 +437,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsAuthorizationCodeFlow();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsAuthorizationCodeFlow());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -505,10 +478,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsImplicitFlow();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsImplicitFlow());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -561,10 +531,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsHybridFlow();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsHybridFlow());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -619,10 +586,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsFragmentResponseMode();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsFragmentResponseMode());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -673,10 +637,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsQueryResponseMode();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsQueryResponseMode());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -727,10 +688,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsFormPostResponseMode();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsFormPostResponseMode());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -766,10 +724,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsAuthorizationCodeGrantType();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsAuthorizationCodeGrantType());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -807,10 +762,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsClientCredentialsGrantType();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsClientCredentialsGrantType());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -848,10 +800,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsPasswordGrantType();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsPasswordGrantType());
 
             Assert.Equal("request", exception.ParamName);
         }
@@ -889,10 +838,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var request = (OpenIddictRequest) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                request.IsRefreshTokenGrantType();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsRefreshTokenGrantType());
 
             Assert.Equal("request", exception.ParamName);
         }
