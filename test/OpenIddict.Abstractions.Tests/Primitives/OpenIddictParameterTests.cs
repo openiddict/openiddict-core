@@ -569,6 +569,56 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.Equal("Fabrikam", parameter.ToString());
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void TryGetParameter_ThrowsAnExceptionForNullOrEmptyName(string name)
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter();
+
+            // Act
+            var exception = Assert.Throws<ArgumentException>(() => parameter.TryGetParameter(name, out OpenIddictParameter val));
+
+            // Assert
+            Assert.Equal("name", exception.ParamName);
+            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+        }
+
+        [Fact]
+        public void TryGetParameter_ReturnsTrueAndExpectedParameter()
+        {
+            // Arrange
+            var name = "paramName";
+            var val = new JValue("paramValue");
+            var parameter = new OpenIddictParameter(new JObject
+            {
+                [name] = val
+            });
+
+            // Act
+            var success = parameter.TryGetParameter(name, out OpenIddictParameter expectedParameter);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal(val, expectedParameter.Value);
+        }
+
+        [Fact]
+        public void TryGetParameter_ReturnsFalse()
+        {
+            // Arrange
+            var name = "paramName";
+            var parameter = new OpenIddictParameter();
+
+            // Act
+            var success = parameter.TryGetParameter(name, out OpenIddictParameter val);
+
+            // Assert
+            Assert.False(success);
+            Assert.Null(val.Value);
+        }
+
         [Fact]
         public void BoolConverter_CanCreateParameterFromBooleanValue()
         {
