@@ -108,7 +108,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var message = new OpenIddictMessage();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
+            var exception = Assert.Throws<ArgumentException>(() =>
             {
                 message.AddParameter(name, new OpenIddictParameter());
             });
@@ -171,10 +171,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var message = new OpenIddictMessage();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                message.GetParameter(name);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => message.GetParameter(name));
 
             Assert.Equal("name", exception.ParamName);
             Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
@@ -240,10 +237,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var message = new OpenIddictMessage();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                message.HasParameter(name);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => message.HasParameter(name));
 
             Assert.Equal("name", exception.ParamName);
             Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
@@ -273,10 +267,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var message = new OpenIddictMessage();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                message.RemoveParameter(name);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => message.RemoveParameter(name));
 
             Assert.Equal("name", exception.ParamName);
             Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
@@ -305,10 +296,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var message = new OpenIddictMessage();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                message.SetParameter(name, null);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => message.SetParameter(name, null));
 
             Assert.Equal("name", exception.ParamName);
             Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
@@ -376,10 +364,9 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var message = new OpenIddictMessage();
-            OpenIddictParameter parameter;
 
             // Act
-            var exception = Assert.Throws<ArgumentException>(() => message.TryGetParameter(name, out parameter));
+            var exception = Assert.Throws<ArgumentException>(() => message.TryGetParameter(name, out OpenIddictParameter parameter));
 
             // Assert
             Assert.Equal("name", exception.ParamName);
@@ -393,11 +380,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var name = "paramName";
             var val = "paramValue";
             var message = new OpenIddictMessage();
-            OpenIddictParameter parameter;
             message.SetParameter(name, val);
 
             // Act
-            var success = message.TryGetParameter(name, out parameter);
+            var success = message.TryGetParameter(name, out OpenIddictParameter parameter);
 
             // Assert
             Assert.True(success);
@@ -410,10 +396,9 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange
             var name = "paramName";
             var message = new OpenIddictMessage();
-            OpenIddictParameter parameter;
 
             // Act
-            var success = message.TryGetParameter(name, out parameter);
+            var success = message.TryGetParameter(name, out OpenIddictParameter parameter);
 
             // Assert
             Assert.False(success);
