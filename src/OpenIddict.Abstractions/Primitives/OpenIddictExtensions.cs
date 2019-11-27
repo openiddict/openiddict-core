@@ -31,7 +31,7 @@ namespace OpenIddict.Abstractions
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         public static ImmutableHashSet<string> GetAcrValues([NotNull] this OpenIddictRequest request)
         {
-                request = request ??   throw new ArgumentNullException(nameof(request));
+            request = request ?? throw new ArgumentNullException(nameof(request));
 
             if (string.IsNullOrEmpty(request.AcrValues))
             {
@@ -836,7 +836,7 @@ namespace OpenIddict.Abstractions
 
             if (!string.IsNullOrEmpty(value))
             {
-                ((ClaimsIdentity) principal.Identity).AddClaim(type, value);
+                ((ClaimsIdentity)principal.Identity).AddClaim(type, value);
             }
 
             return principal;
@@ -890,7 +890,7 @@ namespace OpenIddict.Abstractions
 
             foreach (var value in values)
             {
-                ((ClaimsIdentity) principal.Identity).AddClaim(type, value);
+                ((ClaimsIdentity)principal.Identity).AddClaim(type, value);
             }
 
             return principal;
@@ -1358,7 +1358,7 @@ namespace OpenIddict.Abstractions
             {
                 var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
                 var claim = new Claim(Claims.IssuedAt, value, ClaimValueTypes.Integer64);
-                ((ClaimsIdentity) principal.Identity).AddClaim(claim);
+                ((ClaimsIdentity)principal.Identity).AddClaim(claim);
             }
 
             return principal;
@@ -1380,7 +1380,7 @@ namespace OpenIddict.Abstractions
             {
                 var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
                 var claim = new Claim(Claims.ExpiresAt, value, ClaimValueTypes.Integer64);
-                ((ClaimsIdentity) principal.Identity).AddClaim(claim);
+                ((ClaimsIdentity)principal.Identity).AddClaim(claim);
             }
 
             return principal;
