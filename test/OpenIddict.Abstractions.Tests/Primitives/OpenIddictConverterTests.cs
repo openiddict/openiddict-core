@@ -23,10 +23,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                converter.CanConvert(type: null);
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => converter.CanConvert(type: null));
 
             Assert.Equal("type", exception.ParamName);
         }
@@ -60,7 +57,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
                 converter.ReadJson(reader: null, type: null, value: null, serializer: null);
             });
@@ -75,10 +72,9 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                converter.ReadJson(reader: new JsonTextReader(TextReader.Null),
-                                   type: null, value: null, serializer: null);
+                converter.ReadJson(reader: new JsonTextReader(TextReader.Null), type: null, value: null, serializer: null);
             });
 
             Assert.Equal("type", exception.ParamName);
@@ -89,13 +85,12 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            var reader = new JsonTextReader(new StringReader("[0,1,2,3]"));
+            using var reader = new JsonTextReader(new StringReader("[0,1,2,3]"));
 
             // Act and assert
-            var exception = Assert.Throws<JsonSerializationException>(delegate
+            var exception = Assert.Throws<JsonSerializationException>(() =>
             {
-                converter.ReadJson(reader: reader, type: typeof(OpenIddictRequest),
-                                   value: null, serializer: null);
+                converter.ReadJson(reader: reader, type: typeof(OpenIddictRequest), value: null, serializer: null);
             });
 
             Assert.Equal("An error occurred while reading the JSON payload.", exception.Message);
@@ -115,10 +110,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            var reader = new JsonTextReader(new StringReader(@"{""name"":""value""}"));
+            using var reader = new JsonTextReader(new StringReader(@"{""name"":""value""}"));
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
+            var exception = Assert.Throws<ArgumentException>(() =>
             {
                 converter.ReadJson(reader, type, value: null, serializer: null);
             });
@@ -136,8 +131,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var reader = new JsonTextReader(new StringReader(@"{""name"":""value""}"));
 
             // Act
-            var result = converter.ReadJson(reader: reader, type: typeof(OpenIddictMessage),
-                                            value: message, serializer: null);
+            var result = converter.ReadJson(reader: reader, type: typeof(OpenIddictMessage), value: message, serializer: null);
 
             // Assert
             Assert.Same(message, result);
@@ -167,11 +161,11 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            var reader = new JsonTextReader(new StringReader(@"{""string"":null,""bool"":null,""long"":null,""array"":null,""object"":null}"));
+            var reader = new JsonTextReader(
+                new StringReader(@"{""string"":null,""bool"":null,""long"":null,""array"":null,""object"":null}"));
 
             // Act
-            var result = (OpenIddictMessage)converter.ReadJson(reader, typeof(OpenIddictMessage),
-                                                                   value: null, serializer: null);
+            var result = (OpenIddictMessage)converter.ReadJson(reader, typeof(OpenIddictMessage), value: null, serializer: null);
 
             // Assert
             Assert.Equal(5, result.GetParameters().Count());
@@ -195,8 +189,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var reader = new JsonTextReader(new StringReader(@"{""string"":"""",""array"":[],""object"":{}}"));
 
             // Act
-            var result = (OpenIddictMessage)converter.ReadJson(reader, typeof(OpenIddictMessage),
-                                                                   value: null, serializer: null);
+            var result = (OpenIddictMessage)converter.ReadJson(reader, typeof(OpenIddictMessage), value: null, serializer: null);
 
             // Assert
             Assert.Equal(3, result.GetParameters().Count());
@@ -215,7 +208,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
                 converter.WriteJson(writer: null, value: null, serializer: null);
             });
@@ -230,7 +223,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
                 converter.WriteJson(writer: new JsonTextWriter(TextWriter.Null), value: null, serializer: null);
             });
@@ -245,7 +238,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
+            var exception = Assert.Throws<ArgumentException>(() =>
             {
                 converter.WriteJson(writer: new JsonTextWriter(TextWriter.Null), value: new object(), serializer: null);
             });
