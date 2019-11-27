@@ -203,10 +203,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var parameter = new OpenIddictParameter();
 
             // Act
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(delegate
-            {
-                parameter.GetParameter(-1);
-            });
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => parameter.GetParameter(-1));
 
             // Assert
             Assert.Equal("index", exception.ParamName);
@@ -222,10 +219,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var parameter = new OpenIddictParameter();
 
             // Act
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                parameter.GetParameter(name);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => parameter.GetParameter(name));
 
             // Assert
             Assert.Equal("name", exception.ParamName);
