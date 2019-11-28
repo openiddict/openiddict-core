@@ -31,6 +31,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
                 yield return new object[]
                 {
+                    /* property: */ nameof(OpenIddictResponse.DeviceCode),
+                    /* name: */ OpenIddictConstants.Parameters.DeviceCode,
+                    /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
+                };
+
+                yield return new object[]
+                {
                     /* property: */ nameof(OpenIddictResponse.Error),
                     /* name: */ OpenIddictConstants.Parameters.Error,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
@@ -89,6 +96,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 {
                     /* property: */ nameof(OpenIddictResponse.TokenType),
                     /* name: */ OpenIddictConstants.Parameters.TokenType,
+                    /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
+                };
+
+                yield return new object[]
+                {
+                    /* property: */ nameof(OpenIddictResponse.UserCode),
+                    /* name: */ OpenIddictConstants.Parameters.UserCode,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
                 };
             }

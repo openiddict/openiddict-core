@@ -743,6 +743,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData("CLIENT_CREDENTIALS", false)]
         [InlineData("PASSWORD", false)]
         [InlineData("REFRESH_TOKEN", false)]
+        [InlineData("urn:ietf:params:oauth:grant-type:device_code", false)]
         public void IsAuthorizationCodeGrantType_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
@@ -781,6 +782,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData("CLIENT_CREDENTIALS", false)]
         [InlineData("PASSWORD", false)]
         [InlineData("REFRESH_TOKEN", false)]
+        [InlineData("urn:ietf:params:oauth:grant-type:device_code", false)]
         public void IsClientCredentialsGrantType_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
@@ -791,6 +793,45 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act and assert
             Assert.Equal(result, request.IsClientCredentialsGrantType());
+        }
+
+        [Fact]
+        public void IsDeviceCodeGrantType_ThrowsAnExceptionForNullRequest()
+        {
+            // Arrange
+            var request = (OpenIddictRequest)null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => request.IsDeviceCodeGrantType());
+
+            Assert.Equal("request", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("unknown", false)]
+        [InlineData("authorization_code", false)]
+        [InlineData("client_credentials", false)]
+        [InlineData("password", false)]
+        [InlineData("refresh_token", false)]
+        [InlineData("AUTHORIZATION_CODE", false)]
+        [InlineData("CLIENT_CREDENTIALS", false)]
+        [InlineData("PASSWORD", false)]
+        [InlineData("REFRESH_TOKEN", false)]
+        [InlineData("urn:ietf:params:oauth:grant-type:device_code", true)]
+        [InlineData("urn:ietf:params:oauth:grant-type:device_code ", false)]
+        [InlineData(" urn:ietf:params:oauth:grant-type:device_code", false)]
+        [InlineData(" urn:ietf:params:oauth:grant-type:device_code ", false)]
+        public void IsDeviceCodeGrantType_ReturnsExpectedResult(string type, bool result)
+        {
+            // Arrange
+            var request = new OpenIddictRequest
+            {
+                GrantType = type
+            };
+
+            // Act and assert
+            Assert.Equal(result, request.IsDeviceCodeGrantType());
         }
 
         [Fact]
@@ -819,6 +860,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData("CLIENT_CREDENTIALS", false)]
         [InlineData("PASSWORD", false)]
         [InlineData("REFRESH_TOKEN", false)]
+        [InlineData("urn:ietf:params:oauth:grant-type:device_code", false)]
         public void IsPasswordGrantType_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
@@ -857,6 +899,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData("CLIENT_CREDENTIALS", false)]
         [InlineData("PASSWORD", false)]
         [InlineData("REFRESH_TOKEN", false)]
+        [InlineData("urn:ietf:params:oauth:grant-type:device_code", false)]
         public void IsRefreshTokenGrantType_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
