@@ -31,7 +31,10 @@ namespace OpenIddict.Abstractions
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         public static ImmutableHashSet<string> GetAcrValues([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(request.AcrValues))
             {
@@ -47,7 +50,10 @@ namespace OpenIddict.Abstractions
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         public static ImmutableHashSet<string> GetResponseTypes([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(request.ResponseType))
             {
@@ -63,7 +69,10 @@ namespace OpenIddict.Abstractions
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
         public static ImmutableHashSet<string> GetScopes([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(request.Scope))
             {
@@ -80,7 +89,10 @@ namespace OpenIddict.Abstractions
         /// <param name="value">The component to look for in the parameter.</param>
         public static bool HasAcrValue([NotNull] this OpenIddictRequest request, [NotNull] string value)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(value))
             {
@@ -102,7 +114,10 @@ namespace OpenIddict.Abstractions
         /// <param name="prompt">The component to look for in the parameter.</param>
         public static bool HasPrompt([NotNull] this OpenIddictRequest request, [NotNull] string prompt)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(prompt))
             {
@@ -124,7 +139,10 @@ namespace OpenIddict.Abstractions
         /// <param name="type">The component to look for in the parameter.</param>
         public static bool HasResponseType([NotNull] this OpenIddictRequest request, [NotNull] string type)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -146,7 +164,10 @@ namespace OpenIddict.Abstractions
         /// <param name="scope">The component to look for in the parameter.</param>
         public static bool HasScope([NotNull] this OpenIddictRequest request, [NotNull] string scope)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(scope))
             {
@@ -169,7 +190,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the request is a response_type=none request, <c>false</c> otherwise.</returns>
         public static bool IsNoneFlow([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(request.ResponseType))
             {
@@ -193,7 +217,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the request is a code flow request, <c>false</c> otherwise.</returns>
         public static bool IsAuthorizationCodeFlow([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(request.ResponseType))
             {
@@ -218,7 +245,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the request is an implicit flow request, <c>false</c> otherwise.</returns>
         public static bool IsImplicitFlow([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(request.ResponseType))
             {
@@ -269,7 +299,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the request is an hybrid flow request, <c>false</c> otherwise.</returns>
         public static bool IsHybridFlow([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.IsNullOrEmpty(request.ResponseType))
             {
@@ -333,7 +366,10 @@ namespace OpenIddict.Abstractions
         /// </returns>
         public static bool IsFragmentResponseMode([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.Equals(request.ResponseMode, ResponseModes.Fragment, StringComparison.Ordinal))
             {
@@ -363,7 +399,10 @@ namespace OpenIddict.Abstractions
         /// </returns>
         public static bool IsQueryResponseMode([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             if (string.Equals(request.ResponseMode, ResponseModes.Query, StringComparison.Ordinal))
             {
@@ -392,7 +431,10 @@ namespace OpenIddict.Abstractions
         /// </returns>
         public static bool IsFormPostResponseMode([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             return string.Equals(request.ResponseMode, ResponseModes.FormPost, StringComparison.Ordinal);
         }
@@ -405,7 +447,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the request is a code grant request, <c>false</c> otherwise.</returns>
         public static bool IsAuthorizationCodeGrantType([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             return string.Equals(request.GrantType, GrantTypes.AuthorizationCode, StringComparison.Ordinal);
         }
@@ -418,7 +463,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the request is a client credentials grant request, <c>false</c> otherwise.</returns>
         public static bool IsClientCredentialsGrantType([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             return string.Equals(request.GrantType, GrantTypes.ClientCredentials, StringComparison.Ordinal);
         }
@@ -431,7 +479,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the request is a device code grant request, <c>false</c> otherwise.</returns>
         public static bool IsDeviceCodeGrantType([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             return string.Equals(request.GrantType, GrantTypes.DeviceCode, StringComparison.Ordinal);
         }
@@ -444,7 +495,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the request is a password grant request, <c>false</c> otherwise.</returns>
         public static bool IsPasswordGrantType([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             return string.Equals(request.GrantType, GrantTypes.Password, StringComparison.Ordinal);
         }
@@ -457,7 +511,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the request is a refresh token grant request, <c>false</c> otherwise.</returns>
         public static bool IsRefreshTokenGrantType([NotNull] this OpenIddictRequest request)
         {
-            request = request ?? throw new ArgumentNullException(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             return string.Equals(request.GrantType, GrantTypes.RefreshToken, StringComparison.Ordinal);
         }
@@ -469,7 +526,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The destinations associated with the claim.</returns>
         public static ImmutableHashSet<string> GetDestinations([NotNull] this Claim claim)
         {
-            claim = claim ?? throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
 
             claim.Properties.TryGetValue(Properties.Destinations, out string destinations);
 
@@ -488,7 +548,10 @@ namespace OpenIddict.Abstractions
         /// <param name="destination">The required destination.</param>
         public static bool HasDestination([NotNull] this Claim claim, [NotNull] string destination)
         {
-            claim = claim ?? throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
 
             if (string.IsNullOrEmpty(destination))
             {
@@ -505,7 +568,10 @@ namespace OpenIddict.Abstractions
         /// <param name="destinations">The destinations.</param>
         public static Claim SetDestinations([NotNull] this Claim claim, IEnumerable<string> destinations)
         {
-            claim = claim ?? throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
 
             if (destinations == null || !destinations.Any())
             {
@@ -547,8 +613,15 @@ namespace OpenIddict.Abstractions
             [NotNull] this ClaimsIdentity identity,
             [NotNull] Func<Claim, bool> filter)
         {
-            identity = identity ?? throw new ArgumentNullException(nameof(identity));
-            filter = filter ?? throw new ArgumentNullException(nameof(filter));
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
 
             var clone = identity.Clone();
 
@@ -582,8 +655,15 @@ namespace OpenIddict.Abstractions
             [NotNull] this ClaimsPrincipal principal,
             [NotNull] Func<Claim, bool> filter)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
-            filter = filter ?? throw new ArgumentNullException(nameof(filter));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
 
             var clone = new ClaimsPrincipal();
 
@@ -605,7 +685,10 @@ namespace OpenIddict.Abstractions
             [NotNull] this ClaimsIdentity identity,
             [NotNull] string type, [NotNull] string value)
         {
-            identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -633,8 +716,10 @@ namespace OpenIddict.Abstractions
             [NotNull] string type, [NotNull] string value,
             [NotNull] IEnumerable<string> destinations)
         {
-            identity = identity ?? throw new ArgumentNullException(nameof(identity));
-            destinations = destinations ?? throw new ArgumentNullException(nameof(destinations));
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -644,6 +729,11 @@ namespace OpenIddict.Abstractions
             if (string.IsNullOrEmpty(value))
             {
                 throw new ArgumentException("The claim value cannot be null or empty.", nameof(value));
+            }
+
+            if (destinations == null)
+            {
+                throw new ArgumentNullException(nameof(destinations));
             }
 
             identity.AddClaim(new Claim(type, value).SetDestinations(destinations));
@@ -673,7 +763,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claim value.</returns>
         public static string GetClaim([NotNull] this ClaimsIdentity identity, [NotNull] string type)
         {
-            identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -691,7 +784,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claim value.</returns>
         public static string GetClaim([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -709,7 +805,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claim values.</returns>
         public static ImmutableHashSet<string> GetClaims([NotNull] this ClaimsIdentity identity, [NotNull] string type)
         {
-            identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -727,7 +826,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claim values.</returns>
         public static ImmutableHashSet<string> GetClaims([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -745,7 +847,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims identity.</returns>
         public static ClaimsIdentity RemoveClaims([NotNull] this ClaimsIdentity identity, [NotNull] string type)
         {
-            identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -768,7 +873,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims identity.</returns>
         public static ClaimsPrincipal RemoveClaims([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -797,7 +905,10 @@ namespace OpenIddict.Abstractions
             [NotNull] this ClaimsIdentity identity,
             [NotNull] string type, [CanBeNull] string value)
         {
-            identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -825,7 +936,10 @@ namespace OpenIddict.Abstractions
             [NotNull] this ClaimsPrincipal principal,
             [NotNull] string type, [CanBeNull] string value)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -836,7 +950,7 @@ namespace OpenIddict.Abstractions
 
             if (!string.IsNullOrEmpty(value))
             {
-                ((ClaimsIdentity)principal.Identity).AddClaim(type, value);
+                ((ClaimsIdentity) principal.Identity).AddClaim(type, value);
             }
 
             return principal;
@@ -852,7 +966,10 @@ namespace OpenIddict.Abstractions
         public static ClaimsIdentity SetClaims([NotNull] this ClaimsIdentity identity,
             [NotNull] string type, [NotNull] IEnumerable<string> values)
         {
-            identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -879,7 +996,10 @@ namespace OpenIddict.Abstractions
         public static ClaimsPrincipal SetClaims([NotNull] this ClaimsPrincipal principal,
             [NotNull] string type, [NotNull] IEnumerable<string> values)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             if (string.IsNullOrEmpty(type))
             {
@@ -890,7 +1010,7 @@ namespace OpenIddict.Abstractions
 
             foreach (var value in values)
             {
-                ((ClaimsIdentity)principal.Identity).AddClaim(type, value);
+                ((ClaimsIdentity) principal.Identity).AddClaim(type, value);
             }
 
             return principal;
@@ -903,7 +1023,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The creation date or <c>null</c> if the claim cannot be found.</returns>
         public static DateTimeOffset? GetCreationDate([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             var claim = principal.FindFirst(Claims.IssuedAt);
             if (claim == null)
@@ -926,7 +1049,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The expiration date or <c>null</c> if the claim cannot be found.</returns>
         public static DateTimeOffset? GetExpirationDate([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             var claim = principal.FindFirst(Claims.ExpiresAt);
             if (claim == null)
@@ -949,7 +1075,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The audiences list or an empty set if the claims cannot be found.</returns>
         public static ImmutableHashSet<string> GetAudiences([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Audience));
         }
@@ -961,7 +1090,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The presenters list or an empty set if the claims cannot be found.</returns>
         public static ImmutableHashSet<string> GetPresenters([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Private.Presenters));
         }
@@ -973,7 +1105,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The resources list or an empty set if the claims cannot be found.</returns>
         public static ImmutableHashSet<string> GetResources([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Private.Resources));
         }
@@ -985,7 +1120,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The scopes list or an empty set if the claim cannot be found.</returns>
         public static ImmutableHashSet<string> GetScopes([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return ImmutableHashSet.CreateRange(StringComparer.Ordinal, principal.GetClaims(Claims.Private.Scopes));
         }
@@ -998,7 +1136,10 @@ namespace OpenIddict.Abstractions
 
         public static TimeSpan? GetAccessTokenLifetime([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             var value = principal.GetClaim(Claims.Private.AccessTokenLifetime);
             if (string.IsNullOrEmpty(value))
@@ -1022,7 +1163,10 @@ namespace OpenIddict.Abstractions
 
         public static TimeSpan? GetAuthorizationCodeLifetime([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             var value = principal.GetClaim(Claims.Private.AuthorizationCodeLifetime);
             if (string.IsNullOrEmpty(value))
@@ -1046,7 +1190,10 @@ namespace OpenIddict.Abstractions
 
         public static TimeSpan? GetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             var value = principal.GetClaim(Claims.Private.DeviceCodeLifetime);
             if (string.IsNullOrEmpty(value))
@@ -1070,7 +1217,10 @@ namespace OpenIddict.Abstractions
 
         public static TimeSpan? GetIdentityTokenLifetime([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             var value = principal.GetClaim(Claims.Private.IdentityTokenLifetime);
             if (string.IsNullOrEmpty(value))
@@ -1094,7 +1244,10 @@ namespace OpenIddict.Abstractions
 
         public static TimeSpan? GetRefreshTokenLifetime([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             var value = principal.GetClaim(Claims.Private.RefreshTokenLifetime);
             if (string.IsNullOrEmpty(value))
@@ -1118,7 +1271,10 @@ namespace OpenIddict.Abstractions
 
         public static TimeSpan? GetUserCodeLifetime([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             var value = principal.GetClaim(Claims.Private.UserCodeLifetime);
             if (string.IsNullOrEmpty(value))
@@ -1141,7 +1297,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
         public static string GetInternalAuthorizationId([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.GetClaim(Claims.Private.AuthorizationId);
         }
@@ -1153,7 +1312,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
         public static string GetInternalTokenId([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.GetClaim(Claims.Private.TokenId);
         }
@@ -1165,7 +1327,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The token usage or <c>null</c> if the claim cannot be found.</returns>
         public static string GetTokenUsage([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.GetClaim(Claims.Private.TokenUsage);
         }
@@ -1178,7 +1343,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal corresponds to an access token.</returns>
         public static bool IsAccessToken([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return string.Equals(principal.GetTokenUsage(), TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase);
         }
@@ -1191,7 +1359,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal corresponds to an authorization code.</returns>
         public static bool IsAuthorizationCode([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return string.Equals(principal.GetTokenUsage(), TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase);
         }
@@ -1204,7 +1375,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal corresponds to an identity token.</returns>
         public static bool IsIdentityToken([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return string.Equals(principal.GetTokenUsage(), TokenUsages.IdToken, StringComparison.OrdinalIgnoreCase);
         }
@@ -1217,7 +1391,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal corresponds to a refresh token.</returns>
         public static bool IsRefreshToken([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return string.Equals(principal.GetTokenUsage(), TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase);
         }
@@ -1229,7 +1406,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal contains at least one audience.</returns>
         public static bool HasAudience([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.FindAll(Claims.Audience).Any();
         }
@@ -1242,7 +1422,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal contains the given audience.</returns>
         public static bool HasAudience([NotNull] this ClaimsPrincipal principal, [NotNull] string audience)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             if (string.IsNullOrEmpty(audience))
             {
@@ -1259,7 +1442,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal contains at least one presenter.</returns>
         public static bool HasPresenter([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.FindAll(Claims.Private.Presenters).Any();
         }
@@ -1272,7 +1458,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal contains the given presenter.</returns>
         public static bool HasPresenter([NotNull] this ClaimsPrincipal principal, [NotNull] string presenter)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             if (string.IsNullOrEmpty(presenter))
             {
@@ -1289,7 +1478,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal contains at least one resource.</returns>
         public static bool HasResource([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.FindAll(Claims.Private.Resources).Any();
         }
@@ -1302,7 +1494,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal contains the given resource.</returns>
         public static bool HasResource([NotNull] this ClaimsPrincipal principal, [NotNull] string resource)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             if (string.IsNullOrEmpty(resource))
             {
@@ -1319,7 +1514,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal contains at least one scope.</returns>
         public static bool HasScope([NotNull] this ClaimsPrincipal principal)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.FindAll(Claims.Private.Scopes).Any();
         }
@@ -1332,7 +1530,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the principal contains the given scope.</returns>
         public static bool HasScope([NotNull] this ClaimsPrincipal principal, [NotNull] string scope)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             if (string.IsNullOrEmpty(scope))
             {
@@ -1350,7 +1551,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetCreationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             principal.RemoveClaims(Claims.IssuedAt);
 
@@ -1358,7 +1562,7 @@ namespace OpenIddict.Abstractions
             {
                 var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
                 var claim = new Claim(Claims.IssuedAt, value, ClaimValueTypes.Integer64);
-                ((ClaimsIdentity)principal.Identity).AddClaim(claim);
+                ((ClaimsIdentity) principal.Identity).AddClaim(claim);
             }
 
             return principal;
@@ -1372,7 +1576,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetExpirationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             principal.RemoveClaims(Claims.ExpiresAt);
 
@@ -1380,7 +1587,7 @@ namespace OpenIddict.Abstractions
             {
                 var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
                 var claim = new Claim(Claims.ExpiresAt, value, ClaimValueTypes.Integer64);
-                ((ClaimsIdentity)principal.Identity).AddClaim(claim);
+                ((ClaimsIdentity) principal.Identity).AddClaim(claim);
             }
 
             return principal;
@@ -1397,7 +1604,10 @@ namespace OpenIddict.Abstractions
             [NotNull] this ClaimsPrincipal principal,
             [CanBeNull] IEnumerable<string> audiences)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaims(Claims.Audience, audiences.Distinct(StringComparer.Ordinal));
         }
@@ -1426,7 +1636,10 @@ namespace OpenIddict.Abstractions
             [NotNull] this ClaimsPrincipal principal,
             [CanBeNull] IEnumerable<string> presenters)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaims(Claims.Private.Presenters, presenters.Distinct(StringComparer.Ordinal));
         }
@@ -1455,7 +1668,10 @@ namespace OpenIddict.Abstractions
             [NotNull] this ClaimsPrincipal principal,
             [CanBeNull] IEnumerable<string> resources)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaims(Claims.Private.Resources, resources.Distinct(StringComparer.Ordinal));
         }
@@ -1483,7 +1699,10 @@ namespace OpenIddict.Abstractions
         public static ClaimsPrincipal SetScopes(
             [NotNull] this ClaimsPrincipal principal, [CanBeNull] IEnumerable<string> scopes)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaims(Claims.Private.Scopes, scopes.Distinct(StringComparer.Ordinal));
         }
@@ -1509,7 +1728,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetAccessTokenLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaim(Claims.Private.AccessTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
         }
@@ -1522,7 +1744,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetAuthorizationCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaim(Claims.Private.AuthorizationCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
         }
@@ -1535,7 +1760,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaim(Claims.Private.DeviceCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
         }
@@ -1548,7 +1776,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetIdentityTokenLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaim(Claims.Private.IdentityTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
         }
@@ -1561,7 +1792,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetRefreshTokenLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaim(Claims.Private.RefreshTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
         }
@@ -1574,7 +1808,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetUserCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaim(Claims.Private.UserCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
         }
@@ -1587,7 +1824,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetInternalAuthorizationId([NotNull] this ClaimsPrincipal principal, string identifier)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaim(Claims.Private.AuthorizationId, identifier);
         }
@@ -1600,7 +1840,10 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetInternalTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
         {
-            principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
 
             return principal.SetClaim(Claims.Private.TokenId, identifier);
         }

@@ -23,7 +23,10 @@ namespace OpenIddict.Abstractions
         /// <returns><c>true</c> if the type is supported, <c>false</c> otherwise.</returns>
         public override bool CanConvert([NotNull] Type type)
         {
-            type = type ?? throw new ArgumentNullException(nameof(type));
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
 
             return typeof(OpenIddictMessage).IsAssignableFrom(type);
         }
@@ -40,12 +43,22 @@ namespace OpenIddict.Abstractions
             [NotNull] JsonReader reader, [NotNull] Type type,
             [CanBeNull] object value, [CanBeNull] JsonSerializer serializer)
         {
-            reader = reader ?? throw new ArgumentNullException(nameof(reader));
-            type = type ?? throw new ArgumentNullException(nameof(type));
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
 
             // Note: OpenIddict primitives are always represented as JSON objects.
-            var payload = JToken.Load(reader) as JObject
-                ?? throw new JsonSerializationException("An error occurred while reading the JSON payload.");
+            var payload = JToken.Load(reader) as JObject;
+            if (payload == null)
+            {
+                throw new JsonSerializationException("An error occurred while reading the JSON payload.");
+            }
 
             // If no existing value was specified, instantiate a
             // new request/response depending on the requested type.
@@ -89,8 +102,15 @@ namespace OpenIddict.Abstractions
         /// <param name="serializer">The JSON serializer.</param>
         public override void WriteJson([NotNull] JsonWriter writer, [NotNull] object value, [CanBeNull] JsonSerializer serializer)
         {
-            writer = writer ?? throw new ArgumentNullException(nameof(writer));
-            value = value ?? throw new ArgumentNullException(nameof(value));
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
 
             if (value is OpenIddictMessage message)
             {
@@ -100,7 +120,7 @@ namespace OpenIddict.Abstractions
                 {
                     writer.WritePropertyName(parameter.Key);
 
-                    var token = (JToken)parameter.Value;
+                    var token = (JToken) parameter.Value;
                     if (token == null)
                     {
                         writer.WriteNull();
