@@ -42,15 +42,8 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 AcrValues = value
             };
 
-            // Act
-            var actualValues = request.GetAcrValues();
-
-            // Assert
-            Assert.Equal(values.Length, actualValues.Count);
-            foreach (var val in actualValues)
-            {
-                Assert.Contains(val, values);
-            }
+            // Act and assert
+            Assert.Equal(values, request.GetAcrValues());
         }
 
         [Fact]
@@ -77,7 +70,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData(" code id_token", new[] { "code", "id_token" })]
         [InlineData("code code id_token", new[] { "code", "id_token" })]
         [InlineData("code CODE id_token", new[] { "code", "CODE", "id_token" })]
-        public void GetResponseTypes_ReturnsExpectedResponseTypes(string value, string[] responseTypes)
+        public void GetResponseTypes_ReturnsExpectedResponseTypes(string value, string[] values)
         {
             // Arrange
             var request = new OpenIddictRequest
@@ -85,15 +78,8 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 ResponseType = value
             };
 
-            // Act
-            var actualResponseTypes = request.GetResponseTypes();
-
-            // Assert
-            Assert.Equal(responseTypes.Length, actualResponseTypes.Count);
-            foreach (var rt in actualResponseTypes)
-            {
-                Assert.Contains(rt, responseTypes);
-            }
+            // Act and assert
+            Assert.Equal(values, request.GetResponseTypes());
         }
 
         [Fact]
@@ -127,15 +113,8 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 Scope = scope
             };
 
-            // Act
-            var actualScopes = request.GetScopes();
-
-            // Assert
-            Assert.Equal(scopes.Length, actualScopes.Count);
-            foreach (var scp in actualScopes)
-            {
-                Assert.Contains(scp, scopes);
-            }
+            // Act and assert
+            Assert.Equal(scopes, request.GetScopes());
         }
 
         [Fact]

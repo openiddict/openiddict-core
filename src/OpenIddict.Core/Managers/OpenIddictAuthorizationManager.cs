@@ -696,9 +696,8 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            return (await Store.GetScopesAsync(authorization, cancellationToken))
-                .ToImmutableHashSet(StringComparer.Ordinal)
-                .IsSupersetOf(scopes);
+            return new HashSet<string>(await Store.GetScopesAsync(
+                authorization, cancellationToken), StringComparer.Ordinal).IsSupersetOf(scopes);
         }
 
         /// <summary>

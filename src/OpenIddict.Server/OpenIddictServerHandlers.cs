@@ -3855,10 +3855,11 @@ namespace OpenIddict.Server
 
                 // If the granted access token scopes differ from the requested scopes, return the granted scopes
                 // list as a parameter to inform the client application of the fact the scopes set will be reduced.
+                var scopes = new HashSet<string>(context.AccessTokenPrincipal.GetScopes(), StringComparer.Ordinal);
                 if ((context.EndpointType == OpenIddictServerEndpointType.Token && context.Request.IsAuthorizationCodeGrantType()) ||
-                    !context.AccessTokenPrincipal.GetScopes().SetEquals(context.Request.GetScopes()))
+                    !scopes.SetEquals(context.Request.GetScopes()))
                 {
-                    context.Response.Scope = string.Join(" ", context.AccessTokenPrincipal.GetScopes());
+                    context.Response.Scope = string.Join(" ", scopes);
                 }
 
                 return default;
