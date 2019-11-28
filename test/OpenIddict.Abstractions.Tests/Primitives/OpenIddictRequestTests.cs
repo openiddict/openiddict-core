@@ -5,7 +5,7 @@
  */
 
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using Xunit;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
@@ -48,7 +48,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 {
                     /* property: */ nameof(OpenIddictRequest.Claims),
                     /* name: */ OpenIddictConstants.Parameters.Claims,
-                    /* value: */ new OpenIddictParameter(new JObject { ["userinfo"] = new JObject() })
+                    /* value: */ new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(@"{""userinfo"": {}}"))
                 };
 
                 yield return new object[]
@@ -209,7 +209,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 {
                     /* property: */ nameof(OpenIddictRequest.Registration),
                     /* name: */ OpenIddictConstants.Parameters.Registration,
-                    /* value: */ new OpenIddictParameter(new JObject { ["policy_uri"] = "http://www.fabrikam.com/policy" })
+                    /* value: */ new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(@"{""policy_uri"": ""http://www.fabrikam.com/policy""}"))
                 };
 
                 yield return new object[]

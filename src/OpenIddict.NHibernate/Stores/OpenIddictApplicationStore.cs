@@ -11,13 +11,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Linq;
@@ -474,9 +474,7 @@ namespace OpenIddict.NHibernate
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JArray.Parse(application.Permissions)
-                    .Select(permission => (string) permission)
-                    .ToImmutableArray();
+                return JsonSerializer.Deserialize<ImmutableArray<string>>(application.Permissions);
             });
 
             return new ValueTask<ImmutableArray<string>>(permissions);
@@ -511,9 +509,7 @@ namespace OpenIddict.NHibernate
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JArray.Parse(application.PostLogoutRedirectUris)
-                    .Select(address => (string) address)
-                    .ToImmutableArray();
+                return JsonSerializer.Deserialize<ImmutableArray<string>>(application.PostLogoutRedirectUris);
             });
 
             return new ValueTask<ImmutableArray<string>>(addresses);
@@ -528,7 +524,7 @@ namespace OpenIddict.NHibernate
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the application.
         /// </returns>
-        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -537,10 +533,21 @@ namespace OpenIddict.NHibernate
 
             if (string.IsNullOrEmpty(application.Properties))
             {
-                return new ValueTask<JObject>(new JObject());
+                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
             }
 
-            return new ValueTask<JObject>(JObject.Parse(application.Properties));
+            // Note: parsing the stringified properties is an expensive operation.
+            // To mitigate that, the resulting object is stored in the memory cache.
+            var key = string.Concat("2e3e9680-5654-48d8-a27d-b8bb4f0f1d50", "\x1e", application.Properties);
+            var properties = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JsonSerializer.Deserialize<ImmutableDictionary<string, object>>(application.Properties);
+            });
+
+            return new ValueTask<ImmutableDictionary<string, object>>(properties);
         }
 
         /// <summary>
@@ -572,9 +579,7 @@ namespace OpenIddict.NHibernate
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JArray.Parse(application.RedirectUris)
-                    .Select(address => (string) address)
-                    .ToImmutableArray();
+                return JsonSerializer.Deserialize<ImmutableArray<string>>(application.RedirectUris);
             });
 
             return new ValueTask<ImmutableArray<string>>(addresses);
@@ -609,9 +614,7 @@ namespace OpenIddict.NHibernate
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JArray.Parse(application.Requirements)
-                    .Select(element => (string) element)
-                    .ToImmutableArray();
+                return JsonSerializer.Deserialize<ImmutableArray<string>>(application.Requirements);
             });
 
             return new ValueTask<ImmutableArray<string>>(requirements);
@@ -828,7 +831,11 @@ namespace OpenIddict.NHibernate
                 return default;
             }
 
-            application.Permissions = new JArray(permissions.ToArray()).ToString(Formatting.None);
+            application.Permissions = JsonSerializer.Serialize(permissions, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            });
 
             return default;
         }
@@ -855,7 +862,11 @@ namespace OpenIddict.NHibernate
                 return default;
             }
 
-            application.PostLogoutRedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
+            application.PostLogoutRedirectUris = JsonSerializer.Serialize(addresses, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            });
 
             return default;
         }
@@ -867,21 +878,26 @@ namespace OpenIddict.NHibernate
         /// <param name="properties">The additional properties associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        public virtual ValueTask SetPropertiesAsync([NotNull] TApplication application,
+            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (properties == null)
+            if (properties == null || properties.IsEmpty)
             {
                 application.Properties = null;
 
                 return default;
             }
 
-            application.Properties = properties.ToString(Formatting.None);
+            application.Properties = JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            });
 
             return default;
         }
@@ -908,7 +924,11 @@ namespace OpenIddict.NHibernate
                 return default;
             }
 
-            application.RedirectUris = new JArray(addresses.ToArray()).ToString(Formatting.None);
+            application.RedirectUris = JsonSerializer.Serialize(addresses, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            });
 
             return default;
         }
@@ -934,7 +954,11 @@ namespace OpenIddict.NHibernate
                 return default;
             }
 
-            application.Requirements = new JArray(requirements.ToArray()).ToString(Formatting.None);
+            application.Requirements = JsonSerializer.Serialize(requirements, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            });
 
             return default;
         }

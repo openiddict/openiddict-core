@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
-    <PackageReference Include="Newtonsoft.Json.Bson" Version="$(JsonNetBsonVersion)" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">

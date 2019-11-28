@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace OpenIddict.Abstractions
 {
@@ -212,7 +212,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the application.
         /// </returns>
-        ValueTask<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken);
+        ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the callback addresses associated with an application.
@@ -341,7 +341,8 @@ namespace OpenIddict.Abstractions
         /// <param name="properties">The additional properties associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        ValueTask SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken);
+        ValueTask SetPropertiesAsync([NotNull] TApplication application,
+            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the callback addresses associated with an application.

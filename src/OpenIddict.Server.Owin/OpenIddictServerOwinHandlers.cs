@@ -10,12 +10,13 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
-using Newtonsoft.Json;
 using OpenIddict.Abstractions;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -837,29 +838,27 @@ namespace OpenIddict.Server.Owin
 
                 context.Logger.LogInformation("The response was successfully returned as a JSON document: {Response}.", context.Response);
 
-                using (var buffer = new MemoryStream())
-                using (var writer = new JsonTextWriter(new StreamWriter(buffer)))
+                using var stream = new MemoryStream();
+                await JsonSerializer.SerializeAsync(stream, context.Response, new JsonSerializerOptions
                 {
-                    var serializer = JsonSerializer.CreateDefault();
-                    serializer.Serialize(writer, context.Response);
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = false
+                });
 
-                    writer.Flush();
-
-                    if (!string.IsNullOrEmpty(context.Response.Error))
-                    {
-                        // Note: when using basic authentication, returning an invalid_client error MUST result in
-                        // an unauthorized response but returning a 401 status code would invoke the previously
-                        // registered authentication middleware and potentially replace it by a 302 response.
-                        // To work around this OWIN/Katana limitation, a 400 response code is always returned.
-                        response.StatusCode = 400;
-                    }
-
-                    response.ContentLength = buffer.Length;
-                    response.ContentType = "application/json;charset=UTF-8";
-
-                    buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                    await buffer.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    // Note: when using basic authentication, returning an invalid_client error MUST result in
+                    // an unauthorized response but returning a 401 status code would invoke the previously
+                    // registered authentication middleware and potentially replace it by a 302 response.
+                    // To work around this OWIN/Katana limitation, a 400 response code is always returned.
+                    response.StatusCode = 400;
                 }
+
+                response.ContentLength = stream.Length;
+                response.ContentType = "application/json;charset=UTF-8";
+
+                stream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                await stream.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
 
                 context.HandleRequest();
             }

@@ -11,13 +11,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Linq;
@@ -390,7 +390,7 @@ namespace OpenIddict.NHibernate
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the scope.
         /// </returns>
-        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -399,10 +399,21 @@ namespace OpenIddict.NHibernate
 
             if (string.IsNullOrEmpty(scope.Properties))
             {
-                return new ValueTask<JObject>(new JObject());
+                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
             }
 
-            return new ValueTask<JObject>(JObject.Parse(scope.Properties));
+            // Note: parsing the stringified properties is an expensive operation.
+            // To mitigate that, the resulting object is stored in the memory cache.
+            var key = string.Concat("78d8dfdd-3870-442e-b62e-dc9bf6eaeff7", "\x1e", scope.Properties);
+            var properties = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JsonSerializer.Deserialize<ImmutableDictionary<string, object>>(scope.Properties);
+            });
+
+            return new ValueTask<ImmutableDictionary<string, object>>(properties);
         }
 
         /// <summary>
@@ -434,9 +445,7 @@ namespace OpenIddict.NHibernate
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JArray.Parse(scope.Resources)
-                    .Select(resource => (string) resource)
-                    .ToImmutableArray();
+                return JsonSerializer.Deserialize<ImmutableArray<string>>(scope.Resources);
             });
 
             return new ValueTask<ImmutableArray<string>>(resources);
@@ -594,21 +603,26 @@ namespace OpenIddict.NHibernate
         /// <param name="properties">The additional properties associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TScope scope, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        public virtual ValueTask SetPropertiesAsync([NotNull] TScope scope,
+            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (properties == null)
+            if (properties == null || properties.IsEmpty)
             {
                 scope.Properties = null;
 
                 return default;
             }
 
-            scope.Properties = properties.ToString(Formatting.None);
+            scope.Properties = JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            });
 
             return default;
         }
@@ -634,7 +648,11 @@ namespace OpenIddict.NHibernate
                 return default;
             }
 
-            scope.Resources = new JArray(resources.ToArray()).ToString(Formatting.None);
+            scope.Resources = JsonSerializer.Serialize(resources, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            });
 
             return default;
         }

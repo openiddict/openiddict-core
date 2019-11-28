@@ -428,13 +428,41 @@ namespace OpenIddict.Server
                 // Attach the principal extracted from the token to the parent event context.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
 
+                // Store the token type as a special private claim.
+                context.Principal.SetClaim(Claims.Private.TokenUsage, ((JsonWebToken) result.SecurityToken).Typ switch
+                {
+                    JsonWebTokenTypes.AccessToken   => TokenUsages.AccessToken,
+                    JsonWebTokenTypes.IdentityToken => TokenUsages.IdToken,
+
+                    JsonWebTokenTypes.Private.AuthorizationCode => TokenUsages.AuthorizationCode,
+                    JsonWebTokenTypes.Private.DeviceCode        => TokenUsages.DeviceCode,
+                    JsonWebTokenTypes.Private.RefreshToken      => TokenUsages.RefreshToken,
+                    JsonWebTokenTypes.Private.UserCode          => TokenUsages.UserCode,
+
+                    _ => throw new InvalidOperationException("The token type is not supported.")
+                });
+
                 context.Logger.LogTrace("The token '{Token}' was successfully validated and the following claims " +
                                         "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
 
                 async ValueTask<TokenValidationResult> ValidateTokenAsync(string token, string type)
                 {
                     var parameters = context.Options.TokenValidationParameters.Clone();
-                    parameters.PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = type };
+                    parameters.ValidTypes = new[]
+                    {
+                        type switch
+                        {
+                            TokenUsages.AccessToken => JsonWebTokenTypes.AccessToken,
+                            TokenUsages.IdToken     => JsonWebTokenTypes.IdentityToken,
+
+                            TokenUsages.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
+                            TokenUsages.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
+                            TokenUsages.RefreshToken      => JsonWebTokenTypes.Private.RefreshToken,
+                            TokenUsages.UserCode          => JsonWebTokenTypes.Private.UserCode,
+
+                            _ => throw new InvalidOperationException("The token type is not supported.")
+                        }
+                    };
                     parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
 
                     parameters.IssuerSigningKeys = type switch
@@ -2685,17 +2713,31 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                context.Response.AccessToken = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
+                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
-                        Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken },
-                        EncryptingCredentials = context.Options.EncryptionCredentials.FirstOrDefault(
-                            credentials => credentials.Key is SymmetricSecurityKey),
+                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
+                        {
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AccessToken
+                        },
                         Issuer = context.Issuer?.AbsoluteUri,
                         SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
                             credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
                         Subject = (ClaimsIdentity) context.AccessTokenPrincipal.Identity
                     });
+
+                var credentials = context.Options.EncryptionCredentials.FirstOrDefault(
+                    credentials => credentials.Key is SymmetricSecurityKey);
+                if (credentials != null)
+                {
+                    token = context.Options.JsonWebTokenHandler.EncryptToken(
+                        token, credentials, new Dictionary<string, object>(StringComparer.Ordinal)
+                        {
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AccessToken
+                        });
+                }
+
+                context.Response.AccessToken = token;
 
                 context.Logger.LogTrace("The access token '{Identifier}' was successfully created: {Payload}. " +
                                         "The principal used to create the token contained the following claims: {Claims}.",
@@ -2840,22 +2882,32 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                context.Response.Code = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
+                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
-                        Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AuthorizationCode },
-                        EncryptingCredentials = context.Options.EncryptionCredentials.FirstOrDefault(
-                            credentials => credentials.Key is SymmetricSecurityKey),
+                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
+                        {
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationCode
+                        },
                         Issuer = context.Issuer?.AbsoluteUri,
                         SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
                             credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
                         Subject = (ClaimsIdentity) context.AuthorizationCodePrincipal.Identity
                     });
 
+                token = context.Options.JsonWebTokenHandler.EncryptToken(token,
+                    context.Options.EncryptionCredentials.First(),
+                    new Dictionary<string, object>(StringComparer.Ordinal)
+                    {
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationCode
+                    });
+
+                context.Response.Code = token;
+
                 context.Logger.LogTrace("The authorization code '{Identifier}' was successfully created: {Payload}. " +
                                         "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.Code, context.AuthorizationCodePrincipal.Claims);
+                                        context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId), token,
+                                        context.AuthorizationCodePrincipal.Claims);
             }
         }
 
@@ -2994,22 +3046,32 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                context.Response.DeviceCode = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
+                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
-                        Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.DeviceCode },
-                        EncryptingCredentials = context.Options.EncryptionCredentials.FirstOrDefault(
-                            credentials => credentials.Key is SymmetricSecurityKey),
+                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
+                        {
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.DeviceCode
+                        },
                         Issuer = context.Issuer?.AbsoluteUri,
                         SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
                             credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
                         Subject = (ClaimsIdentity) context.DeviceCodePrincipal.Identity
                     });
 
+                token = context.Options.JsonWebTokenHandler.EncryptToken(token,
+                    context.Options.EncryptionCredentials.First(),
+                    new Dictionary<string, object>(StringComparer.Ordinal)
+                    {
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.DeviceCode
+                    });
+
+                context.Response.DeviceCode = token;
+
                 context.Logger.LogTrace("The device code '{Identifier}' was successfully created: {Payload}. " +
                                         "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.DeviceCodePrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.DeviceCode, context.DeviceCodePrincipal.Claims);
+                                        context.DeviceCodePrincipal.GetClaim(Claims.JwtId), token,
+                                        context.DeviceCodePrincipal.Claims);
             }
         }
 
@@ -3249,21 +3311,32 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                context.Response.RefreshToken = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
+                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
-                        Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.RefreshToken },
-                        EncryptingCredentials = context.Options.EncryptionCredentials[0],
+                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
+                        {
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.RefreshToken
+                        },
                         Issuer = context.Issuer?.AbsoluteUri,
                         SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
                             credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
                         Subject = (ClaimsIdentity) context.RefreshTokenPrincipal.Identity
                     });
 
+                token = context.Options.JsonWebTokenHandler.EncryptToken(token,
+                    context.Options.EncryptionCredentials.First(),
+                    new Dictionary<string, object>(StringComparer.Ordinal)
+                    {
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.RefreshToken
+                    });
+
+                context.Response.RefreshToken = token;
+
                 context.Logger.LogTrace("The refresh token '{Identifier}' was successfully created: {Payload}. " +
                                         "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.RefreshTokenPrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.RefreshToken, context.RefreshTokenPrincipal.Claims);
+                                        context.RefreshTokenPrincipal.GetClaim(Claims.JwtId), token,
+                                        context.RefreshTokenPrincipal.Claims);
             }
         }
 
@@ -3442,22 +3515,32 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                context.Response.UserCode = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
+                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
-                        Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.UserCode },
-                        EncryptingCredentials = context.Options.EncryptionCredentials.FirstOrDefault(
-                            credentials => credentials.Key is SymmetricSecurityKey),
+                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
+                        {
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.UserCode
+                        },
                         Issuer = context.Issuer?.AbsoluteUri,
                         SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
                             credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
                         Subject = (ClaimsIdentity) context.UserCodePrincipal.Identity
                     });
 
+                token = context.Options.JsonWebTokenHandler.EncryptToken(token,
+                    context.Options.EncryptionCredentials.First(),
+                    new Dictionary<string, object>(StringComparer.Ordinal)
+                    {
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.UserCode
+                    });
+
+                context.Response.UserCode = token;
+
                 context.Logger.LogTrace("The user code '{Identifier}' was successfully created: {Payload}. " +
                                         "The principal used to create the token contained the following claims: {Claims}.",
-                                        context.UserCodePrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.UserCode, context.UserCodePrincipal.Claims);
+                                        context.UserCodePrincipal.GetClaim(Claims.JwtId), token,
+                                        context.UserCodePrincipal.Claims);
             }
         }
 
@@ -3743,7 +3826,10 @@ namespace OpenIddict.Server
                 context.Response.IdToken = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
                     new SecurityTokenDescriptor
                     {
-                        Claims = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.IdToken },
+                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
+                        {
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.IdentityToken
+                        },
                         Issuer = context.Issuer?.AbsoluteUri,
                         SigningCredentials = context.Options.SigningCredentials.First(credentials =>
                             credentials.Key is AsymmetricSecurityKey),

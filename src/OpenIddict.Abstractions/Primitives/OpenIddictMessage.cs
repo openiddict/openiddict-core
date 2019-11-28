@@ -7,13 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Abstractions
 {
@@ -38,7 +38,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
-        public OpenIddictMessage([NotNull] IEnumerable<KeyValuePair<string, JToken>> parameters)
+        public OpenIddictMessage([NotNull] IEnumerable<KeyValuePair<string, JsonElement>> parameters)
         {
             if (parameters == null)
             {
@@ -316,12 +316,12 @@ namespace OpenIddict.Abstractions
         /// <returns>The indented JSON representation corresponding to this message.</returns>
         public override string ToString()
         {
-            var builder = new StringBuilder();
-
-            using var writer = new JsonTextWriter(new StringWriter(builder, CultureInfo.InvariantCulture))
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
             {
-                Formatting = Formatting.Indented
-            };
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Indented = true
+            });
 
             writer.WriteStartObject();
 
@@ -343,26 +343,27 @@ namespace OpenIddict.Abstractions
                     case OpenIddictConstants.Parameters.RefreshToken:
                     case OpenIddictConstants.Parameters.Token:
                     {
-                        writer.WriteValue("[removed for security reasons]");
+                        writer.WriteStringValue("[removed for security reasons]");
 
                         continue;
                     }
                 }
 
-                var token = (JToken) parameter.Value;
+                var token = (JsonElement?) parameter.Value;
                 if (token == null)
                 {
-                    writer.WriteNull();
+                    writer.WriteNullValue();
 
                     continue;
                 }
 
-                token.WriteTo(writer);
+                token.Value.WriteTo(writer);
             }
 
             writer.WriteEndObject();
+            writer.Flush();
 
-            return builder.ToString();
+            return Encoding.UTF8.GetString(stream.ToArray());
         }
     }
 }

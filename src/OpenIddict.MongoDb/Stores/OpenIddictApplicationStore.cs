@@ -17,8 +17,6 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
 
@@ -448,7 +446,7 @@ namespace OpenIddict.MongoDb
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the application.
         /// </returns>
-        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -457,10 +455,10 @@ namespace OpenIddict.MongoDb
 
             if (application.Properties == null)
             {
-                return new ValueTask<JObject>(new JObject());
+                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
             }
 
-            return new ValueTask<JObject>(JObject.FromObject(application.Properties.ToDictionary()));
+            return new ValueTask<ImmutableDictionary<string, object>>(application.Properties.ToDictionary().ToImmutableDictionary());
         }
 
         /// <summary>
@@ -763,21 +761,22 @@ namespace OpenIddict.MongoDb
         /// <param name="properties">The additional properties associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        public virtual ValueTask SetPropertiesAsync([NotNull] TApplication application,
+            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (properties == null)
+            if (properties == null || properties.IsEmpty)
             {
                 application.Properties = null;
 
                 return default;
             }
 
-            application.Properties = BsonDocument.Parse(properties.ToString(Formatting.None));
+            application.Properties = new BsonDocument(properties.ToDictionary(property => property.Key, property => property.Value));
 
             return default;
         }
