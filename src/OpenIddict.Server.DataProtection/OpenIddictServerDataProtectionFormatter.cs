@@ -173,8 +173,9 @@ namespace OpenIddict.Server.DataProtection
             static string GetProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ? value : null;
 
-            static IEnumerable<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
-                => properties.TryGetValue(name, out var value) ? JArray.Parse(value).Values<string>() : Enumerable.Empty<string>();
+            static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
+                => properties.TryGetValue(name, out var value) ?
+                JArray.Parse(value).Values<string>().ToImmutableArray() : ImmutableArray.Create<string>();
 
             static DateTimeOffset? GetDateProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ? (DateTimeOffset?)

@@ -409,7 +409,8 @@ namespace OpenIddict.Validation
                 }
 
                 // If the access token doesn't have any audience attached, return an error.
-                if (!context.Principal.HasAudience())
+                var audiences = context.Principal.GetAudiences();
+                if (audiences.IsDefaultOrEmpty)
                 {
                     context.Logger.LogError("The request was rejected because the access token had no audience attached.");
 
@@ -421,7 +422,7 @@ namespace OpenIddict.Validation
                 }
 
                 // If the access token doesn't include any registered audience, return an error.
-                if (context.Principal.GetAudiences().Intersect(context.Options.Audiences).IsEmpty)
+                if (!audiences.Intersect(context.Options.Audiences, StringComparer.Ordinal).Any())
                 {
                     context.Logger.LogError("The request was rejected because the access token had no valid audience.");
 

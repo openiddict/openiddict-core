@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Text;
@@ -454,12 +455,14 @@ namespace OpenIddict.Server
                     }
 
                     // If all the specified scopes are registered in the options, avoid making a database lookup.
-                    var scopes = context.Request.GetScopes().Except(context.Options.Scopes);
+                    var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
+                    scopes.ExceptWith(context.Options.Scopes);
+
                     if (scopes.Count != 0)
                     {
                         await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
                         {
-                            scopes = scopes.Remove(await _scopeManager.GetNameAsync(scope));
+                            scopes.Remove(await _scopeManager.GetNameAsync(scope));
                         }
                     }
 
