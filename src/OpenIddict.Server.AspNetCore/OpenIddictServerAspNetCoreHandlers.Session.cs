@@ -5,11 +5,13 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore;
@@ -17,14 +19,13 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Bson;
-using Newtonsoft.Json.Linq;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using JsonWebTokenTypes = OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.JsonWebTokenTypes;
 
 namespace OpenIddict.Server.AspNetCore
 {
@@ -109,8 +110,8 @@ namespace OpenIddict.Server.AspNetCore
 
                     // Note: the cache key is always prefixed with a specific marker
                     // to avoid collisions with the other types of cached payloads.
-                    var payload = await _cache.GetAsync(Cache.LogoutRequest + context.Request.RequestId);
-                    if (payload == null)
+                    var token = await _cache.GetStringAsync(Cache.LogoutRequest + context.Request.RequestId);
+                    if (token == null || !context.Options.JsonWebTokenHandler.CanReadToken(token))
                     {
                         context.Logger.LogError("The logout request was rejected because an unknown " +
                                                 "or invalid request_id parameter was specified.");
@@ -122,17 +123,46 @@ namespace OpenIddict.Server.AspNetCore
                         return;
                     }
 
-                    // Restore the logout request parameters from the serialized payload.
-                    using var reader = new BsonDataReader(new MemoryStream(payload));
-                    foreach (var parameter in JObject.Load(reader))
+                    // Restore the authorization request parameters from the serialized payload.
+                    var parameters = new TokenValidationParameters
+                    {
+                        IssuerSigningKeys = context.Options.SigningCredentials.Select(credentials => credentials.Key),
+                        TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key),
+                        ValidateLifetime = false,
+                        ValidAudience = context.Issuer.AbsoluteUri,
+                        ValidIssuer = context.Issuer.AbsoluteUri,
+                        ValidTypes = new[] { JsonWebTokenTypes.LogoutRequest }
+                    };
+
+                    var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(token, parameters);
+                    if (!result.IsValid)
+                    {
+                        context.Logger.LogError("The logout request was rejected because an unknown " +
+                                                "or invalid request_id parameter was specified.");
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The specified 'request_id' parameter is invalid.");
+
+                        return;
+                    }
+
+                    using var document = JsonDocument.Parse(
+                        Base64UrlEncoder.Decode(((JsonWebToken) result.SecurityToken).InnerToken.EncodedPayload));
+                    if (document.RootElement.ValueKind != JsonValueKind.Object)
+                    {
+                        throw new InvalidOperationException("The logout request payload is malformed.");
+                    }
+
+                    foreach (var parameter in document.RootElement.EnumerateObject())
                     {
                         // Avoid overriding the current request parameters.
-                        if (context.Request.HasParameter(parameter.Key))
+                        if (context.Request.HasParameter(parameter.Name))
                         {
                             continue;
                         }
 
-                        context.Request.SetParameter(parameter.Key, parameter.Value);
+                        context.Request.SetParameter(parameter.Name, parameter.Value.Clone());
                     }
                 }
             }
@@ -215,19 +245,32 @@ namespace OpenIddict.Server.AspNetCore
                     context.Request.RequestId = Base64UrlEncoder.Encode(data);
 
                     // Store the serialized logout request parameters in the distributed cache.
-                    var stream = new MemoryStream();
-                    using (var writer = new BsonDataWriter(stream))
+                    var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(new SecurityTokenDescriptor
                     {
-                        writer.CloseOutput = false;
+                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
+                        {
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.LogoutRequest
+                        },
+                        Audience = context.Issuer.AbsoluteUri,
+                        Claims = context.Request.GetParameters().ToDictionary(
+                            parameter => parameter.Key,
+                            parameter => parameter.Value.Value),
+                        Issuer = context.Issuer.AbsoluteUri,
+                        SigningCredentials = context.Options.SigningCredentials.First(),
+                        Subject = new ClaimsIdentity()
+                    });
 
-                        var serializer = JsonSerializer.CreateDefault();
-                        serializer.Serialize(writer, context.Request);
-                    }
+                    token = context.Options.JsonWebTokenHandler.EncryptToken(token,
+                        encryptingCredentials: context.Options.EncryptionCredentials.First(),
+                        additionalHeaderClaims: new Dictionary<string, object>
+                        {
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AuthorizationRequest
+                        });
 
                     // Note: the cache key is always prefixed with a specific marker
                     // to avoid collisions with the other types of cached payloads.
-                    await _cache.SetAsync(Cache.LogoutRequest + context.Request.RequestId,
-                        stream.ToArray(), _options.CurrentValue.LogoutEndpointCachingPolicy);
+                    await _cache.SetStringAsync(Cache.LogoutRequest + context.Request.RequestId,
+                        token, _options.CurrentValue.AuthorizationEndpointCachingPolicy);
 
                     // Create a new GET logout request containing only the request_id parameter.
                     var address = QueryHelpers.AddQueryString(

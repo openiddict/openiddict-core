@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Models;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 
@@ -51,7 +50,7 @@ namespace Mvc.Server.Controllers
 
             if (User.HasClaim(OpenIddictConstants.Claims.Scope, "roles"))
             {
-                claims["roles"] = JArray.FromObject(await _userManager.GetRolesAsync(user));
+                claims["roles"] = await _userManager.GetRolesAsync(user);
             }
 
             // Note: the complete list of standard claims supported by the OpenID Connect specification

@@ -6,10 +6,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -18,8 +21,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore.Models;
 
@@ -621,7 +622,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the token.
         /// </returns>
-        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -630,7 +631,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             if (string.IsNullOrEmpty(token.Properties))
             {
-                return new ValueTask<JObject>(new JObject());
+                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
             }
 
             // Note: parsing the stringified properties is an expensive operation.
@@ -641,10 +642,10 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JObject.Parse(token.Properties);
+                return JsonSerializer.Deserialize<ImmutableDictionary<string, object>>(token.Properties);
             });
 
-            return new ValueTask<JObject>((JObject) properties.DeepClone());
+            return new ValueTask<ImmutableDictionary<string, object>>(properties);
         }
 
         /// <summary>
@@ -1068,21 +1069,26 @@ namespace OpenIddict.EntityFrameworkCore
         /// <returns>
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TToken token, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        public virtual ValueTask SetPropertiesAsync([NotNull] TToken token,
+            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (properties == null)
+            if (properties == null || properties.IsEmpty)
             {
                 token.Properties = null;
 
                 return default;
             }
 
-            token.Properties = properties.ToString(Formatting.None);
+            token.Properties = JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            });
 
             return default;
         }

@@ -11,7 +11,7 @@ using System.Globalization;
 using System.IO;
 using System.Security.Claims;
 using JetBrains.Annotations;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Properties = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Properties;
@@ -173,7 +173,7 @@ namespace OpenIddict.Validation.DataProtection
 
             static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ?
-                JArray.Parse(value).Values<string>().ToImmutableArray() : ImmutableArray.Create<string>();
+                JsonSerializer.Deserialize<ImmutableArray<string>>(value) : ImmutableArray.Create<string>();
 
             static DateTimeOffset? GetDateProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ? (DateTimeOffset?)

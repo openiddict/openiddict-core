@@ -17,8 +17,6 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
 
@@ -547,7 +545,7 @@ namespace OpenIddict.MongoDb
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the token.
         /// </returns>
-        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -556,10 +554,10 @@ namespace OpenIddict.MongoDb
 
             if (token.Properties == null)
             {
-                return new ValueTask<JObject>(new JObject());
+                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
             }
 
-            return new ValueTask<JObject>(JObject.FromObject(token.Properties.ToDictionary()));
+            return new ValueTask<ImmutableDictionary<string, object>>(token.Properties.ToDictionary().ToImmutableDictionary());
         }
 
         /// <summary>
@@ -865,21 +863,22 @@ namespace OpenIddict.MongoDb
         /// <param name="properties">The additional properties associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TToken token, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        public virtual ValueTask SetPropertiesAsync([NotNull] TToken token,
+            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (properties == null)
+            if (properties == null || properties.IsEmpty)
             {
                 token.Properties = null;
 
                 return default;
             }
 
-            token.Properties = BsonDocument.Parse(properties.ToString(Formatting.None));
+            token.Properties = new BsonDocument(properties.ToDictionary(property => property.Key, property => property.Value));
 
             return default;
         }

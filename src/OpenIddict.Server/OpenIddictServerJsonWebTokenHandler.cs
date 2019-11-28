@@ -29,15 +29,7 @@ namespace OpenIddict.Server
                 throw new ArgumentException("The subject associated with a descriptor cannot be null.", nameof(descriptor));
             }
 
-            if (descriptor.Claims == null)
-            {
-                throw new InvalidOperationException("The claims collection cannot be null or empty.");
-            }
-
-            if (!descriptor.Claims.TryGetValue(Claims.Private.TokenUsage, out var type) || string.IsNullOrEmpty((string) type))
-            {
-                throw new InvalidOperationException("The token usage cannot be null or empty.");
-            }
+            descriptor.Claims ??= new Dictionary<string, object>(StringComparer.Ordinal);
 
             var destinations = new Dictionary<string, string[]>(StringComparer.Ordinal);
             foreach (var group in descriptor.Subject.Claims.GroupBy(claim => claim.Type))
@@ -81,14 +73,9 @@ namespace OpenIddict.Server
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (parameters.PropertyBag == null)
+            if (parameters.ValidTypes == null || !parameters.ValidTypes.Any())
             {
-                throw new InvalidOperationException("The property bag cannot be null.");
-            }
-
-            if (!parameters.PropertyBag.TryGetValue(Claims.Private.TokenUsage, out var type) || string.IsNullOrEmpty((string) type))
-            {
-                throw new InvalidOperationException("The token usage cannot be null or empty.");
+                throw new InvalidOperationException("The valid token types collection cannot be empty.");
             }
 
             if (!CanReadToken(token))
@@ -113,16 +100,6 @@ namespace OpenIddict.Server
                 }
 
                 var assertion = ((JsonWebToken) result.SecurityToken)?.InnerToken ?? (JsonWebToken) result.SecurityToken;
-
-                if (!assertion.TryGetPayloadValue(Claims.Private.TokenUsage, out string usage) ||
-                    !string.Equals(usage, (string) type, StringComparison.OrdinalIgnoreCase))
-                {
-                    return new ValueTask<TokenValidationResult>(new TokenValidationResult
-                    {
-                        Exception = new SecurityTokenException("The token usage associated to the token does not match the expected type."),
-                        IsValid = false
-                    });
-                }
 
                 // Restore the claim destinations from the special oi_cl_dstn claim (represented as a dictionary/JSON object).
                 if (assertion.TryGetPayloadValue(Claims.Private.ClaimDestinations, out IDictionary<string, string[]> definitions))

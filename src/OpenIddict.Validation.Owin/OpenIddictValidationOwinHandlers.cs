@@ -9,10 +9,11 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using OpenIddict.Abstractions;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -261,39 +262,37 @@ namespace OpenIddict.Validation.Owin
 
                 context.Logger.LogInformation("The response was successfully returned as a JSON document: {Response}.", context.Response);
 
-                using (var buffer = new MemoryStream())
-                using (var writer = new JsonTextWriter(new StreamWriter(buffer)))
+                using var stream = new MemoryStream();
+                await JsonSerializer.SerializeAsync(stream, context.Response, new JsonSerializerOptions
                 {
-                    var serializer = JsonSerializer.CreateDefault();
-                    serializer.Serialize(writer, context.Response);
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = false
+                });
 
-                    writer.Flush();
-
-                    if (!string.IsNullOrEmpty(context.Response.Error))
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    if (context.Issuer == null)
                     {
-                        if (context.Issuer == null)
-                        {
-                            throw new InvalidOperationException("The issuer address cannot be inferred from the current request.");
-                        }
-
-                        request.Context.Response.StatusCode = 401;
-
-                        request.Context.Response.Headers["WWW-Authenticate"] = new StringBuilder()
-                            .Append(Schemes.Bearer)
-                            .Append(' ')
-                            .Append(Parameters.Realm)
-                            .Append("=\"")
-                            .Append(context.Issuer.AbsoluteUri)
-                            .Append('"')
-                            .ToString();
+                        throw new InvalidOperationException("The issuer address cannot be inferred from the current request.");
                     }
 
-                    request.Context.Response.ContentLength = buffer.Length;
-                    request.Context.Response.ContentType = "application/json;charset=UTF-8";
+                    request.Context.Response.StatusCode = 401;
 
-                    buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                    await buffer.CopyToAsync(request.Context.Response.Body, 4096, request.CallCancelled);
+                    request.Context.Response.Headers["WWW-Authenticate"] = new StringBuilder()
+                        .Append(Schemes.Bearer)
+                        .Append(' ')
+                        .Append(Parameters.Realm)
+                        .Append("=\"")
+                        .Append(context.Issuer.AbsoluteUri)
+                        .Append('"')
+                        .ToString();
                 }
+
+                request.Context.Response.ContentLength = stream.Length;
+                request.Context.Response.ContentType = "application/json;charset=UTF-8";
+
+                stream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                await stream.CopyToAsync(request.Context.Response.Body, 4096, request.CallCancelled);
 
                 context.HandleRequest();
             }

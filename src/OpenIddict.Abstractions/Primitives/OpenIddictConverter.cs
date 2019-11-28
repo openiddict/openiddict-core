@@ -5,16 +5,16 @@
  */
 
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Abstractions
 {
     /// <summary>
     /// Represents a JSON.NET converter able to convert OpenIddict primitives.
     /// </summary>
-    public class OpenIddictConverter : JsonConverter
+    public class OpenIddictConverter : JsonConverter<OpenIddictMessage>
     {
         /// <summary>
         /// Determines whether the specified type is supported by this converter.
@@ -36,62 +36,50 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="reader">The JSON reader.</param>
         /// <param name="type">The type of the deserialized instance.</param>
-        /// <param name="value">The existing <see cref="OpenIddictMessage"/>, if applicable.</param>
-        /// <param name="serializer">The JSON serializer.</param>
+        /// <param name="options">The JSON serializer options.</param>
         /// <returns>The deserialized <see cref="OpenIddictMessage"/> instance.</returns>
-        public override object ReadJson(
-            [NotNull] JsonReader reader, [NotNull] Type type,
-            [CanBeNull] object value, [CanBeNull] JsonSerializer serializer)
+        public override OpenIddictMessage Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException(nameof(reader));
-            }
-
             if (type == null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
             // Note: OpenIddict primitives are always represented as JSON objects.
-            var payload = JToken.Load(reader) as JObject;
-            if (payload == null)
+            var payload = JsonSerializer.Deserialize<JsonElement>(ref reader, options);
+            if (payload.ValueKind != JsonValueKind.Object)
             {
-                throw new JsonSerializationException("An error occurred while reading the JSON payload.");
+                throw new JsonException("An error occurred while reading the JSON payload.");
             }
 
-            // If no existing value was specified, instantiate a
-            // new request/response depending on the requested type.
-            var message = value as OpenIddictMessage;
-            if (message == null)
+            OpenIddictMessage message;
+
+            if (type == typeof(OpenIddictMessage))
             {
-                if (type == typeof(OpenIddictMessage))
-                {
-                    message = new OpenIddictMessage();
-                }
-
-                else if (type == typeof(OpenIddictRequest))
-                {
-                    message = new OpenIddictRequest();
-                }
-
-                else if (type == typeof(OpenIddictResponse))
-                {
-                    message = new OpenIddictResponse();
-                }
+                message = new OpenIddictMessage();
             }
 
-            if (message != null)
+            else if (type == typeof(OpenIddictRequest))
             {
-                foreach (var parameter in payload.Properties())
-                {
-                    message.AddParameter(parameter.Name, parameter.Value);
-                }
-
-                return message;
+                message = new OpenIddictRequest();
             }
 
-            throw new ArgumentException("The specified type is not supported.", nameof(type));
+            else if (type == typeof(OpenIddictResponse))
+            {
+                message = new OpenIddictResponse();
+            }
+
+            else
+            {
+                throw new ArgumentException("The specified type is not supported.", nameof(type));
+            }
+
+            foreach (var parameter in payload.EnumerateObject())
+            {
+                message.AddParameter(parameter.Name, parameter.Value);
+            }
+
+            return message;
         }
 
         /// <summary>
@@ -99,8 +87,8 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="writer">The JSON writer.</param>
         /// <param name="value">The instance.</param>
-        /// <param name="serializer">The JSON serializer.</param>
-        public override void WriteJson([NotNull] JsonWriter writer, [NotNull] object value, [CanBeNull] JsonSerializer serializer)
+        /// <param name="options">The JSON serializer options.</param>
+        public override void Write(Utf8JsonWriter writer, OpenIddictMessage value, JsonSerializerOptions options)
         {
             if (writer == null)
             {
@@ -112,31 +100,24 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(value));
             }
 
-            if (value is OpenIddictMessage message)
+            writer.WriteStartObject();
+
+            foreach (var parameter in value.GetParameters())
             {
-                writer.WriteStartObject();
+                writer.WritePropertyName(parameter.Key);
 
-                foreach (var parameter in message.GetParameters())
+                var token = (JsonElement?) parameter.Value;
+                if (token == null)
                 {
-                    writer.WritePropertyName(parameter.Key);
+                    writer.WriteNullValue();
 
-                    var token = (JToken) parameter.Value;
-                    if (token == null)
-                    {
-                        writer.WriteNull();
-
-                        continue;
-                    }
-
-                    token.WriteTo(writer);
+                    continue;
                 }
 
-                writer.WriteEndObject();
-
-                return;
+                token.Value.WriteTo(writer);
             }
 
-            throw new ArgumentException("The specified object is not supported.", nameof(value));
+            writer.WriteEndObject();
         }
     }
 }

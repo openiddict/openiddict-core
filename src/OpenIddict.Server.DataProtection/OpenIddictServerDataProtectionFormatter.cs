@@ -11,9 +11,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Properties = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Properties;
@@ -175,7 +175,7 @@ namespace OpenIddict.Server.DataProtection
 
             static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ?
-                JArray.Parse(value).Values<string>().ToImmutableArray() : ImmutableArray.Create<string>();
+                JsonSerializer.Deserialize<ImmutableArray<string>>(value) : ImmutableArray.Create<string>();
 
             static DateTimeOffset? GetDateProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ? (DateTimeOffset?)
@@ -362,17 +362,20 @@ namespace OpenIddict.Server.DataProtection
                 }
             }
 
-            static void SetArrayProperty(IDictionary<string, string> properties, string name, IEnumerable<string> values)
+            static void SetArrayProperty(IDictionary<string, string> properties, string name, ImmutableArray<string> values)
             {
-                var array = new JArray(values);
-                if (array.Count == 0)
+                if (values.IsDefaultOrEmpty)
                 {
                     properties.Remove(name);
                 }
 
                 else
                 {
-                    properties[name] = array.ToString(Formatting.None);
+                    properties[name] = JsonSerializer.Serialize(values, new JsonSerializerOptions
+                    {
+                        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                        WriteIndented = false
+                    });
                 }
             }
         }

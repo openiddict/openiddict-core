@@ -9,15 +9,14 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
@@ -106,7 +105,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     };
                 }
 
-                async IAsyncEnumerable<SecurityKey> GetSigningKeysAsync(HttpClient client, Uri address)
+                static async IAsyncEnumerable<SecurityKey> GetSigningKeysAsync(HttpClient client, Uri address)
                 {
                     var response = await SendHttpRequestMessageAsync(client, address);
 
@@ -194,10 +193,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     }
 
                     using var stream = await response.Content.ReadAsStreamAsync();
-                    using var reader = new JsonTextReader(new StreamReader(stream));
-
-                    var serializer = JsonSerializer.CreateDefault();
-                    return serializer.Deserialize<OpenIddictResponse>(reader);
+                    return await JsonSerializer.DeserializeAsync<OpenIddictResponse>(stream);
                 }
             }
         }

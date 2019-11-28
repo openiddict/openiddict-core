@@ -11,13 +11,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Linq;
@@ -626,7 +626,7 @@ namespace OpenIddict.NHibernate
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the token.
         /// </returns>
-        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -635,10 +635,21 @@ namespace OpenIddict.NHibernate
 
             if (string.IsNullOrEmpty(token.Properties))
             {
-                return new ValueTask<JObject>(new JObject());
+                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
             }
 
-            return new ValueTask<JObject>(JObject.Parse(token.Properties));
+            // Note: parsing the stringified properties is an expensive operation.
+            // To mitigate that, the resulting object is stored in the memory cache.
+            var key = string.Concat("d0509397-1bbf-40e7-97e1-5e6d7bc2536c", "\x1e", token.Properties);
+            var properties = Cache.GetOrCreate(key, entry =>
+            {
+                entry.SetPriority(CacheItemPriority.High)
+                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+                return JsonSerializer.Deserialize<ImmutableDictionary<string, object>>(token.Properties);
+            });
+
+            return new ValueTask<ImmutableDictionary<string, object>>(properties);
         }
 
         /// <summary>
@@ -951,21 +962,26 @@ namespace OpenIddict.NHibernate
         /// <param name="properties">The additional properties associated with the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TToken token, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        public virtual ValueTask SetPropertiesAsync([NotNull] TToken token,
+            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            if (properties == null)
+            if (properties == null || properties.IsEmpty)
             {
                 token.Properties = null;
 
                 return default;
             }
 
-            token.Properties = properties.ToString(Formatting.None);
+            token.Properties = JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            });
 
             return default;
         }

@@ -11,10 +11,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Abstractions
@@ -538,7 +538,9 @@ namespace OpenIddict.Abstractions
                 return ImmutableArray.Create<string>();
             }
 
-            return JArray.Parse(destinations).Values<string>().Distinct(StringComparer.OrdinalIgnoreCase).ToImmutableArray();
+            return JsonSerializer.Deserialize<IEnumerable<string>>(destinations)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToImmutableArray();
         }
 
         /// <summary>
@@ -565,7 +567,8 @@ namespace OpenIddict.Abstractions
                 return false;
             }
 
-            return JArray.Parse(destinations).Values<string>().Contains(destination, StringComparer.OrdinalIgnoreCase);
+            return JsonSerializer.Deserialize<IEnumerable<string>>(destinations)
+                .Contains(destination, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -593,7 +596,11 @@ namespace OpenIddict.Abstractions
             }
 
             claim.Properties[Properties.Destinations] =
-                new JArray(destinations.Distinct(StringComparer.OrdinalIgnoreCase)).ToString(Formatting.None);
+                JsonSerializer.Serialize(destinations.Distinct(StringComparer.OrdinalIgnoreCase), new JsonSerializerOptions
+                {
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = false
+                });
 
             return claim;
         }

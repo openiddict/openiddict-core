@@ -24,16 +24,6 @@ namespace OpenIddict.Validation
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (parameters.PropertyBag == null)
-            {
-                throw new InvalidOperationException("The property bag cannot be null.");
-            }
-
-            if (!parameters.PropertyBag.TryGetValue(Claims.Private.TokenUsage, out var type) || string.IsNullOrEmpty((string) type))
-            {
-                throw new InvalidOperationException("The token usage cannot be null or empty.");
-            }
-
             if (!CanReadToken(token))
             {
                 return new ValueTask<TokenValidationResult>(new TokenValidationResult
@@ -56,16 +46,6 @@ namespace OpenIddict.Validation
                 }
 
                 var assertion = ((JsonWebToken) result.SecurityToken)?.InnerToken ?? (JsonWebToken) result.SecurityToken;
-
-                if (!assertion.TryGetPayloadValue(Claims.Private.TokenUsage, out string usage) ||
-                    !string.Equals(usage, (string) type, StringComparison.OrdinalIgnoreCase))
-                {
-                    return new ValueTask<TokenValidationResult>(new TokenValidationResult
-                    {
-                        Exception = new SecurityTokenException("The token usage associated to the token does not match the expected type."),
-                        IsValid = false
-                    });
-                }
 
                 // Restore the claim destinations from the special oi_cl_dstn claim (represented as a dictionary/JSON object).
                 if (assertion.TryGetPayloadValue(Claims.Private.ClaimDestinations, out IDictionary<string, string[]> definitions))

@@ -206,9 +206,9 @@ namespace OpenIddict.Validation
 
                 // Clone the token validation parameters before mutating them.
                 parameters = parameters.Clone();
-                parameters.PropertyBag = new Dictionary<string, object> { [Claims.Private.TokenUsage] = TokenUsages.AccessToken };
                 parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
                 parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
+                parameters.ValidTypes = new[] { JsonWebTokenTypes.AccessToken };
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(context.Token, parameters);
@@ -221,6 +221,7 @@ namespace OpenIddict.Validation
 
                 // Attach the principal extracted from the token to the parent event context.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
+                context.Principal.SetClaim(Claims.Private.TokenUsage, TokenUsages.AccessToken);
 
                 context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
                                         "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
