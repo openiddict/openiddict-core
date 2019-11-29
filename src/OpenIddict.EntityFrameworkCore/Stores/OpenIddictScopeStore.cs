@@ -372,7 +372,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the scope.
         /// </returns>
-        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -381,7 +381,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             if (string.IsNullOrEmpty(scope.Properties))
             {
-                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
+                return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
             }
 
             // Note: parsing the stringified properties is an expensive operation.
@@ -392,10 +392,10 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableDictionary<string, object>>(scope.Properties);
+                return JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(scope.Properties);
             });
 
-            return new ValueTask<ImmutableDictionary<string, object>>(properties);
+            return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
         }
 
         /// <summary>
@@ -570,7 +570,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         public virtual ValueTask SetPropertiesAsync([NotNull] TScope scope,
-            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
+            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
             if (scope == null)
             {

@@ -584,7 +584,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the application.
         /// </returns>
-        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -593,7 +593,7 @@ namespace OpenIddict.EntityFrameworkCore
 
             if (string.IsNullOrEmpty(application.Properties))
             {
-                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
+                return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
             }
 
             // Note: parsing the stringified properties is an expensive operation.
@@ -604,10 +604,10 @@ namespace OpenIddict.EntityFrameworkCore
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableDictionary<string, object>>(application.Properties);
+                return JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(application.Properties);
             });
 
-            return new ValueTask<ImmutableDictionary<string, object>>(properties);
+            return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
         }
 
         /// <summary>
@@ -923,7 +923,7 @@ namespace OpenIddict.EntityFrameworkCore
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         public virtual ValueTask SetPropertiesAsync([NotNull] TApplication application,
-            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
+            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
             if (application == null)
             {

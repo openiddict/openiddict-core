@@ -232,7 +232,7 @@ namespace OpenIddict.Abstractions
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the token.
         /// </returns>
-        ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken);
+        ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the reference identifier associated with a token.
@@ -372,7 +372,7 @@ namespace OpenIddict.Abstractions
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         ValueTask SetPropertiesAsync([NotNull] TToken token,
-            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken);
+            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets the reference identifier associated with a token.

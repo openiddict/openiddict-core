@@ -522,7 +522,7 @@ namespace OpenIddict.Abstractions
             return parameter?.Value switch
             {
                 // When the parameter is a null value, return null.
-                null => default(JsonElement?),
+                null => null,
 
                 // When the parameter is a JsonElement representing null, return null.
                 JsonElement value when value.ValueKind == JsonValueKind.Undefined => null,
@@ -548,8 +548,16 @@ namespace OpenIddict.Abstractions
 
             static JsonElement? DeserializeElement(string value)
             {
-                try { return JsonSerializer.Deserialize<JsonElement>(value); }
-                catch (JsonException) { return null; }
+                try
+                {
+                    using var document = JsonDocument.Parse(value);
+                    return document.RootElement.Clone();
+                }
+
+                catch (JsonException)
+                {
+                    return null;
+                }
             }
         }
 
@@ -620,12 +628,8 @@ namespace OpenIddict.Abstractions
             // When the parameter is a JsonElement representing a string, return it as-is.
             JsonElement value when value.ValueKind == JsonValueKind.String => value.GetString(),
 
-            // When the parameter is a JsonElement that doesn't represent a string, serialize it.
-            JsonElement value => JsonSerializer.Serialize(value, new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = false
-            }),
+            // When the parameter is a JsonElement that doesn't represent a string, return its raw representation.
+            JsonElement value => value.GetRawText(),
 
             // If the parameter is of a different type, return null to indicate the conversion failed.
             _ => null
