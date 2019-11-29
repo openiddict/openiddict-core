@@ -10,6 +10,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -545,7 +547,7 @@ namespace OpenIddict.MongoDb
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the token.
         /// </returns>
-        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TToken token, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -554,10 +556,11 @@ namespace OpenIddict.MongoDb
 
             if (token.Properties == null)
             {
-                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
+                return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
             }
 
-            return new ValueTask<ImmutableDictionary<string, object>>(token.Properties.ToDictionary().ToImmutableDictionary());
+            return new ValueTask<ImmutableDictionary<string, JsonElement>>(
+                JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(token.Properties.ToJson()));
         }
 
         /// <summary>
@@ -864,7 +867,7 @@ namespace OpenIddict.MongoDb
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
         public virtual ValueTask SetPropertiesAsync([NotNull] TToken token,
-            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
+            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
             if (token == null)
             {
@@ -878,7 +881,11 @@ namespace OpenIddict.MongoDb
                 return default;
             }
 
-            token.Properties = new BsonDocument(properties.ToDictionary(property => property.Key, property => property.Value));
+            token.Properties = BsonDocument.Parse(JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            }));
 
             return default;
         }

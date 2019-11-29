@@ -488,7 +488,7 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the authorization.
         /// </returns>
-        public virtual ValueTask<ImmutableDictionary<string, object>> GetPropertiesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TAuthorization authorization, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
@@ -497,7 +497,7 @@ namespace OpenIddict.EntityFramework
 
             if (string.IsNullOrEmpty(authorization.Properties))
             {
-                return new ValueTask<ImmutableDictionary<string, object>>(ImmutableDictionary.Create<string, object>());
+                return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
             }
 
             // Note: parsing the stringified properties is an expensive operation.
@@ -508,10 +508,10 @@ namespace OpenIddict.EntityFramework
                 entry.SetPriority(CacheItemPriority.High)
                      .SetSlidingExpiration(TimeSpan.FromMinutes(1));
 
-                return JsonSerializer.Deserialize<ImmutableDictionary<string, object>>(authorization.Properties);
+                return JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(authorization.Properties);
             });
 
-            return new ValueTask<ImmutableDictionary<string, object>>(properties);
+            return new ValueTask<ImmutableDictionary<string, JsonElement>>(properties);
         }
 
         /// <summary>
@@ -819,7 +819,7 @@ namespace OpenIddict.EntityFramework
         /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
         /// </returns>
         public virtual ValueTask SetPropertiesAsync([NotNull] TAuthorization authorization,
-            [CanBeNull] ImmutableDictionary<string, object> properties, CancellationToken cancellationToken)
+            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
             if (authorization == null)
             {
