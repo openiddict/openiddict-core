@@ -5,6 +5,10 @@
  */
 
 using System;
+ using System.Collections.Immutable;
+using System.Globalization;
+using System.Linq;
+using System.Security.Claims;
 using Xunit;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
@@ -890,7 +894,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             Assert.Equal(result, request.IsRefreshTokenGrantType());
         }
-        
+
         [Fact]
         public void GetDestinations_ThrowsAnExceptionForNullClaim()
         {
@@ -898,10 +902,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var claim = (Claim) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                claim.GetDestinations();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => claim.GetDestinations());
 
             Assert.Equal("claim", exception.ParamName);
         }
@@ -917,8 +918,8 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetDestinations_ReturnsExpectedDestinations(string destination, string[] destinations)
         {
             // Arrange
-            var claim = new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur");
-            claim.Properties[OpenIdConnectConstants.Properties.Destinations] = destination;
+            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            claim.Properties[OpenIddictConstants.Properties.Destinations] = destination;
 
             // Act and assert
             Assert.Equal(destinations, claim.GetDestinations());
@@ -931,10 +932,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var claim = (Claim) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                claim.SetDestinations();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => claim.SetDestinations());
 
             Assert.Equal("claim", exception.ParamName);
         }
@@ -945,7 +943,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetDestinations_RemovesPropertyForEmptyArray(string[] destinations)
         {
             // Arrange
-            var claim = new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
 
             // Act
             claim.SetDestinations(destinations);
@@ -960,7 +958,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetDestinations_ThrowsAnExceptionForNullOrEmptyDestinations(string destination)
         {
             // Arrange
-            var claim = new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
 
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => claim.SetDestinations(destination));
@@ -977,13 +975,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetDestinations_SetsAppropriateDestinations(string[] destinations, string destination)
         {
             // Arrange
-            var claim = new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
 
             // Act
             claim.SetDestinations(destinations);
 
             // Assert
-            Assert.Equal(destination, claim.Properties[OpenIdConnectConstants.Properties.Destinations]);
+            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
         }
 
         [Fact]
@@ -993,10 +991,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = (ClaimsIdentity) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                identity.Clone(claim => true);
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => identity.Clone(claim => true));
 
             Assert.Equal("identity", exception.ParamName);
         }
@@ -1006,10 +1001,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
 
             // Act
-            var clone = identity.Clone(claim => claim.Type == OpenIdConnectConstants.Claims.Name);
+            var clone = identity.Clone(claim => claim.Type == OpenIddictConstants.Claims.Name);
             clone.AddClaim(new Claim("clone_claim", "value"));
 
             // Assert
@@ -1022,34 +1017,36 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur"));
-            identity.AddClaim(new Claim(OpenIdConnectConstants.Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
+            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
 
             // Act
-            var clone = identity.Clone(claim => claim.Type == OpenIdConnectConstants.Claims.Name);
+            var clone = identity.Clone(claim => claim.Type == OpenIddictConstants.Claims.Name);
 
             // Assert
             Assert.Single(clone.Claims);
-            Assert.Null(clone.FindFirst(OpenIdConnectConstants.Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.FindFirst(OpenIdConnectConstants.Claims.Name).Value);
+            Assert.Null(clone.FindFirst(OpenIddictConstants.Claims.Subject));
+            Assert.Equal("Bob le Bricoleur", clone.FindFirst(OpenIddictConstants.Claims.Name).Value);
         }
 
         [Fact]
         public void Clone_ExcludesUnwantedClaimsFromActor()
         {
             // Arrange
-            var identity = new ClaimsIdentity();
-            identity.Actor = new ClaimsIdentity();
-            identity.Actor.AddClaim(new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur"));
-            identity.Actor.AddClaim(new Claim(OpenIdConnectConstants.Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
+            var identity = new ClaimsIdentity
+            {
+                Actor = new ClaimsIdentity()
+            };
+            identity.Actor.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
+            identity.Actor.AddClaim(new Claim(OpenIddictConstants.Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
 
             // Act
-            var clone = identity.Clone(claim => claim.Type == OpenIdConnectConstants.Claims.Name);
+            var clone = identity.Clone(claim => claim.Type == OpenIddictConstants.Claims.Name);
 
             // Assert
             Assert.Single(clone.Actor.Claims);
-            Assert.Null(clone.Actor.FindFirst(OpenIdConnectConstants.Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.Actor.FindFirst(OpenIdConnectConstants.Claims.Name).Value);
+            Assert.Null(clone.Actor.FindFirst(OpenIddictConstants.Claims.Subject));
+            Assert.Equal("Bob le Bricoleur", clone.Actor.FindFirst(OpenIddictConstants.Claims.Name).Value);
         }
 
         [Fact]
@@ -1057,18 +1054,18 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur"));
-            identity.AddClaim(new Claim(OpenIdConnectConstants.Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
+            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
 
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            var clone = principal.Clone(claim => claim.Type == OpenIdConnectConstants.Claims.Name);
+            var clone = principal.Clone(claim => claim.Type == OpenIddictConstants.Claims.Name);
 
             // Assert
             Assert.Single(clone.Claims);
-            Assert.Null(clone.FindFirst(OpenIdConnectConstants.Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.FindFirst(OpenIdConnectConstants.Claims.Name).Value);
+            Assert.Null(clone.FindFirst(OpenIddictConstants.Claims.Subject));
+            Assert.Equal("Bob le Bricoleur", clone.FindFirst(OpenIddictConstants.Claims.Name).Value);
         }
 
         [Fact]
@@ -1078,9 +1075,9 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = (ClaimsIdentity) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                identity.AddClaim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur");
+                identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
             });
 
             Assert.Equal("identity", exception.ParamName);
@@ -1093,10 +1090,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
 
             // Act
-            identity.AddClaim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", identity.FindFirst(OpenIdConnectConstants.Claims.Name).Value);
+            Assert.Equal("Bob le Bricoleur", identity.FindFirst(OpenIddictConstants.Claims.Name).Value);
         }
 
         [Theory]
@@ -1110,13 +1107,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
 
             // Act
-            identity.AddClaim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur", destinations);
+            identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur", destinations);
 
-            var claim = identity.FindFirst(OpenIdConnectConstants.Claims.Name);
+            var claim = identity.FindFirst(OpenIddictConstants.Claims.Name);
 
             // Assert
             Assert.Equal("Bob le Bricoleur", claim.Value);
-            Assert.Equal(destination, claim.Properties[OpenIdConnectConstants.Properties.Destinations]);
+            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
         }
 
         [Fact]
@@ -1126,9 +1123,9 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = (ClaimsIdentity) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
+            var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                identity.GetClaim(OpenIdConnectConstants.Claims.Name);
+                identity.GetClaim(OpenIddictConstants.Claims.Name);
             });
 
             Assert.Equal("identity", exception.ParamName);
@@ -1142,8 +1139,8 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var principal = new ClaimsPrincipal();
 
             // Act and assert
-            Assert.Null(identity.GetClaim(OpenIdConnectConstants.Claims.Name));
-            Assert.Null(principal.GetClaim(OpenIdConnectConstants.Claims.Name));
+            Assert.Null(identity.GetClaim(OpenIddictConstants.Claims.Name));
+            Assert.Null(principal.GetClaim(OpenIddictConstants.Claims.Name));
         }
 
         [Fact]
@@ -1153,55 +1150,50 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            identity.AddClaim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur");
+            identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
 
             // Act and assert
-            Assert.Equal("Bob le Bricoleur", identity.GetClaim(OpenIdConnectConstants.Claims.Name));
-            Assert.Equal("Bob le Bricoleur", principal.GetClaim(OpenIdConnectConstants.Claims.Name));
+            Assert.Equal("Bob le Bricoleur", identity.GetClaim(OpenIddictConstants.Claims.Name));
+            Assert.Equal("Bob le Bricoleur", principal.GetClaim(OpenIddictConstants.Claims.Name));
         }
 
         [Fact]
         public void Copy_ThrowsAnExceptionForNullProperties()
         {
             // Arrange
-            var properties = (AuthenticationProperties) null;
+            var identity = (ClaimsIdentity) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                properties.Copy();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => identity.Clone(c => true));
 
-            Assert.Equal("properties", exception.ParamName);
+            Assert.Equal("identity", exception.ParamName);
         }
 
         [Fact]
         public void Copy_ReturnsIdenticalProperties()
         {
             // Arrange
-            var properties = new AuthenticationProperties();
-            properties.SetProperty("property", "value");
+            var identity = new ClaimsIdentity();
+            identity.AddClaim("type", "value");
 
             // Act
-            var copy = properties.Copy();
+            var copy = identity.Clone(c => true);
 
             // Assert
-            Assert.Equal(properties.Items, copy.Items);
+            Assert.Equal("value", copy.GetClaim("type"));
+            Assert.Equal(identity.Claims.Count(), copy.Claims.Count());
         }
 
         [Fact]
         public void Copy_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.Copy();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.Clone(c => true));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Fact]
@@ -1209,38 +1201,32 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
 
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(identity),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
-
-            ticket.SetProperty("property", "value");
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            var copy = ticket.Copy();
+            var copy = principal.Clone(c => true);
 
             // Assert
-            Assert.Equal(ticket.AuthenticationScheme, copy.AuthenticationScheme);
-            Assert.Equal("Bob le Bricoleur", copy.Principal.FindFirst(OpenIdConnectConstants.Claims.Name).Value);
-            Assert.Equal(ticket.Properties.Items, copy.Properties.Items);
+            Assert.Equal("Bob le Bricoleur", copy.GetClaim(OpenIddictConstants.Claims.Name));
+            Assert.Equal(principal.Claims.Count(), copy.Claims.Count());
         }
 
         [Fact]
         public void Copy_ReturnsDifferentPropertiesInstance()
         {
             // Arrange
-            var properties = new AuthenticationProperties();
-            properties.SetProperty("property", "value");
+            var identity = new ClaimsIdentity();
+            identity.AddClaim("type", "value");
 
             // Act
-            var copy = properties.Copy();
-            copy.SetProperty("clone_property", "value");
+            var copy = identity.Clone(c => true);
+            copy.AddClaim("clone_type", "value");
 
             // Assert
-            Assert.NotSame(properties, copy);
-            Assert.NotEqual(properties.Items, copy.Items);
+            Assert.NotSame(identity, copy);
+            Assert.NotEqual(identity.Claims, copy.Claims);
         }
 
         [Fact]
@@ -1248,376 +1234,305 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIdConnectConstants.Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
 
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(identity),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
-
-            ticket.SetProperty("property", "value");
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            var copy = ticket.Copy();
-            copy.Principal.Identities.First().AddClaim(new Claim("clone_claim", "value"));
-            copy.SetProperty("clone_property", "value");
+            var copy = principal.Clone(c => true);
+            copy.SetClaim("clone_claim", "value");
 
             // Assert
-            Assert.NotSame(ticket, copy);
-            Assert.Null(ticket.Principal.FindFirst("clone_claim"));
-            Assert.NotEqual(ticket.Properties.Items, copy.Properties.Items);
+            Assert.NotSame(principal, copy);
+            Assert.Null(principal.FindFirst("clone_claim"));
+            Assert.NotEqual(principal.Claims, copy.Claims);
         }
 
         [Fact]
         public void GetProperty_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetProperty("property");
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetClaim("type"));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Fact]
         public void GetProperty_ReturnsNullForMissingProperty()
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var principal = new ClaimsPrincipal();
 
             // Act and assert
-            Assert.Null(ticket.GetProperty("property"));
-            Assert.Null(ticket.Properties.GetProperty("property"));
+            Assert.Null(principal.GetClaim("type"));
         }
 
         [Fact]
         public void GetProperty_ReturnsAppropriateResult()
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items["property"] = "value";
+            principal.SetClaim("type", "value");
 
             // Act and assert
-            Assert.Equal("value", ticket.GetProperty("property"));
-            Assert.Equal("value", ticket.Properties.GetProperty("property"));
+            Assert.Equal("value", principal.GetClaim("type"));
         }
 
         [Fact]
         public void GetProperty_IsCaseSensitive()
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
-
-            ticket.Properties.Items["property"] = "value";
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+            principal.SetClaim("type", "value");
 
             // Act and assert
-            Assert.Null(ticket.GetProperty("PROPERTY"));
-            Assert.Null(ticket.Properties.GetProperty("PROPERTY"));
+            Assert.Null(principal.GetClaim("TYPE"));
         }
 
         [Fact]
         public void GetAudiences_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetAudiences();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAudiences());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData("", new string[0])]
-        [InlineData("[]", new string[0])]
-        [InlineData(@"[""fabrikam""]", new[] { "fabrikam" })]
-        [InlineData(@"[""fabrikam"",""contoso""]", new[] { "fabrikam", "contoso" })]
-        [InlineData(@"[""fabrikam"",""fabrikam"",""contoso""]", new[] { "fabrikam", "contoso" })]
-        [InlineData(@"[""fabrikam"",""FABRIKAM"",""contoso""]", new[] { "fabrikam", "FABRIKAM", "contoso" })]
-        public void GetAudiences_ReturnsExpectedAudiences(string audience, string[] audiences)
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
+        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
+        public void GetAudiences_ReturnsExpectedAudiences(string[] audience, string[] audiences)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Audiences] = audience;
+            principal.SetClaims(OpenIddictConstants.Claims.Audience, audience.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(audiences, ticket.GetAudiences());
+            Assert.Equal(audiences, principal.GetAudiences());
         }
 
         [Fact]
         public void GetPresenters_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetPresenters();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetPresenters());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData("", new string[0])]
-        [InlineData("[]", new string[0])]
-        [InlineData(@"[""fabrikam""]", new[] { "fabrikam" })]
-        [InlineData(@"[""fabrikam"",""contoso""]", new[] { "fabrikam", "contoso" })]
-        [InlineData(@"[""fabrikam"",""fabrikam"",""contoso""]", new[] { "fabrikam", "contoso" })]
-        [InlineData(@"[""fabrikam"",""FABRIKAM"",""contoso""]", new[] { "fabrikam", "FABRIKAM", "contoso" })]
-        public void GetPresenters_ReturnsExpectedPresenters(string presenter, string[] presenters)
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
+        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
+        public void GetPresenters_ReturnsExpectedPresenters(string[] presenter, string[] presenters)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Presenters] = presenter;
+            principal.SetClaims(OpenIddictConstants.Claims.Private.Presenters, presenter.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(presenters, ticket.GetPresenters());
+            Assert.Equal(presenters, principal.GetPresenters());
         }
 
         [Fact]
         public void GetResources_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetResources();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetResources());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData("", new string[0])]
-        [InlineData("[]", new string[0])]
-        [InlineData(@"[""fabrikam""]", new[] { "fabrikam" })]
-        [InlineData(@"[""fabrikam"",""contoso""]", new[] { "fabrikam", "contoso" })]
-        [InlineData(@"[""fabrikam"",""fabrikam"",""contoso""]", new[] { "fabrikam", "contoso" })]
-        [InlineData(@"[""fabrikam"",""FABRIKAM"",""contoso""]", new[] { "fabrikam", "FABRIKAM", "contoso" })]
-        public void GetResources_ReturnsExpectedResources(string resource, string[] resources)
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
+        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
+        public void GetResources_ReturnsExpectedResources(string[] resource, string[] resources)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Resources] = resource;
+            principal.SetClaims(OpenIddictConstants.Claims.Private.Resources, resource.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(resources, ticket.GetResources());
+            Assert.Equal(resources, principal.GetResources());
         }
 
         [Fact]
         public void GetScopes_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal)null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetScopes();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetScopes());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData("", new string[0])]
-        [InlineData("[]", new string[0])]
-        [InlineData(@"[""openid""]", new[] { "openid" })]
-        [InlineData(@"[""openid"",""profile""]", new[] { "openid", "profile" })]
-        [InlineData(@"[""openid"",""openid"",""profile""]", new[] { "openid", "profile" })]
-        [InlineData(@"[""openid"",""OPENID"",""profile""]", new[] { "openid", "OPENID", "profile" })]
-        public void GetScopes_ReturnsExpectedScopes(string scope, string[] scopes)
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "openid" }, new[] { "openid" })]
+        [InlineData(new[] { "openid", "profile" }, new[] { "openid", "profile" })]
+        [InlineData(new[] { "openid", "openid", "profile" }, new[] { "openid", "profile" })]
+        [InlineData(new[] { "openid", "OPENID", "profile" }, new[] { "openid", "OPENID", "profile" })]
+        public void ClaimsPrincipal_GetScopes_ReturnsExpectedScopes(string[] scope, string[] scopes)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Scopes] = scope;
+            principal.SetClaims(OpenIddictConstants.Claims.Private.Scopes, scope.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(scopes, ticket.GetScopes());
+            Assert.Equal(scopes, principal.GetScopes());
         }
 
         [Fact]
         public void GetAccessTokenLifetime_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetAccessTokenLifetime();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAccessTokenLifetime());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
-        [InlineData("42.00:00:00")]
+        [InlineData("62")]
         public void GetAccessTokenLifetime_ReturnsExpectedResult(string lifetime)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.AccessTokenLifetime] = lifetime;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.AccessTokenLifetime, lifetime);
 
             // Act and assert
-            Assert.Equal(lifetime, ticket.GetAccessTokenLifetime()?.ToString("c", CultureInfo.InvariantCulture));
+            Assert.Equal(ParseLifeTime(lifetime), principal.GetAccessTokenLifetime());
         }
 
         [Fact]
         public void GetAuthorizationCodeLifetime_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetAuthorizationCodeLifetime();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAuthorizationCodeLifetime());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
-        [InlineData("42.00:00:00")]
+        [InlineData("62")]
         public void GetAuthorizationCodeLifetime_ReturnsExpectedResult(string lifetime)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.AuthorizationCodeLifetime] = lifetime;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.AuthorizationCodeLifetime, lifetime);
 
             // Act and assert
-            Assert.Equal(lifetime, ticket.GetAuthorizationCodeLifetime()?.ToString("c", CultureInfo.InvariantCulture));
+            Assert.Equal(ParseLifeTime(lifetime), principal.GetAuthorizationCodeLifetime());
         }
 
         [Fact]
         public void GetIdentityTokenLifetime_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetIdentityTokenLifetime();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetIdentityTokenLifetime());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
-        [InlineData("42.00:00:00")]
+        [InlineData("62")]
         public void GetIdentityTokenLifetime_ReturnsExpectedResult(string lifetime)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.IdentityTokenLifetime] = lifetime;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.IdentityTokenLifetime, lifetime);
 
             // Act and assert
-            Assert.Equal(lifetime, ticket.GetIdentityTokenLifetime()?.ToString("c", CultureInfo.InvariantCulture));
+            Assert.Equal(ParseLifeTime(lifetime), principal.GetIdentityTokenLifetime());
         }
 
         [Fact]
         public void GetRefreshTokenLifetime_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetRefreshTokenLifetime();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetRefreshTokenLifetime());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
-        [InlineData("42.00:00:00")]
+        [InlineData("62")]
         public void GetRefreshTokenLifetime_ReturnsExpectedResult(string lifetime)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.RefreshTokenLifetime] = lifetime;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.RefreshTokenLifetime, lifetime);
 
             // Act and assert
-            Assert.Equal(lifetime, ticket.GetRefreshTokenLifetime()?.ToString("c", CultureInfo.InvariantCulture));
+            Assert.Equal(ParseLifeTime(lifetime), principal.GetRefreshTokenLifetime());
         }
 
         [Fact]
         public void GetTokenId_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetTokenId();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetInternalTokenId());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
@@ -1626,30 +1541,25 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetTokenId_ReturnsExpectedResult(string identifier)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.TokenId] = identifier;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenId, identifier);
 
             // Act and assert
-            Assert.Equal(identifier, ticket.GetTokenId());
+            Assert.Equal(identifier, principal.GetInternalTokenId());
         }
 
         [Fact]
         public void GetTokenUsage_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.GetTokenUsage();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetTokenUsage());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
@@ -1658,84 +1568,25 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetTokenUsage_ReturnsExpectedResult(string usage)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.TokenUsage] = usage;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
 
             // Act and assert
-            Assert.Equal(usage, ticket.GetTokenUsage());
-        }
-
-        [Fact]
-        public void HasProperty_ThrowsAnExceptionForNullTicket()
-        {
-            // Arrange
-            var ticket = (AuthenticationTicket) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.HasProperty("property");
-            });
-
-            Assert.Equal("ticket", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void HasProperty_ThrowsAnExceptionForNullOrEmptyProperty(string property)
-        {
-            // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                ticket.HasProperty(property);
-            });
-
-            Assert.Equal("property", exception.ParamName);
-            Assert.StartsWith("The property name cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("value", true)]
-        public void HasProperty_ReturnsExpectedResult(string value, bool result)
-        {
-            // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
-
-            ticket.Properties.Items["property"] = value;
-
-            // Act and assert
-            Assert.Equal(result, ticket.HasProperty("property"));
-            Assert.Equal(result, ticket.Properties.HasProperty("property"));
+            Assert.Equal(usage, principal.GetTokenUsage());
         }
 
         [Fact]
         public void HasAudience_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.HasAudience("Fabrikam");
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasAudience("Fabrikam"));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
@@ -1744,79 +1595,62 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasAudience_ThrowsAnExceptionForNullOrEmptyAudience(string audience)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var principal = new ClaimsPrincipal();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                ticket.HasAudience(audience);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => principal.HasAudience(audience));
 
             Assert.Equal("audience", exception.ParamName);
             Assert.StartsWith("The audience cannot be null or empty.", exception.Message);
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("[]", false)]
-        [InlineData(@"[""fabrikam""]", true)]
-        public void HasAudience_ReturnsExpectedResult(string audience, bool result)
+        [InlineData(new string[0], false)]
+        [InlineData(new[] { "fabrikam" }, true)]
+        public void HasAudience_ReturnsExpectedResult(string[] audience, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Audiences] = audience;
+            principal.SetClaims(OpenIddictConstants.Claims.Audience, audience.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(result, ticket.HasAudience());
+            Assert.Equal(result, principal.HasAudience());
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("[]", false)]
-        [InlineData(@"[""contoso""]", false)]
-        [InlineData(@"[""contoso"",""fabrikam""]", true)]
-        [InlineData(@"[""fabrikam""]", true)]
-        [InlineData(@"[""fabrikam"",""contoso""]", true)]
-        [InlineData(@"[""CONTOSO""]", false)]
-        [InlineData(@"[""CONTOSO"",""FABRIKAM""]", false)]
-        [InlineData(@"[""FABRIKAM""]", false)]
-        [InlineData(@"[""FABRIKAM"",""CONTOSO""]", false)]
-        public void HasAudience_ReturnsAppropriateResult(string audience, bool result)
+        [InlineData(new string[0], false)]
+        [InlineData(new[] { "contoso" }, false)]
+        [InlineData(new[] { "contoso", "fabrikam" }, true)]
+        [InlineData(new[] { "fabrikam" }, true)]
+        [InlineData(new[] { "fabrikam", "contoso" }, true)]
+        [InlineData(new[] { "CONTOSO" }, false)]
+        [InlineData(new[] { "CONTOSO", "FABRIKAM" }, false)]
+        [InlineData(new[] { "FABRIKAM" }, false)]
+        [InlineData(new[] { "FABRIKAM", "CONTOSO" }, false)]
+        public void HasAudience_ReturnsAppropriateResult(string[] audience, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Audiences] = audience;
+            principal.SetClaims(OpenIddictConstants.Claims.Audience, audience.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(result, ticket.HasAudience("fabrikam"));
+            Assert.Equal(result, principal.HasAudience("fabrikam"));
         }
 
         [Fact]
         public void HasPresenter_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal)null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.HasPresenter("Fabrikam");
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasPresenter("Fabrikam"));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
@@ -1825,79 +1659,62 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasPresenter_ThrowsAnExceptionForNullOrEmptyPresenter(string presenter)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var principal = new ClaimsPrincipal();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                ticket.HasPresenter(presenter);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => principal.HasPresenter(presenter));
 
             Assert.Equal("presenter", exception.ParamName);
             Assert.StartsWith("The presenter cannot be null or empty.", exception.Message);
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("[]", false)]
-        [InlineData(@"[""fabrikam""]", true)]
-        public void HasPresenter_ReturnsExpectedResult(string presenter, bool result)
+        [InlineData(new string[0], false)]
+        [InlineData(new[] { "fabrikam" }, true)]
+        public void HasPresenter_ReturnsExpectedResult(string[] presenter, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Presenters] = presenter;
+            principal.SetClaims(OpenIddictConstants.Claims.Private.Presenters, presenter.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(result, ticket.HasPresenter());
+            Assert.Equal(result, principal.HasPresenter());
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("[]", false)]
-        [InlineData(@"[""contoso""]", false)]
-        [InlineData(@"[""contoso"",""fabrikam""]", true)]
-        [InlineData(@"[""fabrikam""]", true)]
-        [InlineData(@"[""fabrikam"",""contoso""]", true)]
-        [InlineData(@"[""CONTOSO""]", false)]
-        [InlineData(@"[""CONTOSO"",""FABRIKAM""]", false)]
-        [InlineData(@"[""FABRIKAM""]", false)]
-        [InlineData(@"[""FABRIKAM"",""CONTOSO""]", false)]
-        public void HasPresenter_ReturnsAppropriateResult(string presenter, bool result)
+        [InlineData(new string[0], false)]
+        [InlineData(new[] { "contoso" }, false)]
+        [InlineData(new []{ "contoso", "fabrikam" }, true)]
+        [InlineData(new []{ "fabrikam" }, true)]
+        [InlineData(new []{ "fabrikam", "contoso" }, true)]
+        [InlineData(new []{ "CONTOSO" }, false)]
+        [InlineData(new []{ "CONTOSO", "FABRIKAM" }, false)]
+        [InlineData(new []{ "FABRIKAM" }, false)]
+        [InlineData(new []{ "FABRIKAM", "CONTOSO" }, false)]
+        public void HasPresenter_ReturnsAppropriateResult(string[] presenter, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Presenters] = presenter;
+            principal.SetClaims(OpenIddictConstants.Claims.Private.Presenters, presenter.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(result, ticket.HasPresenter("fabrikam"));
+            Assert.Equal(result, principal.HasPresenter("fabrikam"));
         }
 
         [Fact]
         public void HasResource_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.HasResource("Fabrikam");
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasResource("Fabrikam"));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
@@ -1906,804 +1723,644 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void HasResource_ThrowsAnExceptionForNullOrEmptyResource(string resource)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var principal = new ClaimsPrincipal();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                ticket.HasResource(resource);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => principal.HasResource(resource));
 
             Assert.Equal("resource", exception.ParamName);
             Assert.StartsWith("The resource cannot be null or empty.", exception.Message);
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("[]", false)]
-        [InlineData(@"[""fabrikam""]", true)]
-        public void HasResource_ReturnsExpectedResult(string resource, bool result)
+        [InlineData(new string[0], false)]
+        [InlineData(new[] { "fabrikam" }, true)]
+        public void HasResource_ReturnsExpectedResult(string[] resource, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Resources] = resource;
+            principal.SetClaims(OpenIddictConstants.Claims.Private.Resources, resource.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(result, ticket.HasResource());
+            Assert.Equal(result, principal.HasResource());
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("[]", false)]
-        [InlineData(@"[""contoso""]", false)]
-        [InlineData(@"[""contoso"",""fabrikam""]", true)]
-        [InlineData(@"[""fabrikam""]", true)]
-        [InlineData(@"[""fabrikam"",""contoso""]", true)]
-        [InlineData(@"[""CONTOSO""]", false)]
-        [InlineData(@"[""CONTOSO"",""FABRIKAM""]", false)]
-        [InlineData(@"[""FABRIKAM""]", false)]
-        [InlineData(@"[""FABRIKAM"",""CONTOSO""]", false)]
-        public void HasResource_ReturnsAppropriateResult(string resource, bool result)
+        [InlineData(new string[0], false)]
+        [InlineData(new []{ "contoso" }, false)]
+        [InlineData(new []{ "contoso", "fabrikam" }, true)]
+        [InlineData(new []{ "fabrikam" }, true)]
+        [InlineData(new []{ "fabrikam", "contoso" }, true)]
+        [InlineData(new []{ "CONTOSO" }, false)]
+        [InlineData(new []{ "CONTOSO", "FABRIKAM" }, false)]
+        [InlineData(new []{ "FABRIKAM" }, false)]
+        [InlineData(new[] { "FABRIKAM" , "CONTOSO" }, false)]
+        public void HasResource_ReturnsAppropriateResult(string[] resource, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Resources] = resource;
+            principal.SetClaims(OpenIddictConstants.Claims.Private.Resources, resource.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(result, ticket.HasResource("fabrikam"));
+            Assert.Equal(result, principal.HasResource("fabrikam"));
         }
 
         [Fact]
         public void HasScope_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.HasScope(OpenIdConnectConstants.Scopes.OpenId);
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasScope(OpenIddictConstants.Scopes.OpenId));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void HasScope_ThrowsAnExceptionForNullOrEmptyScope(string scope)
+        public void ClaimsPrincipal_HasScope_ThrowsAnExceptionForNullOrEmptyScope(string scope)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var principal = new ClaimsPrincipal();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                ticket.HasScope(scope);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => principal.HasScope(scope));
 
             Assert.Equal("scope", exception.ParamName);
             Assert.StartsWith("The scope cannot be null or empty.", exception.Message);
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("[]", false)]
-        [InlineData(@"[""openid""]", true)]
-        public void HasScope_ReturnsExpectedResult(string scope, bool result)
+        [InlineData(new string[0], false)]
+        [InlineData(new[] { "openid" }, true)]
+        public void ClaimsPrincipal_HasScope_ReturnsExpectedResult(string[] scope, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Scopes] = scope;
+            principal.SetClaims(OpenIddictConstants.Claims.Private.Scopes, scope.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(result, ticket.HasScope());
+            Assert.Equal(result, principal.HasScope());
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("[]", false)]
-        [InlineData(@"[""profile""]", false)]
-        [InlineData(@"[""profile"",""openid""]", true)]
-        [InlineData(@"[""openid""]", true)]
-        [InlineData(@"[""openid"",""profile""]", true)]
-        [InlineData(@"[""PROFILE""]", false)]
-        [InlineData(@"[""PROFILE"",""OPENID""]", false)]
-        [InlineData(@"[""OPENID""]", false)]
-        [InlineData(@"[""OPENID"",""PROFILE""]", false)]
-        public void HasScope_ReturnsAppropriateResult(string scope, bool result)
+        [InlineData(new string[0], false)]
+        [InlineData(new[] { "profile" }, false)]
+        [InlineData(new []{ "profile", "openid" }, true)]
+        [InlineData(new []{ "openid" }, true)]
+        [InlineData(new []{ "openid" , "profile" }, true)]
+        [InlineData(new []{ "PROFILE" }, false)]
+        [InlineData(new []{ "PROFILE", "OPENID" }, false)]
+        [InlineData(new []{ "OPENID" }, false)]
+        [InlineData(new []{ "OPENID", "PROFILE" }, false)]
+        public void HasScope_ReturnsAppropriateResult(string[] scope, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.Scopes] = scope;
+            principal.SetClaims(OpenIddictConstants.Claims.Private.Scopes, scope.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(result, ticket.HasScope(OpenIdConnectConstants.Scopes.OpenId));
-        }
-
-        [Fact]
-        public void IsConfidential_ThrowsAnExceptionForNullTicket()
-        {
-            // Arrange
-            var ticket = (AuthenticationTicket) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.IsConfidential();
-            });
-
-            Assert.Equal("ticket", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(OpenIdConnectConstants.ConfidentialityLevels.Private, true)]
-        [InlineData(OpenIdConnectConstants.ConfidentialityLevels.Public, false)]
-        public void IsConfidential_ReturnsExpectedResult(string level, bool result)
-        {
-            // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
-
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.ConfidentialityLevel] = level;
-
-            // Act and assert
-            Assert.Equal(result, ticket.IsConfidential());
+            Assert.Equal(result, principal.HasScope(OpenIddictConstants.Scopes.OpenId));
         }
 
         [Fact]
         public void IsAccessToken_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.IsAccessToken();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsAccessToken());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.AccessToken, true)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.AuthorizationCode, false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.IdToken, false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.RefreshToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, true)]
+        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
         public void IsAccessToken_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.TokenUsage] = usage;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
 
             // Act and assert
-            Assert.Equal(result, ticket.IsAccessToken());
+            Assert.Equal(result, principal.IsAccessToken());
         }
 
         [Fact]
         public void IsAuthorizationCode_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.IsConfidential();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsAuthorizationCode());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.AccessToken, false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.AuthorizationCode, true)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.IdToken, false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.RefreshToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, true)]
+        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
         public void IsAuthorizationCode_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.TokenUsage] = usage;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
 
             // Act and assert
-            Assert.Equal(result, ticket.IsAuthorizationCode());
+            Assert.Equal(result, principal.IsAuthorizationCode());
         }
 
         [Fact]
         public void IsIdentityToken_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.IsConfidential();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsIdentityToken());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.AccessToken, false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.AuthorizationCode, false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.IdToken, true)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.RefreshToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.IdToken, true)]
+        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
         public void IsIdentityToken_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.TokenUsage] = usage;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
 
             // Act and assert
-            Assert.Equal(result, ticket.IsIdentityToken());
+            Assert.Equal(result, principal.IsIdentityToken());
         }
 
         [Fact]
         public void IsRefreshToken_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.IsConfidential();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsRefreshToken());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.AccessToken, false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.AuthorizationCode, false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.IdToken, false)]
-        [InlineData(OpenIdConnectConstants.TokenUsages.RefreshToken, true)]
+        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, true)]
         public void IsRefreshToken_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.Properties.Items[OpenIdConnectConstants.Properties.TokenUsage] = usage;
+            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
 
             // Act and assert
-            Assert.Equal(result, ticket.IsRefreshToken());
+            Assert.Equal(result, principal.IsRefreshToken());
         }
 
         [Fact]
         public void AddProperty_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.AddProperty("property", "value");
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", "value"));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void AddProperty_ThrowsAnExceptionForNullOrEmptyProperty(string property)
+        public void SetClaimAddProperty_ThrowsAnExceptionForNullOrEmptyType(string type)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                ticket.AddProperty(property, "value");
-            });
+            var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type, "value"));
 
-            Assert.Equal("property", exception.ParamName);
-            Assert.StartsWith("The property name cannot be null or empty.", exception.Message);
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
         }
 
         [Fact]
         public void AddProperty_AddsExpectedProperty()
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.AddProperty("property", "value");
+            principal.SetClaim("type", "value");
 
             // Assert
-            Assert.Equal("value", ticket.GetProperty("property"));
+            Assert.Equal("value", principal.GetClaim("type"));
         }
 
         [Fact]
         public void RemoveProperty_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.RemoveProperty("property");
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.RemoveClaims("type"));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void RemoveProperty_ThrowsAnExceptionForNullOrEmptyProperty(string property)
+        public void RemoveProperty_ThrowsAnExceptionForNullOrEmptyProperty(string type)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var principal = new ClaimsPrincipal();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                ticket.RemoveProperty(property);
-            });
+            var exception = Assert.Throws<ArgumentException>(() => principal.RemoveClaims(type));
 
-            Assert.Equal("property", exception.ParamName);
-            Assert.StartsWith("The property name cannot be null or empty.", exception.Message);
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
         }
 
         [Fact]
         public void RemoveProperty_RemovesProperty()
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            ticket.AddProperty("property", "value");
+            principal.SetClaim("type", "value");
 
             // Act
-            ticket.RemoveProperty("property");
+            principal.RemoveClaims("type");
 
             // Assert
-            Assert.Null(ticket.GetProperty("property"));
+            Assert.Null(principal.GetClaim("type"));
         }
 
         [Fact]
         public void SetProperty_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetProperty("property", "value");
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", "value"));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void SetProperty_ThrowsAnExceptionForNullOrEmptyProperty(string property)
+        public void SetProperty_ThrowsAnExceptionForNullOrEmptyProperty(string type)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var principal = new ClaimsPrincipal();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(delegate
-            {
-                ticket.SetProperty(property, "value");
-            });
+            var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type, "value"));
 
-            Assert.Equal("property", exception.ParamName);
-            Assert.StartsWith("The property name cannot be null or empty.", exception.Message);
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
         }
 
         [Fact]
         public void SetProperty_AddsExpectedProperty()
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetProperty("property", "value");
+            principal.SetClaim("type", "value");
 
             // Assert
-            Assert.Equal("value", ticket.GetProperty("property"));
+            Assert.Equal("value", principal.GetClaim("type"));
         }
 
         [Fact]
         public void SetProperty_IsCaseSensitive()
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetProperty("PROPERTY", "value");
+            principal.SetClaim("TYPE", "value");
 
             // Assert
-            Assert.Null(ticket.GetProperty("property"));
+            Assert.Null(principal.GetClaim("type"));
         }
 
         [Fact]
         public void SetProperty_RemovesEmptyProperty()
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetProperty("property", string.Empty);
+            principal.SetClaim("type", string.Empty);
 
             // Assert
-            Assert.Null(ticket.GetProperty("property"));
+            Assert.Null(principal.GetClaim("type"));
         }
 
         [Fact]
         public void SetAudiences_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetAudiences();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAudiences());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(new string[0], null)]
-        [InlineData(new[] { "fabrikam" }, @"[""fabrikam""]")]
-        [InlineData(new[] { "fabrikam", "contoso" }, @"[""fabrikam"",""contoso""]")]
-        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, @"[""fabrikam"",""contoso""]")]
-        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, @"[""fabrikam"",""FABRIKAM"",""contoso""]")]
-        public void SetAudiences_AddsAudiences(string[] audiences, string audience)
+        [InlineData(null, new string[0])]
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
+        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
+        public void SetAudiences_AddsAudiences(string[] audiences, string[] audience)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetAudiences(audiences);
+            principal.SetAudiences(audiences);
 
             // Assert
-            Assert.Equal(audience, ticket.GetProperty(OpenIdConnectConstants.Properties.Audiences));
+            Assert.Equal(audience, principal.GetClaims(OpenIddictConstants.Claims.Audience));
         }
 
         [Fact]
         public void SetPresenters_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetPresenters();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetPresenters());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(new string[0], null)]
-        [InlineData(new[] { "fabrikam" }, @"[""fabrikam""]")]
-        [InlineData(new[] { "fabrikam", "contoso" }, @"[""fabrikam"",""contoso""]")]
-        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, @"[""fabrikam"",""contoso""]")]
-        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, @"[""fabrikam"",""FABRIKAM"",""contoso""]")]
-        public void SetPresenters_AddsPresenters(string[] presenters, string presenter)
+        [InlineData(null, new string[0])]
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
+        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
+        public void SetPresenters_AddsPresenters(string[] presenters, string[] presenter)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetPresenters(presenters);
+            principal.SetPresenters(presenters);
 
             // Assert
-            Assert.Equal(presenter, ticket.GetProperty(OpenIdConnectConstants.Properties.Presenters));
+            Assert.Equal(presenter, principal.GetClaims(OpenIddictConstants.Claims.Private.Presenters));
         }
 
         [Fact]
         public void SetResources_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetResources();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetResources());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(new string[0], null)]
-        [InlineData(new[] { "fabrikam" }, @"[""fabrikam""]")]
-        [InlineData(new[] { "fabrikam", "contoso" }, @"[""fabrikam"",""contoso""]")]
-        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, @"[""fabrikam"",""contoso""]")]
-        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, @"[""fabrikam"",""FABRIKAM"",""contoso""]")]
-        public void SetResources_AddsResources(string[] resources, string resource)
+        [InlineData(null, new string[0])]
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
+        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
+        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
+        public void SetResources_AddsResources(string[] resources, string[] resource)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetResources(resources);
+            principal.SetResources(resources);
 
             // Assert
-            Assert.Equal(resource, ticket.GetProperty(OpenIdConnectConstants.Properties.Resources));
+            Assert.Equal(resource, principal.GetClaims(OpenIddictConstants.Claims.Private.Resources));
         }
 
         [Fact]
         public void SetScopes_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetScopes();
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetScopes());
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(new string[0], null)]
-        [InlineData(new[] { "openid" }, @"[""openid""]")]
-        [InlineData(new[] { "openid", "profile" }, @"[""openid"",""profile""]")]
-        [InlineData(new[] { "openid", "openid", "profile" }, @"[""openid"",""profile""]")]
-        [InlineData(new[] { "openid", "OPENID", "profile" }, @"[""openid"",""OPENID"",""profile""]")]
-        public void SetScopes_AddsScopes(string[] scopes, string scope)
+        [InlineData(null, new string[0])]
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "openid" }, new[] { "openid" })]
+        [InlineData(new[] { "openid", "profile" }, new[] { "openid", "profile" })]
+        [InlineData(new[] { "openid", "openid", "profile" }, new[] { "openid", "profile" })]
+        [InlineData(new[] { "openid", "OPENID", "profile" }, new[] { "openid", "OPENID", "profile" })]
+        public void SetScopes_AddsScopes(string[] scopes, string[] scope)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetScopes(scopes);
+            principal.SetScopes(scopes);
 
             // Assert
-            Assert.Equal(scope, ticket.GetProperty(OpenIdConnectConstants.Properties.Scopes));
+            Assert.Equal(scope, principal.GetClaims(OpenIddictConstants.Claims.Private.Scopes));
         }
 
         [Fact]
         public void SetAccessTokenLifetime_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetAccessTokenLifetime(null);
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAccessTokenLifetime(null));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
-        [InlineData("42.00:00:00")]
+        [InlineData("62")]
         public void SetAccessTokenLifetime_AddsLifetime(string lifetime)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetAccessTokenLifetime(lifetime != null ? (TimeSpan?) TimeSpan.ParseExact(lifetime, "c", CultureInfo.InvariantCulture) : null);
+            principal.SetAccessTokenLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, ticket.GetProperty(OpenIdConnectConstants.Properties.AccessTokenLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.AccessTokenLifetime));
         }
 
         [Fact]
         public void SetAuthorizationCodeLifetime_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetAuthorizationCodeLifetime(null);
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAuthorizationCodeLifetime(null));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
-        [InlineData("42.00:00:00")]
+        [InlineData("62")]
         public void SetAuthorizationCodeLifetime_AddsLifetime(string lifetime)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetAuthorizationCodeLifetime(lifetime != null ? (TimeSpan?) TimeSpan.ParseExact(lifetime, "c", CultureInfo.InvariantCulture) : null);
+            principal.SetAuthorizationCodeLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, ticket.GetProperty(OpenIdConnectConstants.Properties.AuthorizationCodeLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.AuthorizationCodeLifetime));
         }
 
         [Fact]
         public void SetIdentityTokenLifetime_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetIdentityTokenLifetime(null);
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetIdentityTokenLifetime(null));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
-        [InlineData("42.00:00:00")]
+        [InlineData("62")]
         public void SetIdentityTokenLifetime_AddsLifetime(string lifetime)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetIdentityTokenLifetime(lifetime != null ? (TimeSpan?) TimeSpan.ParseExact(lifetime, "c", CultureInfo.InvariantCulture) : null);
+            principal.SetIdentityTokenLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, ticket.GetProperty(OpenIdConnectConstants.Properties.IdentityTokenLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.IdentityTokenLifetime));
         }
 
         [Fact]
         public void SetRefreshTokenLifetime_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetRefreshTokenLifetime(null);
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetRefreshTokenLifetime(null));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
         [InlineData(null)]
-        [InlineData("42.00:00:00")]
+        [InlineData("62")]
         public void SetRefreshTokenLifetime_AddsLifetime(string lifetime)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetRefreshTokenLifetime(lifetime != null ? (TimeSpan?) TimeSpan.ParseExact(lifetime, "c", CultureInfo.InvariantCulture) : null);
+            principal.SetRefreshTokenLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, ticket.GetProperty(OpenIdConnectConstants.Properties.RefreshTokenLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.RefreshTokenLifetime));
         }
 
         [Fact]
         public void SetTokenId_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetTokenId(null);
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetInternalTokenId(null));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
@@ -2712,31 +2369,26 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetTokenId_AddsScopes(string identifier)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetTokenId(identifier);
+            principal.SetInternalTokenId(identifier);
 
             // Assert
-            Assert.Equal(identifier, ticket.GetProperty(OpenIdConnectConstants.Properties.TokenId));
+            Assert.Equal(identifier, principal.GetClaim(OpenIddictConstants.Claims.Private.TokenId));
         }
 
         [Fact]
         public void SetTokenUsage_ThrowsAnExceptionForNullTicket()
         {
             // Arrange
-            var ticket = (AuthenticationTicket) null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(delegate
-            {
-                ticket.SetTokenUsage(null);
-            });
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetTokenUsage(null));
 
-            Assert.Equal("ticket", exception.ParamName);
+            Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
@@ -2745,16 +2397,23 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetTokenUsage_AddsScopes(string usage)
         {
             // Arrange
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(),
-                new AuthenticationProperties(),
-                nameof(AuthenticationTicket));
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            ticket.SetTokenUsage(usage);
+            principal.SetTokenUsage(usage);
 
             // Assert
-            Assert.Equal(usage, ticket.GetProperty(OpenIdConnectConstants.Properties.TokenUsage));
+            Assert.Equal(usage, principal.GetClaim(OpenIddictConstants.Claims.Private.TokenUsage));
+        }
+
+        private TimeSpan? ParseLifeTime(string lifetime)
+        {
+            var lifeT = lifetime != null
+                ? (TimeSpan?)TimeSpan.FromSeconds(double.Parse(lifetime, NumberStyles.Number, CultureInfo.InvariantCulture))
+                : null;
+
+            return lifeT;
         }
     }
 }
