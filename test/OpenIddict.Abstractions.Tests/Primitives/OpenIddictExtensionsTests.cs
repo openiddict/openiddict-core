@@ -926,7 +926,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetDestinations_ThrowsAnExceptionForNullTicket()
+        public void SetDestinations_ThrowsAnExceptionForNullClaim()
         {
             // Arrange
             var claim = (Claim) null;
@@ -985,23 +985,12 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Clone_ThrowsAnExceptionForNullIdentity()
-        {
-            // Arrange
-            var identity = (ClaimsIdentity) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => identity.Clone(claim => true));
-
-            Assert.Equal("identity", exception.ParamName);
-        }
-
-        [Fact]
-        public void Clone_ReturnsDifferentInstance()
+        public void ClaimsIdentity_Clone_ReturnsDifferentInstanceWithFilteredClaims()
         {
             // Arrange
             var identity = new ClaimsIdentity();
             identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(OpenIddictConstants.Claims.ClientId, "B56BF6CE-8D8C-4290-A0E7-A4F8EE0A9FC4"));
 
             // Act
             var clone = identity.Clone(claim => claim.Type == OpenIddictConstants.Claims.Name);
@@ -1010,10 +999,12 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Assert
             Assert.NotSame(identity, clone);
             Assert.Null(identity.FindFirst("clone_claim"));
+            Assert.NotNull(clone.FindFirst(OpenIddictConstants.Claims.Name));
+            Assert.Null(clone.FindFirst(OpenIddictConstants.Claims.ClientId));
         }
 
         [Fact]
-        public void Clone_ExcludesUnwantedClaims()
+        public void ClaimsIdentity_Clone_ExcludesUnwantedClaims()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1030,7 +1021,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Clone_ExcludesUnwantedClaimsFromActor()
+        public void ClaimsIdentity_Clone_ExcludesUnwantedClaimsFromActor()
         {
             // Arrange
             var identity = new ClaimsIdentity
@@ -1050,7 +1041,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Clone_ExcludesUnwantedClaimsFromIdentities()
+        public void ClaimsPrincipal_Clone_ExcludesUnwantedClaimsFromIdentities()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1158,7 +1149,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Copy_ThrowsAnExceptionForNullProperties()
+        public void ClaimsIdentity_Clone_ThrowsAnExceptionForNullIdentity()
         {
             // Arrange
             var identity = (ClaimsIdentity) null;
@@ -1170,7 +1161,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Copy_ReturnsIdenticalProperties()
+        public void ClaimsIdentity_Clone_ReturnsIdenticalIdentity()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1185,7 +1176,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Copy_ThrowsAnExceptionForNullTicket()
+        public void ClaimsPrincipal_Clone_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1197,7 +1188,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Copy_ReturnsIdenticalTicket()
+        public void ClaimsPrincipal_Clone_ReturnsIdenticalPrincipal()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1214,7 +1205,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Copy_ReturnsDifferentPropertiesInstance()
+        public void ClaimsIdentity_Clone_ReturnsDifferentIdentityInstance()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1226,11 +1217,11 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.NotSame(identity, copy);
-            Assert.NotEqual(identity.Claims, copy.Claims);
+            Assert.Null(identity.FindFirst("clone_type"));
         }
 
         [Fact]
-        public void Copy_ReturnsDifferentTicketInstance()
+        public void ClaimsPrincipal_Clone_ReturnsDifferentPrincipalInstance()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1245,11 +1236,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Assert
             Assert.NotSame(principal, copy);
             Assert.Null(principal.FindFirst("clone_claim"));
-            Assert.NotEqual(principal.Claims, copy.Claims);
         }
 
         [Fact]
-        public void GetProperty_ThrowsAnExceptionForNullTicket()
+        public void GetClaim_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1261,7 +1251,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetProperty_ReturnsNullForMissingProperty()
+        public void GetClaim_ReturnsNullForMissingClaim()
         {
             // Arrange
             var principal = new ClaimsPrincipal();
@@ -1271,20 +1261,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetProperty_ReturnsAppropriateResult()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim("type", "value");
-
-            // Act and assert
-            Assert.Equal("value", principal.GetClaim("type"));
-        }
-
-        [Fact]
-        public void GetProperty_IsCaseSensitive()
+        public void GetClaim_IsCaseSensitive()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1296,7 +1273,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetAudiences_ThrowsAnExceptionForNullTicket()
+        public void GetAudiences_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1326,7 +1303,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetPresenters_ThrowsAnExceptionForNullTicket()
+        public void GetPresenters_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1356,7 +1333,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetResources_ThrowsAnExceptionForNullTicket()
+        public void GetResources_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1386,10 +1363,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetScopes_ThrowsAnExceptionForNullTicket()
+        public void GetScopes_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal)null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.GetScopes());
@@ -1416,7 +1393,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetAccessTokenLifetime_ThrowsAnExceptionForNullTicket()
+        public void GetAccessTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1443,7 +1420,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetAuthorizationCodeLifetime_ThrowsAnExceptionForNullTicket()
+        public void GetAuthorizationCodeLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1470,7 +1447,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetIdentityTokenLifetime_ThrowsAnExceptionForNullTicket()
+        public void GetIdentityTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1497,7 +1474,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetRefreshTokenLifetime_ThrowsAnExceptionForNullTicket()
+        public void GetRefreshTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1524,7 +1501,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetTokenId_ThrowsAnExceptionForNullTicket()
+        public void GetInternalTokenId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1538,7 +1515,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("identifier")]
-        public void GetTokenId_ReturnsExpectedResult(string identifier)
+        public void GetInternalTokenId_ReturnsExpectedResult(string identifier)
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1551,7 +1528,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetTokenUsage_ThrowsAnExceptionForNullTicket()
+        public void GetTokenUsage_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1578,7 +1555,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void HasAudience_ThrowsAnExceptionForNullTicket()
+        public void HasAudience_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1642,10 +1619,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void HasPresenter_ThrowsAnExceptionForNullTicket()
+        public void HasPresenter_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
-            var principal = (ClaimsPrincipal)null;
+            var principal = (ClaimsPrincipal) null;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => principal.HasPresenter("Fabrikam"));
@@ -1706,7 +1683,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void HasResource_ThrowsAnExceptionForNullTicket()
+        public void HasResource_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1770,7 +1747,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void HasScope_ThrowsAnExceptionForNullTicket()
+        public void HasScope_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1834,7 +1811,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void IsAccessToken_ThrowsAnExceptionForNullTicket()
+        public void IsAccessToken_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1865,7 +1842,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void IsAuthorizationCode_ThrowsAnExceptionForNullTicket()
+        public void IsAuthorizationCode_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1896,7 +1873,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void IsIdentityToken_ThrowsAnExceptionForNullTicket()
+        public void IsIdentityToken_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1927,7 +1904,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void IsRefreshToken_ThrowsAnExceptionForNullTicket()
+        public void IsRefreshToken_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -1957,50 +1934,36 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.Equal(result, principal.IsRefreshToken());
         }
 
-        [Fact]
-        public void AddProperty_ThrowsAnExceptionForNullTicket()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", "value"));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void SetClaimAddProperty_ThrowsAnExceptionForNullOrEmptyType(string type)
+        public void AddClaim_ThrowsAnExceptionForNullOrEmptyType(string type)
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type, "value"));
+            var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type, "value"));
 
             Assert.Equal("type", exception.ParamName);
             Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
         }
 
         [Fact]
-        public void AddProperty_AddsExpectedProperty()
+        public void AddClaim_AddsExpectedClaim()
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
 
             // Act
-            principal.SetClaim("type", "value");
+            identity.AddClaim("type", "value");
 
             // Assert
-            Assert.Equal("value", principal.GetClaim("type"));
+            Assert.Equal("value", identity.GetClaim("type"));
         }
 
         [Fact]
-        public void RemoveProperty_ThrowsAnExceptionForNullTicket()
+        public void RemoveClaims_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2014,7 +1977,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void RemoveProperty_ThrowsAnExceptionForNullOrEmptyProperty(string type)
+        public void RemoveClaims_ThrowsAnExceptionForNullOrEmptyClaimType(string type)
         {
             // Arrange
             var principal = new ClaimsPrincipal();
@@ -2027,7 +1990,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void RemoveProperty_RemovesProperty()
+        public void RemoveClaims_RemoveClaims()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2043,7 +2006,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetProperty_ThrowsAnExceptionForNullTicket()
+        public void SetClaim_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2057,7 +2020,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void SetProperty_ThrowsAnExceptionForNullOrEmptyProperty(string type)
+        public void SetClaim_ThrowsAnExceptionForNullOrEmptyProperty(string type)
         {
             // Arrange
             var principal = new ClaimsPrincipal();
@@ -2070,7 +2033,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetProperty_AddsExpectedProperty()
+        public void SetClaim_AddsExpectedClaim()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2084,7 +2047,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetProperty_IsCaseSensitive()
+        public void SetClaim_IsCaseSensitive()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2098,7 +2061,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetProperty_RemovesEmptyProperty()
+        public void SetClaim_RemovesEmptyClaim()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2112,7 +2075,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetAudiences_ThrowsAnExceptionForNullTicket()
+        public void SetAudiences_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2144,7 +2107,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetPresenters_ThrowsAnExceptionForNullTicket()
+        public void SetPresenters_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2176,7 +2139,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetResources_ThrowsAnExceptionForNullTicket()
+        public void SetResources_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2208,7 +2171,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetScopes_ThrowsAnExceptionForNullTicket()
+        public void SetScopes_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2240,7 +2203,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetAccessTokenLifetime_ThrowsAnExceptionForNullTicket()
+        public void SetAccessTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2268,7 +2231,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetAuthorizationCodeLifetime_ThrowsAnExceptionForNullTicket()
+        public void SetAuthorizationCodeLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2296,7 +2259,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetIdentityTokenLifetime_ThrowsAnExceptionForNullTicket()
+        public void SetIdentityTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2324,7 +2287,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetRefreshTokenLifetime_ThrowsAnExceptionForNullTicket()
+        public void SetRefreshTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2352,7 +2315,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetTokenId_ThrowsAnExceptionForNullTicket()
+        public void SetInternalTokenId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2366,7 +2329,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("identifier")]
-        public void SetTokenId_AddsScopes(string identifier)
+        public void SetInternalTokenId_AddsScopes(string identifier)
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2380,7 +2343,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetTokenUsage_ThrowsAnExceptionForNullTicket()
+        public void SetTokenUsage_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
