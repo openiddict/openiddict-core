@@ -1123,7 +1123,6 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The access token lifetime or <c>null</c> if the claim cannot be found.</returns>
-
         public static TimeSpan? GetAccessTokenLifetime([NotNull] this ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -1150,7 +1149,6 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The authorization code lifetime or <c>null</c> if the claim cannot be found.</returns>
-
         public static TimeSpan? GetAuthorizationCodeLifetime([NotNull] this ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -1177,7 +1175,6 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The device code lifetime or <c>null</c> if the claim cannot be found.</returns>
-
         public static TimeSpan? GetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -1204,7 +1201,6 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The identity token lifetime or <c>null</c> if the claim cannot be found.</returns>
-
         public static TimeSpan? GetIdentityTokenLifetime([NotNull] this ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -1231,7 +1227,6 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The refresh token lifetime or <c>null</c> if the claim cannot be found.</returns>
-
         public static TimeSpan? GetRefreshTokenLifetime([NotNull] this ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -1258,7 +1253,6 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The user code lifetime or <c>null</c> if the claim cannot be found.</returns>
-
         public static TimeSpan? GetUserCodeLifetime([NotNull] this ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -1669,7 +1663,7 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetResources(
             [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> resources)
-            =>  principal.SetClaims(Claims.Private.Resources, resources);
+            => principal.SetClaims(Claims.Private.Resources, resources);
 
         /// <summary>
         /// Sets the resources list in the claims principal.
