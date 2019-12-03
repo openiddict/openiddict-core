@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -15,7 +14,6 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
-using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 
 namespace OpenIddict.Server
 {

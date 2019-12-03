@@ -18,7 +18,6 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(ExtensionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(ExtensionsVersion)" />
     <PackageReference Include="Microsoft.Owin.Security" Version="$(OwinVersion)" />
-    <PackageReference Include="Newtonsoft.Json.Bson" Version="$(JsonNetBsonVersion)" />
   </ItemGroup>
 
 </Project>

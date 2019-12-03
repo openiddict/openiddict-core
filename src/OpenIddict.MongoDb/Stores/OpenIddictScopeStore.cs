@@ -10,6 +10,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -17,8 +19,6 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
 
@@ -349,7 +349,7 @@ namespace OpenIddict.MongoDb
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the scope.
         /// </returns>
-        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TScope scope, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
@@ -358,10 +358,11 @@ namespace OpenIddict.MongoDb
 
             if (scope.Properties == null)
             {
-                return new ValueTask<JObject>(new JObject());
+                return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
             }
 
-            return new ValueTask<JObject>(JObject.FromObject(scope.Properties.ToDictionary()));
+            return new ValueTask<ImmutableDictionary<string, JsonElement>>(
+                JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(scope.Properties.ToJson()));
         }
 
         /// <summary>
@@ -541,21 +542,26 @@ namespace OpenIddict.MongoDb
         /// <param name="properties">The additional properties associated with the scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TScope scope, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        public virtual ValueTask SetPropertiesAsync([NotNull] TScope scope,
+            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
             if (scope == null)
             {
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            if (properties == null)
+            if (properties == null || properties.IsEmpty)
             {
                 scope.Properties = null;
 
                 return default;
             }
 
-            scope.Properties = BsonDocument.Parse(properties.ToString(Formatting.None));
+            scope.Properties = BsonDocument.Parse(JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            }));
 
             return default;
         }

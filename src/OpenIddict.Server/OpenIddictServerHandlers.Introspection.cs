@@ -10,17 +10,17 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
-using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 
 namespace OpenIddict.Server
 {
@@ -306,7 +306,7 @@ namespace OpenIddict.Server
                             break;
 
                         default:
-                            response[Claims.Audience] = new JArray(notification.Audiences);
+                            response[Claims.Audience] = notification.Audiences.ToArray();
                             break;
                     }
 
@@ -1120,7 +1120,12 @@ namespace OpenIddict.Server
 
                             // When multiple claims share the same type, retrieve the underlying
                             // JSON values and add everything to a new unique JSON array.
-                            _ => new JArray(claims.Select(claim => ConvertToParameter(claim).Value))
+                            _ => JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(
+                                claims.Select(claim => ConvertToParameter(claim).Value), new JsonSerializerOptions
+                                {
+                                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                                    WriteIndented = false
+                                }))
                         };
                     }
 
@@ -1132,8 +1137,8 @@ namespace OpenIddict.Server
                         ClaimValueTypes.Integer32 => int.Parse(claim.Value, CultureInfo.InvariantCulture),
                         ClaimValueTypes.Integer64 => long.Parse(claim.Value, CultureInfo.InvariantCulture),
 
-                        JsonClaimValueTypes.Json      => JToken.Parse(claim.Value),
-                        JsonClaimValueTypes.JsonArray => JToken.Parse(claim.Value),
+                        JsonClaimValueTypes.Json      => JsonSerializer.Deserialize<JsonElement>(claim.Value),
+                        JsonClaimValueTypes.JsonArray => JsonSerializer.Deserialize<JsonElement>(claim.Value),
 
                         _ => new OpenIddictParameter(claim.Value)
                     };

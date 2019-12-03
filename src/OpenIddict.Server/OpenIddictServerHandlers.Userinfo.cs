@@ -7,16 +7,13 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
-using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 
 namespace OpenIddict.Server
 {
@@ -281,7 +278,7 @@ namespace OpenIddict.Server
                             break;
 
                         default:
-                            response[Claims.Audience] = new JArray(notification.Audiences);
+                            response[Claims.Audience] = notification.Audiences.ToArray();
                             break;
                     }
 

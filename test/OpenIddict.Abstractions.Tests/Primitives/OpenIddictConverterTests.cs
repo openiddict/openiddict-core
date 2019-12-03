@@ -5,11 +5,10 @@
  */
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text;
+using System.Text.Json;
 using Xunit;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
@@ -51,7 +50,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void ReadJson_ThrowsAnExceptionForNullReader()
+        public void Read_ThrowsAnExceptionForNullType()
         {
             // Arrange
             var converter = new OpenIddictConverter();
@@ -59,38 +58,24 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                converter.ReadJson(reader: null, type: null, value: null, serializer: null);
-            });
-
-            Assert.Equal("reader", exception.ParamName);
-        }
-
-        [Fact]
-        public void ReadJson_ThrowsAnExceptionForNullType()
-        {
-            // Arrange
-            var converter = new OpenIddictConverter();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
-            {
-                converter.ReadJson(reader: new JsonTextReader(TextReader.Null), type: null, value: null, serializer: null);
+                var reader = new Utf8JsonReader();
+                converter.Read(ref reader, type: null, options: null);
             });
 
             Assert.Equal("type", exception.ParamName);
         }
 
         [Fact]
-        public void ReadJson_ThrowsAnExceptionForUnexpectedJsonToken()
+        public void Read_ThrowsAnExceptionForUnexpectedJsonToken()
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            using var reader = new JsonTextReader(new StringReader("[0,1,2,3]"));
 
             // Act and assert
-            var exception = Assert.Throws<JsonSerializationException>(() =>
+            var exception = Assert.Throws<JsonException>(() =>
             {
-                converter.ReadJson(reader: reader, type: typeof(OpenIddictRequest), value: null, serializer: null);
+                var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes("[0,1,2,3]"));
+                converter.Read(ref reader, type: typeof(OpenIddictRequest), options: null);
             });
 
             Assert.Equal("An error occurred while reading the JSON payload.", exception.Message);
@@ -106,66 +91,50 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData(typeof(OpenIddictParameter?[]))]
         [InlineData(typeof(object))]
         [InlineData(typeof(long))]
-        public void ReadJson_ThrowsAnExceptionForUnsupportedType(Type type)
+        public void Read_ThrowsAnExceptionForUnsupportedType(Type type)
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            using var reader = new JsonTextReader(new StringReader(@"{""name"":""value""}"));
 
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() =>
             {
-                converter.ReadJson(reader, type, value: null, serializer: null);
+                var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(@"{""name"":""value""}"));
+                converter.Read(ref reader, type, options: null);
             });
 
             Assert.StartsWith("The specified type is not supported.", exception.Message);
             Assert.Equal("type", exception.ParamName);
         }
 
-        [Fact]
-        public void ReadJson_PopulatesExistingInstance()
-        {
-            // Arrange
-            var message = new OpenIddictMessage();
-            var converter = new OpenIddictConverter();
-            var reader = new JsonTextReader(new StringReader(@"{""name"":""value""}"));
-
-            // Act
-            var result = converter.ReadJson(reader: reader, type: typeof(OpenIddictMessage), value: message, serializer: null);
-
-            // Assert
-            Assert.Same(message, result);
-            Assert.Equal("value", message.GetParameter("name"));
-        }
-
         [Theory]
         [InlineData(typeof(OpenIddictMessage))]
         [InlineData(typeof(OpenIddictRequest))]
         [InlineData(typeof(OpenIddictResponse))]
-        public void ReadJson_ReturnsRequestedType(Type type)
+        public void Read_ReturnsRequestedType(Type type)
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            var reader = new JsonTextReader(new StringReader(@"{""name"":""value""}"));
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(@"{""name"":""value""}"));
 
             // Act
-            var result = (OpenIddictMessage)converter.ReadJson(reader, type, value: null, serializer: null);
+            var result = converter.Read(ref reader, type, options: null);
 
             // Assert
             Assert.IsType(type, result);
-            Assert.Equal("value", result.GetParameter("name"));
+            Assert.Equal("value", (string) result.GetParameter("name"));
         }
 
         [Fact]
-        public void ReadJson_PreservesNullParameters()
+        public void Read_PreservesNullParameters()
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            var reader = new JsonTextReader(
-                new StringReader(@"{""string"":null,""bool"":null,""long"":null,""array"":null,""object"":null}"));
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(
+                @"{""string"":null,""bool"":null,""long"":null,""array"":null,""object"":null}"));
 
             // Act
-            var result = (OpenIddictMessage)converter.ReadJson(reader, typeof(OpenIddictMessage), value: null, serializer: null);
+            var result = converter.Read(ref reader, typeof(OpenIddictMessage), options: null);
 
             // Assert
             Assert.Equal(5, result.GetParameters().Count());
@@ -174,35 +143,35 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.NotNull(result.GetParameter("long"));
             Assert.NotNull(result.GetParameter("array"));
             Assert.NotNull(result.GetParameter("object"));
-            Assert.Null((string)result.GetParameter("string"));
-            Assert.Null((bool?)result.GetParameter("bool"));
-            Assert.Null((long?)result.GetParameter("long"));
-            Assert.Null((JArray)result.GetParameter("array"));
-            Assert.Null((JObject)result.GetParameter("object"));
+            Assert.Null((string) result.GetParameter("string"));
+            Assert.Null((bool?) result.GetParameter("bool"));
+            Assert.Null((long?) result.GetParameter("long"));
+            Assert.Null((JsonElement?) result.GetParameter("array"));
+            Assert.Null((JsonElement?) result.GetParameter("object"));
         }
 
         [Fact]
-        public void ReadJson_PreservesEmptyParameters()
+        public void Read_PreservesEmptyParameters()
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            var reader = new JsonTextReader(new StringReader(@"{""string"":"""",""array"":[],""object"":{}}"));
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(@"{""string"":"""",""array"":[],""object"":{}}"));
 
             // Act
-            var result = (OpenIddictMessage)converter.ReadJson(reader, typeof(OpenIddictMessage), value: null, serializer: null);
+            var result = converter.Read(ref reader, typeof(OpenIddictMessage), options: null);
 
             // Assert
             Assert.Equal(3, result.GetParameters().Count());
             Assert.NotNull(result.GetParameter("string"));
             Assert.NotNull(result.GetParameter("array"));
             Assert.NotNull(result.GetParameter("object"));
-            Assert.Empty((string)result.GetParameter("string"));
-            Assert.Empty((JArray)result.GetParameter("array"));
-            Assert.Empty((JObject)result.GetParameter("object"));
+            Assert.Empty((string) result.GetParameter("string"));
+            Assert.NotNull((JsonElement?) result.GetParameter("array"));
+            Assert.NotNull((JsonElement?) result.GetParameter("object"));
         }
 
         [Fact]
-        public void WriteJson_ThrowsAnExceptionForNullWriter()
+        public void Write_ThrowsAnExceptionForNullWriter()
         {
             // Arrange
             var converter = new OpenIddictConverter();
@@ -210,14 +179,14 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                converter.WriteJson(writer: null, value: null, serializer: null);
+                converter.Write(writer: null, value: null, options: null);
             });
 
             Assert.Equal("writer", exception.ParamName);
         }
 
         [Fact]
-        public void WriteJson_ThrowsAnExceptionForNullValue()
+        public void Write_ThrowsAnExceptionForNullValue()
         {
             // Arrange
             var converter = new OpenIddictConverter();
@@ -225,98 +194,99 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                converter.WriteJson(writer: new JsonTextWriter(TextWriter.Null), value: null, serializer: null);
+                converter.Write(writer: new Utf8JsonWriter(Stream.Null), value: null, options: null);
             });
 
             Assert.Equal("value", exception.ParamName);
         }
 
         [Fact]
-        public void WriteJson_ThrowsAnExceptionForInvalidValue()
-        {
-            // Arrange
-            var converter = new OpenIddictConverter();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() =>
-            {
-                converter.WriteJson(writer: new JsonTextWriter(TextWriter.Null), value: new object(), serializer: null);
-            });
-
-            Assert.StartsWith("The specified object is not supported.", exception.Message);
-            Assert.Equal("value", exception.ParamName);
-        }
-
-        [Fact]
-        public void WriteJson_WritesEmptyPayloadForEmptyMessages()
+        public void Write_WritesEmptyPayloadForEmptyMessages()
         {
             // Arrange
             var message = new OpenIddictMessage();
             var converter = new OpenIddictConverter();
-            var writer = new StringWriter(CultureInfo.InvariantCulture);
+            using var stream = new MemoryStream();
+            using var reader = new StreamReader(stream);
+            using var writer = new Utf8JsonWriter(stream);
 
             // Act
-            converter.WriteJson(writer: new JsonTextWriter(writer), value: message, serializer: null);
-
-            Assert.Equal("{}", writer.ToString());
-        }
-
-        [Fact]
-        public void WriteJson_PreservesNullParameters()
-        {
-            // Arrange
-            var converter = new OpenIddictConverter();
-            var writer = new StringWriter(CultureInfo.InvariantCulture);
-
-            var message = new OpenIddictMessage();
-            message.AddParameter("string", new OpenIddictParameter((string)null));
-            message.AddParameter("bool", new OpenIddictParameter((bool?)null));
-            message.AddParameter("long", new OpenIddictParameter((long?)null));
-            message.AddParameter("array", new OpenIddictParameter((JArray)null));
-            message.AddParameter("object", new OpenIddictParameter((JObject)null));
-
-            // Act
-            converter.WriteJson(writer: new JsonTextWriter(writer), value: message, serializer: null);
+            converter.Write(writer, value: message, options: null);
 
             // Assert
-            Assert.Equal(@"{""string"":null,""bool"":null,""long"":null,""array"":null,""object"":null}", writer.ToString());
+            writer.Flush();
+            stream.Seek(0L, SeekOrigin.Begin);
+            Assert.Equal("{}", reader.ReadToEnd());
         }
 
         [Fact]
-        public void WriteJson_PreservesEmptyParameters()
+        public void Write_PreservesNullParameters()
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            var writer = new StringWriter(CultureInfo.InvariantCulture);
+            using var stream = new MemoryStream();
+            using var reader = new StreamReader(stream);
+            using var writer = new Utf8JsonWriter(stream);
+
+            var message = new OpenIddictMessage();
+            message.AddParameter("string", new OpenIddictParameter((string) null));
+            message.AddParameter("bool", new OpenIddictParameter((bool?) null));
+            message.AddParameter("long", new OpenIddictParameter((long?) null));
+            message.AddParameter("array", new OpenIddictParameter((JsonElement?) null));
+            message.AddParameter("object", new OpenIddictParameter((JsonElement?) null));
+
+            // Act
+            converter.Write(writer, value: message, options: null);
+
+            // Assert
+            writer.Flush();
+            stream.Seek(0L, SeekOrigin.Begin);
+            Assert.Equal(@"{""string"":null,""bool"":null,""long"":null,""array"":null,""object"":null}", reader.ReadToEnd());
+        }
+
+        [Fact]
+        public void Write_PreservesEmptyParameters()
+        {
+            // Arrange
+            var converter = new OpenIddictConverter();
+            using var stream = new MemoryStream();
+            using var reader = new StreamReader(stream);
+            using var writer = new Utf8JsonWriter(stream);
 
             var message = new OpenIddictMessage();
             message.AddParameter("string", new OpenIddictParameter(string.Empty));
-            message.AddParameter("array", new OpenIddictParameter(new JArray()));
-            message.AddParameter("object", new OpenIddictParameter(new JObject()));
+            message.AddParameter("array", new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("[]")));
+            message.AddParameter("object", new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>("{}")));
 
             // Act
-            converter.WriteJson(writer: new JsonTextWriter(writer), value: message, serializer: null);
+            converter.Write(writer, value: message, options: null);
 
             // Assert
-            Assert.Equal(@"{""string"":"""",""array"":[],""object"":{}}", writer.ToString());
+            writer.Flush();
+            stream.Seek(0L, SeekOrigin.Begin);
+            Assert.Equal(@"{""string"":"""",""array"":[],""object"":{}}", reader.ReadToEnd());
         }
 
         [Fact]
-        public void WriteJson_WritesExpectedPayload()
+        public void Write_WritesExpectedPayload()
         {
             // Arrange
             var converter = new OpenIddictConverter();
-            var writer = new StringWriter(CultureInfo.InvariantCulture);
+            using var stream = new MemoryStream();
+            using var reader = new StreamReader(stream);
+            using var writer = new Utf8JsonWriter(stream);
 
             var message = new OpenIddictMessage();
             message.AddParameter("string", "value");
-            message.AddParameter("array", new JArray("value"));
+            message.AddParameter("array", new[] { "value" });
 
             // Act
-            converter.WriteJson(writer: new JsonTextWriter(writer), value: message, serializer: null);
+            converter.Write(writer, value: message, options: null);
 
             // Assert
-            Assert.Equal(@"{""string"":""value"",""array"":[""value""]}", writer.ToString());
+            writer.Flush();
+            stream.Seek(0L, SeekOrigin.Begin);
+            Assert.Equal(@"{""string"":""value"",""array"":[""value""]}", reader.ReadToEnd());
         }
     }
 }

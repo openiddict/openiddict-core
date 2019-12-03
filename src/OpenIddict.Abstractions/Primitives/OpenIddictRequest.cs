@@ -6,10 +6,10 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Abstractions
 {
@@ -35,7 +35,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict request.
         /// </summary>
         /// <param name="parameters">The request parameters.</param>
-        public OpenIddictRequest([NotNull] IEnumerable<KeyValuePair<string, JToken>> parameters)
+        public OpenIddictRequest([NotNull] IEnumerable<KeyValuePair<string, JsonElement>> parameters)
             : base(parameters) { }
 
         /// <summary>
@@ -105,9 +105,9 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets or sets the "claims" parameter.
         /// </summary>
-        public JObject Claims
+        public JsonElement Claims
         {
-            get => (JObject) GetParameter(OpenIddictConstants.Parameters.Claims);
+            get => (JsonElement) GetParameter(OpenIddictConstants.Parameters.Claims);
             set => SetParameter(OpenIddictConstants.Parameters.Claims, value);
         }
 
@@ -402,9 +402,9 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets or sets the "registration" parameter.
         /// </summary>
-        public JObject Registration
+        public JsonElement Registration
         {
-            get => (JObject) GetParameter(OpenIddictConstants.Parameters.Registration);
+            get => (JsonElement) GetParameter(OpenIddictConstants.Parameters.Registration);
             set => SetParameter(OpenIddictConstants.Parameters.Registration, value);
         }
 

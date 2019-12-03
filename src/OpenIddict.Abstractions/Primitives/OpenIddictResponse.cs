@@ -6,10 +6,10 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace OpenIddict.Abstractions
 {
@@ -35,7 +35,7 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
-        public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, JToken>> parameters)
+        public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, JsonElement>> parameters)
             : base(parameters) { }
 
         /// <summary>

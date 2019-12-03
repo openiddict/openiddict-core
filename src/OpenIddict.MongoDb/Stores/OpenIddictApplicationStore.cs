@@ -10,6 +10,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -17,8 +19,6 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
 
@@ -448,7 +448,7 @@ namespace OpenIddict.MongoDb
         /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
         /// whose result returns all the additional properties associated with the application.
         /// </returns>
-        public virtual ValueTask<JObject> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
+        public virtual ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync([NotNull] TApplication application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -457,10 +457,11 @@ namespace OpenIddict.MongoDb
 
             if (application.Properties == null)
             {
-                return new ValueTask<JObject>(new JObject());
+                return new ValueTask<ImmutableDictionary<string, JsonElement>>(ImmutableDictionary.Create<string, JsonElement>());
             }
 
-            return new ValueTask<JObject>(JObject.FromObject(application.Properties.ToDictionary()));
+            return new ValueTask<ImmutableDictionary<string, JsonElement>>(
+                JsonSerializer.Deserialize<ImmutableDictionary<string, JsonElement>>(application.Properties.ToJson()));
         }
 
         /// <summary>
@@ -763,21 +764,26 @@ namespace OpenIddict.MongoDb
         /// <param name="properties">The additional properties associated with the application.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
-        public virtual ValueTask SetPropertiesAsync([NotNull] TApplication application, [CanBeNull] JObject properties, CancellationToken cancellationToken)
+        public virtual ValueTask SetPropertiesAsync([NotNull] TApplication application,
+            [CanBeNull] ImmutableDictionary<string, JsonElement> properties, CancellationToken cancellationToken)
         {
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
 
-            if (properties == null)
+            if (properties == null || properties.IsEmpty)
             {
                 application.Properties = null;
 
                 return default;
             }
 
-            application.Properties = BsonDocument.Parse(properties.ToString(Formatting.None));
+            application.Properties = BsonDocument.Parse(JsonSerializer.Serialize(properties, new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = false
+            }));
 
             return default;
         }

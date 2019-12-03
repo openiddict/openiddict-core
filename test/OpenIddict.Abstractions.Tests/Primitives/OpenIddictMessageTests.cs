@@ -7,8 +7,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Xunit;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
@@ -151,15 +151,16 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act
             message.AddParameter("string", string.Empty);
-            message.AddParameter("array", new JArray());
-            message.AddParameter("object", new JObject());
-            message.AddParameter("value", new JValue(string.Empty));
+            message.AddParameter("array", JsonSerializer.Deserialize<JsonElement>("[]"));
+            message.AddParameter("object", JsonSerializer.Deserialize<JsonElement>("{}"));
+            message.AddParameter("value", JsonSerializer.Deserialize<JsonElement>(
+                @"{""property"":""""}").GetProperty("property").GetString());
 
             // Assert
             Assert.Empty((string) message.GetParameter("string"));
-            Assert.Equal(new JArray(), (JArray) message.GetParameter("array"));
-            Assert.Equal(new JObject(), (JObject) message.GetParameter("object"));
-            Assert.Equal(new JValue(string.Empty), (JValue) message.GetParameter("value"));
+            Assert.NotNull((JsonElement?) message.GetParameter("array"));
+            Assert.NotNull((JsonElement?) message.GetParameter("object"));
+            Assert.NotNull((JsonElement?) message.GetParameter("value"));
         }
 
         [Theory]
@@ -349,9 +350,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act
             message.SetParameter("string", string.Empty);
-            message.SetParameter("array", new JArray());
-            message.SetParameter("object", new JObject());
-            message.SetParameter("value", new JValue(string.Empty));
+            message.SetParameter("array", JsonSerializer.Deserialize<JsonElement>("[]"));
+            message.SetParameter("object", JsonSerializer.Deserialize<JsonElement>("{}"));
+            message.SetParameter("value", JsonSerializer.Deserialize<JsonElement>(
+                @"{""property"":""""}").GetProperty("property").GetString());
 
             // Assert
             Assert.Empty(message.GetParameters());
@@ -366,7 +368,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var message = new OpenIddictMessage();
 
             // Act
-            var exception = Assert.Throws<ArgumentException>(() => message.TryGetParameter(name, out OpenIddictParameter parameter));
+            var exception = Assert.Throws<ArgumentException>(() => message.TryGetParameter(name, out var parameter));
 
             // Assert
             Assert.Equal("name", exception.ParamName);
@@ -377,31 +379,22 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void TryGetParameter_ReturnsTrueAndExpectedParameter()
         {
             // Arrange
-            var name = "paramName";
-            var val = "paramValue";
             var message = new OpenIddictMessage();
-            message.SetParameter(name, val);
+            message.SetParameter("parameter", 42);
 
-            // Act
-            var success = message.TryGetParameter(name, out OpenIddictParameter parameter);
-
-            // Assert
-            Assert.True(success);
-            Assert.Equal(val, (string)parameter.Value);
+            // Act and assert
+            Assert.True(message.TryGetParameter("parameter", out var parameter));
+            Assert.Equal(42, (long) parameter.Value);
         }
 
         [Fact]
-        public void TryGetParameter_ReturnsFalse()
+        public void TryGetParameter_ReturnsFalseForUnsetParameter()
         {
             // Arrange
-            var name = "paramName";
             var message = new OpenIddictMessage();
 
-            // Act
-            var success = message.TryGetParameter(name, out OpenIddictParameter parameter);
-
-            // Assert
-            Assert.False(success);
+            // Act and assert
+            Assert.False(message.TryGetParameter("parameter", out OpenIddictParameter parameter));
             Assert.Null(parameter.Value);
         }
 
@@ -409,7 +402,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void ToString_ReturnsJsonRepresentation()
         {
             // Arrange
-            var message = JsonConvert.DeserializeObject<OpenIddictMessage>(@"{
+            var message = JsonSerializer.Deserialize<OpenIddictMessage>(@"{
   ""redirect_uris"": [
     ""https://client.example.org/callback"",
     ""https://client.example.org/callback2""
@@ -421,8 +414,14 @@ namespace OpenIddict.Abstractions.Tests.Primitives
   ""example_extension_parameter"": ""example_value""
 }");
 
+            var options = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = true
+            };
+
             // Act and assert
-            Assert.Equal(JsonConvert.SerializeObject(message, Formatting.Indented), message.ToString());
+            Assert.Equal(JsonSerializer.Serialize(message, options), message.ToString());
         }
 
         [Theory]
@@ -443,8 +442,9 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             message.AddParameter(parameter, "secret value");
 
             // Act and assert
+            var element = JsonSerializer.Deserialize<JsonElement>(message.ToString());
             Assert.DoesNotContain("secret value", message.ToString());
-            Assert.Equal("[removed for security reasons]", JObject.Parse(message.ToString())[parameter]);
+            Assert.Equal("[removed for security reasons]", element.GetProperty(parameter).GetString());
         }
     }
 }

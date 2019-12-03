@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using JetBrains.Annotations;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server
@@ -80,7 +80,7 @@ namespace OpenIddict.Server
             /// Note: this value should only be populated if the "address"
             /// scope was requested and accepted by the resource owner.
             /// </summary>
-            public JObject Address { get; set; }
+            public JsonElement Address { get; set; }
 
             /// <summary>
             /// Gets or sets the values used for the "aud" claim.

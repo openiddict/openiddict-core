@@ -178,6 +178,20 @@ namespace OpenIddict.Abstractions
             public const string RefreshToken = "refresh_token";
         }
 
+        public static class JsonWebTokenTypes
+        {
+            public const string AccessToken = "at+jwt";
+            public const string IdentityToken = "jwt";
+
+            public static class Private
+            {
+                public const string AuthorizationCode = "oi_auc+jwt";
+                public const string DeviceCode = "oi_dvc+jwt";
+                public const string RefreshToken = "oi_reft+jwt";
+                public const string UserCode = "oi_usrc+jwt";
+            }
+        }
+
         public static class Metadata
         {
             public const string AcrValuesSupported = "acr_values_supported";

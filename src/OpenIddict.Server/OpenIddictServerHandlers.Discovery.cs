@@ -5,18 +5,18 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -1098,12 +1098,13 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    var keys = new JArray();
+                    using var stream = new MemoryStream();
+                    using var writer = new Utf8JsonWriter(stream);
+
+                    writer.WriteStartArray();
 
                     foreach (var key in notification.Keys)
                     {
-                        var item = new JObject();
-
                         // Ensure a key type has been provided.
                         // See https://tools.ietf.org/html/rfc7517#section-4.1
                         if (string.IsNullOrEmpty(key.Kty))
@@ -1114,49 +1115,60 @@ namespace OpenIddict.Server
                             continue;
                         }
 
-                        // Create a dictionary associating the
-                        // JsonWebKey components with their values.
-                        var parameters = new Dictionary<string, string>
-                        {
-                            [JsonWebKeyParameterNames.Kid] = key.Kid,
-                            [JsonWebKeyParameterNames.Use] = key.Use,
-                            [JsonWebKeyParameterNames.Kty] = key.Kty,
-                            [JsonWebKeyParameterNames.Alg] = key.Alg,
-                            [JsonWebKeyParameterNames.Crv] = key.Crv,
-                            [JsonWebKeyParameterNames.E] = key.E,
-                            [JsonWebKeyParameterNames.N] = key.N,
-                            [JsonWebKeyParameterNames.X] = key.X,
-                            [JsonWebKeyParameterNames.Y] = key.Y,
-                            [JsonWebKeyParameterNames.X5t] = key.X5t,
-                            [JsonWebKeyParameterNames.X5u] = key.X5u
-                        };
+                        writer.WriteStartObject();
 
-                        foreach (var parameter in parameters)
-                        {
-                            if (!string.IsNullOrEmpty(parameter.Value))
-                            {
-                                item.Add(parameter.Key, parameter.Value);
-                            }
-                        }
+                        if (!string.IsNullOrEmpty(key.Kid)) writer.WriteString(JsonWebKeyParameterNames.Kid, key.Kid);
+                        if (!string.IsNullOrEmpty(key.Use)) writer.WriteString(JsonWebKeyParameterNames.Use, key.Use);
+                        if (!string.IsNullOrEmpty(key.Kty)) writer.WriteString(JsonWebKeyParameterNames.Kty, key.Kty);
+                        if (!string.IsNullOrEmpty(key.Alg)) writer.WriteString(JsonWebKeyParameterNames.Alg, key.Alg);
+                        if (!string.IsNullOrEmpty(key.Crv)) writer.WriteString(JsonWebKeyParameterNames.Crv, key.Crv);
+                        if (!string.IsNullOrEmpty(key.E))   writer.WriteString(JsonWebKeyParameterNames.E, key.E);
+                        if (!string.IsNullOrEmpty(key.N))   writer.WriteString(JsonWebKeyParameterNames.N, key.N);
+                        if (!string.IsNullOrEmpty(key.X))   writer.WriteString(JsonWebKeyParameterNames.X, key.X);
+                        if (!string.IsNullOrEmpty(key.Y))   writer.WriteString(JsonWebKeyParameterNames.Y, key.Y);
+                        if (!string.IsNullOrEmpty(key.X5t)) writer.WriteString(JsonWebKeyParameterNames.X5t, key.X5t);
+                        if (!string.IsNullOrEmpty(key.X5u)) writer.WriteString(JsonWebKeyParameterNames.X5u, key.X5u);
 
                         if (key.KeyOps.Count != 0)
                         {
-                            item.Add(JsonWebKeyParameterNames.KeyOps, new JArray(key.KeyOps));
+                            writer.WritePropertyName(JsonWebKeyParameterNames.KeyOps);
+                            writer.WriteStartArray();
+
+                            for (var index = 0; index < key.KeyOps.Count; index++)
+                            {
+                                writer.WriteStringValue(key.KeyOps[index]);
+                            }
+
+                            writer.WriteEndArray();
                         }
 
                         if (key.X5c.Count != 0)
                         {
-                            item.Add(JsonWebKeyParameterNames.X5c, new JArray(key.X5c));
+                            writer.WritePropertyName(JsonWebKeyParameterNames.X5c);
+                            writer.WriteStartArray();
+
+                            for (var index = 0; index < key.X5c.Count; index++)
+                            {
+                                writer.WriteStringValue(key.X5c[index]);
+                            }
+
+                            writer.WriteEndArray();
                         }
 
-                        keys.Add(item);
+                        writer.WriteEndObject();
                     }
+
+                    writer.WriteEndArray();
+                    writer.Flush();
+                    stream.Seek(0L, SeekOrigin.Begin);
+
+                    using var document = JsonDocument.Parse(stream);
 
                     // Note: AddParameter() is used here to ensure the mandatory "keys" node
                     // is returned to the caller, even if the key set doesn't expose any key.
                     // See https://tools.ietf.org/html/rfc7517#section-5 for more information.
                     var response = new OpenIddictResponse();
-                    response.AddParameter(Parameters.Keys, keys);
+                    response.AddParameter(Parameters.Keys, document.RootElement.Clone());
 
                     context.Response = response;
                 }

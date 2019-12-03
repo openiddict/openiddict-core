@@ -5,7 +5,9 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -760,12 +762,14 @@ namespace OpenIddict.Server
                     }
 
                     // If all the specified scopes are registered in the options, avoid making a database lookup.
-                    var scopes = context.Request.GetScopes().Except(context.Options.Scopes);
+                    var scopes = new HashSet<string>(context.Request.GetScopes(), StringComparer.Ordinal);
+                    scopes.ExceptWith(context.Options.Scopes);
+
                     if (scopes.Count != 0)
                     {
                         await foreach (var scope in _scopeManager.FindByNamesAsync(scopes.ToImmutableArray()))
                         {
-                            scopes = scopes.Remove(await _scopeManager.GetNameAsync(scope));
+                            scopes.Remove(await _scopeManager.GetNameAsync(scope));
                         }
                     }
 
@@ -1422,7 +1426,7 @@ namespace OpenIddict.Server
                     }
 
                     var presenters = context.Principal.GetPresenters();
-                    if (presenters.Count == 0)
+                    if (presenters.IsDefaultOrEmpty)
                     {
                         // Note: presenters may be empty during a grant_type=refresh_token request if the refresh token
                         // was issued to a public client but cannot be null for an authorization or device code grant request.
@@ -1725,7 +1729,7 @@ namespace OpenIddict.Server
                     // When an explicit scope parameter has been included in the token request
                     // but was missing from the initial request, the request MUST be rejected.
                     // See http://tools.ietf.org/html/rfc6749#section-6 for more information.
-                    var scopes = context.Principal.GetScopes();
+                    var scopes = new HashSet<string>(context.Principal.GetScopes(), StringComparer.Ordinal);
                     if (scopes.Count == 0)
                     {
                         context.Logger.LogError("The token request was rejected because the 'scope' parameter was not allowed.");

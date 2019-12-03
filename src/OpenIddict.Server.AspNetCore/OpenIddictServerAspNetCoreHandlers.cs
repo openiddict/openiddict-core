@@ -10,6 +10,8 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore;
@@ -18,7 +20,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlerFilters;
@@ -834,61 +835,59 @@ namespace OpenIddict.Server.AspNetCore
 
                 context.Logger.LogInformation("The response was successfully returned as a JSON document: {Response}.", context.Response);
 
-                using (var buffer = new MemoryStream())
-                using (var writer = new JsonTextWriter(new StreamWriter(buffer)))
+                using var stream = new MemoryStream();
+                await JsonSerializer.SerializeAsync(stream, context.Response, new JsonSerializerOptions
                 {
-                    var serializer = JsonSerializer.CreateDefault();
-                    serializer.Serialize(writer, context.Response);
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = false
+                });
 
-                    writer.Flush();
-
-                    if (!string.IsNullOrEmpty(context.Response.Error))
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    // When client authentication is made using basic authentication, the authorization server MUST return
+                    // a 401 response with a valid WWW-Authenticate header containing the Basic scheme and a non-empty realm.
+                    // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
+                    // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
+                    // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
+                    // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
+                    // were specified in the request form instead of the HTTP headers, as allowed by the specification.
+                    var scheme = context.Response.Error switch
                     {
-                        // When client authentication is made using basic authentication, the authorization server MUST return
-                        // a 401 response with a valid WWW-Authenticate header containing the Basic scheme and a non-empty realm.
-                        // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
-                        // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
-                        // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
-                        // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
-                        // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-                        var scheme = context.Response.Error switch
+                        Errors.InvalidClient => Schemes.Basic,
+                        Errors.InvalidToken  => Schemes.Bearer,
+                        _ => null
+                    };
+
+                    if (!string.IsNullOrEmpty(scheme))
+                    {
+                        if (context.Issuer == null)
                         {
-                            Errors.InvalidClient => Schemes.Basic,
-                            Errors.InvalidToken  => Schemes.Bearer,
-                            _ => null
-                        };
-
-                        if (!string.IsNullOrEmpty(scheme))
-                        {
-                            if (context.Issuer == null)
-                            {
-                                throw new InvalidOperationException("The issuer address cannot be inferred from the current request.");
-                            }
-
-                            request.HttpContext.Response.StatusCode = 401;
-
-                            request.HttpContext.Response.Headers[HeaderNames.WWWAuthenticate] = new StringBuilder()
-                                .Append(scheme)
-                                .Append(' ')
-                                .Append(Parameters.Realm)
-                                .Append("=\"")
-                                .Append(context.Issuer.AbsoluteUri)
-                                .Append('"')
-                                .ToString();
+                            throw new InvalidOperationException("The issuer address cannot be inferred from the current request.");
                         }
 
-                        else
-                        {
-                            request.HttpContext.Response.StatusCode = 400;
-                        }
+                        request.HttpContext.Response.StatusCode = 401;
+
+                        request.HttpContext.Response.Headers[HeaderNames.WWWAuthenticate] = new StringBuilder()
+                            .Append(scheme)
+                            .Append(' ')
+                            .Append(Parameters.Realm)
+                            .Append("=\"")
+                            .Append(context.Issuer.AbsoluteUri)
+                            .Append('"')
+                            .ToString();
                     }
 
-                    request.HttpContext.Response.ContentLength = buffer.Length;
-                    request.HttpContext.Response.ContentType = "application/json;charset=UTF-8";
-
-                    buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                    await buffer.CopyToAsync(request.HttpContext.Response.Body, 4096, request.HttpContext.RequestAborted);
+                    else
+                    {
+                        request.HttpContext.Response.StatusCode = 400;
+                    }
                 }
+
+                request.HttpContext.Response.ContentLength = stream.Length;
+                request.HttpContext.Response.ContentType = "application/json;charset=UTF-8";
+
+                stream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                await stream.CopyToAsync(request.HttpContext.Response.Body, 4096, request.HttpContext.RequestAborted);
 
                 context.HandleRequest();
             }
