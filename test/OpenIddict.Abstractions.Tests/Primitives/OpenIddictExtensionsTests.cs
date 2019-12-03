@@ -1261,7 +1261,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetClaim_IsCaseSensitive()
+        public void GetClaim_IsCaseInsensitive()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1269,7 +1269,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetClaim("type", "value");
 
             // Act and assert
-            Assert.Null(principal.GetClaim("TYPE"));
+            Assert.Equal("value", principal.GetClaim("TYPE"));
         }
 
         [Fact]
@@ -2047,7 +2047,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetClaim_IsCaseSensitive()
+        public void SetClaim_IsCaseInsensitive()
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2057,7 +2057,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetClaim("TYPE", "value");
 
             // Assert
-            Assert.Null(principal.GetClaim("type"));
+            Assert.Equal("value", principal.GetClaim("type"));
         }
 
         [Fact]
@@ -2340,34 +2340,6 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal(identifier, principal.GetClaim(OpenIddictConstants.Claims.Private.TokenId));
-        }
-
-        [Fact]
-        public void SetTokenUsage_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetTokenUsage(null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("usage")]
-        public void SetTokenUsage_AddsScopes(string usage)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetTokenUsage(usage);
-
-            // Assert
-            Assert.Equal(usage, principal.GetClaim(OpenIddictConstants.Claims.Private.TokenUsage));
         }
 
         private TimeSpan? ParseLifeTime(string lifetime)

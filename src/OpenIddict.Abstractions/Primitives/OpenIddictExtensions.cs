@@ -812,7 +812,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
             }
 
-            return principal.FindFirst(claim => string.Equals(claim.Type, type))?.Value;
+            return principal.FindFirst(type)?.Value;
         }
 
         /// <summary>
@@ -1791,15 +1791,6 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetInternalTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
             => principal.SetClaim(Claims.Private.TokenId, identifier);
-
-        /// <summary>
-        /// Sets the token usage associated with the claims principal.
-        /// </summary>
-        /// <param name="principal">The claims principal.</param>
-        /// <param name="tokenUsage">The token usage to store.</param>
-        /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetTokenUsage([NotNull] this ClaimsPrincipal principal, string tokenUsage)
-             => principal.SetClaim(Claims.Private.TokenUsage, tokenUsage);
 
         private static IEnumerable<string> GetValues(string source, char[] separators)
         {
