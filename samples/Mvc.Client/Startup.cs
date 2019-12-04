@@ -73,9 +73,9 @@ namespace Mvc.Client
 
             app.UseAuthentication();
 
-            app.UseAuthorization();
-
             app.UseRouting();
+
+            app.UseAuthorization();
 
             app.UseEndpoints(options => options.MapControllerRoute(
                 name: "default",
