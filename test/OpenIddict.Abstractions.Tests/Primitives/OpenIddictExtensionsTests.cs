@@ -2406,7 +2406,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetExpirationDate(ParseDateTimeOffset(date));
 
             // Assert
-            Assert.Equal(date, principal.GetClaim(OpenIddictConstants.Claims.IssuedAt));
+            Assert.Equal(date, principal.GetClaim(OpenIddictConstants.Claims.ExpiresAt));
         }
 
         [Fact]
