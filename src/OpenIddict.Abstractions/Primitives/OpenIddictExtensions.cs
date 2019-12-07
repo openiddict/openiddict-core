@@ -1299,8 +1299,7 @@ namespace OpenIddict.Abstractions
             => principal.GetClaim(Claims.Private.TokenUsage);
 
         /// <summary>
-        /// Gets a boolean value indicating whether the
-        /// claims principal corresponds to an access token.
+        /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an access token.</returns>
@@ -1315,8 +1314,7 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether the
-        /// claims principal corresponds to an access token.
+        /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an authorization code.</returns>
@@ -1331,8 +1329,22 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether the
-        /// claims principal corresponds to an identity token.
+        /// Gets a boolean value indicating whether the claims principal corresponds to a device code.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to a device code.</returns>
+        public static bool IsDeviceCode([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), TokenUsages.DeviceCode, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to an identity token.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an identity token.</returns>
@@ -1347,8 +1359,7 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether the
-        /// claims principal corresponds to a refresh token.
+        /// Gets a boolean value indicating whether the claims principal corresponds to a refresh token.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to a refresh token.</returns>
@@ -1360,6 +1371,21 @@ namespace OpenIddict.Abstractions
             }
 
             return string.Equals(principal.GetTokenUsage(), TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to a user code.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to a user code.</returns>
+        public static bool IsUserCode([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), TokenUsages.UserCode, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

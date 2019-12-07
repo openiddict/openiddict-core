@@ -212,7 +212,7 @@ namespace OpenIddict.Validation
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(context.Token, parameters);
-                if (result.ClaimsIdentity == null)
+                if (result.ClaimsIdentity == null || !result.IsValid)
                 {
                     context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Token);
 

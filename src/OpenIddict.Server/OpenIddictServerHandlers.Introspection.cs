@@ -48,6 +48,7 @@ namespace OpenIddict.Server
                 ValidateClientSecret.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
                 ValidateToken.Descriptor,
+                ValidateTokenType.Descriptor,
                 ValidateAuthorizedParty.Descriptor,
 
                 /*
@@ -809,6 +810,51 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting introspection requests that specify an unsupported token.
+            /// </summary>
+            public class ValidateTokenType : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
+                        .UseSingletonHandler<ValidateTokenType>()
+                        .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public ValueTask HandleAsync([NotNull] ValidateIntrospectionRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    if (!context.Principal.IsAccessToken() && !context.Principal.IsAuthorizationCode() &&
+                        !context.Principal.IsIdentityToken() && !context.Principal.IsRefreshToken())
+                    {
+                        context.Logger.LogError("The introspection request was rejected because " +
+                                                "the received token was of an unsupported type.");
+
+                        context.Reject(
+                            error: Errors.UnsupportedTokenType,
+                            description: "The specified token cannot be introspected.");
+
+                        return default;
+                    }
+
+                    return default;
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting introspection requests that specify a token
             /// that cannot be introspected by the client application sending the introspection requests.
             /// </summary>
@@ -824,7 +870,7 @@ namespace OpenIddict.Server
                         // In this case, the returned claims are limited by AttachApplicationClaims to limit exposure.
                         .AddFilter<RequireClientIdParameter>()
                         .UseSingletonHandler<ValidateAuthorizedParty>()
-                        .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateTokenType.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>

@@ -17,7 +17,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants;
 using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Purposes;
 using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerEvents;
@@ -87,9 +86,11 @@ namespace OpenIddict.Server.DataProtection
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var principal = !string.IsNullOrEmpty(context.TokenType) ?
                     ValidateToken(context.Token, context.TokenType) :
-                    ValidateToken(context.Token, TokenUsages.AccessToken)  ??
-                    ValidateToken(context.Token, TokenUsages.RefreshToken) ??
-                    ValidateToken(context.Token, TokenUsages.AuthorizationCode);
+                    ValidateToken(context.Token, TokenUsages.AccessToken)       ??
+                    ValidateToken(context.Token, TokenUsages.RefreshToken)      ??
+                    ValidateToken(context.Token, TokenUsages.AuthorizationCode) ??
+                    ValidateToken(context.Token, TokenUsages.DeviceCode)        ??
+                    ValidateToken(context.Token, TokenUsages.UserCode);
                 if (principal == null)
                 {
                     return default;
@@ -120,7 +121,7 @@ namespace OpenIddict.Server.DataProtection
                             => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server      },
 
                         TokenUsages.UserCode when !context.Options.DisableTokenStorage
-                            => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server,         },
+                            => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server          },
 
                         TokenUsages.AccessToken       => new[] { Handlers.Server, Formats.AccessToken,       Schemes.Server },
                         TokenUsages.AuthorizationCode => new[] { Handlers.Server, Formats.AuthorizationCode, Schemes.Server },

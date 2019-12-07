@@ -188,6 +188,8 @@ namespace OpenIddict.Server
                     OpenIddictServerEndpointType.Authorization => (context.Request.IdTokenHint, TokenUsages.IdToken),
                     OpenIddictServerEndpointType.Logout        => (context.Request.IdTokenHint, TokenUsages.IdToken),
 
+                    // Generic tokens received by the introspection and revocation can be of any type.
+                    // Additional token type filtering is made by the endpoint themselves, if needed.
                     OpenIddictServerEndpointType.Introspection => (context.Request.Token, null),
                     OpenIddictServerEndpointType.Revocation    => (context.Request.Token, null),
 
@@ -334,6 +336,7 @@ namespace OpenIddict.Server
                     return;
                 }
 
+                // If the type associated with the token entry doesn't match the expected type, return an error.
                 if (!string.IsNullOrEmpty(context.TokenType) &&
                     !string.Equals(context.TokenType, await _tokenManager.GetTypeAsync(token)))
                 {
@@ -416,12 +419,38 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                var result = !string.IsNullOrEmpty(context.TokenType) ?
-                    await ValidateTokenAsync(context.Token, context.TokenType) :
-                    await ValidateAnyTokenAsync(context.Token);
-                if (result.ClaimsIdentity == null)
+                var parameters = context.Options.TokenValidationParameters.Clone();
+                parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
+                parameters.IssuerSigningKeys = context.Options.SigningCredentials.Select(credentials => credentials.Key);
+                parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
+
+                // If a specific token type is expected, override the default valid types to reject
+                // security tokens whose "typ" header doesn't match the expected token type.
+                if (!string.IsNullOrEmpty(context.TokenType))
                 {
+                    parameters.ValidTypes = new[]
+                    {
+                        context.TokenType switch
+                        {
+                            TokenUsages.AccessToken => JsonWebTokenTypes.AccessToken,
+                            TokenUsages.IdToken     => JsonWebTokenTypes.IdentityToken,
+
+                            TokenUsages.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
+                            TokenUsages.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
+                            TokenUsages.RefreshToken      => JsonWebTokenTypes.Private.RefreshToken,
+                            TokenUsages.UserCode          => JsonWebTokenTypes.Private.UserCode,
+
+                            _ => throw new InvalidOperationException("The token type is not supported.")
+                        }
+                    };
+                }
+
+                // If the token cannot be validated, don't return an error to allow another handle to validate it.
+                var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(context.Token, parameters);
+                if (result.ClaimsIdentity == null || !result.IsValid)
+                {
+                    context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Token);
+
                     return;
                 }
 
@@ -444,93 +473,6 @@ namespace OpenIddict.Server
 
                 context.Logger.LogTrace("The token '{Token}' was successfully validated and the following claims " +
                                         "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
-
-                async ValueTask<TokenValidationResult> ValidateTokenAsync(string token, string type)
-                {
-                    var parameters = context.Options.TokenValidationParameters.Clone();
-                    parameters.ValidTypes = new[]
-                    {
-                        type switch
-                        {
-                            TokenUsages.AccessToken => JsonWebTokenTypes.AccessToken,
-                            TokenUsages.IdToken     => JsonWebTokenTypes.IdentityToken,
-
-                            TokenUsages.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
-                            TokenUsages.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
-                            TokenUsages.RefreshToken      => JsonWebTokenTypes.Private.RefreshToken,
-                            TokenUsages.UserCode          => JsonWebTokenTypes.Private.UserCode,
-
-                            _ => throw new InvalidOperationException("The token type is not supported.")
-                        }
-                    };
-                    parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
-
-                    parameters.IssuerSigningKeys = type switch
-                    {
-                        TokenUsages.AccessToken       => context.Options.SigningCredentials.Select(credentials => credentials.Key),
-                        TokenUsages.AuthorizationCode => context.Options.SigningCredentials.Select(credentials => credentials.Key),
-                        TokenUsages.DeviceCode        => context.Options.SigningCredentials.Select(credentials => credentials.Key),
-                        TokenUsages.RefreshToken      => context.Options.SigningCredentials.Select(credentials => credentials.Key),
-                        TokenUsages.UserCode          => context.Options.SigningCredentials.Select(credentials => credentials.Key),
-
-                        TokenUsages.IdToken => context.Options.SigningCredentials
-                            .Select(credentials => credentials.Key)
-                            .OfType<AsymmetricSecurityKey>(),
-
-                        _ => Array.Empty<SecurityKey>()
-                    };
-
-                    parameters.TokenDecryptionKeys = type switch
-                    {
-                        TokenUsages.AuthorizationCode => context.Options.EncryptionCredentials.Select(credentials => credentials.Key),
-                        TokenUsages.DeviceCode        => context.Options.EncryptionCredentials.Select(credentials => credentials.Key),
-                        TokenUsages.RefreshToken      => context.Options.EncryptionCredentials.Select(credentials => credentials.Key),
-                        TokenUsages.UserCode          => context.Options.EncryptionCredentials.Select(credentials => credentials.Key),
-
-                        TokenUsages.AccessToken => context.Options.EncryptionCredentials
-                            .Select(credentials => credentials.Key)
-                            .Where(key => key is SymmetricSecurityKey),
-
-                        _ => Array.Empty<SecurityKey>()
-                    };
-
-                    var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(token, parameters);
-                    if (!result.IsValid)
-                    {
-                        context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", token);
-                    }
-
-                    return result;
-                }
-
-                async ValueTask<TokenValidationResult> ValidateAnyTokenAsync(string token)
-                {
-                    var result = await ValidateTokenAsync(token, TokenUsages.AccessToken);
-                    if (result.IsValid)
-                    {
-                        return result;
-                    }
-
-                    result = await ValidateTokenAsync(token, TokenUsages.RefreshToken);
-                    if (result.IsValid)
-                    {
-                        return result;
-                    }
-
-                    result = await ValidateTokenAsync(token, TokenUsages.AuthorizationCode);
-                    if (result.IsValid)
-                    {
-                        return result;
-                    }
-
-                    result = await ValidateTokenAsync(token, TokenUsages.IdToken);
-                    if (result.IsValid)
-                    {
-                        return result;
-                    }
-
-                    return new TokenValidationResult { IsValid = false };
-                }
             }
         }
 

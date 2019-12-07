@@ -758,6 +758,28 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Determines whether a given token has the specified type.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="type">The expected type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the token has the specified type, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> HasTypeAsync([NotNull] TToken token, [NotNull] string type, CancellationToken cancellationToken = default)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+            }
+
+            return string.Equals(await Store.GetTypeAsync(token, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <param name="count">The number of results to return.</param>
@@ -1365,6 +1387,9 @@ namespace OpenIddict.Core
 
         ValueTask<bool> IOpenIddictTokenManager.HasStatusAsync(object token, string status, CancellationToken cancellationToken)
             => HasStatusAsync((TToken) token, status, cancellationToken);
+
+        ValueTask<bool> IOpenIddictTokenManager.HasTypeAsync(object token, string type, CancellationToken cancellationToken)
+            => HasTypeAsync((TToken) token, type, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictTokenManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
             => ListAsync(count, offset, cancellationToken).OfType<object>();

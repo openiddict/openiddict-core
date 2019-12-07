@@ -73,11 +73,6 @@ namespace OpenIddict.Server
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (parameters.ValidTypes == null || !parameters.ValidTypes.Any())
-            {
-                throw new InvalidOperationException("The valid token types collection cannot be empty.");
-            }
-
             if (!CanReadToken(token))
             {
                 return new ValueTask<TokenValidationResult>(new TokenValidationResult
