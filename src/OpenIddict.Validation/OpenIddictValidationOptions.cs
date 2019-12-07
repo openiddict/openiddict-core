@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 
@@ -25,7 +26,7 @@ namespace OpenIddict.Validation
         /// <summary>
         /// Gets or sets the JWT handler used to protect and unprotect tokens.
         /// </summary>
-        public OpenIddictValidationJsonWebTokenHandler JsonWebTokenHandler { get; set; } = new OpenIddictValidationJsonWebTokenHandler
+        public JsonWebTokenHandler JsonWebTokenHandler { get; set; } = new JsonWebTokenHandler
         {
             SetDefaultTimesOnTokenCreation = false
         };

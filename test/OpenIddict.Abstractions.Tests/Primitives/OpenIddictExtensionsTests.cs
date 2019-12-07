@@ -11,10 +11,11 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using Xunit;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
 {
-    public class OpenIdConnectExtensionsTests
+    public class OpenIddictExtensionsTests
     {
         [Fact]
         public void GetAcrValues_ThrowsAnExceptionForNullRequest()
@@ -192,7 +193,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                request.HasPrompt(OpenIddictConstants.Prompts.Consent);
+                request.HasPrompt(Prompts.Consent);
             });
 
             Assert.Equal("request", exception.ParamName);
@@ -244,7 +245,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             };
 
             // Act and assert
-            Assert.Equal(result, request.HasPrompt(OpenIddictConstants.Prompts.Consent));
+            Assert.Equal(result, request.HasPrompt(Prompts.Consent));
         }
 
         [Fact]
@@ -256,7 +257,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                request.HasResponseType(OpenIddictConstants.ResponseTypes.Code);
+                request.HasResponseType(ResponseTypes.Code);
             });
 
             Assert.Equal("request", exception.ParamName);
@@ -308,7 +309,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             };
 
             // Act and assert
-            Assert.Equal(result, request.HasResponseType(OpenIddictConstants.ResponseTypes.Code));
+            Assert.Equal(result, request.HasResponseType(ResponseTypes.Code));
         }
 
         [Fact]
@@ -320,7 +321,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                request.HasScope(OpenIddictConstants.Scopes.OpenId);
+                request.HasScope(Scopes.OpenId);
             });
 
             Assert.Equal("request", exception.ParamName);
@@ -370,7 +371,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             };
 
             // Act and assert
-            Assert.Equal(result, request.HasScope(OpenIddictConstants.Scopes.OpenId));
+            Assert.Equal(result, request.HasScope(Scopes.OpenId));
         }
 
         [Fact]
@@ -897,7 +898,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetDestinations_ThrowsAnExceptionForNullClaim()
+        public void Claim_GetDestinations_ThrowsAnExceptionForNullClaim()
         {
             // Arrange
             var claim = (Claim) null;
@@ -916,18 +917,18 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData(@"[""access_token"",""id_token""]", new[] { "access_token", "id_token" })]
         [InlineData(@"[""access_token"",""access_token"",""id_token""]", new[] { "access_token", "id_token" })]
         [InlineData(@"[""access_token"",""ACCESS_TOKEN"",""id_token""]", new[] { "access_token", "id_token" })]
-        public void GetDestinations_ReturnsExpectedDestinations(string destination, string[] destinations)
+        public void Claim_GetDestinations_ReturnsExpectedDestinations(string destination, string[] destinations)
         {
             // Arrange
-            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
-            claim.Properties[OpenIddictConstants.Properties.Destinations] = destination;
+            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
+            claim.Properties[Properties.Destinations] = destination;
 
             // Act and assert
             Assert.Equal(destinations, claim.GetDestinations());
         }
 
         [Fact]
-        public void HasDestination_ThrowsAnExceptionForNullClaim()
+        public void Claim_HasDestination_ThrowsAnExceptionForNullClaim()
         {
             // Arrange
             var claim = (Claim) null;
@@ -939,10 +940,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void HasDestination_ThrowsAnExceptionForNullOrEmptyDestination()
+        public void Claim_HasDestination_ThrowsAnExceptionForNullOrEmptyDestination()
         {
             // Arrange
-            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => claim.HasDestination(null));
@@ -952,10 +953,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void HasDestination_ReturnFalseForNullOrEmptyDestinations()
+        public void Claim_HasDestination_ReturnFalseForNullOrEmptyDestinations()
         {
             // Arrange
-            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
             // Act
             var hasDestination = claim.HasDestination("destination");
@@ -965,10 +966,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void HasDestination_ReturnTrueForExistingDestination()
+        public void Claim_HasDestination_ReturnTrueForExistingDestination()
         {
             // Arrange
-            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
             claim.SetDestinations(new[] { "destination1", "destination2", "destination3" });
 
             // Act
@@ -980,7 +981,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
 
         [Fact]
-        public void SetDestinations_ThrowsAnExceptionForNullClaim()
+        public void Claim_SetDestinations_ThrowsAnExceptionForNullClaim()
         {
             // Arrange
             var claim = (Claim) null;
@@ -994,10 +995,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData(new object[] { new string[0] })]
-        public void SetDestinations_RemovesPropertyForEmptyArray(string[] destinations)
+        public void Claim_SetDestinations_RemovesPropertyForEmptyArray(string[] destinations)
         {
             // Arrange
-            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
             // Act
             claim.SetDestinations(destinations);
@@ -1009,10 +1010,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void SetDestinations_ThrowsAnExceptionForNullOrEmptyDestinations(string destination)
+        public void Claim_SetDestinations_ThrowsAnExceptionForNullOrEmptyDestinations(string destination)
         {
             // Arrange
-            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
             // Act and assert
             var exception = Assert.Throws<ArgumentException>(() => claim.SetDestinations(destination));
@@ -1026,16 +1027,114 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData(new[] { "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
         [InlineData(new[] { "access_token", "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
         [InlineData(new[] { "access_token", "ACCESS_TOKEN", "id_token" }, @"[""access_token"",""id_token""]")]
-        public void SetDestinations_SetsAppropriateDestinations(string[] destinations, string destination)
+        public void Claim_SetDestinations_SetsAppropriateDestinations(string[] destinations, string destination)
         {
             // Arrange
-            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
             // Act
             claim.SetDestinations(destinations);
 
             // Assert
-            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
+            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
+        }
+
+        [Fact]
+        public void ClaimsPrincipal_GetDestinations_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetDestinations());
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Fact]
+        public void ClaimsPrincipal_GetDestinations_ReturnsExpectedDestinations()
+        {
+            // Arrange
+            var claims = new[]
+            {
+                new Claim(Claims.Name, "Bob le Bricoleur")
+                {
+                    Properties =
+                    {
+                        [Properties.Destinations] = @"[""access_token"",""id_token""]"
+                    }
+                },
+                new Claim(Claims.Email, "bob@bricoleur.com")
+                {
+                    Properties =
+                    {
+                        [Properties.Destinations] = @"[""id_token""]"
+                    }
+                },
+                new Claim(Claims.Nonce, "OkjjKJkjkHJJHhgFsd")
+            };
+
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+            // Act
+            var destinations = principal.GetDestinations();
+
+            // Assert
+            Assert.Equal(2, destinations.Count);
+            Assert.Equal(new[] { Destinations.AccessToken, Destinations.IdentityToken }, destinations[Claims.Name]);
+            Assert.Equal(new[] { Destinations.IdentityToken }, destinations[Claims.Email]);
+        }
+
+        [Fact]
+        public void ClaimsPrincipal_SetDestinations_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDestinations(destinations: null));
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Fact]
+        public void ClaimsPrincipal_SetDestinations_ThrowsAnExceptionForNullDestinations()
+        {
+            // Arrange
+            var principal = new ClaimsPrincipal(new ClaimsIdentity());
+            var destinations = (ImmutableDictionary<string, string[]>) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDestinations(destinations));
+
+            Assert.Equal("destinations", exception.ParamName);
+        }
+
+        [Fact]
+        public void ClaimsPrincipal_SetDestinations_SetsAppropriateDestinations()
+        {
+            // Arrange
+            var claims = new[]
+            {
+                new Claim(Claims.Name, "Bob le Bricoleur"),
+                new Claim(Claims.Email, "bob@bricoleur.com"),
+                new Claim(Claims.Nonce, "OkjjKJkjkHJJHhgFsd")
+            };
+
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+            var destinations = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
+            destinations.Add(Claims.Name, new[] { Destinations.AccessToken, Destinations.IdentityToken });
+            destinations.Add(Claims.Email, new[] { Destinations.IdentityToken });
+            destinations.Add(Claims.Nonce, Array.Empty<string>());
+
+            // Act
+            principal.SetDestinations(destinations.ToImmutable());
+
+            // Assert
+            Assert.Equal(@"[""access_token"",""id_token""]", principal.FindFirst(Claims.Name).Properties[Properties.Destinations]);
+            Assert.Equal(@"[""id_token""]", principal.FindFirst(Claims.Email).Properties[Properties.Destinations]);
+            Assert.DoesNotContain(Properties.Destinations, principal.FindFirst(Claims.Nonce).Properties);
         }
 
         [Theory]
@@ -1046,13 +1145,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetDestinations_IEnumerable_SetsAppropriateDestinations(string[] destinations, string destination)
         {
             // Arrange
-            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
             // Act
             claim.SetDestinations((IEnumerable<string>)destinations);
 
             // Assert
-            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
+            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
         }
 
         [Theory]
@@ -1063,13 +1162,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void SetDestinations_ImmutableArray_SetsAppropriateDestinations(string[] destinations, string destination)
         {
             // Arrange
-            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
             // Act
             claim.SetDestinations(ImmutableArray.Create(destinations));
 
             // Assert
-            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
+            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
         }
 
         [Fact]
@@ -1077,18 +1176,18 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.ClientId, "B56BF6CE-8D8C-4290-A0E7-A4F8EE0A9FC4"));
+            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(Claims.ClientId, "B56BF6CE-8D8C-4290-A0E7-A4F8EE0A9FC4"));
 
             // Act
-            var clone = identity.Clone(claim => claim.Type == OpenIddictConstants.Claims.Name);
+            var clone = identity.Clone(claim => claim.Type == Claims.Name);
             clone.AddClaim(new Claim("clone_claim", "value"));
 
             // Assert
             Assert.NotSame(identity, clone);
             Assert.Null(identity.FindFirst("clone_claim"));
-            Assert.NotNull(clone.FindFirst(OpenIddictConstants.Claims.Name));
-            Assert.Null(clone.FindFirst(OpenIddictConstants.Claims.ClientId));
+            Assert.NotNull(clone.FindFirst(Claims.Name));
+            Assert.Null(clone.FindFirst(Claims.ClientId));
         }
 
         [Fact]
@@ -1096,16 +1195,16 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
+            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
 
             // Act
-            var clone = identity.Clone(claim => claim.Type == OpenIddictConstants.Claims.Name);
+            var clone = identity.Clone(claim => claim.Type == Claims.Name);
 
             // Assert
             Assert.Single(clone.Claims);
-            Assert.Null(clone.FindFirst(OpenIddictConstants.Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.FindFirst(OpenIddictConstants.Claims.Name).Value);
+            Assert.Null(clone.FindFirst(Claims.Subject));
+            Assert.Equal("Bob le Bricoleur", clone.FindFirst(Claims.Name).Value);
         }
 
         [Fact]
@@ -1116,16 +1215,16 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             {
                 Actor = new ClaimsIdentity()
             };
-            identity.Actor.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
-            identity.Actor.AddClaim(new Claim(OpenIddictConstants.Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
+            identity.Actor.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
+            identity.Actor.AddClaim(new Claim(Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
 
             // Act
-            var clone = identity.Clone(claim => claim.Type == OpenIddictConstants.Claims.Name);
+            var clone = identity.Clone(claim => claim.Type == Claims.Name);
 
             // Assert
             Assert.Single(clone.Actor.Claims);
-            Assert.Null(clone.Actor.FindFirst(OpenIddictConstants.Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.Actor.FindFirst(OpenIddictConstants.Claims.Name).Value);
+            Assert.Null(clone.Actor.FindFirst(Claims.Subject));
+            Assert.Equal("Bob le Bricoleur", clone.Actor.FindFirst(Claims.Name).Value);
         }
 
         [Fact]
@@ -1133,18 +1232,18 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
+            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
 
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            var clone = principal.Clone(claim => claim.Type == OpenIddictConstants.Claims.Name);
+            var clone = principal.Clone(claim => claim.Type == Claims.Name);
 
             // Assert
             Assert.Single(clone.Claims);
-            Assert.Null(clone.FindFirst(OpenIddictConstants.Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.FindFirst(OpenIddictConstants.Claims.Name).Value);
+            Assert.Null(clone.FindFirst(Claims.Subject));
+            Assert.Equal("Bob le Bricoleur", clone.FindFirst(Claims.Name).Value);
         }
 
         [Fact]
@@ -1156,7 +1255,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+                identity.AddClaim(Claims.Name, "Bob le Bricoleur");
             });
 
             Assert.Equal("identity", exception.ParamName);
@@ -1169,10 +1268,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
 
             // Act
-            identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            identity.AddClaim(Claims.Name, "Bob le Bricoleur");
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", identity.FindFirst(OpenIddictConstants.Claims.Name).Value);
+            Assert.Equal("Bob le Bricoleur", identity.FindFirst(Claims.Name).Value);
         }
 
         [Theory]
@@ -1186,13 +1285,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
 
             // Act
-            identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur", ImmutableArray.Create(destinations));
+            identity.AddClaim(Claims.Name, "Bob le Bricoleur", ImmutableArray.Create(destinations));
 
-            var claim = identity.FindFirst(OpenIddictConstants.Claims.Name);
+            var claim = identity.FindFirst(Claims.Name);
 
             // Assert
             Assert.Equal("Bob le Bricoleur", claim.Value);
-            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
+            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
         }
 
         [Theory]
@@ -1206,13 +1305,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
 
             // Act
-            identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur", destinations);
+            identity.AddClaim(Claims.Name, "Bob le Bricoleur", destinations);
 
-            var claim = identity.FindFirst(OpenIddictConstants.Claims.Name);
+            var claim = identity.FindFirst(Claims.Name);
 
             // Assert
             Assert.Equal("Bob le Bricoleur", claim.Value);
-            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
+            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
         }
 
         [Fact]
@@ -1224,7 +1323,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
             {
-                identity.GetClaim(OpenIddictConstants.Claims.Name);
+                identity.GetClaim(Claims.Name);
             });
 
             Assert.Equal("identity", exception.ParamName);
@@ -1238,8 +1337,8 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var principal = new ClaimsPrincipal();
 
             // Act and assert
-            Assert.Null(identity.GetClaim(OpenIddictConstants.Claims.Name));
-            Assert.Null(principal.GetClaim(OpenIddictConstants.Claims.Name));
+            Assert.Null(identity.GetClaim(Claims.Name));
+            Assert.Null(principal.GetClaim(Claims.Name));
         }
 
         [Fact]
@@ -1249,11 +1348,11 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            identity.AddClaim(Claims.Name, "Bob le Bricoleur");
 
             // Act and assert
-            Assert.Equal("Bob le Bricoleur", identity.GetClaim(OpenIddictConstants.Claims.Name));
-            Assert.Equal("Bob le Bricoleur", principal.GetClaim(OpenIddictConstants.Claims.Name));
+            Assert.Equal("Bob le Bricoleur", identity.GetClaim(Claims.Name));
+            Assert.Equal("Bob le Bricoleur", principal.GetClaim(Claims.Name));
         }
 
         [Fact]
@@ -1300,7 +1399,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
 
             var principal = new ClaimsPrincipal(identity);
 
@@ -1308,7 +1407,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var copy = principal.Clone(c => true);
 
             // Assert
-            Assert.Equal("Bob le Bricoleur", copy.GetClaim(OpenIddictConstants.Claims.Name));
+            Assert.Equal("Bob le Bricoleur", copy.GetClaim(Claims.Name));
             Assert.Equal(principal.Claims.Count(), copy.Claims.Count());
         }
 
@@ -1333,7 +1432,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange
             var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
 
             var principal = new ClaimsPrincipal(identity);
 
@@ -1416,7 +1515,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
-            principal.SetClaim(OpenIddictConstants.Claims.IssuedAt, issuedAt);
+            principal.SetClaim(Claims.IssuedAt, issuedAt);
 
             // Act
             var creationDate = principal.GetCreationDate();
@@ -1461,7 +1560,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
-            principal.SetClaim(OpenIddictConstants.Claims.ExpiresAt, expiresAt);
+            principal.SetClaim(Claims.ExpiresAt, expiresAt);
 
             // Act
             var expirationDate = principal.GetExpirationDate();
@@ -1494,7 +1593,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Audience, audience.ToImmutableArray());
+            principal.SetClaims(Claims.Audience, audience.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(audiences, principal.GetAudiences());
@@ -1524,7 +1623,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Private.Presenters, presenter.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(presenters, principal.GetPresenters());
@@ -1554,7 +1653,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Private.Resources, resource.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(resources, principal.GetResources());
@@ -1584,7 +1683,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Private.Scopes, scope.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(scopes, principal.GetScopes());
@@ -1611,7 +1710,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.AccessTokenLifetime, lifetime);
+            principal.SetClaim(Claims.Private.AccessTokenLifetime, lifetime);
 
             // Act and assert
             Assert.Equal(ParseLifeTime(lifetime), principal.GetAccessTokenLifetime());
@@ -1638,7 +1737,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.AuthorizationCodeLifetime, lifetime);
+            principal.SetClaim(Claims.Private.AuthorizationCodeLifetime, lifetime);
 
             // Act and assert
             Assert.Equal(ParseLifeTime(lifetime), principal.GetAuthorizationCodeLifetime());
@@ -1665,7 +1764,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.DeviceCodeLifetime, lifetime);
+            principal.SetClaim(Claims.Private.DeviceCodeLifetime, lifetime);
 
             // Act and assert
             Assert.Equal(ParseLifeTime(lifetime), principal.GetDeviceCodeLifetime());
@@ -1692,7 +1791,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.IdentityTokenLifetime, lifetime);
+            principal.SetClaim(Claims.Private.IdentityTokenLifetime, lifetime);
 
             // Act and assert
             Assert.Equal(ParseLifeTime(lifetime), principal.GetIdentityTokenLifetime());
@@ -1719,7 +1818,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.RefreshTokenLifetime, lifetime);
+            principal.SetClaim(Claims.Private.RefreshTokenLifetime, lifetime);
 
             // Act and assert
             Assert.Equal(ParseLifeTime(lifetime), principal.GetRefreshTokenLifetime());
@@ -1746,7 +1845,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.UserCodeLifetime, lifetime);
+            principal.SetClaim(Claims.Private.UserCodeLifetime, lifetime);
 
             // Act and assert
             Assert.Equal(ParseLifeTime(lifetime), principal.GetUserCodeLifetime());
@@ -1773,7 +1872,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.AuthorizationId, identifier);
+            principal.SetClaim(Claims.Private.AuthorizationId, identifier);
 
             // Act and assert
             Assert.Equal(identifier, principal.GetInternalAuthorizationId());
@@ -1800,7 +1899,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenId, identifier);
+            principal.SetClaim(Claims.Private.TokenId, identifier);
 
             // Act and assert
             Assert.Equal(identifier, principal.GetInternalTokenId());
@@ -1827,7 +1926,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenUsage, usage);
 
             // Act and assert
             Assert.Equal(usage, principal.GetTokenUsage());
@@ -1869,7 +1968,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Audience, audience.ToImmutableArray());
+            principal.SetClaims(Claims.Audience, audience.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasAudience());
@@ -1891,7 +1990,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Audience, audience.ToImmutableArray());
+            principal.SetClaims(Claims.Audience, audience.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasAudience("fabrikam"));
@@ -1933,7 +2032,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Private.Presenters, presenter.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasPresenter());
@@ -1955,7 +2054,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Private.Presenters, presenter.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasPresenter("fabrikam"));
@@ -1997,7 +2096,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Private.Resources, resource.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasResource());
@@ -2019,7 +2118,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Private.Resources, resource.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasResource("fabrikam"));
@@ -2032,7 +2131,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasScope(OpenIddictConstants.Scopes.OpenId));
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasScope(Scopes.OpenId));
 
             Assert.Equal("principal", exception.ParamName);
         }
@@ -2061,7 +2160,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Private.Scopes, scope.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasScope());
@@ -2083,10 +2182,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(OpenIddictConstants.Claims.Private.Scopes, scope.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
 
             // Act and assert
-            Assert.Equal(result, principal.HasScope(OpenIddictConstants.Scopes.OpenId));
+            Assert.Equal(result, principal.HasScope(Scopes.OpenId));
         }
 
         [Fact]
@@ -2104,19 +2203,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, true)]
-        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.UserCode, false)]
+        [InlineData(TokenUsages.AccessToken, true)]
+        [InlineData(TokenUsages.AuthorizationCode, false)]
+        [InlineData(TokenUsages.DeviceCode, false)]
+        [InlineData(TokenUsages.IdToken, false)]
+        [InlineData(TokenUsages.RefreshToken, false)]
+        [InlineData(TokenUsages.UserCode, false)]
         public void IsAccessToken_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenUsage, usage);
 
             // Act and assert
             Assert.Equal(result, principal.IsAccessToken());
@@ -2137,19 +2236,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, true)]
-        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.UserCode, false)]
+        [InlineData(TokenUsages.AccessToken, false)]
+        [InlineData(TokenUsages.AuthorizationCode, true)]
+        [InlineData(TokenUsages.DeviceCode, false)]
+        [InlineData(TokenUsages.IdToken, false)]
+        [InlineData(TokenUsages.RefreshToken, false)]
+        [InlineData(TokenUsages.UserCode, false)]
         public void IsAuthorizationCode_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenUsage, usage);
 
             // Act and assert
             Assert.Equal(result, principal.IsAuthorizationCode());
@@ -2170,19 +2269,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, true)]
-        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.UserCode, false)]
+        [InlineData(TokenUsages.AccessToken, false)]
+        [InlineData(TokenUsages.AuthorizationCode, false)]
+        [InlineData(TokenUsages.DeviceCode, true)]
+        [InlineData(TokenUsages.IdToken, false)]
+        [InlineData(TokenUsages.RefreshToken, false)]
+        [InlineData(TokenUsages.UserCode, false)]
         public void IsDeviceCode_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenUsage, usage);
 
             // Act and assert
             Assert.Equal(result, principal.IsDeviceCode());
@@ -2203,19 +2302,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.IdToken, true)]
-        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.UserCode, false)]
+        [InlineData(TokenUsages.AccessToken, false)]
+        [InlineData(TokenUsages.AuthorizationCode, false)]
+        [InlineData(TokenUsages.DeviceCode, false)]
+        [InlineData(TokenUsages.IdToken, true)]
+        [InlineData(TokenUsages.RefreshToken, false)]
+        [InlineData(TokenUsages.UserCode, false)]
         public void IsIdentityToken_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenUsage, usage);
 
             // Act and assert
             Assert.Equal(result, principal.IsIdentityToken());
@@ -2236,17 +2335,17 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, true)]
+        [InlineData(TokenUsages.AccessToken, false)]
+        [InlineData(TokenUsages.AuthorizationCode, false)]
+        [InlineData(TokenUsages.IdToken, false)]
+        [InlineData(TokenUsages.RefreshToken, true)]
         public void IsRefreshToken_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenUsage, usage);
 
             // Act and assert
             Assert.Equal(result, principal.IsRefreshToken());
@@ -2267,19 +2366,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
-        [InlineData(OpenIddictConstants.TokenUsages.UserCode, true)]
+        [InlineData(TokenUsages.AccessToken, false)]
+        [InlineData(TokenUsages.AuthorizationCode, false)]
+        [InlineData(TokenUsages.DeviceCode, false)]
+        [InlineData(TokenUsages.IdToken, false)]
+        [InlineData(TokenUsages.RefreshToken, false)]
+        [InlineData(TokenUsages.UserCode, true)]
         public void IsUserCode_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenUsage, usage);
 
             // Act and assert
             Assert.Equal(result, principal.IsUserCode());
@@ -2450,7 +2549,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetCreationDate(ParseDateTimeOffset(date));
 
             // Assert
-            Assert.Equal(date, principal.GetClaim(OpenIddictConstants.Claims.IssuedAt));
+            Assert.Equal(date, principal.GetClaim(Claims.IssuedAt));
         }
 
         [Fact]
@@ -2478,7 +2577,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetExpirationDate(ParseDateTimeOffset(date));
 
             // Assert
-            Assert.Equal(date, principal.GetClaim(OpenIddictConstants.Claims.ExpiresAt));
+            Assert.Equal(date, principal.GetClaim(Claims.ExpiresAt));
         }
 
         [Fact]
@@ -2510,7 +2609,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetAudiences(audiences);
 
             // Assert
-            Assert.Equal(audience, principal.GetClaims(OpenIddictConstants.Claims.Audience));
+            Assert.Equal(audience, principal.GetClaims(Claims.Audience));
         }
 
         [Fact]
@@ -2542,7 +2641,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetPresenters(presenters);
 
             // Assert
-            Assert.Equal(presenter, principal.GetClaims(OpenIddictConstants.Claims.Private.Presenters));
+            Assert.Equal(presenter, principal.GetClaims(Claims.Private.Presenters));
         }
 
         [Fact]
@@ -2574,7 +2673,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetResources(resources);
 
             // Assert
-            Assert.Equal(resource, principal.GetClaims(OpenIddictConstants.Claims.Private.Resources));
+            Assert.Equal(resource, principal.GetClaims(Claims.Private.Resources));
         }
 
         [Fact]
@@ -2606,7 +2705,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetScopes(scopes);
 
             // Assert
-            Assert.Equal(scope, principal.GetClaims(OpenIddictConstants.Claims.Private.Scopes));
+            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
         }
 
         [Theory]
@@ -2626,7 +2725,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetScopes((IEnumerable<string>)scopes);
 
             // Assert
-            Assert.Equal(scope, principal.GetClaims(OpenIddictConstants.Claims.Private.Scopes));
+            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
         }
 
         [Theory]
@@ -2646,7 +2745,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetScopes(ImmutableArray.Create(scopes));
 
             // Assert
-            Assert.Equal(scope, principal.GetClaims(OpenIddictConstants.Claims.Private.Scopes));
+            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
         }
 
         [Fact]
@@ -2674,7 +2773,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetAccessTokenLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.AccessTokenLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.AccessTokenLifetime));
         }
 
         [Fact]
@@ -2702,7 +2801,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetAuthorizationCodeLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.AuthorizationCodeLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.AuthorizationCodeLifetime));
         }
 
         [Fact]
@@ -2730,7 +2829,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetDeviceCodeLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.DeviceCodeLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.DeviceCodeLifetime));
         }
 
         [Fact]
@@ -2758,7 +2857,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetIdentityTokenLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.IdentityTokenLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.IdentityTokenLifetime));
         }
 
         [Fact]
@@ -2786,7 +2885,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetRefreshTokenLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.RefreshTokenLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.RefreshTokenLifetime));
         }
 
         [Fact]
@@ -2814,11 +2913,11 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetUserCodeLifetime(ParseLifeTime(lifetime));
 
             // Assert
-            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.UserCodeLifetime));
+            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.UserCodeLifetime));
         }
 
         [Fact]
-        public void InternalAuthorizationId_ThrowsAnExceptionForNullPrincipal()
+        public void SetInternalAuthorizationId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
@@ -2832,7 +2931,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("identifier")]
-        public void InternalAuthorizationId_AddsScopes(string identifier)
+        public void SetInternalAuthorizationId_AddsScopes(string identifier)
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -2842,7 +2941,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetInternalAuthorizationId(identifier);
 
             // Assert
-            Assert.Equal(identifier, principal.GetClaim(OpenIddictConstants.Claims.Private.AuthorizationId));
+            Assert.Equal(identifier, principal.GetClaim(Claims.Private.AuthorizationId));
         }
 
         [Fact]
@@ -2870,7 +2969,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetInternalTokenId(identifier);
 
             // Assert
-            Assert.Equal(identifier, principal.GetClaim(OpenIddictConstants.Claims.Private.TokenId));
+            Assert.Equal(identifier, principal.GetClaim(Claims.Private.TokenId));
         }
 
         private TimeSpan? ParseLifeTime(string lifetime)
