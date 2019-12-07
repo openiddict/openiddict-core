@@ -2106,8 +2106,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData("unknown", false)]
         [InlineData(OpenIddictConstants.TokenUsages.AccessToken, true)]
         [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, false)]
         [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
         [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.UserCode, false)]
         public void IsAccessToken_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
@@ -2137,8 +2139,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData("unknown", false)]
         [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
         [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, true)]
+        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, false)]
         [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
         [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.UserCode, false)]
         public void IsAuthorizationCode_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
@@ -2149,6 +2153,39 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act and assert
             Assert.Equal(result, principal.IsAuthorizationCode());
+        }
+
+        [Fact]
+        public void IsDeviceCode_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsDeviceCode());
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("unknown", false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, true)]
+        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.UserCode, false)]
+        public void IsDeviceCode_ReturnsExpectedResult(string usage, bool result)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
+
+            // Act and assert
+            Assert.Equal(result, principal.IsDeviceCode());
         }
 
         [Fact]
@@ -2168,8 +2205,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [InlineData("unknown", false)]
         [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
         [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, false)]
         [InlineData(OpenIddictConstants.TokenUsages.IdToken, true)]
         [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.UserCode, false)]
         public void IsIdentityToken_ReturnsExpectedResult(string usage, bool result)
         {
             // Arrange
@@ -2211,6 +2250,39 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act and assert
             Assert.Equal(result, principal.IsRefreshToken());
+        }
+
+        [Fact]
+        public void IsUserCode_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsUserCode());
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("unknown", false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AccessToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.AuthorizationCode, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.DeviceCode, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.IdToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.RefreshToken, false)]
+        [InlineData(OpenIddictConstants.TokenUsages.UserCode, true)]
+        public void IsUserCode_ReturnsExpectedResult(string usage, bool result)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            principal.SetClaim(OpenIddictConstants.Claims.Private.TokenUsage, usage);
+
+            // Act and assert
+            Assert.Equal(result, principal.IsUserCode());
         }
 
         [Theory]
