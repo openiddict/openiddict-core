@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
@@ -54,7 +55,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetResponseTypes_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest)null;
+            var request = (OpenIddictRequest) null;
 
             // Act
             var exception = Assert.Throws<ArgumentNullException>(() => request.GetResponseTypes());
@@ -782,7 +783,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void IsDeviceCodeGrantType_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
-            var request = (OpenIddictRequest)null;
+            var request = (OpenIddictRequest) null;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => request.IsDeviceCodeGrantType());
@@ -926,6 +927,59 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void HasDestination_ThrowsAnExceptionForNullClaim()
+        {
+            // Arrange
+            var claim = (Claim) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => claim.HasDestination("destination"));
+
+            Assert.Equal("claim", exception.ParamName);
+        }
+
+        [Fact]
+        public void HasDestination_ThrowsAnExceptionForNullOrEmptyDestination()
+        {
+            // Arrange
+            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => claim.HasDestination(null));
+
+            Assert.Equal("destination", exception.ParamName);
+            Assert.StartsWith("The destination cannot be null or empty.", exception.Message);
+        }
+
+        [Fact]
+        public void HasDestination_ReturnFalseForNullOrEmptyDestinations()
+        {
+            // Arrange
+            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+
+            // Act
+            var hasDestination = claim.HasDestination("destination");
+
+            // Assert
+            Assert.False(hasDestination);
+        }
+
+        [Fact]
+        public void HasDestination_ReturnTrueForExistingDestination()
+        {
+            // Arrange
+            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+            claim.SetDestinations(new[] { "destination1", "destination2", "destination3" });
+
+            // Act
+            var hasDestination = claim.HasDestination("destination2");
+
+            // Assert
+            Assert.True(hasDestination);
+        }
+
+
+        [Fact]
         public void SetDestinations_ThrowsAnExceptionForNullClaim()
         {
             // Arrange
@@ -979,6 +1033,40 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act
             claim.SetDestinations(destinations);
+
+            // Assert
+            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
+        }
+
+        [Theory]
+        [InlineData(new[] { "access_token" }, @"[""access_token""]")]
+        [InlineData(new[] { "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
+        [InlineData(new[] { "access_token", "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
+        [InlineData(new[] { "access_token", "ACCESS_TOKEN", "id_token" }, @"[""access_token"",""id_token""]")]
+        public void SetDestinations_IEnumerable_SetsAppropriateDestinations(string[] destinations, string destination)
+        {
+            // Arrange
+            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+
+            // Act
+            claim.SetDestinations((IEnumerable<string>)destinations);
+
+            // Assert
+            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
+        }
+
+        [Theory]
+        [InlineData(new[] { "access_token" }, @"[""access_token""]")]
+        [InlineData(new[] { "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
+        [InlineData(new[] { "access_token", "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
+        [InlineData(new[] { "access_token", "ACCESS_TOKEN", "id_token" }, @"[""access_token"",""id_token""]")]
+        public void SetDestinations_ImmutableArray_SetsAppropriateDestinations(string[] destinations, string destination)
+        {
+            // Arrange
+            var claim = new Claim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur");
+
+            // Act
+            claim.SetDestinations(ImmutableArray.Create(destinations));
 
             // Assert
             Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
@@ -1085,6 +1173,26 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("Bob le Bricoleur", identity.FindFirst(OpenIddictConstants.Claims.Name).Value);
+        }
+
+        [Theory]
+        [InlineData(new[] { "access_token" }, @"[""access_token""]")]
+        [InlineData(new[] { "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
+        [InlineData(new[] { "access_token", "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
+        [InlineData(new[] { "access_token", "ACCESS_TOKEN", "id_token" }, @"[""access_token"",""id_token""]")]
+        public void AddClaim_ImmutableArray_SetsAppropriateDestinations(string[] destinations, string destination)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+
+            // Act
+            identity.AddClaim(OpenIddictConstants.Claims.Name, "Bob le Bricoleur", ImmutableArray.Create(destinations));
+
+            var claim = identity.FindFirst(OpenIddictConstants.Claims.Name);
+
+            // Assert
+            Assert.Equal("Bob le Bricoleur", claim.Value);
+            Assert.Equal(destination, claim.Properties[OpenIddictConstants.Properties.Destinations]);
         }
 
         [Theory]
@@ -1273,6 +1381,96 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void GetCreationDate_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetCreationDate());
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetCreationDate_ReturnsNullIfNoClaim()
+        {
+            // Arrange
+            var principal = new ClaimsPrincipal();
+
+            // Act
+            var creationDate = principal.GetCreationDate();
+
+            // Assert
+            Assert.Null(creationDate);
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData("", null)]
+        [InlineData(" ", null)]
+        [InlineData("62", "62")]
+        [InlineData("bad_data", null)]
+        public void GetCreationDate_ReturnsCreationDate(string issuedAt, string expected)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+            principal.SetClaim(OpenIddictConstants.Claims.IssuedAt, issuedAt);
+
+            // Act
+            var creationDate = principal.GetCreationDate();
+
+            // Assert
+            Assert.Equal(ParseDateTimeOffset(expected), creationDate);
+        }
+
+        [Fact]
+        public void GetExpirationDate_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetExpirationDate());
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetExpirationDate_ReturnsNullIfNoClaim()
+        {
+            // Arrange
+            var principal = new ClaimsPrincipal();
+
+            // Act
+            var expirationDate = principal.GetExpirationDate();
+
+            // Assert
+            Assert.Null(expirationDate);
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData("", null)]
+        [InlineData(" ", null)]
+        [InlineData("62", "62")]
+        [InlineData("bad_data", null)]
+        public void GetExpirationDate_ReturnsExpirationDate(string expiresAt, string expected)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+            principal.SetClaim(OpenIddictConstants.Claims.ExpiresAt, expiresAt);
+
+            // Act
+            var expirationDate = principal.GetExpirationDate();
+
+            // Assert
+            Assert.Equal(ParseDateTimeOffset(expected), expirationDate);
+        }
+
+        [Fact]
         public void GetAudiences_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
@@ -1447,6 +1645,33 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void GetDeviceCodeLifetime_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetDeviceCodeLifetime());
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("62")]
+        public void GetDeviceCodeLifetime_ReturnsExpectedResult(string lifetime)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            principal.SetClaim(OpenIddictConstants.Claims.Private.DeviceCodeLifetime, lifetime);
+
+            // Act and assert
+            Assert.Equal(ParseLifeTime(lifetime), principal.GetDeviceCodeLifetime());
+        }
+
+        [Fact]
         public void GetIdentityTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
@@ -1498,6 +1723,60 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Act and assert
             Assert.Equal(ParseLifeTime(lifetime), principal.GetRefreshTokenLifetime());
+        }
+
+        [Fact]
+        public void GetUserCodeLifetime_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetUserCodeLifetime());
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("62")]
+        public void GetUserCodeLifetime_ReturnsExpectedResult(string lifetime)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            principal.SetClaim(OpenIddictConstants.Claims.Private.UserCodeLifetime, lifetime);
+
+            // Act and assert
+            Assert.Equal(ParseLifeTime(lifetime), principal.GetUserCodeLifetime());
+        }
+
+        [Fact]
+        public void GetInternalAuthorizationId_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetInternalAuthorizationId());
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("identifier")]
+        public void GetInternalAuthorizationId_ReturnsExpectedResult(string identifier)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            principal.SetClaim(OpenIddictConstants.Claims.Private.AuthorizationId, identifier);
+
+            // Act and assert
+            Assert.Equal(identifier, principal.GetInternalAuthorizationId());
         }
 
         [Fact]
@@ -1663,13 +1942,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(new string[0], false)]
         [InlineData(new[] { "contoso" }, false)]
-        [InlineData(new []{ "contoso", "fabrikam" }, true)]
-        [InlineData(new []{ "fabrikam" }, true)]
-        [InlineData(new []{ "fabrikam", "contoso" }, true)]
-        [InlineData(new []{ "CONTOSO" }, false)]
-        [InlineData(new []{ "CONTOSO", "FABRIKAM" }, false)]
-        [InlineData(new []{ "FABRIKAM" }, false)]
-        [InlineData(new []{ "FABRIKAM", "CONTOSO" }, false)]
+        [InlineData(new[] { "contoso", "fabrikam" }, true)]
+        [InlineData(new[] { "fabrikam" }, true)]
+        [InlineData(new[] { "fabrikam", "contoso" }, true)]
+        [InlineData(new[] { "CONTOSO" }, false)]
+        [InlineData(new[] { "CONTOSO", "FABRIKAM" }, false)]
+        [InlineData(new[] { "FABRIKAM" }, false)]
+        [InlineData(new[] { "FABRIKAM", "CONTOSO" }, false)]
         public void HasPresenter_ReturnsAppropriateResult(string[] presenter, bool result)
         {
             // Arrange
@@ -1726,14 +2005,14 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
         [Theory]
         [InlineData(new string[0], false)]
-        [InlineData(new []{ "contoso" }, false)]
-        [InlineData(new []{ "contoso", "fabrikam" }, true)]
-        [InlineData(new []{ "fabrikam" }, true)]
-        [InlineData(new []{ "fabrikam", "contoso" }, true)]
-        [InlineData(new []{ "CONTOSO" }, false)]
-        [InlineData(new []{ "CONTOSO", "FABRIKAM" }, false)]
-        [InlineData(new []{ "FABRIKAM" }, false)]
-        [InlineData(new[] { "FABRIKAM" , "CONTOSO" }, false)]
+        [InlineData(new[] { "contoso" }, false)]
+        [InlineData(new[] { "contoso", "fabrikam" }, true)]
+        [InlineData(new[] { "fabrikam" }, true)]
+        [InlineData(new[] { "fabrikam", "contoso" }, true)]
+        [InlineData(new[] { "CONTOSO" }, false)]
+        [InlineData(new[] { "CONTOSO", "FABRIKAM" }, false)]
+        [InlineData(new[] { "FABRIKAM" }, false)]
+        [InlineData(new[] { "FABRIKAM", "CONTOSO" }, false)]
         public void HasResource_ReturnsAppropriateResult(string[] resource, bool result)
         {
             // Arrange
@@ -1791,13 +2070,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(new string[0], false)]
         [InlineData(new[] { "profile" }, false)]
-        [InlineData(new []{ "profile", "openid" }, true)]
-        [InlineData(new []{ "openid" }, true)]
-        [InlineData(new []{ "openid" , "profile" }, true)]
-        [InlineData(new []{ "PROFILE" }, false)]
-        [InlineData(new []{ "PROFILE", "OPENID" }, false)]
-        [InlineData(new []{ "OPENID" }, false)]
-        [InlineData(new []{ "OPENID", "PROFILE" }, false)]
+        [InlineData(new[] { "profile", "openid" }, true)]
+        [InlineData(new[] { "openid" }, true)]
+        [InlineData(new[] { "openid", "profile" }, true)]
+        [InlineData(new[] { "PROFILE" }, false)]
+        [InlineData(new[] { "PROFILE", "OPENID" }, false)]
+        [InlineData(new[] { "OPENID" }, false)]
+        [InlineData(new[] { "OPENID", "PROFILE" }, false)]
         public void HasScope_ReturnsAppropriateResult(string[] scope, bool result)
         {
             // Arrange
@@ -2075,6 +2354,62 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void SetCreationDate_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetCreationDate(default(DateTimeOffset)));
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("62")]
+        public void SetCreationDate_AddsIssuedAtClaim(string date)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act
+            principal.SetCreationDate(ParseDateTimeOffset(date));
+
+            // Assert
+            Assert.Equal(date, principal.GetClaim(OpenIddictConstants.Claims.IssuedAt));
+        }
+
+        [Fact]
+        public void SetExpirationDate_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetExpirationDate(default(DateTimeOffset)));
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("62")]
+        public void SetExpirationDate_AddsExpiresAtClaim(string date)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act
+            principal.SetExpirationDate(ParseDateTimeOffset(date));
+
+            // Assert
+            Assert.Equal(date, principal.GetClaim(OpenIddictConstants.Claims.ExpiresAt));
+        }
+
+        [Fact]
         public void SetAudiences_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
@@ -2202,6 +2537,46 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.Equal(scope, principal.GetClaims(OpenIddictConstants.Claims.Private.Scopes));
         }
 
+        [Theory]
+        [InlineData(null, new string[0])]
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "openid" }, new[] { "openid" })]
+        [InlineData(new[] { "openid", "profile" }, new[] { "openid", "profile" })]
+        [InlineData(new[] { "openid", "openid", "profile" }, new[] { "openid", "profile" })]
+        [InlineData(new[] { "openid", "OPENID", "profile" }, new[] { "openid", "OPENID", "profile" })]
+        public void SetScopes_IEnumerable_AddsScopes(string[] scopes, string[] scope)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act
+            principal.SetScopes((IEnumerable<string>)scopes);
+
+            // Assert
+            Assert.Equal(scope, principal.GetClaims(OpenIddictConstants.Claims.Private.Scopes));
+        }
+
+        [Theory]
+        [InlineData(null, new string[0])]
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new[] { "openid" }, new[] { "openid" })]
+        [InlineData(new[] { "openid", "profile" }, new[] { "openid", "profile" })]
+        [InlineData(new[] { "openid", "openid", "profile" }, new[] { "openid", "profile" })]
+        [InlineData(new[] { "openid", "OPENID", "profile" }, new[] { "openid", "OPENID", "profile" })]
+        public void SetScopes_ImmutableArray_AddsScopes(string[] scopes, string[] scope)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act
+            principal.SetScopes(ImmutableArray.Create(scopes));
+
+            // Assert
+            Assert.Equal(scope, principal.GetClaims(OpenIddictConstants.Claims.Private.Scopes));
+        }
+
         [Fact]
         public void SetAccessTokenLifetime_ThrowsAnExceptionForNullPrincipal()
         {
@@ -2256,6 +2631,34 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.AuthorizationCodeLifetime));
+        }
+
+        [Fact]
+        public void SetDeviceCodeLifetime_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDeviceCodeLifetime(null));
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("62")]
+        public void SetDeviceCodeLifetime_AddsLifetime(string lifetime)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act
+            principal.SetDeviceCodeLifetime(ParseLifeTime(lifetime));
+
+            // Assert
+            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.DeviceCodeLifetime));
         }
 
         [Fact]
@@ -2315,6 +2718,62 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void SetUserCodeLifetime_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetUserCodeLifetime(null));
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("62")]
+        public void SetUserCodeLifetime_AddsLifetime(string lifetime)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act
+            principal.SetUserCodeLifetime(ParseLifeTime(lifetime));
+
+            // Assert
+            Assert.Equal(lifetime, principal.GetClaim(OpenIddictConstants.Claims.Private.UserCodeLifetime));
+        }
+
+        [Fact]
+        public void InternalAuthorizationId_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetInternalAuthorizationId(null));
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("identifier")]
+        public void InternalAuthorizationId_AddsScopes(string identifier)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act
+            principal.SetInternalAuthorizationId(identifier);
+
+            // Assert
+            Assert.Equal(identifier, principal.GetClaim(OpenIddictConstants.Claims.Private.AuthorizationId));
+        }
+
+        [Fact]
         public void SetInternalTokenId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
@@ -2349,6 +2808,15 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 : null;
 
             return lifeT;
+        }
+
+        private DateTimeOffset? ParseDateTimeOffset(string dateTimeOffset)
+        {
+            var dtOffset = string.IsNullOrWhiteSpace(dateTimeOffset)
+                ? null
+                : (DateTimeOffset?)DateTimeOffset.FromUnixTimeSeconds(long.Parse(dateTimeOffset, NumberStyles.Number, CultureInfo.InvariantCulture));
+
+            return dtOffset;
         }
     }
 }
