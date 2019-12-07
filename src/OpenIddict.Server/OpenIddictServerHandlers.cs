@@ -400,7 +400,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
@@ -410,13 +410,13 @@ namespace OpenIddict.Server
                 // If a principal was already attached, don't overwrite it.
                 if (context.Principal != null)
                 {
-                    return;
+                    return default;
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 if (!context.Options.JsonWebTokenHandler.CanReadToken(context.Token))
                 {
-                    return;
+                    return default;
                 }
 
                 var parameters = context.Options.TokenValidationParameters.Clone();
@@ -446,19 +446,26 @@ namespace OpenIddict.Server
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(context.Token, parameters);
-                if (result.ClaimsIdentity == null || !result.IsValid)
+                var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
+                if (!result.IsValid)
                 {
                     context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Token);
 
-                    return;
+                    return default;
+                }
+
+                // Get the JWT token. If the token is encrypted using JWE, retrieve the inner token.
+                var token = (JsonWebToken) result.SecurityToken;
+                if (token.InnerToken != null)
+                {
+                    token = token.InnerToken;
                 }
 
                 // Attach the principal extracted from the token to the parent event context.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
 
                 // Store the token type as a special private claim.
-                context.Principal.SetClaim(Claims.Private.TokenUsage, ((JsonWebToken) result.SecurityToken).Typ switch
+                context.Principal.SetClaim(Claims.Private.TokenUsage, token.Typ switch
                 {
                     JsonWebTokenTypes.AccessToken   => TokenUsages.AccessToken,
                     JsonWebTokenTypes.IdentityToken => TokenUsages.IdToken,
@@ -471,8 +478,16 @@ namespace OpenIddict.Server
                     _ => throw new InvalidOperationException("The token type is not supported.")
                 });
 
+                // Restore the claim destinations from the special oi_cl_dstn claim (represented as a dictionary/JSON object).
+                if (token.TryGetPayloadValue(Claims.Private.ClaimDestinations, out ImmutableDictionary<string, string[]> destinations))
+                {
+                    context.Principal.SetDestinations(destinations);
+                }
+
                 context.Logger.LogTrace("The token '{Token}' was successfully validated and the following claims " +
                                         "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+
+                return default;
             }
         }
 
@@ -2642,7 +2657,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -2652,21 +2667,20 @@ namespace OpenIddict.Server
                 // If an access token was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Response.AccessToken))
                 {
-                    return;
+                    return default;
                 }
 
-                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
-                    new SecurityTokenDescriptor
+                var token = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
+                {
+                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
-                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                        {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AccessToken
-                        },
-                        Issuer = context.Issuer?.AbsoluteUri,
-                        SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                            credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
-                        Subject = (ClaimsIdentity) context.AccessTokenPrincipal.Identity
-                    });
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AccessToken
+                    },
+                    Issuer = context.Issuer?.AbsoluteUri,
+                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
+                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    Subject = (ClaimsIdentity) context.AccessTokenPrincipal.Identity
+                });
 
                 var credentials = context.Options.EncryptionCredentials.FirstOrDefault(
                     credentials => credentials.Key is SymmetricSecurityKey);
@@ -2685,6 +2699,8 @@ namespace OpenIddict.Server
                                         "The principal used to create the token contained the following claims: {Claims}.",
                                         context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
                                         context.Response.AccessToken, context.AccessTokenPrincipal.Claims);
+
+                return default;
             }
         }
 
@@ -2811,7 +2827,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -2821,22 +2837,33 @@ namespace OpenIddict.Server
                 // If an authorization code was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Response.Code))
                 {
-                    return;
+                    return default;
                 }
 
-                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
-                    new SecurityTokenDescriptor
+                var descriptor = new SecurityTokenDescriptor
+                {
+                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
-                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                        {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationCode
-                        },
-                        Issuer = context.Issuer?.AbsoluteUri,
-                        SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                            credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
-                        Subject = (ClaimsIdentity) context.AuthorizationCodePrincipal.Identity
-                    });
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationCode
+                    },
+                    Issuer = context.Issuer?.AbsoluteUri,
+                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
+                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    Subject = (ClaimsIdentity) context.AuthorizationCodePrincipal.Identity
+                };
 
+                // Attach claims destinations to the JWT claims collection.
+                var destinations = context.AuthorizationCodePrincipal.GetDestinations();
+                if (destinations.Count != 0)
+                {
+                    descriptor.Claims = new Dictionary<string, object>(StringComparer.Ordinal)
+                    {
+                        [Claims.Private.ClaimDestinations] = destinations
+                    };
+                }
+
+                // Sign and encrypt the authorization code.
+                var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
                     context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
@@ -2850,6 +2877,8 @@ namespace OpenIddict.Server
                                         "The principal used to create the token contained the following claims: {Claims}.",
                                         context.AuthorizationCodePrincipal.GetClaim(Claims.JwtId), token,
                                         context.AuthorizationCodePrincipal.Claims);
+
+                return default;
             }
         }
 
@@ -2975,7 +3004,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -2985,22 +3014,33 @@ namespace OpenIddict.Server
                 // If a device code was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Response.DeviceCode))
                 {
-                    return;
+                    return default;
                 }
 
-                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
-                    new SecurityTokenDescriptor
+                var descriptor = new SecurityTokenDescriptor
+                {
+                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
-                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                        {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.DeviceCode
-                        },
-                        Issuer = context.Issuer?.AbsoluteUri,
-                        SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                            credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
-                        Subject = (ClaimsIdentity) context.DeviceCodePrincipal.Identity
-                    });
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.DeviceCode
+                    },
+                    Issuer = context.Issuer?.AbsoluteUri,
+                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
+                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    Subject = (ClaimsIdentity) context.DeviceCodePrincipal.Identity
+                };
 
+                // Attach claims destinations to the JWT claims collection.
+                var destinations = context.DeviceCodePrincipal.GetDestinations();
+                if (destinations.Count != 0)
+                {
+                    descriptor.Claims = new Dictionary<string, object>(StringComparer.Ordinal)
+                    {
+                        [Claims.Private.ClaimDestinations] = destinations
+                    };
+                }
+
+                // Sign and encrypt the device code.
+                var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
                     context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
@@ -3014,6 +3054,8 @@ namespace OpenIddict.Server
                                         "The principal used to create the token contained the following claims: {Claims}.",
                                         context.DeviceCodePrincipal.GetClaim(Claims.JwtId), token,
                                         context.DeviceCodePrincipal.Claims);
+
+                return default;
             }
         }
 
@@ -3240,7 +3282,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -3250,22 +3292,33 @@ namespace OpenIddict.Server
                 // If a refresh token was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Response.RefreshToken))
                 {
-                    return;
+                    return default;
                 }
 
-                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
-                    new SecurityTokenDescriptor
+                var descriptor = new SecurityTokenDescriptor
+                {
+                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
-                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                        {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.RefreshToken
-                        },
-                        Issuer = context.Issuer?.AbsoluteUri,
-                        SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                            credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
-                        Subject = (ClaimsIdentity) context.RefreshTokenPrincipal.Identity
-                    });
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.RefreshToken
+                    },
+                    Issuer = context.Issuer?.AbsoluteUri,
+                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
+                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    Subject = (ClaimsIdentity) context.RefreshTokenPrincipal.Identity
+                };
 
+                // Attach claims destinations to the JWT claims collection.
+                var destinations = context.RefreshTokenPrincipal.GetDestinations();
+                if (destinations.Count != 0)
+                {
+                    descriptor.Claims = new Dictionary<string, object>(StringComparer.Ordinal)
+                    {
+                        [Claims.Private.ClaimDestinations] = destinations
+                    };
+                }
+
+                // Sign and encrypt the refresh token.
+                var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
                     context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
@@ -3279,6 +3332,8 @@ namespace OpenIddict.Server
                                         "The principal used to create the token contained the following claims: {Claims}.",
                                         context.RefreshTokenPrincipal.GetClaim(Claims.JwtId), token,
                                         context.RefreshTokenPrincipal.Claims);
+
+                return default;
             }
         }
 
@@ -3444,7 +3499,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -3454,21 +3509,21 @@ namespace OpenIddict.Server
                 // If a user code was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Response.UserCode))
                 {
-                    return;
+                    return default;
                 }
 
-                var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
-                    new SecurityTokenDescriptor
+                // Sign and encrypt the user code.
+                var token = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
+                {
+                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
-                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                        {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.UserCode
-                        },
-                        Issuer = context.Issuer?.AbsoluteUri,
-                        SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
-                            credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
-                        Subject = (ClaimsIdentity) context.UserCodePrincipal.Identity
-                    });
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.UserCode
+                    },
+                    Issuer = context.Issuer?.AbsoluteUri,
+                    SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
+                        credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
+                    Subject = (ClaimsIdentity) context.UserCodePrincipal.Identity
+                });
 
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
                     context.Options.EncryptionCredentials.First(),
@@ -3483,6 +3538,8 @@ namespace OpenIddict.Server
                                         "The principal used to create the token contained the following claims: {Claims}.",
                                         context.UserCodePrincipal.GetClaim(Claims.JwtId), token,
                                         context.UserCodePrincipal.Claims);
+
+                return default;
             }
         }
 
@@ -3752,7 +3809,7 @@ namespace OpenIddict.Server
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
             {
                 if (context == null)
                 {
@@ -3762,26 +3819,28 @@ namespace OpenIddict.Server
                 // If an identity token was already attached by another handler, don't overwrite it.
                 if (!string.IsNullOrEmpty(context.Response.IdToken))
                 {
-                    return;
+                    return default;
                 }
 
-                context.Response.IdToken = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(
-                    new SecurityTokenDescriptor
+                // Sign and attach the identity token.
+                context.Response.IdToken = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
+                {
+                    AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
-                        AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
-                        {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.IdentityToken
-                        },
-                        Issuer = context.Issuer?.AbsoluteUri,
-                        SigningCredentials = context.Options.SigningCredentials.First(credentials =>
-                            credentials.Key is AsymmetricSecurityKey),
-                        Subject = (ClaimsIdentity) context.IdentityTokenPrincipal.Identity
-                    });
+                        [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.IdentityToken
+                    },
+                    Issuer = context.Issuer?.AbsoluteUri,
+                    SigningCredentials = context.Options.SigningCredentials.First(credentials =>
+                        credentials.Key is AsymmetricSecurityKey),
+                    Subject = (ClaimsIdentity) context.IdentityTokenPrincipal.Identity
+                });
 
                 context.Logger.LogTrace("The identity token '{Identifier}' was successfully created: {Payload}. " +
                                         "The principal used to create the token contained the following claims: {Claims}.",
                                         context.IdentityTokenPrincipal.GetClaim(Claims.JwtId),
                                         context.Response.IdToken, context.IdentityTokenPrincipal.Claims);
+
+                return default;
             }
         }
 

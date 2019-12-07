@@ -133,7 +133,7 @@ namespace OpenIddict.Server.Owin
                         ValidTypes = new[] { JsonWebTokenTypes.LogoutRequest }
                     };
 
-                    var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(token, parameters);
+                    var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
                     if (!result.IsValid)
                     {
                         context.Logger.LogError("The logout request was rejected because an unknown " +
@@ -239,7 +239,7 @@ namespace OpenIddict.Server.Owin
                     context.Request.RequestId = Base64UrlEncoder.Encode(data);
 
                     // Store the serialized logout request parameters in the distributed cache.
-                    var token = await context.Options.JsonWebTokenHandler.CreateTokenFromDescriptorAsync(new SecurityTokenDescriptor
+                    var token = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
                     {
                         AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
                         {

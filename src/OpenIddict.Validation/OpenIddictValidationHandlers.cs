@@ -178,7 +178,7 @@ namespace OpenIddict.Validation
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
             {
                 if (context == null)
                 {
@@ -188,20 +188,20 @@ namespace OpenIddict.Validation
                 // If a principal was already attached, don't overwrite it.
                 if (context.Principal != null)
                 {
-                    return;
+                    return default;
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 if (!context.Options.JsonWebTokenHandler.CanReadToken(context.Token))
                 {
-                    return;
+                    return default;
                 }
 
                 // If no issuer signing key was attached, don't return an error to allow another handle to validate it.
                 var parameters = context.TokenValidationParameters;
                 if (parameters?.IssuerSigningKeys == null)
                 {
-                    return;
+                    return default;
                 }
 
                 // Clone the token validation parameters before mutating them.
@@ -211,12 +211,12 @@ namespace OpenIddict.Validation
                 parameters.ValidTypes = new[] { JsonWebTokenTypes.AccessToken };
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                var result = await context.Options.JsonWebTokenHandler.ValidateTokenStringAsync(context.Token, parameters);
-                if (result.ClaimsIdentity == null || !result.IsValid)
+                var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
+                if (!result.IsValid)
                 {
                     context.Logger.LogTrace(result.Exception, "An error occurred while validating the token '{Token}'.", context.Token);
 
-                    return;
+                    return default;
                 }
 
                 // Attach the principal extracted from the token to the parent event context.
@@ -225,6 +225,8 @@ namespace OpenIddict.Validation
 
                 context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
                                         "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+
+                return default;
             }
         }
 
