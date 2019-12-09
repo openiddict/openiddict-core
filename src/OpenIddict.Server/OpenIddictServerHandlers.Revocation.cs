@@ -41,6 +41,7 @@ namespace OpenIddict.Server
                 ValidateClientSecret.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
                 ValidateToken.Descriptor,
+                ValidateTokenType.Descriptor,
                 ValidateAuthorizedParty.Descriptor,
 
                 /*
@@ -755,6 +756,64 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting revocation requests that specify an unsupported token.
+            /// </summary>
+            public class ValidateTokenType : IOpenIddictServerHandler<ValidateRevocationRequestContext>
+            {
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateRevocationRequestContext>()
+                        .UseSingletonHandler<ValidateTokenType>()
+                        .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public ValueTask HandleAsync([NotNull] ValidateRevocationRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    if (!context.Principal.IsAccessToken() &&
+                        !context.Principal.IsAuthorizationCode() &&
+                        !context.Principal.IsRefreshToken())
+                    {
+                        context.Logger.LogError("The revocation request was rejected because " +
+                                                "the received token was of an unsupported type.");
+
+                        context.Reject(
+                            error: Errors.UnsupportedTokenType,
+                            description: "This token cannot be revoked.");
+
+                        return default;
+                    }
+
+                    // If the received token is an access token, return an error if reference tokens are not enabled.
+                    if (context.Principal.IsAccessToken() && !context.Options.UseReferenceAccessTokens)
+                    {
+                        context.Logger.LogError("The revocation request was rejected because the access token was not revocable.");
+
+                        context.Reject(
+                            error: Errors.UnsupportedTokenType,
+                            description: "The specified token cannot be revoked.");
+
+                        return default;
+                    }
+
+                    return default;
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting revocation requests that specify a token
             /// that cannot be revoked by the client application sending the revocation requests.
             /// </summary>
@@ -770,7 +829,7 @@ namespace OpenIddict.Server
                         // In this case, the risk is quite limited as claims are never returned by this endpoint.
                         .AddFilter<RequireClientIdParameter>()
                         .UseSingletonHandler<ValidateAuthorizedParty>()
-                        .SetOrder(ValidateToken.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateTokenType.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -947,31 +1006,6 @@ namespace OpenIddict.Server
                     if (context == null)
                     {
                         throw new ArgumentNullException(nameof(context));
-                    }
-
-                    // If the received token is not an authorization code or a refresh token,
-                    // return an error to indicate that the token cannot be revoked.
-                    if (context.Principal.IsIdentityToken())
-                    {
-                        context.Logger.LogError("The revocation request was rejected because identity tokens are not revocable.");
-
-                        context.Reject(
-                            error: Errors.UnsupportedTokenType,
-                            description: "The specified token cannot be revoked.");
-
-                        return;
-                    }
-
-                    // If the received token is an access token, return an error if reference tokens are not enabled.
-                    if (context.Principal.IsAccessToken() && !context.Options.UseReferenceAccessTokens)
-                    {
-                        context.Logger.LogError("The revocation request was rejected because the access token was not revocable.");
-
-                        context.Reject(
-                            error: Errors.UnsupportedTokenType,
-                            description: "The specified token cannot be revoked.");
-
-                        return;
                     }
 
                     // Extract the token identifier from the authentication principal.

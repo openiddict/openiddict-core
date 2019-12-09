@@ -71,24 +71,19 @@ namespace OpenIddict.Validation.DataProtection
                     return default;
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                var token = context.Request.AccessToken;
-                if (string.IsNullOrEmpty(token))
-                {
-                    return default;
-                }
-
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                    Purposes.Handlers.Server,
-                    Purposes.Formats.AccessToken,
-                    Purposes.Schemes.Server);
+                var protector = context.Options.UseReferenceAccessTokens ?
+                    _options.CurrentValue.DataProtectionProvider.CreateProtector(
+                        Purposes.Handlers.Server, Purposes.Formats.AccessToken,
+                        Purposes.Features.ReferenceTokens, Purposes.Schemes.Server) :
+                    _options.CurrentValue.DataProtectionProvider.CreateProtector(
+                        Purposes.Handlers.Server, Purposes.Formats.AccessToken, Purposes.Schemes.Server);
 
                 ClaimsPrincipal principal = null;
 
                 try
                 {
-                    using var buffer = new MemoryStream(protector.Unprotect(Base64UrlEncoder.DecodeBytes(token)));
+                    using var buffer = new MemoryStream(protector.Unprotect(Base64UrlEncoder.DecodeBytes(context.Token)));
                     using var reader = new BinaryReader(buffer);
 
                     principal = _options.CurrentValue.Formatter.ReadToken(reader);
@@ -96,7 +91,7 @@ namespace OpenIddict.Validation.DataProtection
 
                 catch (Exception exception)
                 {
-                    context.Logger.LogTrace(exception, "An exception occured while deserializing the token '{Token}'.", token);
+                    context.Logger.LogTrace(exception, "An exception occured while deserializing the token '{Token}'.", context.Token);
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
@@ -110,7 +105,7 @@ namespace OpenIddict.Validation.DataProtection
                 context.Principal = principal.SetClaim(Claims.Private.TokenUsage, TokenUsages.AccessToken);
 
                 context.Logger.LogTrace("The self-contained DP token '{Token}' was successfully validated and the following " +
-                                        "claims could be extracted: {Claims}.", token, context.Principal.Claims);
+                                        "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
 
                 return default;
             }

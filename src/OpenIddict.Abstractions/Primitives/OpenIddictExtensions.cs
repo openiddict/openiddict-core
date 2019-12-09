@@ -622,6 +622,74 @@ namespace OpenIddict.Abstractions
             => claim.SetDestinations(destinations?.ToImmutableArray() ?? ImmutableArray.Create<string>());
 
         /// <summary>
+        /// Gets the destinations associated with all the claims of the given principal.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <returns>The destinations, returned as a flattened dictionary.</returns>
+        public static ImmutableDictionary<string, string[]> GetDestinations([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            var builder = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
+
+            foreach (var group in principal.Claims.GroupBy(claim => claim.Type))
+            {
+                var claims = group.ToList();
+
+                var destinations = new HashSet<string>(claims[0].GetDestinations(), StringComparer.OrdinalIgnoreCase);
+                if (destinations.Count != 0)
+                {
+                    // Ensure the other claims of the same type use the same exact destinations.
+                    for (var index = 0; index < claims.Count; index++)
+                    {
+                        if (!destinations.SetEquals(claims[index].GetDestinations()))
+                        {
+                            throw new InvalidOperationException($"Conflicting destinations for the claim '{group.Key}' were specified.");
+                        }
+                    }
+
+                    builder.Add(group.Key, destinations.ToArray());
+                }
+            }
+
+            return builder.ToImmutable();
+        }
+
+        /// <summary>
+        /// Sets the destinations associated with all the claims of the given principal.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <param name="destinations">The destinations, as a flattened dictionary.</param>
+        /// <returns>The principal.</returns>
+        public static ClaimsPrincipal SetDestinations(
+            [NotNull] this ClaimsPrincipal principal,
+            [NotNull] ImmutableDictionary<string, string[]> destinations)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (destinations == null)
+            {
+                throw new ArgumentNullException(nameof(destinations));
+            }
+
+            foreach (var destination in destinations)
+            {
+                foreach (var claim in principal.Claims.Where(claim => claim.Type == destination.Key))
+                {
+                    claim.SetDestinations(destination.Value);
+                }
+            }
+
+            return principal;
+        }
+
+        /// <summary>
         /// Clones an identity by filtering its claims and the claims of its actor, recursively.
         /// </summary>
         /// <param name="identity">The <see cref="ClaimsIdentity"/> instance to filter.</param>
@@ -1299,8 +1367,7 @@ namespace OpenIddict.Abstractions
             => principal.GetClaim(Claims.Private.TokenUsage);
 
         /// <summary>
-        /// Gets a boolean value indicating whether the
-        /// claims principal corresponds to an access token.
+        /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an access token.</returns>
@@ -1315,8 +1382,7 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether the
-        /// claims principal corresponds to an access token.
+        /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an authorization code.</returns>
@@ -1331,8 +1397,22 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether the
-        /// claims principal corresponds to an identity token.
+        /// Gets a boolean value indicating whether the claims principal corresponds to a device code.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to a device code.</returns>
+        public static bool IsDeviceCode([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), TokenUsages.DeviceCode, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to an identity token.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an identity token.</returns>
@@ -1347,8 +1427,7 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether the
-        /// claims principal corresponds to a refresh token.
+        /// Gets a boolean value indicating whether the claims principal corresponds to a refresh token.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to a refresh token.</returns>
@@ -1360,6 +1439,21 @@ namespace OpenIddict.Abstractions
             }
 
             return string.Equals(principal.GetTokenUsage(), TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to a user code.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to a user code.</returns>
+        public static bool IsUserCode([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), TokenUsages.UserCode, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
