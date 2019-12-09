@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
@@ -17,7 +16,7 @@ namespace OpenIddict.Validation.AspNetCore
     /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
     /// </summary>
     public class OpenIddictValidationAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
-                                                               IConfigureNamedOptions<OpenIddictValidationOptions>,
+                                                               IConfigureOptions<OpenIddictValidationOptions>,
                                                                IPostConfigureOptions<AuthenticationOptions>
     {
         /// <summary>
@@ -46,9 +45,6 @@ namespace OpenIddict.Validation.AspNetCore
         }
 
         public void Configure([NotNull] OpenIddictValidationOptions options)
-            => Debug.Fail("This infrastructure method shouldn't be called");
-
-        public void Configure([CanBeNull] string name, [NotNull] OpenIddictValidationOptions options)
         {
             if (options == null)
             {
