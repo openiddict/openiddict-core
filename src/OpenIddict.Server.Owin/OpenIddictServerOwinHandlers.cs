@@ -92,21 +92,21 @@ namespace OpenIddict.Server.Owin
                 }
 
                 context.EndpointType =
-                    Matches(context.Options.AuthorizationEndpointUris) ? OpenIddictServerEndpointType.Authorization :
-                    Matches(context.Options.ConfigurationEndpointUris) ? OpenIddictServerEndpointType.Configuration :
-                    Matches(context.Options.CryptographyEndpointUris)  ? OpenIddictServerEndpointType.Cryptography  :
-                    Matches(context.Options.DeviceEndpointUris)        ? OpenIddictServerEndpointType.Device        :
-                    Matches(context.Options.IntrospectionEndpointUris) ? OpenIddictServerEndpointType.Introspection :
-                    Matches(context.Options.LogoutEndpointUris)        ? OpenIddictServerEndpointType.Logout        :
-                    Matches(context.Options.RevocationEndpointUris)    ? OpenIddictServerEndpointType.Revocation    :
-                    Matches(context.Options.TokenEndpointUris)         ? OpenIddictServerEndpointType.Token         :
-                    Matches(context.Options.UserinfoEndpointUris)      ? OpenIddictServerEndpointType.Userinfo      :
-                    Matches(context.Options.VerificationEndpointUris)  ? OpenIddictServerEndpointType.Verification  :
-                                                                         OpenIddictServerEndpointType.Unknown;
+                    Matches(request, context.Options.AuthorizationEndpointUris) ? OpenIddictServerEndpointType.Authorization :
+                    Matches(request, context.Options.ConfigurationEndpointUris) ? OpenIddictServerEndpointType.Configuration :
+                    Matches(request, context.Options.CryptographyEndpointUris)  ? OpenIddictServerEndpointType.Cryptography  :
+                    Matches(request, context.Options.DeviceEndpointUris)        ? OpenIddictServerEndpointType.Device        :
+                    Matches(request, context.Options.IntrospectionEndpointUris) ? OpenIddictServerEndpointType.Introspection :
+                    Matches(request, context.Options.LogoutEndpointUris)        ? OpenIddictServerEndpointType.Logout        :
+                    Matches(request, context.Options.RevocationEndpointUris)    ? OpenIddictServerEndpointType.Revocation    :
+                    Matches(request, context.Options.TokenEndpointUris)         ? OpenIddictServerEndpointType.Token         :
+                    Matches(request, context.Options.UserinfoEndpointUris)      ? OpenIddictServerEndpointType.Userinfo      :
+                    Matches(request, context.Options.VerificationEndpointUris)  ? OpenIddictServerEndpointType.Verification  :
+                                                                                  OpenIddictServerEndpointType.Unknown;
 
                 return default;
 
-                bool Matches(IList<Uri> addresses)
+                static bool Matches(IOwinRequest request, IList<Uri> addresses)
                 {
                     for (var index = 0; index < addresses.Count; index++)
                     {
@@ -125,8 +125,7 @@ namespace OpenIddict.Server.Owin
                             }
 
                             var path = PathString.FromUriComponent(address);
-                            if (path == request.PathBase + request.Path ||
-                                path == request.PathBase + request.Path + new PathString("/"))
+                            if (AreEquivalent(path, request.PathBase + request.Path))
                             {
                                 return true;
                             }
@@ -135,7 +134,7 @@ namespace OpenIddict.Server.Owin
                         else if (address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase))
                         {
                             var path = new PathString(address.OriginalString);
-                            if (path == request.Path || path == request.Path + new PathString("/"))
+                            if (AreEquivalent(path, request.Path))
                             {
                                 return true;
                             }
@@ -143,6 +142,15 @@ namespace OpenIddict.Server.Owin
                     }
 
                     return false;
+
+                    // ASP.NET MVC's routing system ignores trailing slashes when determining
+                    // whether the request path matches a registered route, which is not the case
+                    // with PathString, that treats /connect/token and /connect/token/ as different
+                    // addresses. To mitigate this inconsistency, a manual check is used here.
+                    static bool AreEquivalent(PathString left, PathString right)
+                        => left.Equals(right, StringComparison.OrdinalIgnoreCase) ||
+                           left.Equals(right + new PathString("/"), StringComparison.OrdinalIgnoreCase) ||
+                           right.Equals(left + new PathString("/"), StringComparison.OrdinalIgnoreCase);
                 }
             }
         }
