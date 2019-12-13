@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
@@ -16,13 +15,10 @@ namespace OpenIddict.Server.Owin
     /// <summary>
     /// Contains the methods required to ensure that the OpenIddict server configuration is valid.
     /// </summary>
-    public class OpenIddictServerOwinConfiguration : IConfigureNamedOptions<OpenIddictServerOptions>,
+    public class OpenIddictServerOwinConfiguration : IConfigureOptions<OpenIddictServerOptions>,
                                                      IPostConfigureOptions<OpenIddictServerOwinOptions>
     {
         public void Configure([NotNull] OpenIddictServerOptions options)
-            => Debug.Fail("This infrastructure method shouldn't be called");
-
-        public void Configure([CanBeNull] string name, [NotNull] OpenIddictServerOptions options)
         {
             if (options == null)
             {

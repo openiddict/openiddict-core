@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Diagnostics;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 
@@ -14,12 +13,9 @@ namespace OpenIddict.Validation.Owin
     /// <summary>
     /// Contains the methods required to ensure that the OpenIddict validation configuration is valid.
     /// </summary>
-    public class OpenIddictValidationOwinConfiguration : IConfigureNamedOptions<OpenIddictValidationOptions>
+    public class OpenIddictValidationOwinConfiguration : IConfigureOptions<OpenIddictValidationOptions>
     {
         public void Configure([NotNull] OpenIddictValidationOptions options)
-            => Debug.Fail("This infrastructure method shouldn't be called");
-
-        public void Configure([CanBeNull] string name, [NotNull] OpenIddictValidationOptions options)
         {
             if (options == null)
             {
