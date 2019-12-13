@@ -7,2987 +7,1819 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
-using Xunit;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using JetBrains.Annotations;
+using Microsoft.Extensions.Primitives;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
-namespace OpenIddict.Abstractions.Tests.Primitives
+namespace OpenIddict.Abstractions
 {
-    public class OpenIddictExtensionsTests
+    /// <summary>
+    /// Provides extension methods to make <see cref="OpenIddictRequest"/>
+    /// and <see cref="OpenIddictResponse"/> easier to work with.
+    /// </summary>
+    public static class OpenIddictExtensions
     {
-        [Fact]
-        public void GetAcrValues_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Extracts the authentication context class values from an <see cref="OpenIddictRequest"/>.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        public static ImmutableArray<string> GetAcrValues([NotNull] this OpenIddictRequest request)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.GetAcrValues());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData("mod-pr", new[] { "mod-pr" })]
-        [InlineData("mod-pr ", new[] { "mod-pr" })]
-        [InlineData(" mod-pr ", new[] { "mod-pr" })]
-        [InlineData("mod-pr mod-mf", new[] { "mod-pr", "mod-mf" })]
-        [InlineData("mod-pr     mod-mf", new[] { "mod-pr", "mod-mf" })]
-        [InlineData("mod-pr mod-mf ", new[] { "mod-pr", "mod-mf" })]
-        [InlineData(" mod-pr mod-mf", new[] { "mod-pr", "mod-mf" })]
-        [InlineData("mod-pr mod-pr mod-mf", new[] { "mod-pr", "mod-mf" })]
-        [InlineData("mod-pr MOD-PR mod-mf", new[] { "mod-pr", "MOD-PR", "mod-mf" })]
-        public void GetAcrValues_ReturnsExpectedAcrValues(string value, string[] values)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (request == null)
             {
-                AcrValues = value
-            };
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            // Act and assert
-            Assert.Equal(values, request.GetAcrValues());
-        }
-
-        [Fact]
-        public void GetResponseTypes_ThrowsAnExceptionForNullRequest()
-        {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act
-            var exception = Assert.Throws<ArgumentNullException>(() => request.GetResponseTypes());
-
-            // Assert
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData("code", new[] { "code" })]
-        [InlineData("code ", new[] { "code" })]
-        [InlineData(" code ", new[] { "code" })]
-        [InlineData("code id_token", new[] { "code", "id_token" })]
-        [InlineData("code     id_token", new[] { "code", "id_token" })]
-        [InlineData("code id_token ", new[] { "code", "id_token" })]
-        [InlineData(" code id_token", new[] { "code", "id_token" })]
-        [InlineData("code code id_token", new[] { "code", "id_token" })]
-        [InlineData("code CODE id_token", new[] { "code", "CODE", "id_token" })]
-        public void GetResponseTypes_ReturnsExpectedResponseTypes(string value, string[] values)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(request.AcrValues))
             {
-                ResponseType = value
-            };
+                return ImmutableArray.Create<string>();
+            }
 
-            // Act and assert
-            Assert.Equal(values, request.GetResponseTypes());
+            return GetValues(request.AcrValues, Separators.Space).Distinct(StringComparer.Ordinal).ToImmutableArray();
         }
 
-        [Fact]
-        public void GetScopes_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Extracts the response types from an <see cref="OpenIddictRequest"/>.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        public static ImmutableArray<string> GetResponseTypes([NotNull] this OpenIddictRequest request)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.GetScopes());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData("openid", new[] { "openid" })]
-        [InlineData("openid ", new[] { "openid" })]
-        [InlineData(" openid ", new[] { "openid" })]
-        [InlineData("openid profile", new[] { "openid", "profile" })]
-        [InlineData("openid     profile", new[] { "openid", "profile" })]
-        [InlineData("openid profile ", new[] { "openid", "profile" })]
-        [InlineData(" openid profile", new[] { "openid", "profile" })]
-        [InlineData("openid openid profile", new[] { "openid", "profile" })]
-        [InlineData("openid OPENID profile", new[] { "openid", "OPENID", "profile" })]
-        public void GetScopes_ReturnsExpectedScopes(string scope, string[] scopes)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (request == null)
             {
-                Scope = scope
-            };
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            // Act and assert
-            Assert.Equal(scopes, request.GetScopes());
-        }
-
-        [Fact]
-        public void HasAcrValue_ThrowsAnExceptionForNullRequest()
-        {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.HasAcrValue("mod-mf"));
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void HasAcrValue_ThrowsAnExceptionForNullOrEmptyAcrValue(string value)
-        {
-            // Arrange
-            var request = new OpenIddictRequest();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => request.HasAcrValue(value));
-
-            Assert.Equal("value", exception.ParamName);
-            Assert.StartsWith("The value cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("mod-mf", true)]
-        [InlineData("mod-mf mod-pr", true)]
-        [InlineData(" mod-mf mod-pr", true)]
-        [InlineData("mod-pr mod-mf", true)]
-        [InlineData("mod-pr mod-mf ", true)]
-        [InlineData("mod-pr mod-mf mod-cstm", true)]
-        [InlineData("mod-pr mod-mf mod-cstm ", true)]
-        [InlineData("mod-pr    mod-mf   mod-cstm ", true)]
-        [InlineData("mod-pr", false)]
-        [InlineData("mod-pr mod-cstm", false)]
-        [InlineData("MOD-MF", false)]
-        [InlineData("MOD-MF MOD-PR", false)]
-        [InlineData(" MOD-MF MOD-PR", false)]
-        [InlineData("MOD-PR MOD-MF", false)]
-        [InlineData("MOD-PR MOD-MF ", false)]
-        [InlineData("MOD-PR MOD-MF MOD-CSTM", false)]
-        [InlineData("MOD-PR MOD-MF MOD-CSTM ", false)]
-        [InlineData("MOD-PR    MOD-MF   MOD-CSTM ", false)]
-        [InlineData("MOD-PR", false)]
-        [InlineData("MOD-PR MOD-CSTM", false)]
-        public void HasAcrValue_ReturnsExpectedResult(string value, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(request.ResponseType))
             {
-                AcrValues = value
-            };
+                return ImmutableArray.Create<string>();
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.HasAcrValue("mod-mf"));
+            return GetValues(request.ResponseType, Separators.Space).Distinct(StringComparer.Ordinal).ToImmutableArray();
         }
 
-        [Fact]
-        public void HasPrompt_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Extracts the scopes from an <see cref="OpenIddictRequest"/>.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        public static ImmutableArray<string> GetScopes([NotNull] this OpenIddictRequest request)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
+            if (request == null)
             {
-                request.HasPrompt(Prompts.Consent);
-            });
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void HasPrompt_ThrowsAnExceptionForNullOrEmptyPrompt(string prompt)
-        {
-            // Arrange
-            var request = new OpenIddictRequest();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => request.HasPrompt(prompt));
-
-            Assert.Equal("prompt", exception.ParamName);
-            Assert.StartsWith("The prompt cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("consent", true)]
-        [InlineData("consent login", true)]
-        [InlineData(" consent login", true)]
-        [InlineData("login consent", true)]
-        [InlineData("login consent ", true)]
-        [InlineData("login consent select_account", true)]
-        [InlineData("login consent select_account ", true)]
-        [InlineData("login    consent   select_account ", true)]
-        [InlineData("login", false)]
-        [InlineData("login select_account", false)]
-        [InlineData("CONSENT", false)]
-        [InlineData("CONSENT LOGIN", false)]
-        [InlineData(" CONSENT LOGIN", false)]
-        [InlineData("LOGIN CONSENT", false)]
-        [InlineData("LOGIN CONSENT ", false)]
-        [InlineData("LOGIN CONSENT SELECT_ACCOUNT", false)]
-        [InlineData("LOGIN CONSENT SELECT_ACCOUNT ", false)]
-        [InlineData("LOGIN    CONSENT   SELECT_ACCOUNT ", false)]
-        [InlineData("LOGIN", false)]
-        [InlineData("LOGIN SELECT_ACCOUNT", false)]
-        public void HasPrompt_ReturnsExpectedResult(string prompt, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(request.Scope))
             {
-                Prompt = prompt
-            };
+                return ImmutableArray.Create<string>();
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.HasPrompt(Prompts.Consent));
+            return GetValues(request.Scope, Separators.Space).Distinct(StringComparer.Ordinal).ToImmutableArray();
         }
 
-        [Fact]
-        public void HasResponseType_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Determines whether the requested authentication context class values contain the specified item.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <param name="value">The component to look for in the parameter.</param>
+        public static bool HasAcrValue([NotNull] this OpenIddictRequest request, [NotNull] string value)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
+            if (request == null)
             {
-                request.HasResponseType(ResponseTypes.Code);
-            });
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void HasResponseType_ThrowsAnExceptionForNullOrEmptyResponseType(string type)
-        {
-            // Arrange
-            var request = new OpenIddictRequest();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => request.HasResponseType(type));
-
-            Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The response type cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("code", true)]
-        [InlineData("code id_token", true)]
-        [InlineData(" code id_token", true)]
-        [InlineData("id_token code", true)]
-        [InlineData("id_token code ", true)]
-        [InlineData("id_token code token", true)]
-        [InlineData("id_token code token ", true)]
-        [InlineData("id_token    code   token ", true)]
-        [InlineData("id_token", false)]
-        [InlineData("id_token token", false)]
-        [InlineData("CODE", false)]
-        [InlineData("CODE ID_TOKEN", false)]
-        [InlineData(" CODE ID_TOKEN", false)]
-        [InlineData("ID_TOKEN CODE", false)]
-        [InlineData("ID_TOKEN CODE ", false)]
-        [InlineData("ID_TOKEN CODE TOKEN", false)]
-        [InlineData("ID_TOKEN CODE TOKEN ", false)]
-        [InlineData("ID_TOKEN    CODE   TOKEN ", false)]
-        [InlineData("ID_TOKEN", false)]
-        [InlineData("ID_TOKEN TOKEN", false)]
-        public void HasResponseType_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(value))
             {
-                ResponseType = type
-            };
+                throw new ArgumentException("The value cannot be null or empty.", nameof(value));
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.HasResponseType(ResponseTypes.Code));
+            return HasValue(request.AcrValues, value, Separators.Space);
         }
 
-        [Fact]
-        public void HasScope_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Determines whether the requested prompt contains the specified value.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <param name="prompt">The component to look for in the parameter.</param>
+        public static bool HasPrompt([NotNull] this OpenIddictRequest request, [NotNull] string prompt)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
+            if (request == null)
             {
-                request.HasScope(Scopes.OpenId);
-            });
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void HasScope_ThrowsAnExceptionForNullOrEmptyScope(string scope)
-        {
-            // Arrange
-            var request = new OpenIddictRequest();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => request.HasScope(scope));
-
-            Assert.Equal("scope", exception.ParamName);
-            Assert.StartsWith("The scope cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("openid", true)]
-        [InlineData("openid ", true)]
-        [InlineData(" openid ", true)]
-        [InlineData("openid profile", true)]
-        [InlineData("openid     profile", true)]
-        [InlineData("openid profile ", true)]
-        [InlineData(" openid profile", true)]
-        [InlineData("profile", false)]
-        [InlineData("profile email", false)]
-        [InlineData("OPENID", false)]
-        [InlineData("OPENID ", false)]
-        [InlineData(" OPENID ", false)]
-        [InlineData("OPENID PROFILE", false)]
-        [InlineData("OPENID     PROFILE", false)]
-        [InlineData("OPENID PROFILE ", false)]
-        [InlineData(" OPENID PROFILE", false)]
-        [InlineData("PROFILE", false)]
-        [InlineData("PROFILE EMAIL", false)]
-        public void HasScope_ReturnsExpectedResult(string scope, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(prompt))
             {
-                Scope = scope
-            };
+                throw new ArgumentException("The prompt cannot be null or empty.", nameof(prompt));
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.HasScope(Scopes.OpenId));
+            return HasValue(request.Prompt, prompt, Separators.Space);
         }
 
-        [Fact]
-        public void IsNoneFlow_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Determines whether the requested response type contains the specified value.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <param name="type">The component to look for in the parameter.</param>
+        public static bool HasResponseType([NotNull] this OpenIddictRequest request, [NotNull] string type)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsNoneFlow());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("none", true)]
-        [InlineData("none ", true)]
-        [InlineData(" none", true)]
-        [InlineData("none id_token", false)]
-        [InlineData(" none id_token", false)]
-        [InlineData("none id_token ", false)]
-        [InlineData(" none id_token ", false)]
-        [InlineData("NONE", false)]
-        [InlineData("NONE ", false)]
-        [InlineData(" NONE", false)]
-        [InlineData("NONE ID_TOKEN", false)]
-        [InlineData(" NONE ID_TOKEN", false)]
-        [InlineData("NONE ID_TOKEN ", false)]
-        [InlineData(" NONE ID_TOKEN ", false)]
-        public void IsNoneFlow_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (request == null)
             {
-                ResponseType = type
-            };
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsNoneFlow());
-        }
-
-        [Fact]
-        public void IsAuthorizationCodeFlow_ThrowsAnExceptionForNullRequest()
-        {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsAuthorizationCodeFlow());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("code", true)]
-        [InlineData("code ", true)]
-        [InlineData(" code", true)]
-        [InlineData("code id_token", false)]
-        [InlineData(" code id_token", false)]
-        [InlineData("code id_token ", false)]
-        [InlineData(" code id_token ", false)]
-        [InlineData("CODE", false)]
-        [InlineData("CODE ", false)]
-        [InlineData(" CODE", false)]
-        [InlineData("CODE ID_TOKEN", false)]
-        [InlineData(" CODE ID_TOKEN", false)]
-        [InlineData("CODE ID_TOKEN ", false)]
-        [InlineData(" CODE ID_TOKEN ", false)]
-        public void IsAuthorizationCodeFlow_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(type))
             {
-                ResponseType = type
-            };
+                throw new ArgumentException("The response type cannot be null or empty.", nameof(type));
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsAuthorizationCodeFlow());
+            return HasValue(request.ResponseType, type, Separators.Space);
         }
 
-        [Fact]
-        public void IsImplicitFlow_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Determines whether the requested scope contains the specified value.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <param name="scope">The component to look for in the parameter.</param>
+        public static bool HasScope([NotNull] this OpenIddictRequest request, [NotNull] string scope)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsImplicitFlow());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("id_token", true)]
-        [InlineData("id_token ", true)]
-        [InlineData(" id_token", true)]
-        [InlineData("id_token token", true)]
-        [InlineData(" id_token token", true)]
-        [InlineData("id_token token ", true)]
-        [InlineData(" id_token token ", true)]
-        [InlineData("token", true)]
-        [InlineData("token ", true)]
-        [InlineData(" token", true)]
-        [InlineData("code id_token", false)]
-        [InlineData("code id_token token", false)]
-        [InlineData("code token", false)]
-        [InlineData("ID_TOKEN", false)]
-        [InlineData("ID_TOKEN ", false)]
-        [InlineData(" ID_TOKEN", false)]
-        [InlineData("ID_TOKEN TOKEN", false)]
-        [InlineData(" ID_TOKEN TOKEN", false)]
-        [InlineData("ID_TOKEN TOKEN ", false)]
-        [InlineData(" ID_TOKEN TOKEN ", false)]
-        [InlineData("TOKEN", false)]
-        [InlineData("TOKEN ", false)]
-        [InlineData(" TOKEN", false)]
-        [InlineData("CODE ID_TOKEN", false)]
-        [InlineData("CODE ID_TOKEN TOKEN", false)]
-        [InlineData("CODE TOKEN", false)]
-        public void IsImplicitFlow_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (request == null)
             {
-                ResponseType = type
-            };
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsImplicitFlow());
-        }
-
-        [Fact]
-        public void IsHybridFlow_ThrowsAnExceptionForNullRequest()
-        {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsHybridFlow());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("code id_token", true)]
-        [InlineData("code id_token ", true)]
-        [InlineData(" code id_token", true)]
-        [InlineData("code id_token token", true)]
-        [InlineData(" code id_token token", true)]
-        [InlineData("code id_token token ", true)]
-        [InlineData(" code id_token token ", true)]
-        [InlineData(" code  id_token  token ", true)]
-        [InlineData("code token", true)]
-        [InlineData("code token ", true)]
-        [InlineData(" code token", true)]
-        [InlineData("id_token", false)]
-        [InlineData("id_token token", false)]
-        [InlineData("token", false)]
-        [InlineData("CODE ID_TOKEN", false)]
-        [InlineData("CODE ID_TOKEN ", false)]
-        [InlineData(" CODE ID_TOKEN", false)]
-        [InlineData("CODE ID_TOKEN TOKEN", false)]
-        [InlineData(" CODE ID_TOKEN TOKEN", false)]
-        [InlineData("CODE ID_TOKEN TOKEN ", false)]
-        [InlineData(" CODE ID_TOKEN TOKEN ", false)]
-        [InlineData(" CODE  ID_TOKEN  TOKEN ", false)]
-        [InlineData("CODE TOKEN", false)]
-        [InlineData("CODE TOKEN ", false)]
-        [InlineData(" CODE TOKEN", false)]
-        [InlineData("ID_TOKEN", false)]
-        [InlineData("ID_TOKEN TOKEN", false)]
-        [InlineData("TOKEN", false)]
-        public void IsHybridFlow_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(scope))
             {
-                ResponseType = type
-            };
+                throw new ArgumentException("The scope cannot be null or empty.", nameof(scope));
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsHybridFlow());
+            return HasValue(request.Scope, scope, Separators.Space);
         }
 
-        [Fact]
-        public void IsFragmentResponseMode_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Determines whether the "response_type" parameter corresponds to the "none" response type.
+        /// See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#none for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is a response_type=none request, <c>false</c> otherwise.</returns>
+        public static bool IsNoneFlow([NotNull] this OpenIddictRequest request)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsFragmentResponseMode());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, null, false)]
-        [InlineData("unknown", null, false)]
-        [InlineData("query", null, false)]
-        [InlineData("form_post", null, false)]
-        [InlineData("fragment", null, true)]
-        [InlineData("fragment ", null, false)]
-        [InlineData(" fragment", null, false)]
-        [InlineData(" fragment ", null, false)]
-        [InlineData(null, "code", false)]
-        [InlineData(null, "code id_token", true)]
-        [InlineData(null, "code id_token token", true)]
-        [InlineData(null, "code token", true)]
-        [InlineData(null, "id_token", true)]
-        [InlineData(null, "id_token token", true)]
-        [InlineData(null, "token", true)]
-        [InlineData("QUERY", null, false)]
-        [InlineData("FRAGMENT", null, false)]
-        [InlineData("FORM_POST", null, false)]
-        [InlineData(null, "CODE", false)]
-        [InlineData(null, "CODE ID_TOKEN", false)]
-        [InlineData(null, "CODE ID_TOKEN TOKEN", false)]
-        [InlineData(null, "CODE TOKEN", false)]
-        [InlineData(null, "ID_TOKEN", false)]
-        [InlineData(null, "ID_TOKEN TOKEN", false)]
-        [InlineData(null, "TOKEN", false)]
-        public void IsFragmentResponseMode_ReturnsExpectedResult(string mode, string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (request == null)
             {
-                ResponseMode = mode,
-                ResponseType = type
-            };
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsFragmentResponseMode());
-        }
-
-        [Fact]
-        public void IsQueryResponseMode_ThrowsAnExceptionForNullRequest()
-        {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsQueryResponseMode());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, null, false)]
-        [InlineData("unknown", null, false)]
-        [InlineData("query", null, true)]
-        [InlineData("query ", null, false)]
-        [InlineData(" query", null, false)]
-        [InlineData(" query ", null, false)]
-        [InlineData("fragment", null, false)]
-        [InlineData("form_post", null, false)]
-        [InlineData(null, "none", true)]
-        [InlineData(null, "code", true)]
-        [InlineData(null, "code id_token token", false)]
-        [InlineData(null, "code token", false)]
-        [InlineData(null, "id_token", false)]
-        [InlineData(null, "id_token token", false)]
-        [InlineData(null, "token", false)]
-        [InlineData("QUERY", null, false)]
-        [InlineData("FRAGMENT", null, false)]
-        [InlineData("FORM_POST", null, false)]
-        [InlineData(null, "CODE", false)]
-        [InlineData(null, "CODE ID_TOKEN", false)]
-        [InlineData(null, "CODE ID_TOKEN TOKEN", false)]
-        [InlineData(null, "CODE TOKEN", false)]
-        [InlineData(null, "ID_TOKEN", false)]
-        [InlineData(null, "ID_TOKEN TOKEN", false)]
-        [InlineData(null, "TOKEN", false)]
-        public void IsQueryResponseMode_ReturnsExpectedResult(string mode, string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(request.ResponseType))
             {
-                ResponseMode = mode,
-                ResponseType = type
-            };
+                return false;
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsQueryResponseMode());
-        }
-
-        [Fact]
-        public void IsFormPostResponseMode_ThrowsAnExceptionForNullRequest()
-        {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsFormPostResponseMode());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("query", false)]
-        [InlineData("fragment", false)]
-        [InlineData("form_post", true)]
-        [InlineData("form_post ", false)]
-        [InlineData(" form_post", false)]
-        [InlineData(" form_post ", false)]
-        [InlineData("QUERY", false)]
-        [InlineData("FRAGMENT", false)]
-        [InlineData("FORM_POST", false)]
-        public void IsFormPostResponseMode_ReturnsExpectedResult(string mode, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            var segment = Trim(new StringSegment(request.ResponseType), Separators.Space);
+            if (segment.Length == 0)
             {
-                ResponseMode = mode
-            };
+                return false;
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsFormPostResponseMode());
+            return segment.Equals(ResponseTypes.None, StringComparison.Ordinal);
         }
 
-        [Fact]
-        public void IsAuthorizationCodeGrantType_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Determines whether the "response_type" parameter corresponds to the authorization code flow.
+        /// See http://tools.ietf.org/html/rfc6749#section-4.1.1 for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is a code flow request, <c>false</c> otherwise.</returns>
+        public static bool IsAuthorizationCodeFlow([NotNull] this OpenIddictRequest request)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsAuthorizationCodeGrantType());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("authorization_code", true)]
-        [InlineData("authorization_code ", false)]
-        [InlineData(" authorization_code", false)]
-        [InlineData(" authorization_code ", false)]
-        [InlineData("client_credentials", false)]
-        [InlineData("password", false)]
-        [InlineData("refresh_token", false)]
-        [InlineData("AUTHORIZATION_CODE", false)]
-        [InlineData("CLIENT_CREDENTIALS", false)]
-        [InlineData("PASSWORD", false)]
-        [InlineData("REFRESH_TOKEN", false)]
-        [InlineData("urn:ietf:params:oauth:grant-type:device_code", false)]
-        public void IsAuthorizationCodeGrantType_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (request == null)
             {
-                GrantType = type
-            };
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsAuthorizationCodeGrantType());
-        }
-
-        [Fact]
-        public void IsClientCredentialsGrantType_ThrowsAnExceptionForNullRequest()
-        {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsClientCredentialsGrantType());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("authorization_code", false)]
-        [InlineData("client_credentials", true)]
-        [InlineData("client_credentials ", false)]
-        [InlineData(" client_credentials", false)]
-        [InlineData(" client_credentials ", false)]
-        [InlineData("password", false)]
-        [InlineData("refresh_token", false)]
-        [InlineData("AUTHORIZATION_CODE", false)]
-        [InlineData("CLIENT_CREDENTIALS", false)]
-        [InlineData("PASSWORD", false)]
-        [InlineData("REFRESH_TOKEN", false)]
-        [InlineData("urn:ietf:params:oauth:grant-type:device_code", false)]
-        public void IsClientCredentialsGrantType_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(request.ResponseType))
             {
-                GrantType = type
-            };
+                return false;
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsClientCredentialsGrantType());
-        }
-
-        [Fact]
-        public void IsDeviceCodeGrantType_ThrowsAnExceptionForNullRequest()
-        {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsDeviceCodeGrantType());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("authorization_code", false)]
-        [InlineData("client_credentials", false)]
-        [InlineData("password", false)]
-        [InlineData("refresh_token", false)]
-        [InlineData("AUTHORIZATION_CODE", false)]
-        [InlineData("CLIENT_CREDENTIALS", false)]
-        [InlineData("PASSWORD", false)]
-        [InlineData("REFRESH_TOKEN", false)]
-        [InlineData("urn:ietf:params:oauth:grant-type:device_code", true)]
-        [InlineData("urn:ietf:params:oauth:grant-type:device_code ", false)]
-        [InlineData(" urn:ietf:params:oauth:grant-type:device_code", false)]
-        [InlineData(" urn:ietf:params:oauth:grant-type:device_code ", false)]
-        public void IsDeviceCodeGrantType_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            var segment = Trim(new StringSegment(request.ResponseType), Separators.Space);
+            if (segment.Length == 0)
             {
-                GrantType = type
-            };
+                return false;
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsDeviceCodeGrantType());
+            return segment.Equals(ResponseTypes.Code, StringComparison.Ordinal);
         }
 
-        [Fact]
-        public void IsPasswordGrantType_ThrowsAnExceptionForNullRequest()
+        /// <summary>
+        /// Determines whether the "response_type" parameter corresponds to the implicit flow.
+        /// See http://tools.ietf.org/html/rfc6749#section-4.2.1 and
+        /// http://openid.net/specs/openid-connect-core-1_0.html for more information
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is an implicit flow request, <c>false</c> otherwise.</returns>
+        public static bool IsImplicitFlow([NotNull] this OpenIddictRequest request)
         {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsPasswordGrantType());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("authorization_code", false)]
-        [InlineData("client_credentials", false)]
-        [InlineData("password", true)]
-        [InlineData("password ", false)]
-        [InlineData(" password", false)]
-        [InlineData(" password ", false)]
-        [InlineData("refresh_token", false)]
-        [InlineData("AUTHORIZATION_CODE", false)]
-        [InlineData("CLIENT_CREDENTIALS", false)]
-        [InlineData("PASSWORD", false)]
-        [InlineData("REFRESH_TOKEN", false)]
-        [InlineData("urn:ietf:params:oauth:grant-type:device_code", false)]
-        public void IsPasswordGrantType_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (request == null)
             {
-                GrantType = type
-            };
+                throw new ArgumentNullException(nameof(request));
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsPasswordGrantType());
-        }
-
-        [Fact]
-        public void IsRefreshTokenGrantType_ThrowsAnExceptionForNullRequest()
-        {
-            // Arrange
-            var request = (OpenIddictRequest) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => request.IsRefreshTokenGrantType());
-
-            Assert.Equal("request", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData("authorization_code", false)]
-        [InlineData("client_credentials", false)]
-        [InlineData("password", false)]
-        [InlineData("refresh_token", true)]
-        [InlineData("refresh_token ", false)]
-        [InlineData(" refresh_token", false)]
-        [InlineData(" refresh_token ", false)]
-        [InlineData("AUTHORIZATION_CODE", false)]
-        [InlineData("CLIENT_CREDENTIALS", false)]
-        [InlineData("PASSWORD", false)]
-        [InlineData("REFRESH_TOKEN", false)]
-        [InlineData("urn:ietf:params:oauth:grant-type:device_code", false)]
-        public void IsRefreshTokenGrantType_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var request = new OpenIddictRequest
+            if (string.IsNullOrEmpty(request.ResponseType))
             {
-                GrantType = type
-            };
+                return false;
+            }
 
-            // Act and assert
-            Assert.Equal(result, request.IsRefreshTokenGrantType());
-        }
+            var flags = /* none: */ 0x00;
 
-        [Fact]
-        public void Claim_GetDestinations_ThrowsAnExceptionForNullClaim()
-        {
-            // Arrange
-            var claim = (Claim) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => claim.GetDestinations());
-
-            Assert.Equal("claim", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData("", new string[0])]
-        [InlineData("[]", new string[0])]
-        [InlineData(@"[""id_token""]", new[] { "id_token" })]
-        [InlineData(@"[""access_token"",""id_token""]", new[] { "access_token", "id_token" })]
-        [InlineData(@"[""access_token"",""access_token"",""id_token""]", new[] { "access_token", "id_token" })]
-        [InlineData(@"[""access_token"",""ACCESS_TOKEN"",""id_token""]", new[] { "access_token", "id_token" })]
-        public void Claim_GetDestinations_ReturnsExpectedDestinations(string destination, string[] destinations)
-        {
-            // Arrange
-            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
-            claim.Properties[Properties.Destinations] = destination;
-
-            // Act and assert
-            Assert.Equal(destinations, claim.GetDestinations());
-        }
-
-        [Fact]
-        public void Claim_HasDestination_ThrowsAnExceptionForNullClaim()
-        {
-            // Arrange
-            var claim = (Claim) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => claim.HasDestination("destination"));
-
-            Assert.Equal("claim", exception.ParamName);
-        }
-
-        [Fact]
-        public void Claim_HasDestination_ThrowsAnExceptionForNullOrEmptyDestination()
-        {
-            // Arrange
-            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => claim.HasDestination(null));
-
-            Assert.Equal("destination", exception.ParamName);
-            Assert.StartsWith("The destination cannot be null or empty.", exception.Message);
-        }
-
-        [Fact]
-        public void Claim_HasDestination_ReturnFalseForNullOrEmptyDestinations()
-        {
-            // Arrange
-            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
-
-            // Act
-            var hasDestination = claim.HasDestination("destination");
-
-            // Assert
-            Assert.False(hasDestination);
-        }
-
-        [Fact]
-        public void Claim_HasDestination_ReturnTrueForExistingDestination()
-        {
-            // Arrange
-            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
-            claim.SetDestinations(new[] { "destination1", "destination2", "destination3" });
-
-            // Act
-            var hasDestination = claim.HasDestination("destination2");
-
-            // Assert
-            Assert.True(hasDestination);
-        }
-
-
-        [Fact]
-        public void Claim_SetDestinations_ThrowsAnExceptionForNullClaim()
-        {
-            // Arrange
-            var claim = (Claim) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => claim.SetDestinations());
-
-            Assert.Equal("claim", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData(new object[] { new string[0] })]
-        public void Claim_SetDestinations_RemovesPropertyForEmptyArray(string[] destinations)
-        {
-            // Arrange
-            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
-
-            // Act
-            claim.SetDestinations(destinations);
-
-            // Assert
-            Assert.Equal(0, claim.Properties.Count);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void Claim_SetDestinations_ThrowsAnExceptionForNullOrEmptyDestinations(string destination)
-        {
-            // Arrange
-            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => claim.SetDestinations(destination));
-
-            Assert.Equal("destinations", exception.ParamName);
-            Assert.StartsWith("Destinations cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(new[] { "access_token" }, @"[""access_token""]")]
-        [InlineData(new[] { "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "ACCESS_TOKEN", "id_token" }, @"[""access_token"",""id_token""]")]
-        public void Claim_SetDestinations_SetsAppropriateDestinations(string[] destinations, string destination)
-        {
-            // Arrange
-            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
-
-            // Act
-            claim.SetDestinations(destinations);
-
-            // Assert
-            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
-        }
-
-        [Fact]
-        public void ClaimsPrincipal_GetDestinations_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetDestinations());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Fact]
-        public void ClaimsPrincipal_GetDestinations_ReturnsExpectedDestinations()
-        {
-            // Arrange
-            var claims = new[]
+            foreach (var element in new StringTokenizer(request.ResponseType, Separators.Space))
             {
-                new Claim(Claims.Name, "Bob le Bricoleur")
+                var segment = Trim(element, Separators.Space);
+                if (segment.Length == 0)
                 {
-                    Properties =
-                    {
-                        [Properties.Destinations] = @"[""access_token"",""id_token""]"
-                    }
-                },
-                new Claim(Claims.Email, "bob@bricoleur.com")
+                    continue;
+                }
+
+                if (segment.Equals(ResponseTypes.IdToken, StringComparison.Ordinal))
                 {
-                    Properties =
+                    flags |= /* id_token: */ 0x01;
+
+                    continue;
+                }
+
+                // Note: though the OIDC core specs does not include the OAuth 2.0-inherited response_type=token,
+                // it is considered as a valid response_type for the implicit flow for backward compatibility.
+                else if (segment.Equals(ResponseTypes.Token, StringComparison.Ordinal))
+                {
+                    flags |= /* token */ 0x02;
+
+                    continue;
+                }
+
+                // Always return false if the response_type item
+                // is not a valid component for the implicit flow.
+                return false;
+            }
+
+            // Return true if the response_type parameter contains "id_token" or "token".
+            return (flags & /* id_token: */ 0x01) == 0x01 || (flags & /* token: */ 0x02) == 0x02;
+        }
+
+        /// <summary>
+        /// Determines whether the "response_type" parameter corresponds to the hybrid flow.
+        /// See http://tools.ietf.org/html/rfc6749#section-4.2.1 and
+        /// http://openid.net/specs/openid-connect-core-1_0.html for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is an hybrid flow request, <c>false</c> otherwise.</returns>
+        public static bool IsHybridFlow([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (string.IsNullOrEmpty(request.ResponseType))
+            {
+                return false;
+            }
+
+            var flags = /* none */ 0x00;
+
+            foreach (var element in new StringTokenizer(request.ResponseType, Separators.Space))
+            {
+                var segment = Trim(element, Separators.Space);
+                if (segment.Length == 0)
+                {
+                    continue;
+                }
+
+                if (segment.Equals(ResponseTypes.Code, StringComparison.Ordinal))
+                {
+                    flags |= /* code: */ 0x01;
+
+                    continue;
+                }
+
+                else if (segment.Equals(ResponseTypes.IdToken, StringComparison.Ordinal))
+                {
+                    flags |= /* id_token: */ 0x02;
+
+                    continue;
+                }
+
+                else if (segment.Equals(ResponseTypes.Token, StringComparison.Ordinal))
+                {
+                    flags |= /* token: */ 0x04;
+
+                    continue;
+                }
+
+                // Always return false if the response_type item
+                // is not a valid component for the hybrid flow.
+                return false;
+            }
+
+            // Return false if the response_type parameter doesn't contain "code".
+            if ((flags & /* code: */ 0x01) != 0x01)
+            {
+                return false;
+            }
+
+            // Return true if the response_type parameter contains "id_token" or "token".
+            return (flags & /* id_token: */ 0x02) == 0x02 || (flags & /* token: */ 0x04) == 0x04;
+        }
+
+        /// <summary>
+        /// Determines whether the "response_mode" parameter corresponds to the fragment response mode.
+        /// See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns>
+        /// <c>true</c> if the request specified the fragment response mode or if
+        /// it's the default value for the requested flow, <c>false</c> otherwise.
+        /// </returns>
+        public static bool IsFragmentResponseMode([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (string.Equals(request.ResponseMode, ResponseModes.Fragment, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            // Don't guess the response_mode value
+            // if an explicit value has been provided.
+            if (!string.IsNullOrEmpty(request.ResponseMode))
+            {
+                return false;
+            }
+
+            // Both the implicit and the hybrid flows
+            // use response_mode=fragment by default.
+            return request.IsImplicitFlow() || request.IsHybridFlow();
+        }
+
+        /// <summary>
+        /// Determines whether the "response_mode" parameter corresponds to the query response mode.
+        /// See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns>
+        /// <c>true</c> if the request specified the query response mode or if
+        /// it's the default value for the requested flow, <c>false</c> otherwise.
+        /// </returns>
+        public static bool IsQueryResponseMode([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (string.Equals(request.ResponseMode, ResponseModes.Query, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            // Don't guess the response_mode value
+            // if an explicit value has been provided.
+            if (!string.IsNullOrEmpty(request.ResponseMode))
+            {
+                return false;
+            }
+
+            // Code flow and "response_type=none" use response_mode=query by default.
+            return request.IsAuthorizationCodeFlow() || request.IsNoneFlow();
+        }
+
+        /// <summary>
+        /// Determines whether the "response_mode" parameter corresponds to the form post response mode.
+        /// See http://openid.net/specs/oauth-v2-form-post-response-mode-1_0.html for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns>
+        /// <c>true</c> if the request specified the form post response mode or if
+        /// it's the default value for the requested flow, <c>false</c> otherwise.
+        /// </returns>
+        public static bool IsFormPostResponseMode([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return string.Equals(request.ResponseMode, ResponseModes.FormPost, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Determines whether the "grant_type" parameter corresponds to the authorization code grant.
+        /// See http://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is a code grant request, <c>false</c> otherwise.</returns>
+        public static bool IsAuthorizationCodeGrantType([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return string.Equals(request.GrantType, GrantTypes.AuthorizationCode, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Determines whether the "grant_type" parameter corresponds to the client credentials grant.
+        /// See http://tools.ietf.org/html/rfc6749#section-4.4.2 for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is a client credentials grant request, <c>false</c> otherwise.</returns>
+        public static bool IsClientCredentialsGrantType([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return string.Equals(request.GrantType, GrantTypes.ClientCredentials, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Determines whether the "grant_type" parameter corresponds to the device code grant.
+        /// See https://tools.ietf.org/html/rfc8628 for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is a device code grant request, <c>false</c> otherwise.</returns>
+        public static bool IsDeviceCodeGrantType([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return string.Equals(request.GrantType, GrantTypes.DeviceCode, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Determines whether the "grant_type" parameter corresponds to the password grant.
+        /// See http://tools.ietf.org/html/rfc6749#section-4.3.2 for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is a password grant request, <c>false</c> otherwise.</returns>
+        public static bool IsPasswordGrantType([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return string.Equals(request.GrantType, GrantTypes.Password, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Determines whether the "grant_type" parameter corresponds to the refresh token grant.
+        /// See http://tools.ietf.org/html/rfc6749#section-6 for more information.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        /// <returns><c>true</c> if the request is a refresh token grant request, <c>false</c> otherwise.</returns>
+        public static bool IsRefreshTokenGrantType([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return string.Equals(request.GrantType, GrantTypes.RefreshToken, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Gets the destinations associated with a claim.
+        /// </summary>
+        /// <param name="claim">The <see cref="Claim"/> instance.</param>
+        /// <returns>The destinations associated with the claim.</returns>
+        public static ImmutableArray<string> GetDestinations([NotNull] this Claim claim)
+        {
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
+            claim.Properties.TryGetValue(Properties.Destinations, out string destinations);
+
+            if (string.IsNullOrEmpty(destinations))
+            {
+                return ImmutableArray.Create<string>();
+            }
+
+            return JsonSerializer.Deserialize<IEnumerable<string>>(destinations)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToImmutableArray();
+        }
+
+        /// <summary>
+        /// Determines whether the given claim contains the required destination.
+        /// </summary>
+        /// <param name="claim">The <see cref="Claim"/> instance.</param>
+        /// <param name="destination">The required destination.</param>
+        public static bool HasDestination([NotNull] this Claim claim, [NotNull] string destination)
+        {
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
+            if (string.IsNullOrEmpty(destination))
+            {
+                throw new ArgumentException("The destination cannot be null or empty.", nameof(destination));
+            }
+
+            claim.Properties.TryGetValue(Properties.Destinations, out string destinations);
+
+            if (string.IsNullOrEmpty(destinations))
+            {
+                return false;
+            }
+
+            return JsonSerializer.Deserialize<IEnumerable<string>>(destinations)
+                .Contains(destination, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Adds specific destinations to a claim.
+        /// </summary>
+        /// <param name="claim">The <see cref="Claim"/> instance.</param>
+        /// <param name="destinations">The destinations.</param>
+        public static Claim SetDestinations([NotNull] this Claim claim, ImmutableArray<string> destinations)
+        {
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
+            if (destinations.IsDefaultOrEmpty)
+            {
+                claim.Properties.Remove(Properties.Destinations);
+
+                return claim;
+            }
+
+            if (destinations.Any(destination => string.IsNullOrEmpty(destination)))
+            {
+                throw new ArgumentException("Destinations cannot be null or empty.", nameof(destinations));
+            }
+
+            claim.Properties[Properties.Destinations] =
+                JsonSerializer.Serialize(destinations.Distinct(StringComparer.OrdinalIgnoreCase), new JsonSerializerOptions
+                {
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = false
+                });
+
+            return claim;
+        }
+
+        /// <summary>
+        /// Adds specific destinations to a claim.
+        /// </summary>
+        /// <param name="claim">The <see cref="Claim"/> instance.</param>
+        /// <param name="destinations">The destinations.</param>
+        public static Claim SetDestinations([NotNull] this Claim claim, [CanBeNull] IEnumerable<string> destinations)
+            => claim.SetDestinations(destinations?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Adds specific destinations to a claim.
+        /// </summary>
+        /// <param name="claim">The <see cref="Claim"/> instance.</param>
+        /// <param name="destinations">The destinations.</param>
+        public static Claim SetDestinations([NotNull] this Claim claim, [CanBeNull] params string[] destinations)
+            => claim.SetDestinations(destinations?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Gets the destinations associated with all the claims of the given principal.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <returns>The destinations, returned as a flattened dictionary.</returns>
+        public static ImmutableDictionary<string, string[]> GetDestinations([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            var builder = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
+
+            foreach (var group in principal.Claims.GroupBy(claim => claim.Type))
+            {
+                var claims = group.ToList();
+
+                var destinations = new HashSet<string>(claims[0].GetDestinations(), StringComparer.OrdinalIgnoreCase);
+                if (destinations.Count != 0)
+                {
+                    // Ensure the other claims of the same type use the same exact destinations.
+                    for (var index = 0; index < claims.Count; index++)
                     {
-                        [Properties.Destinations] = @"[""id_token""]"
+                        if (!destinations.SetEquals(claims[index].GetDestinations()))
+                        {
+                            throw new InvalidOperationException($"Conflicting destinations for the claim '{group.Key}' were specified.");
+                        }
                     }
-                },
-                new Claim(Claims.Nonce, "OkjjKJkjkHJJHhgFsd")
-            };
 
-            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+                    builder.Add(group.Key, destinations.ToArray());
+                }
+            }
 
-            // Act
-            var destinations = principal.GetDestinations();
-
-            // Assert
-            Assert.Equal(2, destinations.Count);
-            Assert.Equal(new[] { Destinations.AccessToken, Destinations.IdentityToken }, destinations[Claims.Name]);
-            Assert.Equal(new[] { Destinations.IdentityToken }, destinations[Claims.Email]);
+            return builder.ToImmutable();
         }
 
-        [Fact]
-        public void ClaimsPrincipal_SetDestinations_ThrowsAnExceptionForNullPrincipal()
+        /// <summary>
+        /// Sets the destinations associated with all the claims of the given principal.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <param name="destinations">The destinations, as a flattened dictionary.</param>
+        /// <returns>The principal.</returns>
+        public static ClaimsPrincipal SetDestinations(
+            [NotNull] this ClaimsPrincipal principal,
+            [NotNull] ImmutableDictionary<string, string[]> destinations)
         {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDestinations(destinations: null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Fact]
-        public void ClaimsPrincipal_SetDestinations_ThrowsAnExceptionForNullDestinations()
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal(new ClaimsIdentity());
-            var destinations = (ImmutableDictionary<string, string[]>) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDestinations(destinations));
-
-            Assert.Equal("destinations", exception.ParamName);
-        }
-
-        [Fact]
-        public void ClaimsPrincipal_SetDestinations_SetsAppropriateDestinations()
-        {
-            // Arrange
-            var claims = new[]
+            if (principal == null)
             {
-                new Claim(Claims.Name, "Bob le Bricoleur"),
-                new Claim(Claims.Email, "bob@bricoleur.com"),
-                new Claim(Claims.Nonce, "OkjjKJkjkHJJHhgFsd")
-            };
+                throw new ArgumentNullException(nameof(principal));
+            }
 
-            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
-
-            var destinations = ImmutableDictionary.CreateBuilder<string, string[]>(StringComparer.Ordinal);
-            destinations.Add(Claims.Name, new[] { Destinations.AccessToken, Destinations.IdentityToken });
-            destinations.Add(Claims.Email, new[] { Destinations.IdentityToken });
-            destinations.Add(Claims.Nonce, Array.Empty<string>());
-
-            // Act
-            principal.SetDestinations(destinations.ToImmutable());
-
-            // Assert
-            Assert.Equal(@"[""access_token"",""id_token""]", principal.FindFirst(Claims.Name).Properties[Properties.Destinations]);
-            Assert.Equal(@"[""id_token""]", principal.FindFirst(Claims.Email).Properties[Properties.Destinations]);
-            Assert.DoesNotContain(Properties.Destinations, principal.FindFirst(Claims.Nonce).Properties);
-        }
-
-        [Theory]
-        [InlineData(new[] { "access_token" }, @"[""access_token""]")]
-        [InlineData(new[] { "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "ACCESS_TOKEN", "id_token" }, @"[""access_token"",""id_token""]")]
-        public void SetDestinations_IEnumerable_SetsAppropriateDestinations(string[] destinations, string destination)
-        {
-            // Arrange
-            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
-
-            // Act
-            claim.SetDestinations((IEnumerable<string>)destinations);
-
-            // Assert
-            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
-        }
-
-        [Theory]
-        [InlineData(new[] { "access_token" }, @"[""access_token""]")]
-        [InlineData(new[] { "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "ACCESS_TOKEN", "id_token" }, @"[""access_token"",""id_token""]")]
-        public void SetDestinations_ImmutableArray_SetsAppropriateDestinations(string[] destinations, string destination)
-        {
-            // Arrange
-            var claim = new Claim(Claims.Name, "Bob le Bricoleur");
-
-            // Act
-            claim.SetDestinations(ImmutableArray.Create(destinations));
-
-            // Assert
-            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
-        }
-
-        [Fact]
-        public void ClaimsIdentity_Clone_ReturnsDifferentInstanceWithFilteredClaims()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
-            identity.AddClaim(new Claim(Claims.ClientId, "B56BF6CE-8D8C-4290-A0E7-A4F8EE0A9FC4"));
-
-            // Act
-            var clone = identity.Clone(claim => claim.Type == Claims.Name);
-            clone.AddClaim(new Claim("clone_claim", "value"));
-
-            // Assert
-            Assert.NotSame(identity, clone);
-            Assert.Null(identity.FindFirst("clone_claim"));
-            Assert.NotNull(clone.FindFirst(Claims.Name));
-            Assert.Null(clone.FindFirst(Claims.ClientId));
-        }
-
-        [Fact]
-        public void ClaimsIdentity_Clone_ExcludesUnwantedClaims()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
-            identity.AddClaim(new Claim(Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
-
-            // Act
-            var clone = identity.Clone(claim => claim.Type == Claims.Name);
-
-            // Assert
-            Assert.Single(clone.Claims);
-            Assert.Null(clone.FindFirst(Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.FindFirst(Claims.Name).Value);
-        }
-
-        [Fact]
-        public void ClaimsIdentity_Clone_ExcludesUnwantedClaimsFromActor()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity
+            if (destinations == null)
             {
-                Actor = new ClaimsIdentity()
-            };
-            identity.Actor.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
-            identity.Actor.AddClaim(new Claim(Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
+                throw new ArgumentNullException(nameof(destinations));
+            }
 
-            // Act
-            var clone = identity.Clone(claim => claim.Type == Claims.Name);
-
-            // Assert
-            Assert.Single(clone.Actor.Claims);
-            Assert.Null(clone.Actor.FindFirst(Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.Actor.FindFirst(Claims.Name).Value);
-        }
-
-        [Fact]
-        public void ClaimsPrincipal_Clone_ExcludesUnwantedClaimsFromIdentities()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
-            identity.AddClaim(new Claim(Claims.Subject, "D8F1A010-BD46-4F8F-AD4E-05582307F8F4"));
-
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            var clone = principal.Clone(claim => claim.Type == Claims.Name);
-
-            // Assert
-            Assert.Single(clone.Claims);
-            Assert.Null(clone.FindFirst(Claims.Subject));
-            Assert.Equal("Bob le Bricoleur", clone.FindFirst(Claims.Name).Value);
-        }
-
-        [Fact]
-        public void AddClaim_ThrowsAnExceptionForNullIdentity()
-        {
-            // Arrange
-            var identity = (ClaimsIdentity) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
+            foreach (var destination in destinations)
             {
-                identity.AddClaim(Claims.Name, "Bob le Bricoleur");
-            });
+                foreach (var claim in principal.Claims.Where(claim => claim.Type == destination.Key))
+                {
+                    claim.SetDestinations(destination.Value);
+                }
+            }
 
-            Assert.Equal("identity", exception.ParamName);
+            return principal;
         }
 
-        [Fact]
-        public void AddClaim_SetsAppropriateClaim()
+        /// <summary>
+        /// Clones an identity by filtering its claims and the claims of its actor, recursively.
+        /// </summary>
+        /// <param name="identity">The <see cref="ClaimsIdentity"/> instance to filter.</param>
+        /// <param name="filter">
+        /// The delegate filtering the claims: return <c>true</c>
+        /// to accept the claim, <c>false</c> to remove it.
+        /// </param>
+        public static ClaimsIdentity Clone(
+            [NotNull] this ClaimsIdentity identity,
+            [NotNull] Func<Claim, bool> filter)
         {
-            // Arrange
-            var identity = new ClaimsIdentity();
-
-            // Act
-            identity.AddClaim(Claims.Name, "Bob le Bricoleur");
-
-            // Assert
-            Assert.Equal("Bob le Bricoleur", identity.FindFirst(Claims.Name).Value);
-        }
-
-        [Theory]
-        [InlineData(new[] { "access_token" }, @"[""access_token""]")]
-        [InlineData(new[] { "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "ACCESS_TOKEN", "id_token" }, @"[""access_token"",""id_token""]")]
-        public void AddClaim_ImmutableArray_SetsAppropriateDestinations(string[] destinations, string destination)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-
-            // Act
-            identity.AddClaim(Claims.Name, "Bob le Bricoleur", ImmutableArray.Create(destinations));
-
-            var claim = identity.FindFirst(Claims.Name);
-
-            // Assert
-            Assert.Equal("Bob le Bricoleur", claim.Value);
-            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
-        }
-
-        [Theory]
-        [InlineData(new[] { "access_token" }, @"[""access_token""]")]
-        [InlineData(new[] { "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "access_token", "id_token" }, @"[""access_token"",""id_token""]")]
-        [InlineData(new[] { "access_token", "ACCESS_TOKEN", "id_token" }, @"[""access_token"",""id_token""]")]
-        public void AddClaim_SetsAppropriateDestinations(string[] destinations, string destination)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-
-            // Act
-            identity.AddClaim(Claims.Name, "Bob le Bricoleur", destinations);
-
-            var claim = identity.FindFirst(Claims.Name);
-
-            // Assert
-            Assert.Equal("Bob le Bricoleur", claim.Value);
-            Assert.Equal(destination, claim.Properties[Properties.Destinations]);
-        }
-
-        [Fact]
-        public void GetClaim_ThrowsAnExceptionForNullIdentity()
-        {
-            // Arrange
-            var identity = (ClaimsIdentity) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
+            if (identity == null)
             {
-                identity.GetClaim(Claims.Name);
-            });
-
-            Assert.Equal("identity", exception.ParamName);
-        }
-
-        [Fact]
-        public void GetClaim_ReturnsNullForMissingClaims()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal();
-
-            // Act and assert
-            Assert.Null(identity.GetClaim(Claims.Name));
-            Assert.Null(principal.GetClaim(Claims.Name));
-        }
-
-        [Fact]
-        public void GetClaim_ReturnsAppropriateResult()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            identity.AddClaim(Claims.Name, "Bob le Bricoleur");
-
-            // Act and assert
-            Assert.Equal("Bob le Bricoleur", identity.GetClaim(Claims.Name));
-            Assert.Equal("Bob le Bricoleur", principal.GetClaim(Claims.Name));
-        }
-
-        [Fact]
-        public void ClaimsIdentity_Clone_ThrowsAnExceptionForNullIdentity()
-        {
-            // Arrange
-            var identity = (ClaimsIdentity) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => identity.Clone(c => true));
-
-            Assert.Equal("identity", exception.ParamName);
-        }
-
-        [Fact]
-        public void ClaimsIdentity_Clone_ReturnsIdenticalIdentity()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            identity.AddClaim("type", "value");
-
-            // Act
-            var copy = identity.Clone(c => true);
-
-            // Assert
-            Assert.Equal("value", copy.GetClaim("type"));
-            Assert.Equal(identity.Claims.Count(), copy.Claims.Count());
-        }
-
-        [Fact]
-        public void ClaimsPrincipal_Clone_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.Clone(c => true));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Fact]
-        public void ClaimsPrincipal_Clone_ReturnsIdenticalPrincipal()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
-
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            var copy = principal.Clone(c => true);
-
-            // Assert
-            Assert.Equal("Bob le Bricoleur", copy.GetClaim(Claims.Name));
-            Assert.Equal(principal.Claims.Count(), copy.Claims.Count());
-        }
-
-        [Fact]
-        public void ClaimsIdentity_Clone_ReturnsDifferentIdentityInstance()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            identity.AddClaim("type", "value");
-
-            // Act
-            var copy = identity.Clone(c => true);
-            copy.AddClaim("clone_type", "value");
-
-            // Assert
-            Assert.NotSame(identity, copy);
-            Assert.Null(identity.FindFirst("clone_type"));
-        }
-
-        [Fact]
-        public void ClaimsPrincipal_Clone_ReturnsDifferentPrincipalInstance()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
-
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            var copy = principal.Clone(c => true);
-            copy.SetClaim("clone_claim", "value");
-
-            // Assert
-            Assert.NotSame(principal, copy);
-            Assert.Null(principal.FindFirst("clone_claim"));
-        }
-
-        [Fact]
-        public void GetClaim_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetClaim("type"));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Fact]
-        public void GetClaim_ReturnsNullForMissingClaim()
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-
-            // Act and assert
-            Assert.Null(principal.GetClaim("type"));
-        }
-
-        [Fact]
-        public void GetClaim_IsCaseInsensitive()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-            principal.SetClaim("type", "value");
-
-            // Act and assert
-            Assert.Equal("value", principal.GetClaim("TYPE"));
-        }
-
-        [Fact]
-        public void GetCreationDate_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetCreationDate());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Fact]
-        public void GetCreationDate_ReturnsNullIfNoClaim()
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-
-            // Act
-            var creationDate = principal.GetCreationDate();
-
-            // Assert
-            Assert.Null(creationDate);
-        }
-
-        [Theory]
-        [InlineData(null, null)]
-        [InlineData("", null)]
-        [InlineData(" ", null)]
-        [InlineData("62", "62")]
-        [InlineData("bad_data", null)]
-        public void GetCreationDate_ReturnsCreationDate(string issuedAt, string expected)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-            principal.SetClaim(Claims.IssuedAt, issuedAt);
-
-            // Act
-            var creationDate = principal.GetCreationDate();
-
-            // Assert
-            Assert.Equal(ParseDateTimeOffset(expected), creationDate);
-        }
-
-        [Fact]
-        public void GetExpirationDate_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetExpirationDate());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Fact]
-        public void GetExpirationDate_ReturnsNullIfNoClaim()
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-
-            // Act
-            var expirationDate = principal.GetExpirationDate();
-
-            // Assert
-            Assert.Null(expirationDate);
-        }
-
-        [Theory]
-        [InlineData(null, null)]
-        [InlineData("", null)]
-        [InlineData(" ", null)]
-        [InlineData("62", "62")]
-        [InlineData("bad_data", null)]
-        public void GetExpirationDate_ReturnsExpirationDate(string expiresAt, string expected)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-            principal.SetClaim(Claims.ExpiresAt, expiresAt);
-
-            // Act
-            var expirationDate = principal.GetExpirationDate();
-
-            // Assert
-            Assert.Equal(ParseDateTimeOffset(expected), expirationDate);
-        }
-
-        [Fact]
-        public void GetAudiences_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAudiences());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
-        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
-        public void GetAudiences_ReturnsExpectedAudiences(string[] audience, string[] audiences)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Audience, audience.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(audiences, principal.GetAudiences());
-        }
-
-        [Fact]
-        public void GetPresenters_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetPresenters());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
-        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
-        public void GetPresenters_ReturnsExpectedPresenters(string[] presenter, string[] presenters)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(presenters, principal.GetPresenters());
-        }
-
-        [Fact]
-        public void GetResources_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetResources());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
-        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
-        public void GetResources_ReturnsExpectedResources(string[] resource, string[] resources)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(resources, principal.GetResources());
-        }
-
-        [Fact]
-        public void GetScopes_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetScopes());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "openid" }, new[] { "openid" })]
-        [InlineData(new[] { "openid", "profile" }, new[] { "openid", "profile" })]
-        [InlineData(new[] { "openid", "openid", "profile" }, new[] { "openid", "profile" })]
-        [InlineData(new[] { "openid", "OPENID", "profile" }, new[] { "openid", "OPENID", "profile" })]
-        public void ClaimsPrincipal_GetScopes_ReturnsExpectedScopes(string[] scope, string[] scopes)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(scopes, principal.GetScopes());
-        }
-
-        [Fact]
-        public void GetAccessTokenLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAccessTokenLifetime());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void GetAccessTokenLifetime_ReturnsExpectedResult(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.AccessTokenLifetime, lifetime);
-
-            // Act and assert
-            Assert.Equal(ParseLifeTime(lifetime), principal.GetAccessTokenLifetime());
-        }
-
-        [Fact]
-        public void GetAuthorizationCodeLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAuthorizationCodeLifetime());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void GetAuthorizationCodeLifetime_ReturnsExpectedResult(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.AuthorizationCodeLifetime, lifetime);
-
-            // Act and assert
-            Assert.Equal(ParseLifeTime(lifetime), principal.GetAuthorizationCodeLifetime());
-        }
-
-        [Fact]
-        public void GetDeviceCodeLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetDeviceCodeLifetime());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void GetDeviceCodeLifetime_ReturnsExpectedResult(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.DeviceCodeLifetime, lifetime);
-
-            // Act and assert
-            Assert.Equal(ParseLifeTime(lifetime), principal.GetDeviceCodeLifetime());
-        }
-
-        [Fact]
-        public void GetIdentityTokenLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetIdentityTokenLifetime());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void GetIdentityTokenLifetime_ReturnsExpectedResult(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.IdentityTokenLifetime, lifetime);
-
-            // Act and assert
-            Assert.Equal(ParseLifeTime(lifetime), principal.GetIdentityTokenLifetime());
-        }
-
-        [Fact]
-        public void GetRefreshTokenLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetRefreshTokenLifetime());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void GetRefreshTokenLifetime_ReturnsExpectedResult(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.RefreshTokenLifetime, lifetime);
-
-            // Act and assert
-            Assert.Equal(ParseLifeTime(lifetime), principal.GetRefreshTokenLifetime());
-        }
-
-        [Fact]
-        public void GetUserCodeLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetUserCodeLifetime());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void GetUserCodeLifetime_ReturnsExpectedResult(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.UserCodeLifetime, lifetime);
-
-            // Act and assert
-            Assert.Equal(ParseLifeTime(lifetime), principal.GetUserCodeLifetime());
-        }
-
-        [Fact]
-        public void GetInternalAuthorizationId_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetInternalAuthorizationId());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("identifier")]
-        public void GetInternalAuthorizationId_ReturnsExpectedResult(string identifier)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.AuthorizationId, identifier);
-
-            // Act and assert
-            Assert.Equal(identifier, principal.GetInternalAuthorizationId());
-        }
-
-        [Fact]
-        public void GetInternalTokenId_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetInternalTokenId());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("identifier")]
-        public void GetInternalTokenId_ReturnsExpectedResult(string identifier)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenId, identifier);
-
-            // Act and assert
-            Assert.Equal(identifier, principal.GetInternalTokenId());
-        }
-
-        [Fact]
-        public void GetTokenUsage_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetTokenUsage());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("access_token")]
-        public void GetTokenUsage_ReturnsExpectedResult(string usage)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
-
-            // Act and assert
-            Assert.Equal(usage, principal.GetTokenUsage());
-        }
-
-        [Fact]
-        public void HasAudience_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasAudience("Fabrikam"));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void HasAudience_ThrowsAnExceptionForNullOrEmptyAudience(string audience)
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => principal.HasAudience(audience));
-
-            Assert.Equal("audience", exception.ParamName);
-            Assert.StartsWith("The audience cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
-        [InlineData(new[] { "fabrikam" }, true)]
-        public void HasAudience_ReturnsExpectedResult(string[] audience, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Audience, audience.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasAudience());
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
-        [InlineData(new[] { "contoso" }, false)]
-        [InlineData(new[] { "contoso", "fabrikam" }, true)]
-        [InlineData(new[] { "fabrikam" }, true)]
-        [InlineData(new[] { "fabrikam", "contoso" }, true)]
-        [InlineData(new[] { "CONTOSO" }, false)]
-        [InlineData(new[] { "CONTOSO", "FABRIKAM" }, false)]
-        [InlineData(new[] { "FABRIKAM" }, false)]
-        [InlineData(new[] { "FABRIKAM", "CONTOSO" }, false)]
-        public void HasAudience_ReturnsAppropriateResult(string[] audience, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Audience, audience.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasAudience("fabrikam"));
-        }
-
-        [Fact]
-        public void HasPresenter_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasPresenter("Fabrikam"));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void HasPresenter_ThrowsAnExceptionForNullOrEmptyPresenter(string presenter)
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => principal.HasPresenter(presenter));
-
-            Assert.Equal("presenter", exception.ParamName);
-            Assert.StartsWith("The presenter cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
-        [InlineData(new[] { "fabrikam" }, true)]
-        public void HasPresenter_ReturnsExpectedResult(string[] presenter, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasPresenter());
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
-        [InlineData(new[] { "contoso" }, false)]
-        [InlineData(new[] { "contoso", "fabrikam" }, true)]
-        [InlineData(new[] { "fabrikam" }, true)]
-        [InlineData(new[] { "fabrikam", "contoso" }, true)]
-        [InlineData(new[] { "CONTOSO" }, false)]
-        [InlineData(new[] { "CONTOSO", "FABRIKAM" }, false)]
-        [InlineData(new[] { "FABRIKAM" }, false)]
-        [InlineData(new[] { "FABRIKAM", "CONTOSO" }, false)]
-        public void HasPresenter_ReturnsAppropriateResult(string[] presenter, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasPresenter("fabrikam"));
-        }
-
-        [Fact]
-        public void HasResource_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasResource("Fabrikam"));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void HasResource_ThrowsAnExceptionForNullOrEmptyResource(string resource)
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => principal.HasResource(resource));
-
-            Assert.Equal("resource", exception.ParamName);
-            Assert.StartsWith("The resource cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
-        [InlineData(new[] { "fabrikam" }, true)]
-        public void HasResource_ReturnsExpectedResult(string[] resource, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasResource());
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
-        [InlineData(new[] { "contoso" }, false)]
-        [InlineData(new[] { "contoso", "fabrikam" }, true)]
-        [InlineData(new[] { "fabrikam" }, true)]
-        [InlineData(new[] { "fabrikam", "contoso" }, true)]
-        [InlineData(new[] { "CONTOSO" }, false)]
-        [InlineData(new[] { "CONTOSO", "FABRIKAM" }, false)]
-        [InlineData(new[] { "FABRIKAM" }, false)]
-        [InlineData(new[] { "FABRIKAM", "CONTOSO" }, false)]
-        public void HasResource_ReturnsAppropriateResult(string[] resource, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasResource("fabrikam"));
-        }
-
-        [Fact]
-        public void HasScope_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasScope(Scopes.OpenId));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void ClaimsPrincipal_HasScope_ThrowsAnExceptionForNullOrEmptyScope(string scope)
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => principal.HasScope(scope));
-
-            Assert.Equal("scope", exception.ParamName);
-            Assert.StartsWith("The scope cannot be null or empty.", exception.Message);
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
-        [InlineData(new[] { "openid" }, true)]
-        public void ClaimsPrincipal_HasScope_ReturnsExpectedResult(string[] scope, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasScope());
-        }
-
-        [Theory]
-        [InlineData(new string[0], false)]
-        [InlineData(new[] { "profile" }, false)]
-        [InlineData(new[] { "profile", "openid" }, true)]
-        [InlineData(new[] { "openid" }, true)]
-        [InlineData(new[] { "openid", "profile" }, true)]
-        [InlineData(new[] { "PROFILE" }, false)]
-        [InlineData(new[] { "PROFILE", "OPENID" }, false)]
-        [InlineData(new[] { "OPENID" }, false)]
-        [InlineData(new[] { "OPENID", "PROFILE" }, false)]
-        public void HasScope_ReturnsAppropriateResult(string[] scope, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
-
-            // Act and assert
-            Assert.Equal(result, principal.HasScope(Scopes.OpenId));
-        }
-
-        [Fact]
-        public void IsAccessToken_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsAccessToken());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, true)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.DeviceCode, false)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, false)]
-        public void IsAccessToken_ReturnsExpectedResult(string usage, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsAccessToken());
-        }
-
-        [Fact]
-        public void IsAuthorizationCode_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsAuthorizationCode());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, true)]
-        [InlineData(TokenUsages.DeviceCode, false)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, false)]
-        public void IsAuthorizationCode_ReturnsExpectedResult(string usage, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsAuthorizationCode());
-        }
-
-        [Fact]
-        public void IsDeviceCode_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsDeviceCode());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.DeviceCode, true)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, false)]
-        public void IsDeviceCode_ReturnsExpectedResult(string usage, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsDeviceCode());
-        }
-
-        [Fact]
-        public void IsIdentityToken_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsIdentityToken());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.DeviceCode, false)]
-        [InlineData(TokenUsages.IdToken, true)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, false)]
-        public void IsIdentityToken_ReturnsExpectedResult(string usage, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsIdentityToken());
-        }
-
-        [Fact]
-        public void IsRefreshToken_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsRefreshToken());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, true)]
-        public void IsRefreshToken_ReturnsExpectedResult(string usage, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsRefreshToken());
-        }
-
-        [Fact]
-        public void IsUserCode_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsUserCode());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.DeviceCode, false)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, true)]
-        public void IsUserCode_ReturnsExpectedResult(string usage, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsUserCode());
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void AddClaim_ThrowsAnExceptionForNullOrEmptyType(string type)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type, "value"));
-
-            Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
-        }
-
-        [Fact]
-        public void AddClaim_AddsExpectedClaim()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-
-            // Act
-            identity.AddClaim("type", "value");
-
-            // Assert
-            Assert.Equal("value", identity.GetClaim("type"));
-        }
-
-        [Fact]
-        public void RemoveClaims_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.RemoveClaims("type"));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void RemoveClaims_ThrowsAnExceptionForNullOrEmptyClaimType(string type)
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => principal.RemoveClaims(type));
-
-            Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
-        }
-
-        [Fact]
-        public void RemoveClaims_RemoveClaims()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim("type", "value");
-
-            // Act
-            principal.RemoveClaims("type");
-
-            // Assert
-            Assert.Null(principal.GetClaim("type"));
-        }
-
-        [Fact]
-        public void SetClaim_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetClaim("type", "value"));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void SetClaim_ThrowsAnExceptionForNullOrEmptyProperty(string type)
-        {
-            // Arrange
-            var principal = new ClaimsPrincipal();
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type, "value"));
-
-            Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
-        }
-
-        [Fact]
-        public void SetClaim_AddsExpectedClaim()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetClaim("type", "value");
-
-            // Assert
-            Assert.Equal("value", principal.GetClaim("type"));
-        }
-
-        [Fact]
-        public void SetClaim_IsCaseInsensitive()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetClaim("TYPE", "value");
-
-            // Assert
-            Assert.Equal("value", principal.GetClaim("type"));
-        }
-
-        [Fact]
-        public void SetClaim_RemovesEmptyClaim()
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetClaim("type", string.Empty);
-
-            // Assert
-            Assert.Null(principal.GetClaim("type"));
-        }
-
-        [Fact]
-        public void SetCreationDate_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetCreationDate(default(DateTimeOffset)));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetCreationDate_AddsIssuedAtClaim(string date)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetCreationDate(ParseDateTimeOffset(date));
-
-            // Assert
-            Assert.Equal(date, principal.GetClaim(Claims.IssuedAt));
-        }
-
-        [Fact]
-        public void SetExpirationDate_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetExpirationDate(default(DateTimeOffset)));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetExpirationDate_AddsExpiresAtClaim(string date)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetExpirationDate(ParseDateTimeOffset(date));
-
-            // Assert
-            Assert.Equal(date, principal.GetClaim(Claims.ExpiresAt));
-        }
-
-        [Fact]
-        public void SetAudiences_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAudiences());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
-        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
-        public void SetAudiences_AddsAudiences(string[] audiences, string[] audience)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetAudiences(audiences);
-
-            // Assert
-            Assert.Equal(audience, principal.GetClaims(Claims.Audience));
-        }
-
-        [Fact]
-        public void SetPresenters_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetPresenters());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
-        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
-        public void SetPresenters_AddsPresenters(string[] presenters, string[] presenter)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetPresenters(presenters);
-
-            // Assert
-            Assert.Equal(presenter, principal.GetClaims(Claims.Private.Presenters));
-        }
-
-        [Fact]
-        public void SetResources_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetResources());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "fabrikam" }, new[] { "fabrikam" })]
-        [InlineData(new[] { "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "fabrikam", "contoso" }, new[] { "fabrikam", "contoso" })]
-        [InlineData(new[] { "fabrikam", "FABRIKAM", "contoso" }, new[] { "fabrikam", "FABRIKAM", "contoso" })]
-        public void SetResources_AddsResources(string[] resources, string[] resource)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetResources(resources);
-
-            // Assert
-            Assert.Equal(resource, principal.GetClaims(Claims.Private.Resources));
-        }
-
-        [Fact]
-        public void SetScopes_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetScopes());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "openid" }, new[] { "openid" })]
-        [InlineData(new[] { "openid", "profile" }, new[] { "openid", "profile" })]
-        [InlineData(new[] { "openid", "openid", "profile" }, new[] { "openid", "profile" })]
-        [InlineData(new[] { "openid", "OPENID", "profile" }, new[] { "openid", "OPENID", "profile" })]
-        public void SetScopes_AddsScopes(string[] scopes, string[] scope)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetScopes(scopes);
-
-            // Assert
-            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "openid" }, new[] { "openid" })]
-        [InlineData(new[] { "openid", "profile" }, new[] { "openid", "profile" })]
-        [InlineData(new[] { "openid", "openid", "profile" }, new[] { "openid", "profile" })]
-        [InlineData(new[] { "openid", "OPENID", "profile" }, new[] { "openid", "OPENID", "profile" })]
-        public void SetScopes_IEnumerable_AddsScopes(string[] scopes, string[] scope)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetScopes((IEnumerable<string>)scopes);
-
-            // Assert
-            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
-        }
-
-        [Theory]
-        [InlineData(null, new string[0])]
-        [InlineData(new string[0], new string[0])]
-        [InlineData(new[] { "openid" }, new[] { "openid" })]
-        [InlineData(new[] { "openid", "profile" }, new[] { "openid", "profile" })]
-        [InlineData(new[] { "openid", "openid", "profile" }, new[] { "openid", "profile" })]
-        [InlineData(new[] { "openid", "OPENID", "profile" }, new[] { "openid", "OPENID", "profile" })]
-        public void SetScopes_ImmutableArray_AddsScopes(string[] scopes, string[] scope)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetScopes(ImmutableArray.Create(scopes));
-
-            // Assert
-            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
-        }
-
-        [Fact]
-        public void SetAccessTokenLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAccessTokenLifetime(null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetAccessTokenLifetime_AddsLifetime(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetAccessTokenLifetime(ParseLifeTime(lifetime));
-
-            // Assert
-            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.AccessTokenLifetime));
-        }
-
-        [Fact]
-        public void SetAuthorizationCodeLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAuthorizationCodeLifetime(null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetAuthorizationCodeLifetime_AddsLifetime(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetAuthorizationCodeLifetime(ParseLifeTime(lifetime));
-
-            // Assert
-            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.AuthorizationCodeLifetime));
-        }
-
-        [Fact]
-        public void SetDeviceCodeLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetDeviceCodeLifetime(null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetDeviceCodeLifetime_AddsLifetime(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetDeviceCodeLifetime(ParseLifeTime(lifetime));
-
-            // Assert
-            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.DeviceCodeLifetime));
-        }
-
-        [Fact]
-        public void SetIdentityTokenLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetIdentityTokenLifetime(null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetIdentityTokenLifetime_AddsLifetime(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetIdentityTokenLifetime(ParseLifeTime(lifetime));
-
-            // Assert
-            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.IdentityTokenLifetime));
-        }
-
-        [Fact]
-        public void SetRefreshTokenLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetRefreshTokenLifetime(null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetRefreshTokenLifetime_AddsLifetime(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetRefreshTokenLifetime(ParseLifeTime(lifetime));
-
-            // Assert
-            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.RefreshTokenLifetime));
-        }
-
-        [Fact]
-        public void SetUserCodeLifetime_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetUserCodeLifetime(null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetUserCodeLifetime_AddsLifetime(string lifetime)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetUserCodeLifetime(ParseLifeTime(lifetime));
-
-            // Assert
-            Assert.Equal(lifetime, principal.GetClaim(Claims.Private.UserCodeLifetime));
-        }
-
-        [Fact]
-        public void SetInternalAuthorizationId_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetInternalAuthorizationId(null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("identifier")]
-        public void SetInternalAuthorizationId_AddsScopes(string identifier)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetInternalAuthorizationId(identifier);
-
-            // Assert
-            Assert.Equal(identifier, principal.GetClaim(Claims.Private.AuthorizationId));
-        }
-
-        [Fact]
-        public void SetInternalTokenId_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetInternalTokenId(null));
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("identifier")]
-        public void SetInternalTokenId_AddsScopes(string identifier)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            // Act
-            principal.SetInternalTokenId(identifier);
-
-            // Assert
-            Assert.Equal(identifier, principal.GetClaim(Claims.Private.TokenId));
-        }
-
-        private TimeSpan? ParseLifeTime(string lifetime)
-        {
-            var lifeT = lifetime != null
-                ? (TimeSpan?)TimeSpan.FromSeconds(double.Parse(lifetime, NumberStyles.Number, CultureInfo.InvariantCulture))
-                : null;
-
-            return lifeT;
-        }
-
-        private DateTimeOffset? ParseDateTimeOffset(string dateTimeOffset)
-        {
-            var dtOffset = string.IsNullOrWhiteSpace(dateTimeOffset)
-                ? null
-                : (DateTimeOffset?)DateTimeOffset.FromUnixTimeSeconds(long.Parse(dateTimeOffset, NumberStyles.Number, CultureInfo.InvariantCulture));
-
-            return dtOffset;
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
+
+            var clone = identity.Clone();
+
+            // Note: make sure to call ToList() to avoid modifying
+            // the initial collection iterated by ClaimsIdentity.Claims.
+            foreach (var claim in clone.Claims.ToList())
+            {
+                if (!filter(claim))
+                {
+                    clone.RemoveClaim(claim);
+                }
+            }
+
+            if (clone.Actor != null)
+            {
+                clone.Actor = clone.Actor.Clone(filter);
+            }
+
+            return clone;
+        }
+
+        /// <summary>
+        /// Clones a principal by filtering its identities.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance to filter.</param>
+        /// <param name="filter">
+        /// The delegate filtering the claims: return <c>true</c>
+        /// to accept the claim, <c>false</c> to remove it.
+        /// </param>
+        public static ClaimsPrincipal Clone(
+            [NotNull] this ClaimsPrincipal principal,
+            [NotNull] Func<Claim, bool> filter)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
+
+            var clone = new ClaimsPrincipal();
+
+            foreach (var identity in principal.Identities)
+            {
+                clone.AddIdentity(identity.Clone(filter));
+            }
+
+            return clone;
+        }
+
+        /// <summary>
+        /// Adds a claim to a given identity.
+        /// </summary>
+        /// <param name="identity">The identity.</param>
+        /// <param name="type">The type associated with the claim.</param>
+        /// <param name="value">The value associated with the claim.</param>
+        public static ClaimsIdentity AddClaim(
+            [NotNull] this ClaimsIdentity identity,
+            [NotNull] string type, [NotNull] string value)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentException("The claim value cannot be null or empty.", nameof(value));
+            }
+
+            identity.AddClaim(new Claim(type, value));
+            return identity;
+        }
+
+        /// <summary>
+        /// Adds a claim to a given identity and specify one or more destinations.
+        /// </summary>
+        /// <param name="identity">The identity.</param>
+        /// <param name="type">The type associated with the claim.</param>
+        /// <param name="value">The value associated with the claim.</param>
+        /// <param name="destinations">The destinations associated with the claim.</param>
+        public static ClaimsIdentity AddClaim(
+            [NotNull] this ClaimsIdentity identity,
+            [NotNull] string type, [NotNull] string value,
+            [NotNull] ImmutableArray<string> destinations)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentException("The claim value cannot be null or empty.", nameof(value));
+            }
+
+            if (destinations == null)
+            {
+                throw new ArgumentNullException(nameof(destinations));
+            }
+
+            identity.AddClaim(new Claim(type, value).SetDestinations(destinations));
+            return identity;
+        }
+
+        /// <summary>
+        /// Adds a claim to a given identity and specify one or more destinations.
+        /// </summary>
+        /// <param name="identity">The identity.</param>
+        /// <param name="type">The type associated with the claim.</param>
+        /// <param name="value">The value associated with the claim.</param>
+        /// <param name="destinations">The destinations associated with the claim.</param>
+        public static ClaimsIdentity AddClaim(
+            [NotNull] this ClaimsIdentity identity,
+            [NotNull] string type, [NotNull] string value,
+            [NotNull] params string[] destinations)
+            => identity.AddClaim(type, value, destinations?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Gets the claim value corresponding to the given type.
+        /// </summary>
+        /// <param name="identity">The identity.</param>
+        /// <param name="type">The type associated with the claim.</param>
+        /// <returns>The claim value.</returns>
+        public static string GetClaim([NotNull] this ClaimsIdentity identity, [NotNull] string type)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            return identity.FindFirst(type)?.Value;
+        }
+
+        /// <summary>
+        /// Gets the claim value corresponding to the given type.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <param name="type">The type associated with the claim.</param>
+        /// <returns>The claim value.</returns>
+        public static string GetClaim([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            return principal.FindFirst(type)?.Value;
+        }
+
+        /// <summary>
+        /// Gets the claim values corresponding to the given type.
+        /// </summary>
+        /// <param name="identity">The identity.</param>
+        /// <param name="type">The type associated with the claims.</param>
+        /// <returns>The claim values.</returns>
+        public static ImmutableArray<string> GetClaims([NotNull] this ClaimsIdentity identity, [NotNull] string type)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            return identity.FindAll(type).Select(claim => claim.Value).Distinct(StringComparer.Ordinal).ToImmutableArray();
+        }
+
+        /// <summary>
+        /// Gets the claim values corresponding to the given type.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <param name="type">The type associated with the claims.</param>
+        /// <returns>The claim values.</returns>
+        public static ImmutableArray<string> GetClaims([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            return principal.FindAll(type).Select(claim => claim.Value).Distinct(StringComparer.Ordinal).ToImmutableArray();
+        }
+
+        /// <summary>
+        /// Removes all the claims corresponding to the given type.
+        /// </summary>
+        /// <param name="identity">The identity.</param>
+        /// <param name="type">The type associated with the claims.</param>
+        /// <returns>The claims identity.</returns>
+        public static ClaimsIdentity RemoveClaims([NotNull] this ClaimsIdentity identity, [NotNull] string type)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            foreach (var claim in identity.FindAll(type).ToList())
+            {
+                identity.RemoveClaim(claim);
+            }
+
+            return identity;
+        }
+
+        /// <summary>
+        /// Removes all the claims corresponding to the given type.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <param name="type">The type associated with the claims.</param>
+        /// <returns>The claims identity.</returns>
+        public static ClaimsPrincipal RemoveClaims([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            foreach (var identity in principal.Identities)
+            {
+                foreach (var claim in identity.FindAll(type).ToList())
+                {
+                    identity.RemoveClaim(claim);
+                }
+            }
+
+            return principal;
+        }
+
+        /// <summary>
+        /// Sets the claim value corresponding to the given type.
+        /// </summary>
+        /// <param name="identity">The identity.</param>
+        /// <param name="type">The type associated with the claims.</param>
+        /// <param name="value">The claim value.</param>
+        /// <returns>The claims identity.</returns>
+        public static ClaimsIdentity SetClaims(
+            [NotNull] this ClaimsIdentity identity,
+            [NotNull] string type, [CanBeNull] string value)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            identity.RemoveClaims(type);
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                identity.AddClaim(type, value);
+            }
+
+            return identity;
+        }
+
+        /// <summary>
+        /// Sets the claim value corresponding to the given type.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <param name="type">The type associated with the claims.</param>
+        /// <param name="value">The claim value.</param>
+        /// <returns>The claims identity.</returns>
+        public static ClaimsPrincipal SetClaim(
+            [NotNull] this ClaimsPrincipal principal,
+            [NotNull] string type, [CanBeNull] string value)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            principal.RemoveClaims(type);
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                ((ClaimsIdentity) principal.Identity).AddClaim(type, value);
+            }
+
+            return principal;
+        }
+
+        /// <summary>
+        /// Sets the claim values corresponding to the given type.
+        /// </summary>
+        /// <param name="identity">The identity.</param>
+        /// <param name="type">The type associated with the claims.</param>
+        /// <param name="values">The claim values.</param>
+        /// <returns>The claims identity.</returns>
+        public static ClaimsIdentity SetClaims([NotNull] this ClaimsIdentity identity,
+            [NotNull] string type, [NotNull] ImmutableArray<string> values)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            identity.RemoveClaims(type);
+
+            foreach (var value in values.Distinct(StringComparer.Ordinal))
+            {
+                identity.AddClaim(type, value);
+            }
+
+            return identity;
+        }
+
+        /// <summary>
+        /// Sets the claim values corresponding to the given type.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <param name="type">The type associated with the claims.</param>
+        /// <param name="values">The claim values.</param>
+        /// <returns>The claims identity.</returns>
+        public static ClaimsPrincipal SetClaims([NotNull] this ClaimsPrincipal principal,
+            [NotNull] string type, [NotNull] ImmutableArray<string> values)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            principal.RemoveClaims(type);
+
+            foreach (var value in values.Distinct(StringComparer.Ordinal))
+            {
+                ((ClaimsIdentity) principal.Identity).AddClaim(type, value);
+            }
+
+            return principal;
+        }
+
+        /// <summary>
+        /// Gets the creation date stored in the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The creation date or <c>null</c> if the claim cannot be found.</returns>
+        public static DateTimeOffset? GetCreationDate([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            var claim = principal.FindFirst(Claims.IssuedAt);
+            if (claim == null)
+            {
+                return null;
+            }
+
+            if (!long.TryParse(claim.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+            {
+                return null;
+            }
+
+            return DateTimeOffset.FromUnixTimeSeconds(value);
+        }
+
+        /// <summary>
+        /// Gets the expiration date stored in the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The expiration date or <c>null</c> if the claim cannot be found.</returns>
+        public static DateTimeOffset? GetExpirationDate([NotNull] this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            var claim = principal.FindFirst(Claims.ExpiresAt);
+            if (claim == null)
+            {
+                return null;
+            }
+
+            if (!long.TryParse(claim.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+            {
+                return null;
+            }
+
+            return DateTimeOffset.FromUnixTimeSeconds(value);
+        }
+
+        /// <summary>
+        /// Gets the audiences list stored in the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The audiences list or an empty set if the claims cannot be found.</returns>
+        public static ImmutableArray<string> GetAudiences([NotNull] this ClaimsPrincipal principal)
+            => principal.GetClaims(Claims.Audience);
+
+        /// <summary>
+        /// Gets the presenters list stored in the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The presenters list or an empty set if the claims cannot be found.</returns>
+        public static ImmutableArray<string> GetPresenters([NotNull] this ClaimsPrincipal principal)
+            => principal.GetClaims(Claims.Private.Presenters);
+
+        /// <summary>
+        /// Gets the resources list stored in the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The resources list or an empty set if the claims cannot be found.</returns>
+        public static ImmutableArray<string> GetResources([NotNull] this ClaimsPrincipal principal)
+            => principal.GetClaims(Claims.Private.Resources);
+
+        /// <summary>
+        /// Gets the scopes list stored in the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The scopes list or an empty set if the claim cannot be found.</returns>
+        public static ImmutableArray<string> GetScopes([NotNull] this ClaimsPrincipal principal)
+            => principal.GetClaims(Claims.Private.Scopes);
+
+        /// <summary>
+        /// Gets the access token lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The access token lifetime or <c>null</c> if the claim cannot be found.</returns>
+        public static TimeSpan? GetAccessTokenLifetime([NotNull] this ClaimsPrincipal principal)
+            => principal.GetLifetime(Claims.Private.AccessTokenLifetime);
+
+        /// <summary>
+        /// Gets the authorization code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The authorization code lifetime or <c>null</c> if the claim cannot be found.</returns>
+        public static TimeSpan? GetAuthorizationCodeLifetime([NotNull] this ClaimsPrincipal principal)
+            => principal.GetLifetime(Claims.Private.AuthorizationCodeLifetime);
+
+        /// <summary>
+        /// Gets the device code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The device code lifetime or <c>null</c> if the claim cannot be found.</returns>
+        public static TimeSpan? GetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal)
+            => principal.GetLifetime(Claims.Private.DeviceCodeLifetime);
+
+        /// <summary>
+        /// Gets the identity token lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The identity token lifetime or <c>null</c> if the claim cannot be found.</returns>
+        public static TimeSpan? GetIdentityTokenLifetime([NotNull] this ClaimsPrincipal principal)
+            => principal.GetLifetime(Claims.Private.IdentityTokenLifetime);
+
+        /// <summary>
+        /// Gets the refresh token lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The refresh token lifetime or <c>null</c> if the claim cannot be found.</returns>
+        public static TimeSpan? GetRefreshTokenLifetime([NotNull] this ClaimsPrincipal principal)
+            => principal.GetLifetime(Claims.Private.RefreshTokenLifetime);
+
+        /// <summary>
+        /// Gets the user code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The user code lifetime or <c>null</c> if the claim cannot be found.</returns>
+        public static TimeSpan? GetUserCodeLifetime([NotNull] this ClaimsPrincipal principal)
+            => principal.GetLifetime(Claims.Private.UserCodeLifetime);
+
+        /// <summary>
+        /// Gets the internal authorization identifier associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
+        public static string GetInternalAuthorizationId([NotNull] this ClaimsPrincipal principal)
+            => principal.GetClaim(Claims.Private.AuthorizationId);
+
+        /// <summary>
+        /// Gets the internal token identifier associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
+        public static string GetInternalTokenId([NotNull] this ClaimsPrincipal principal)
+            => principal.GetClaim(Claims.Private.TokenId);
+
+        /// <summary>
+        /// Gets the token usage associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns>The token usage or <c>null</c> if the claim cannot be found.</returns>
+        public static string GetTokenUsage([NotNull] this ClaimsPrincipal principal)
+            => principal.GetClaim(Claims.Private.TokenUsage);
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to an access token.</returns>
+        public static bool IsAccessToken([NotNull] this ClaimsPrincipal principal)
+            => principal.CheckTokenUsage(TokenUsages.AccessToken);
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to an authorization code.</returns>
+        public static bool IsAuthorizationCode([NotNull] this ClaimsPrincipal principal)
+            => principal.CheckTokenUsage(TokenUsages.AuthorizationCode);
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to a device code.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to a device code.</returns>
+        public static bool IsDeviceCode([NotNull] this ClaimsPrincipal principal)
+            => principal.CheckTokenUsage(TokenUsages.DeviceCode);
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to an identity token.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to an identity token.</returns>
+        public static bool IsIdentityToken([NotNull] this ClaimsPrincipal principal)
+            => principal.CheckTokenUsage(TokenUsages.IdToken);
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to a refresh token.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to a refresh token.</returns>
+        public static bool IsRefreshToken([NotNull] this ClaimsPrincipal principal)
+            => principal.CheckTokenUsage(TokenUsages.RefreshToken);
+
+        /// <summary>
+        /// Gets a boolean value indicating whether the claims principal corresponds to a user code.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal corresponds to a user code.</returns>
+        public static bool IsUserCode([NotNull] this ClaimsPrincipal principal)
+            => principal.CheckTokenUsage(TokenUsages.UserCode);
+
+        /// <summary>
+        /// Determines whether the claims principal contains at least one audience.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal contains at least one audience.</returns>
+        public static bool HasAudience([NotNull] this ClaimsPrincipal principal)
+            => principal.HasAnyClaim(Claims.Audience);
+
+        /// <summary>
+        /// Determines whether the claims principal contains the given audience.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="audience">The audience.</param>
+        /// <returns><c>true</c> if the principal contains the given audience.</returns>
+        public static bool HasAudience([NotNull] this ClaimsPrincipal principal, [NotNull] string audience)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(audience))
+            {
+                throw new ArgumentException("The audience cannot be null or empty.", nameof(audience));
+            }
+
+            foreach (var claim in principal.FindAll(Claims.Audience))
+            {
+                if (string.Equals(claim.Value, audience, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the claims principal contains at least one presenter.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal contains at least one presenter.</returns>
+        public static bool HasPresenter([NotNull] this ClaimsPrincipal principal)
+            => principal.HasAnyClaim(Claims.Private.Presenters);
+
+        /// <summary>
+        /// Determines whether the claims principal contains the given presenter.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="presenter">The presenter.</param>
+        /// <returns><c>true</c> if the principal contains the given presenter.</returns>
+        public static bool HasPresenter([NotNull] this ClaimsPrincipal principal, [NotNull] string presenter)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(presenter))
+            {
+                throw new ArgumentException("The presenter cannot be null or empty.", nameof(presenter));
+            }
+
+            foreach (var claim in principal.FindAll(Claims.Private.Presenters))
+            {
+                if (string.Equals(claim.Value, presenter, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the claims principal contains at least one resource.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal contains at least one resource.</returns>
+        public static bool HasResource([NotNull] this ClaimsPrincipal principal)
+            => principal.HasAnyClaim(Claims.Private.Resources);
+
+        /// <summary>
+        /// Determines whether the claims principal contains the given resource.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="resource">The resource.</param>
+        /// <returns><c>true</c> if the principal contains the given resource.</returns>
+        public static bool HasResource([NotNull] this ClaimsPrincipal principal, [NotNull] string resource)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+            }
+
+            foreach (var claim in principal.FindAll(Claims.Private.Resources))
+            {
+                if (string.Equals(claim.Value, resource, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the claims principal contains at least one scope.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <returns><c>true</c> if the principal contains at least one scope.</returns>
+        public static bool HasScope([NotNull] this ClaimsPrincipal principal)
+            => principal.HasAnyClaim(Claims.Private.Scopes);
+
+        /// <summary>
+        /// Determines whether the claims principal contains the given scope.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="scope">The scope.</param>
+        /// <returns><c>true</c> if the principal contains the given scope.</returns>
+        public static bool HasScope([NotNull] this ClaimsPrincipal principal, [NotNull] string scope)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(scope))
+            {
+                throw new ArgumentException("The scope cannot be null or empty.", nameof(scope));
+            }
+
+            foreach (var claim in principal.FindAll(Claims.Private.Scopes))
+            {
+                if (string.Equals(claim.Value, scope, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Sets the creation date in the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="date">The creation date</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetCreationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
+            => principal.SetDateClaim(Claims.IssuedAt, date);
+
+        /// <summary>
+        /// Sets the expiration date in the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="date">The expiration date</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetExpirationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
+            => principal.SetDateClaim(Claims.ExpiresAt, date);
+
+        /// <summary>
+        /// Sets the audiences list in the claims principal.
+        /// Note: this method automatically excludes duplicate audiences.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="audiences">The audiences to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetAudiences(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> audiences)
+            => principal.SetClaims(Claims.Audience, audiences);
+
+        /// <summary>
+        /// Sets the audiences list in the claims principal.
+        /// Note: this method automatically excludes duplicate audiences.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="audiences">The audiences to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetAudiences(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] IEnumerable<string> audiences)
+            => principal.SetAudiences(audiences?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Sets the audiences list in the claims principal.
+        /// Note: this method automatically excludes duplicate audiences.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="audiences">The audiences to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetAudiences(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] params string[] audiences)
+            => principal.SetAudiences(audiences?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Sets the presenters list in the claims principal.
+        /// Note: this method automatically excludes duplicate presenters.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="presenters">The presenters to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetPresenters(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> presenters)
+            => principal.SetClaims(Claims.Private.Presenters, presenters);
+
+        /// <summary>
+        /// Sets the presenters list in the claims principal.
+        /// Note: this method automatically excludes duplicate presenters.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="presenters">The presenters to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetPresenters(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] IEnumerable<string> presenters)
+            => principal.SetPresenters(presenters?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Sets the presenters list in the claims principal.
+        /// Note: this method automatically excludes duplicate presenters.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="presenters">The presenters to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetPresenters(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] params string[] presenters)
+            => principal.SetPresenters(presenters?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Sets the resources list in the claims principal.
+        /// Note: this method automatically excludes duplicate resources.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="resources">The resources to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetResources(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> resources)
+            => principal.SetClaims(Claims.Private.Resources, resources);
+
+        /// <summary>
+        /// Sets the resources list in the claims principal.
+        /// Note: this method automatically excludes duplicate resources.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="resources">The resources to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetResources(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] IEnumerable<string> resources)
+            => principal.SetResources(resources?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Sets the resources list in the claims principal.
+        /// Note: this method automatically excludes duplicate resources.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="resources">The resources to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetResources(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] params string[] resources)
+            => principal.SetResources(resources?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Sets the scopes list in the claims principal.
+        /// Note: this method automatically excludes duplicate scopes.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="scopes">The scopes to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetScopes(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> scopes)
+            => principal.SetClaims(Claims.Private.Scopes, scopes);
+
+        /// <summary>
+        /// Sets the scopes list in the claims principal.
+        /// Note: this method automatically excludes duplicate scopes.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="scopes">The scopes to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetScopes(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] IEnumerable<string> scopes)
+            => principal.SetScopes(scopes?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Sets the scopes list in the claims principal.
+        /// Note: this method automatically excludes duplicate scopes.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="scopes">The scopes to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetScopes(
+            [NotNull] this ClaimsPrincipal principal, [CanBeNull] params string[] scopes)
+            => principal.SetScopes(scopes?.ToImmutableArray() ?? ImmutableArray.Create<string>());
+
+        /// <summary>
+        /// Sets the access token lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="lifetime">The access token lifetime to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetAccessTokenLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+            => principal.SetClaim(Claims.Private.AccessTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Sets the authorization code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="lifetime">The authorization code lifetime to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetAuthorizationCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+            => principal.SetClaim(Claims.Private.AuthorizationCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Sets the device code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="lifetime">The device code lifetime to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+            => principal.SetClaim(Claims.Private.DeviceCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Sets the identity token lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="lifetime">The identity token lifetime to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetIdentityTokenLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+            => principal.SetClaim(Claims.Private.IdentityTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Sets the refresh token lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="lifetime">The refresh token lifetime to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetRefreshTokenLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+            => principal.SetClaim(Claims.Private.RefreshTokenLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Sets the user code lifetime associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="lifetime">The user code lifetime to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetUserCodeLifetime([NotNull] this ClaimsPrincipal principal, TimeSpan? lifetime)
+            => principal.SetClaim(Claims.Private.UserCodeLifetime, lifetime?.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Sets the internal authorization identifier associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="identifier">The unique identifier to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetInternalAuthorizationId([NotNull] this ClaimsPrincipal principal, string identifier)
+            => principal.SetClaim(Claims.Private.AuthorizationId, identifier);
+
+        /// <summary>
+        /// Sets the internal token identifier associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="identifier">The unique identifier to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetInternalTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
+            => principal.SetClaim(Claims.Private.TokenId, identifier);
+
+        private static IEnumerable<string> GetValues(string source, char[] separators)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(source), "The source string shouldn't be null or empty.");
+            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+
+            foreach (var element in new StringTokenizer(source, separators))
+            {
+                var segment = Trim(element, separators);
+                if (segment.Length == 0)
+                {
+                    continue;
+                }
+
+                yield return segment.Value;
+            }
+
+            yield break;
+        }
+
+        private static bool HasValue(string source, string value, char[] separators)
+        {
+            if (string.IsNullOrEmpty(source))
+            {
+                return false;
+            }
+
+            Debug.Assert(!string.IsNullOrEmpty(value), "The value string shouldn't be null or empty.");
+            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+
+            foreach (var element in new StringTokenizer(source, separators))
+            {
+                var segment = Trim(element, separators);
+                if (segment.Length == 0)
+                {
+                    continue;
+                }
+
+                if (segment.Equals(value, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static StringSegment TrimStart(StringSegment segment, char[] separators)
+        {
+            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+
+            var index = segment.Offset;
+
+            while (index < segment.Offset + segment.Length)
+            {
+                if (!IsSeparator(segment.Buffer[index], separators))
+                {
+                    break;
+                }
+
+                index++;
+            }
+
+            return new StringSegment(segment.Buffer, index, segment.Offset + segment.Length - index);
+        }
+
+        private static StringSegment TrimEnd(StringSegment segment, char[] separators)
+        {
+            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+
+            var index = segment.Offset + segment.Length - 1;
+
+            while (index >= segment.Offset)
+            {
+                if (!IsSeparator(segment.Buffer[index], separators))
+                {
+                    break;
+                }
+
+                index--;
+            }
+
+            return new StringSegment(segment.Buffer, segment.Offset, index - segment.Offset + 1);
+        }
+
+        private static StringSegment Trim(StringSegment segment, char[] separators)
+        {
+            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+
+            return TrimEnd(TrimStart(segment, separators), separators);
+        }
+
+        private static bool IsSeparator(char character, char[] separators)
+        {
+            Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
+
+            for (var index = 0; index < separators.Length; index++)
+            {
+                if (character == separators[index])
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static TimeSpan? GetLifetime(this ClaimsPrincipal principal, string claimType)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            var value = principal.GetClaim(claimType);
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+
+            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
+            {
+                return TimeSpan.FromSeconds(result);
+            }
+
+            return null;
+        }
+
+        private static bool CheckTokenUsage(this ClaimsPrincipal principal, string tokenUsage)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), tokenUsage, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static ClaimsPrincipal SetDateClaim(this ClaimsPrincipal principal, string claimType, DateTimeOffset? date)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            principal.RemoveClaims(claimType);
+
+            if (date.HasValue)
+            {
+                var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+                var claim = new Claim(claimType, value, ClaimValueTypes.Integer64);
+                ((ClaimsIdentity)principal.Identity).AddClaim(claim);
+            }
+
+            return principal;
+        }
+
+        private static bool HasAnyClaim(this ClaimsPrincipal principal, string claimType)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return principal.FindAll(claimType).Any();
         }
     }
 }
