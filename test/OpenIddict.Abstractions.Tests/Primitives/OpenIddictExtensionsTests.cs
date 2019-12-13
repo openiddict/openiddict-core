@@ -2189,199 +2189,45 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void IsAccessToken_ThrowsAnExceptionForNullPrincipal()
+        public void HasTokenType_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsAccessToken());
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasTokenType(TokenTypeHints.AccessToken));
 
             Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, true)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.DeviceCode, false)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, false)]
-        public void IsAccessToken_ReturnsExpectedResult(string type, bool result)
+        [InlineData(null)]
+        [InlineData("")]
+        public void HasTokenType_ThrowsAnExceptionForNullOrEmptyTokenType(string type)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenType, type);
-
             // Act and assert
-            Assert.Equal(result, principal.IsAccessToken());
+            var exception = Assert.Throws<ArgumentException>(() => principal.HasTokenType(type));
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The token type cannot be null or empty.", exception.Message);
         }
 
         [Fact]
-        public void IsAuthorizationCode_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsAuthorizationCode());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, true)]
-        [InlineData(TokenTypeHints.DeviceCode, false)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, false)]
-        public void IsAuthorizationCode_ReturnsExpectedResult(string type, bool result)
+        public void HasTokenType_ReturnsExpectedResult()
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenType, type);
+            principal.SetClaim(Claims.Private.TokenType, TokenTypeHints.AccessToken);
 
             // Act and assert
-            Assert.Equal(result, principal.IsAuthorizationCode());
-        }
-
-        [Fact]
-        public void IsDeviceCode_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsDeviceCode());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.DeviceCode, true)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, false)]
-        public void IsDeviceCode_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenType, type);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsDeviceCode());
-        }
-
-        [Fact]
-        public void IsIdentityToken_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsIdentityToken());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.DeviceCode, false)]
-        [InlineData(TokenTypeHints.IdToken, true)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, false)]
-        public void IsIdentityToken_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenType, type);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsIdentityToken());
-        }
-
-        [Fact]
-        public void IsRefreshToken_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsRefreshToken());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, true)]
-        public void IsRefreshToken_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenType, type);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsRefreshToken());
-        }
-
-        [Fact]
-        public void IsUserCode_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsUserCode());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.DeviceCode, false)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, true)]
-        public void IsUserCode_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenType, type);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsUserCode());
+            Assert.True(principal.HasTokenType(TokenTypeHints.AccessToken));
+            Assert.False(principal.HasTokenType(TokenTypeHints.RefreshToken));
         }
 
         [Theory]

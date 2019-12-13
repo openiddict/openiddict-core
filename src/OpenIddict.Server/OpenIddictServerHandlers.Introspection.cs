@@ -837,8 +837,10 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (!context.Principal.IsAccessToken() && !context.Principal.IsAuthorizationCode() &&
-                        !context.Principal.IsIdentityToken() && !context.Principal.IsRefreshToken())
+                    if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
+                        !context.Principal.HasTokenType(TokenTypeHints.AuthorizationCode) &&
+                        !context.Principal.HasTokenType(TokenTypeHints.IdToken) &&
+                        !context.Principal.HasTokenType(TokenTypeHints.RefreshToken))
                     {
                         context.Logger.LogError("The introspection request was rejected because " +
                                                 "the received token was of an unsupported type.");
@@ -889,7 +891,7 @@ namespace OpenIddict.Server
 
                     // When the introspected token is an authorization code, the caller must be
                     // listed as a presenter (i.e the party the authorization code was issued to).
-                    if (context.Principal.IsAuthorizationCode())
+                    if (context.Principal.HasTokenType(TokenTypeHints.AuthorizationCode))
                     {
                         if (!context.Principal.HasPresenter())
                         {
@@ -915,7 +917,7 @@ namespace OpenIddict.Server
                     // (i.e the party the token was issued to) or as an audience (i.e a resource server/API).
                     // If the access token doesn't contain any explicit presenter/audience, the token is assumed
                     // to be not specific to any resource server/client application and the check is bypassed.
-                    if (context.Principal.IsAccessToken() &&
+                    if (context.Principal.HasTokenType(TokenTypeHints.AccessToken) &&
                         context.Principal.HasAudience() && !context.Principal.HasAudience(context.ClientId) &&
                         context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
                     {
@@ -933,8 +935,8 @@ namespace OpenIddict.Server
                     // (i.e the client application the identity token was initially issued to).
                     // If the identity token doesn't contain any explicit audience, the token is
                     // assumed to be not specific to any client application and the check is bypassed.
-                    if (context.Principal.IsIdentityToken() && context.Principal.HasAudience() &&
-                                                              !context.Principal.HasAudience(context.ClientId))
+                    if (context.Principal.HasTokenType(TokenTypeHints.IdToken) &&
+                        context.Principal.HasAudience() && !context.Principal.HasAudience(context.ClientId))
                     {
                         context.Logger.LogError("The introspection request was rejected because the " +
                                                 "identity token was issued to a different client.");
@@ -950,8 +952,8 @@ namespace OpenIddict.Server
                     // listed as a presenter (i.e the party the token was issued to).
                     // If the refresh token doesn't contain any explicit presenter, the token is
                     // assumed to be not specific to any client application and the check is bypassed.
-                    if (context.Principal.IsRefreshToken() && context.Principal.HasPresenter() &&
-                                                             !context.Principal.HasPresenter(context.ClientId))
+                    if (context.Principal.HasTokenType(TokenTypeHints.RefreshToken) &&
+                        context.Principal.HasPresenter() && !context.Principal.HasPresenter(context.ClientId))
                     {
                         context.Logger.LogError("The introspection request was rejected because the " +
                                                 "refresh token was issued to a different client.");
@@ -1050,7 +1052,7 @@ namespace OpenIddict.Server
                     // Note: only set "token_type" when the received token is an access token.
                     // See https://tools.ietf.org/html/rfc7662#section-2.2
                     // and https://tools.ietf.org/html/rfc6749#section-5.1 for more information.
-                    if (context.Principal.IsAccessToken())
+                    if (context.Principal.HasTokenType(TokenTypeHints.AccessToken))
                     {
                         context.TokenType = TokenTypes.Bearer;
                     }
@@ -1104,7 +1106,7 @@ namespace OpenIddict.Server
                     }
 
                     // Don't return application-specific claims if the token is not an access or identity token.
-                    if (!context.Principal.IsAccessToken() && !context.Principal.IsIdentityToken())
+                    if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken) && !context.Principal.HasTokenType(TokenTypeHints.IdToken))
                     {
                         return;
                     }

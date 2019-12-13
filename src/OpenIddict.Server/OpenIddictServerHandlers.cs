@@ -501,7 +501,7 @@ namespace OpenIddict.Server
                     context.Principal.SetDestinations(destinations);
                 }
 
-                if (context.Principal.IsAccessToken())
+                if (context.Principal.HasTokenType(TokenTypeHints.AccessToken))
                 {
                     // Map the standardized "azp" and "scope" claims to their "oi_" equivalent so that
                     // the ClaimsPrincipal extensions exposed by OpenIddict return consistent results.
