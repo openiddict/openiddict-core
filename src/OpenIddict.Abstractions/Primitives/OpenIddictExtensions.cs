@@ -99,11 +99,6 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The value cannot be null or empty.", nameof(value));
             }
 
-            if (string.IsNullOrEmpty(request.AcrValues))
-            {
-                return false;
-            }
-
             return HasValue(request.AcrValues, value, Separators.Space);
         }
 
@@ -122,11 +117,6 @@ namespace OpenIddict.Abstractions
             if (string.IsNullOrEmpty(prompt))
             {
                 throw new ArgumentException("The prompt cannot be null or empty.", nameof(prompt));
-            }
-
-            if (string.IsNullOrEmpty(request.Prompt))
-            {
-                return false;
             }
 
             return HasValue(request.Prompt, prompt, Separators.Space);
@@ -149,11 +139,6 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The response type cannot be null or empty.", nameof(type));
             }
 
-            if (string.IsNullOrEmpty(request.ResponseType))
-            {
-                return false;
-            }
-
             return HasValue(request.ResponseType, type, Separators.Space);
         }
 
@@ -172,11 +157,6 @@ namespace OpenIddict.Abstractions
             if (string.IsNullOrEmpty(scope))
             {
                 throw new ArgumentException("The scope cannot be null or empty.", nameof(scope));
-            }
-
-            if (string.IsNullOrEmpty(request.Scope))
-            {
-                return false;
             }
 
             return HasValue(request.Scope, scope, Separators.Space);
@@ -1192,25 +1172,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The access token lifetime or <c>null</c> if the claim cannot be found.</returns>
         public static TimeSpan? GetAccessTokenLifetime([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            var value = principal.GetClaim(Claims.Private.AccessTokenLifetime);
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
-
-            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
-            {
-                return TimeSpan.FromSeconds(result);
-            }
-
-            return null;
-        }
+            => principal.GetLifetime(Claims.Private.AccessTokenLifetime);
 
         /// <summary>
         /// Gets the authorization code lifetime associated with the claims principal.
@@ -1218,25 +1180,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The authorization code lifetime or <c>null</c> if the claim cannot be found.</returns>
         public static TimeSpan? GetAuthorizationCodeLifetime([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            var value = principal.GetClaim(Claims.Private.AuthorizationCodeLifetime);
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
-
-            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
-            {
-                return TimeSpan.FromSeconds(result);
-            }
-
-            return null;
-        }
+            => principal.GetLifetime(Claims.Private.AuthorizationCodeLifetime);
 
         /// <summary>
         /// Gets the device code lifetime associated with the claims principal.
@@ -1244,25 +1188,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The device code lifetime or <c>null</c> if the claim cannot be found.</returns>
         public static TimeSpan? GetDeviceCodeLifetime([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            var value = principal.GetClaim(Claims.Private.DeviceCodeLifetime);
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
-
-            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
-            {
-                return TimeSpan.FromSeconds(result);
-            }
-
-            return null;
-        }
+            => principal.GetLifetime(Claims.Private.DeviceCodeLifetime);
 
         /// <summary>
         /// Gets the identity token lifetime associated with the claims principal.
@@ -1270,25 +1196,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The identity token lifetime or <c>null</c> if the claim cannot be found.</returns>
         public static TimeSpan? GetIdentityTokenLifetime([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            var value = principal.GetClaim(Claims.Private.IdentityTokenLifetime);
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
-
-            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
-            {
-                return TimeSpan.FromSeconds(result);
-            }
-
-            return null;
-        }
+            => principal.GetLifetime(Claims.Private.IdentityTokenLifetime);
 
         /// <summary>
         /// Gets the refresh token lifetime associated with the claims principal.
@@ -1296,25 +1204,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The refresh token lifetime or <c>null</c> if the claim cannot be found.</returns>
         public static TimeSpan? GetRefreshTokenLifetime([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            var value = principal.GetClaim(Claims.Private.RefreshTokenLifetime);
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
-
-            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
-            {
-                return TimeSpan.FromSeconds(result);
-            }
-
-            return null;
-        }
+            => principal.GetLifetime(Claims.Private.RefreshTokenLifetime);
 
         /// <summary>
         /// Gets the user code lifetime associated with the claims principal.
@@ -1322,25 +1212,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The user code lifetime or <c>null</c> if the claim cannot be found.</returns>
         public static TimeSpan? GetUserCodeLifetime([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            var value = principal.GetClaim(Claims.Private.UserCodeLifetime);
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
-
-            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
-            {
-                return TimeSpan.FromSeconds(result);
-            }
-
-            return null;
-        }
+            => principal.GetLifetime(Claims.Private.UserCodeLifetime);
 
         /// <summary>
         /// Gets the internal authorization identifier associated with the claims principal.
@@ -1372,14 +1244,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an access token.</returns>
         public static bool IsAccessToken([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase);
-        }
+            => principal.CheckTokenUsage(TokenUsages.AccessToken);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
@@ -1387,14 +1252,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an authorization code.</returns>
         public static bool IsAuthorizationCode([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase);
-        }
+            => principal.CheckTokenUsage(TokenUsages.AuthorizationCode);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to a device code.
@@ -1402,14 +1260,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to a device code.</returns>
         public static bool IsDeviceCode([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.DeviceCode, StringComparison.OrdinalIgnoreCase);
-        }
+            => principal.CheckTokenUsage(TokenUsages.DeviceCode);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to an identity token.
@@ -1417,14 +1268,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an identity token.</returns>
         public static bool IsIdentityToken([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.IdToken, StringComparison.OrdinalIgnoreCase);
-        }
+            => principal.CheckTokenUsage(TokenUsages.IdToken);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to a refresh token.
@@ -1432,14 +1276,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to a refresh token.</returns>
         public static bool IsRefreshToken([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase);
-        }
+            => principal.CheckTokenUsage(TokenUsages.RefreshToken);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to a user code.
@@ -1447,14 +1284,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to a user code.</returns>
         public static bool IsUserCode([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.UserCode, StringComparison.OrdinalIgnoreCase);
-        }
+            => principal.CheckTokenUsage(TokenUsages.UserCode);
 
         /// <summary>
         /// Determines whether the claims principal contains at least one audience.
@@ -1462,14 +1292,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one audience.</returns>
         public static bool HasAudience([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.FindAll(Claims.Audience).Any();
-        }
+            => principal.HasAnyClaim(Claims.Audience);
 
         /// <summary>
         /// Determines whether the claims principal contains the given audience.
@@ -1506,14 +1329,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one presenter.</returns>
         public static bool HasPresenter([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.FindAll(Claims.Private.Presenters).Any();
-        }
+            => principal.HasAnyClaim(Claims.Private.Presenters);
 
         /// <summary>
         /// Determines whether the claims principal contains the given presenter.
@@ -1550,14 +1366,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one resource.</returns>
         public static bool HasResource([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.FindAll(Claims.Private.Resources).Any();
-        }
+            => principal.HasAnyClaim(Claims.Private.Resources);
 
         /// <summary>
         /// Determines whether the claims principal contains the given resource.
@@ -1594,14 +1403,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one scope.</returns>
         public static bool HasScope([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.FindAll(Claims.Private.Scopes).Any();
-        }
+            => principal.HasAnyClaim(Claims.Private.Scopes);
 
         /// <summary>
         /// Determines whether the claims principal contains the given scope.
@@ -1639,23 +1441,7 @@ namespace OpenIddict.Abstractions
         /// <param name="date">The creation date</param>
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetCreationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            principal.RemoveClaims(Claims.IssuedAt);
-
-            if (date.HasValue)
-            {
-                var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-                var claim = new Claim(Claims.IssuedAt, value, ClaimValueTypes.Integer64);
-                ((ClaimsIdentity) principal.Identity).AddClaim(claim);
-            }
-
-            return principal;
-        }
+            => principal.SetDateClaim(Claims.IssuedAt, date);
 
         /// <summary>
         /// Sets the expiration date in the claims principal.
@@ -1664,23 +1450,7 @@ namespace OpenIddict.Abstractions
         /// <param name="date">The expiration date</param>
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetExpirationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            principal.RemoveClaims(Claims.ExpiresAt);
-
-            if (date.HasValue)
-            {
-                var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-                var claim = new Claim(Claims.ExpiresAt, value, ClaimValueTypes.Integer64);
-                ((ClaimsIdentity) principal.Identity).AddClaim(claim);
-            }
-
-            return principal;
-        }
+            => principal.SetDateClaim(Claims.ExpiresAt, date);
 
         /// <summary>
         /// Sets the audiences list in the claims principal.
@@ -1907,7 +1677,11 @@ namespace OpenIddict.Abstractions
 
         private static bool HasValue(string source, string value, char[] separators)
         {
-            Debug.Assert(!string.IsNullOrEmpty(source), "The source string shouldn't be null or empty.");
+            if (string.IsNullOrEmpty(source))
+            {
+                return false;
+            }
+
             Debug.Assert(!string.IsNullOrEmpty(value), "The value string shouldn't be null or empty.");
             Debug.Assert(separators?.Length != 0, "The separators collection shouldn't be null or empty.");
 
@@ -1986,6 +1760,66 @@ namespace OpenIddict.Abstractions
             }
 
             return false;
+        }
+
+        private static TimeSpan? GetLifetime(this ClaimsPrincipal principal, string claimType)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            var value = principal.GetClaim(claimType);
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+
+            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
+            {
+                return TimeSpan.FromSeconds(result);
+            }
+
+            return null;
+        }
+
+        private static bool CheckTokenUsage(this ClaimsPrincipal principal, string tokenUsage)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return string.Equals(principal.GetTokenUsage(), tokenUsage, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static ClaimsPrincipal SetDateClaim(this ClaimsPrincipal principal, string claimType, DateTimeOffset? date)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            principal.RemoveClaims(claimType);
+
+            if (date.HasValue)
+            {
+                var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+                var claim = new Claim(claimType, value, ClaimValueTypes.Integer64);
+                ((ClaimsIdentity)principal.Identity).AddClaim(claim);
+            }
+
+            return principal;
+        }
+
+        private static bool HasAnyClaim(this ClaimsPrincipal principal, string claimType)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            return principal.FindAll(claimType).Any();
         }
     }
 }
