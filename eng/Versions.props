@@ -29,6 +29,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <AngleSharpVersion>0.13.0</AngleSharpVersion>
     <BclAsyncInterfacesVersion>1.0.0</BclAsyncInterfacesVersion>
     <BclHashCodeVersion>1.0.0</BclHashCodeVersion>
     <BouncyCastleVersion>1.8.5</BouncyCastleVersion>

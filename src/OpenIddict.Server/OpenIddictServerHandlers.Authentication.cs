@@ -207,7 +207,7 @@ namespace OpenIddict.Server
 
                     if (string.IsNullOrEmpty(notification.RedirectUri))
                     {
-                        throw new InvalidOperationException("The request cannot be validated because no client_id was specified.");
+                        throw new InvalidOperationException("The request cannot be validated because no redirect_uri was specified.");
                     }
 
                     context.Logger.LogInformation("The authorization request was successfully validated.");
@@ -424,7 +424,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
-                        .UseSingletonHandler<ValidateRedirectUriParameter>()
+                        .UseSingletonHandler<ValidateRequestUriParameter>()
                         .SetOrder(ValidateRequestParameter.Descriptor.Order + 1_000)
                         .Build();
 
@@ -645,7 +645,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnsupportedResponseType,
-                            description: "The specified 'response_type' parameter is not supported.");
+                            description: "The specified 'response_type' parameter is not allowed.");
 
                         return default;
                     }
@@ -978,7 +978,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified code_challenge_method is not supported'.");
+                            description: "The specified code_challenge_method is not supported.");
 
                         return default;
                     }
