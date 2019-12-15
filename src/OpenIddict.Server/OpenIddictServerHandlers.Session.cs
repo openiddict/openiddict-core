@@ -270,6 +270,15 @@ namespace OpenIddict.Server
                         return;
                     }
 
+                    else if (@event.IsRejected)
+                    {
+                        context.Reject(
+                            error: @event.Error ?? Errors.InvalidRequest,
+                            description: @event.ErrorDescription,
+                            uri: @event.ErrorUri);
+                        return;
+                    }
+
                     throw new InvalidOperationException(new StringBuilder()
                         .Append("The logout request was not handled. To handle logout requests, ")
                         .Append("create a class implementing 'IOpenIddictServerHandler<HandleLogoutRequestContext>' ")

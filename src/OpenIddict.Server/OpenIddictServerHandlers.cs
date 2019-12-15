@@ -349,13 +349,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified authorization code is not valid.",
+                                => "The specified authorization code is invalid.",
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is not valid.",
+                                => "The specified device code is invalid.",
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is not valid.",
+                                => "The specified refresh token is invalid.",
 
-                            _ => "The specified token is not valid."
+                            _ => "The specified token is invalid."
                         });
 
                     return;
@@ -592,17 +592,17 @@ namespace OpenIddict.Server
                         },
                         description: context.EndpointType switch
                         {
-                            OpenIddictServerEndpointType.Authorization => "The specified identity token hint is not valid.",
-                            OpenIddictServerEndpointType.Logout        => "The specified identity token hint is not valid.",
+                            OpenIddictServerEndpointType.Authorization => "The specified identity token hint is invalid.",
+                            OpenIddictServerEndpointType.Logout        => "The specified identity token hint is invalid.",
 
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified authorization code is not valid.",
+                                => "The specified authorization code is invalid.",
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is not valid.",
+                                => "The specified device code is invalid.",
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is not valid.",
+                                => "The specified refresh token is invalid.",
 
-                            _ => "The specified token is not valid."
+                            _ => "The specified token is invalid."
                         });
 
 
@@ -679,13 +679,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified authorization code is not valid.",
+                                => "The specified authorization code is invalid.",
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is not valid.",
+                                => "The specified device code is invalid.",
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is not valid.",
+                                => "The specified refresh token is invalid.",
 
-                            _ => "The specified token is not valid."
+                            _ => "The specified token is invalid."
                         });
 
                     return;
@@ -701,7 +701,11 @@ namespace OpenIddict.Server
                     // See https://tools.ietf.org/html/rfc6749#section-10.5 for more information.
                     if (await _tokenManager.HasStatusAsync(token, Statuses.Redeemed))
                     {
-                        await TryRevokeAuthorizationChainAsync(token);
+                        // First, mark the redeemed token submitted by the client as revoked.
+                        await _tokenManager.TryRevokeAsync(token);
+
+                        // Then, try to revoke the authorization and the associated token entries.
+                        await TryRevokeAuthorizationChainAsync(context.Principal.GetInternalAuthorizationId());
 
                         context.Logger.LogError("The token '{Identifier}' has already been redeemed.", identifier);
 
@@ -786,12 +790,8 @@ namespace OpenIddict.Server
                                  .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
                                  .SetClaim(Claims.Private.TokenUsage, await _tokenManager.GetTypeAsync(token));
 
-                async ValueTask TryRevokeAuthorizationChainAsync(object token)
+                async ValueTask TryRevokeAuthorizationChainAsync(string identifier)
                 {
-                    // First, mark the redeemed token submitted by the client as revoked.
-                    await _tokenManager.TryRevokeAsync(token);
-
-                    var identifier = context.Principal.GetInternalAuthorizationId();
                     if (context.Options.DisableAuthorizationStorage || string.IsNullOrEmpty(identifier))
                     {
                         return;
@@ -805,12 +805,11 @@ namespace OpenIddict.Server
                         await _authorizationManager.TryRevokeAsync(authorization);
                     }
 
-                    await using var enumerator = _tokenManager.FindByAuthorizationIdAsync(identifier).GetAsyncEnumerator();
-                    while (await enumerator.MoveNextAsync())
+                    await foreach (var token in _tokenManager.FindByAuthorizationIdAsync(identifier))
                     {
                         // Don't change the status of the token used in the token request.
                         if (string.Equals(context.Principal.GetInternalTokenId(),
-                            await _tokenManager.GetIdAsync(enumerator.Current), StringComparison.Ordinal))
+                            await _tokenManager.GetIdAsync(token), StringComparison.Ordinal))
                         {
                             continue;
                         }

@@ -297,6 +297,15 @@ namespace OpenIddict.Server
                             context.SkipRequest();
                             return;
                         }
+
+                        else if (@event.IsRejected)
+                        {
+                            context.Reject(
+                                error: @event.Error ?? Errors.InvalidGrant,
+                                description: @event.ErrorDescription,
+                                uri: @event.ErrorUri);
+                            return;
+                        }
                     }
 
                     throw new InvalidOperationException(new StringBuilder()

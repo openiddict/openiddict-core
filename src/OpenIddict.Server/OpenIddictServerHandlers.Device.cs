@@ -294,6 +294,15 @@ namespace OpenIddict.Server
                         return;
                     }
 
+                    else if (@event.IsRejected)
+                    {
+                        context.Reject(
+                            error: @event.Error ?? Errors.InvalidGrant,
+                            description: @event.ErrorDescription,
+                            uri: @event.ErrorUri);
+                        return;
+                    }
+
                     throw new InvalidOperationException(new StringBuilder()
                         .Append("The device request was not handled. To handle device requests, ")
                         .Append("create a class implementing 'IOpenIddictServerHandler<HandleDeviceRequestContext>' ")
@@ -1057,6 +1066,15 @@ namespace OpenIddict.Server
                         else if (@event.IsRequestSkipped)
                         {
                             context.SkipRequest();
+                            return;
+                        }
+
+                        else if (@event.IsRejected)
+                        {
+                            context.Reject(
+                                error: @event.Error ?? Errors.InvalidGrant,
+                                description: @event.ErrorDescription,
+                                uri: @event.ErrorUri);
                             return;
                         }
                     }
