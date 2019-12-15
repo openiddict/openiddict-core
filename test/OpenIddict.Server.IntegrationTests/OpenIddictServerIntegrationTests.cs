@@ -101,6 +101,22 @@ namespace OpenIddict.Server.FunctionalTests
 
                         builder.SetOrder(int.MaxValue);
                     });
+
+                    options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    {
+                        builder.UseInlineHandler(context =>
+                        {
+                            var identity = new ClaimsIdentity("Bearer");
+                            identity.AddClaim(Claims.Subject, "Bob le Magnifique");
+
+                            context.Principal = new ClaimsPrincipal(identity);
+                            context.HandleAuthentication();
+
+                            return default;
+                        });
+
+                        builder.SetOrder(int.MaxValue);
+                    });
                 });
         }
 

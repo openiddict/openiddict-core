@@ -2972,6 +2972,34 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.Equal(identifier, principal.GetClaim(Claims.Private.TokenId));
         }
 
+        [Fact]
+        public void SetTokenUsage_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetTokenUsage(null));
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("access_token")]
+        public void SetTokenUsage_AddsUsage(string usage)
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act
+            principal.SetTokenUsage(usage);
+
+            // Assert
+            Assert.Equal(usage, principal.GetClaim(Claims.Private.TokenUsage));
+        }
+
         private TimeSpan? ParseLifeTime(string lifetime)
         {
             var lifeT = lifetime != null

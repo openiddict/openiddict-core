@@ -268,7 +268,7 @@ namespace OpenIddict.Server
                     else if (notification.IsRejected)
                     {
                         context.Reject(
-                            error: notification.Error ?? Errors.InvalidRequest,
+                            error: notification.Error ?? Errors.InvalidGrant,
                             description: notification.ErrorDescription,
                             uri: notification.ErrorUri);
                         return;
@@ -293,6 +293,15 @@ namespace OpenIddict.Server
                         else if (@event.IsRequestSkipped)
                         {
                             context.SkipRequest();
+                            return;
+                        }
+
+                        else if (@event.IsRejected)
+                        {
+                            context.Reject(
+                                error: @event.Error ?? Errors.InvalidGrant,
+                                description: @event.ErrorDescription,
+                                uri: @event.ErrorUri);
                             return;
                         }
                     }
@@ -1641,7 +1650,8 @@ namespace OpenIddict.Server
                     else if (string.Equals(method, CodeChallengeMethods.Sha256, StringComparison.Ordinal))
                     {
                         using var algorithm = SHA256.Create();
-                        data = algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.Request.CodeVerifier));
+                        data = Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(
+                            algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.Request.CodeVerifier))));
                     }
 
                     else
@@ -1657,7 +1667,7 @@ namespace OpenIddict.Server
 
                     // Compare the verifier and the code challenge: if the two don't match, return an error.
                     // Note: to prevent timing attacks, a time-constant comparer is always used.
-                    if (!FixedTimeEquals(data, Base64UrlEncoder.DecodeBytes(challenge)))
+                    if (!FixedTimeEquals(data, Encoding.UTF8.GetBytes(challenge)))
                     {
                         context.Logger.LogError("The token request was rejected because the 'code_verifier' was invalid.");
 
@@ -1721,7 +1731,12 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (!context.Request.IsAuthorizationCodeGrantType() || string.IsNullOrEmpty(context.Request.Scope))
+                    if (string.IsNullOrEmpty(context.Request.Scope))
+                    {
+                        return default;
+                    }
+
+                    if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
                     {
                         return default;
                     }

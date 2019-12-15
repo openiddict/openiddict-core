@@ -131,7 +131,7 @@ namespace OpenIddict.Server.FunctionalTests
                     {
                         context.Transaction.SetProperty("custom_response", new
                         {
-                            name = "Bob le Magnifique"
+                            name = "Bob le Bricoleur"
                         });
 
                         context.HandleRequest();
@@ -144,7 +144,7 @@ namespace OpenIddict.Server.FunctionalTests
             var response = await client.GetAsync("/connect/authorize");
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
         }
 
         [Fact]
@@ -538,13 +538,13 @@ namespace OpenIddict.Server.FunctionalTests
                     var application = new OpenIddictApplication();
 
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<OpenIddictApplication>(application));
+                        .ReturnsAsync(application);
 
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<bool>(true));
+                        .ReturnsAsync(true);
 
                     mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<string>(ClientTypes.Public));
+                        .ReturnsAsync(ClientTypes.Public);
                 }));
 
                 options.Services.AddSingleton(CreateScopeManager(mock =>
@@ -581,13 +581,13 @@ namespace OpenIddict.Server.FunctionalTests
                     var application = new OpenIddictApplication();
 
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<OpenIddictApplication>(application));
+                        .ReturnsAsync(application);
 
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<bool>(true));
+                        .ReturnsAsync(true);
 
                     mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<string>(ClientTypes.Public));
+                        .ReturnsAsync(ClientTypes.Public);
                 }));
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
@@ -595,13 +595,13 @@ namespace OpenIddict.Server.FunctionalTests
                     var application = new OpenIddictApplication();
 
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<OpenIddictApplication>(application));
+                        .ReturnsAsync(application);
 
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<bool>(true));
+                        .ReturnsAsync(true);
 
                     mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<string>(ClientTypes.Public));
+                        .ReturnsAsync(ClientTypes.Public);
                 }));
 
                 options.RegisterScopes("registered_scope");
@@ -637,13 +637,13 @@ namespace OpenIddict.Server.FunctionalTests
                     var application = new OpenIddictApplication();
 
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<OpenIddictApplication>(application));
+                        .ReturnsAsync(application);
 
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<bool>(true));
+                        .ReturnsAsync(true);
 
                     mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<string>(ClientTypes.Public));
+                        .ReturnsAsync(ClientTypes.Public);
                 }));
 
                 options.Services.AddSingleton(CreateScopeManager(mock =>
@@ -654,7 +654,7 @@ namespace OpenIddict.Server.FunctionalTests
                         .Returns(new[] { scope }.ToAsyncEnumerable());
 
                     mock.Setup(manager => manager.GetNameAsync(scope, It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<string>("scope_registered_in_database"));
+                        .ReturnsAsync("scope_registered_in_database");
                 }));
 
                 options.RegisterScopes("scope_registered_in_options");
@@ -859,7 +859,7 @@ namespace OpenIddict.Server.FunctionalTests
                     {
                         context.Transaction.SetProperty("custom_response", new
                         {
-                            name = "Bob le Magnifique"
+                            name = "Bob le Bricoleur"
                         });
 
                         context.HandleRequest();
@@ -878,7 +878,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
         }
 
         [Fact]
@@ -972,7 +972,7 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = CreateApplicationManager(mock =>
             {
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<OpenIddictApplication>(result: null));
+                    .ReturnsAsync(value: null);
             });
 
             var client = CreateClient(options =>
@@ -1008,10 +1008,10 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = CreateApplicationManager(mock =>
             {
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<OpenIddictApplication>(application));
+                    .ReturnsAsync(application);
 
                 mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<string>(ClientTypes.Confidential));
+                    .ReturnsAsync(ClientTypes.Confidential);
             });
 
             var client = CreateClient(options =>
@@ -1034,7 +1034,7 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The specified 'response_type' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -1046,14 +1046,14 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = CreateApplicationManager(mock =>
             {
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<OpenIddictApplication>(application));
+                    .ReturnsAsync(application);
 
                 mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(true));
+                    .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.HasPermissionAsync(application,
                     Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(false));
+                    .ReturnsAsync(false);
             });
 
             var client = CreateClient(options =>
@@ -1077,7 +1077,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+                Permissions.Endpoints.Authorization, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Theory]
@@ -1118,15 +1118,15 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = CreateApplicationManager(mock =>
             {
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<OpenIddictApplication>(application));
+                    .ReturnsAsync(application);
 
                 mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(true));
+                    .ReturnsAsync(true);
 
                 foreach (var permission in permissions)
                 {
                     mock.Setup(manager => manager.HasPermissionAsync(application, permission, It.IsAny<CancellationToken>()))
-                        .Returns(new ValueTask<bool>(false));
+                        .ReturnsAsync(false);
                 }
             });
 
@@ -1152,7 +1152,7 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal(description, response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application, permissions[0], It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application, permissions[0], It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -1164,18 +1164,18 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = CreateApplicationManager(mock =>
             {
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<OpenIddictApplication>(application));
+                    .ReturnsAsync(application);
 
                 mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(true));
+                    .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.HasPermissionAsync(application,
                     Permissions.GrantTypes.AuthorizationCode, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(true));
+                    .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.HasPermissionAsync(application,
                     Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(false));
+                    .ReturnsAsync(false);
             });
 
             var client = CreateClient(options =>
@@ -1199,7 +1199,7 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The client application is not allowed to use the 'offline_access' scope.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+                Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -1211,10 +1211,10 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = CreateApplicationManager(mock =>
             {
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<OpenIddictApplication>(application));
+                    .ReturnsAsync(application);
 
                 mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(false));
+                    .ReturnsAsync(false);
             });
 
             var client = CreateClient(options =>
@@ -1235,7 +1235,7 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The specified 'redirect_uri' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -1247,20 +1247,18 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = CreateApplicationManager(mock =>
             {
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<OpenIddictApplication>(application));
+                    .ReturnsAsync(application);
 
                 mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(true));
+                    .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.HasPermissionAsync(application,
-                    Permissions.Prefixes.Scope +
-                    Scopes.Profile, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(true));
+                    Permissions.Prefixes.Scope + Scopes.Profile, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.HasPermissionAsync(application,
-                    Permissions.Prefixes.Scope +
-                    Scopes.Email, It.IsAny<CancellationToken>()))
-                    .Returns(new ValueTask<bool>(false));
+                    Permissions.Prefixes.Scope + Scopes.Email, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
             });
 
             var client = CreateClient(options =>
@@ -1284,17 +1282,13 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Prefixes.Scope +
-                Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
+                Permissions.Prefixes.Scope + Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Prefixes.Scope +
-                Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
+                Permissions.Prefixes.Scope + Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Prefixes.Scope +
-                Scopes.Profile, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+                Permissions.Prefixes.Scope + Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Prefixes.Scope +
-                Scopes.Email, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+                Permissions.Prefixes.Scope + Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Theory]
@@ -1349,7 +1343,7 @@ namespace OpenIddict.Server.FunctionalTests
                     {
                         context.Transaction.SetProperty("custom_response", new
                         {
-                            name = "Bob le Magnifique"
+                            name = "Bob le Bricoleur"
                         });
 
                         context.HandleRequest();
@@ -1368,7 +1362,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
         }
 
         [Fact]
@@ -1452,7 +1446,7 @@ namespace OpenIddict.Server.FunctionalTests
                     {
                         context.Transaction.SetProperty("custom_response", new
                         {
-                            name = "Bob le Magnifique"
+                            name = "Bob le Bricoleur"
                         });
 
                         context.HandleRequest();
@@ -1471,7 +1465,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
         }
 
         [Fact]
