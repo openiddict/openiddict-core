@@ -1507,6 +1507,9 @@ namespace OpenIddict.Core
         IAsyncEnumerable<ValidationResult> IOpenIddictApplicationManager.ValidateAsync(object application, CancellationToken cancellationToken)
             => ValidateAsync((TApplication) application, cancellationToken);
 
+        ValueTask<string> IOpenIddictApplicationManager.ObfuscateClientSecretAsync(string secret, CancellationToken cancellationToken)
+            => ObfuscateClientSecretAsync(secret, cancellationToken);
+
         ValueTask<bool> IOpenIddictApplicationManager.ValidateClientSecretAsync(object application, string secret, CancellationToken cancellationToken)
             => ValidateClientSecretAsync((TApplication) application, secret, cancellationToken);
 
