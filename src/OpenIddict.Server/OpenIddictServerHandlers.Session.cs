@@ -30,7 +30,7 @@ namespace OpenIddict.Server
                 HandleLogoutRequest.Descriptor,
                 ApplyLogoutResponse<ProcessErrorContext>.Descriptor,
                 ApplyLogoutResponse<ProcessRequestContext>.Descriptor,
-                ApplyLogoutResponse<ProcessSignoutContext>.Descriptor,
+                ApplyLogoutResponse<ProcessSignOutContext>.Descriptor,
 
                 /*
                  * Logout request validation:
@@ -60,7 +60,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractLogoutRequest>()
-                        .SetOrder(int.MinValue + 100_000)
+                        .SetOrder(100_000)
                         .Build();
 
                 /// <summary>
@@ -251,7 +251,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    var @event = new ProcessSignoutContext(context.Transaction)
+                    var @event = new ProcessSignOutContext(context.Transaction)
                     {
                         Response = new OpenIddictResponse()
                     };

@@ -228,13 +228,13 @@ namespace OpenIddict.Server
                     }
 
                     if (!options.CustomHandlers.Any(
-                        descriptor => descriptor.ContextType == typeof(ProcessSigninContext) &&
+                        descriptor => descriptor.ContextType == typeof(ProcessSignInContext) &&
                                       descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                     {
                         throw new InvalidOperationException(new StringBuilder()
                             .Append("No custom verification sign-in handler was found. When enabling the degraded mode, ")
-                            .Append("a custom 'IOpenIddictServerHandler<ProcessSigninContext>' must be implemented ")
-                            .Append("to generate device and user codes (e.g by retrieving them from a database).")
+                            .Append("a custom 'IOpenIddictServerHandler<ProcessSignInContext>' must be implemented ")
+                            .Append("to generate device and user codes and storing them in a database, if applicable.")
                             .ToString());
                     }
                 }
