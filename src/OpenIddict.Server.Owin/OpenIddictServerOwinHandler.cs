@@ -131,7 +131,7 @@ namespace OpenIddict.Server.Owin
                 return new AuthenticationTicket(null, properties);
             }
 
-            return null;
+            return new AuthenticationTicket((ClaimsIdentity) context.Principal.Identity, new AuthenticationProperties());
         }
 
         protected override async Task TeardownCoreAsync()
@@ -209,7 +209,7 @@ namespace OpenIddict.Server.Owin
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = signin.Properties ?? new AuthenticationProperties();
 
-                var context = new ProcessSigninContext(transaction)
+                var context = new ProcessSignInContext(transaction)
                 {
                     Principal = signin.Principal,
                     Response = new OpenIddictResponse()
@@ -260,7 +260,7 @@ namespace OpenIddict.Server.Owin
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = signout.Properties ?? new AuthenticationProperties();
 
-                var context = new ProcessSignoutContext(transaction)
+                var context = new ProcessSignOutContext(transaction)
                 {
                     Response = new OpenIddictResponse()
                 };

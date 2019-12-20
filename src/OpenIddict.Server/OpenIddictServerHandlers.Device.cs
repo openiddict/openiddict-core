@@ -33,7 +33,7 @@ namespace OpenIddict.Server
                 ApplyDeviceResponse<ProcessChallengeContext>.Descriptor,
                 ApplyDeviceResponse<ProcessErrorContext>.Descriptor,
                 ApplyDeviceResponse<ProcessRequestContext>.Descriptor,
-                ApplyDeviceResponse<ProcessSigninContext>.Descriptor,
+                ApplyDeviceResponse<ProcessSignInContext>.Descriptor,
 
                 /*
                  * Device request validation:
@@ -55,7 +55,7 @@ namespace OpenIddict.Server
                 ApplyVerificationResponse<ProcessChallengeContext>.Descriptor,
                 ApplyVerificationResponse<ProcessErrorContext>.Descriptor,
                 ApplyVerificationResponse<ProcessRequestContext>.Descriptor,
-                ApplyVerificationResponse<ProcessSigninContext>.Descriptor,
+                ApplyVerificationResponse<ProcessSignInContext>.Descriptor,
                 
                 /*
                  * Verification request handling:
@@ -78,7 +78,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractDeviceRequest>()
-                        .SetOrder(int.MinValue + 100_000)
+                        .SetOrder(100_000)
                         .Build();
 
                 /// <summary>
@@ -265,7 +265,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    var @event = new ProcessSigninContext(context.Transaction)
+                    var @event = new ProcessSignInContext(context.Transaction)
                     {
                         Principal = notification.Principal,
                         Response = new OpenIddictResponse()
@@ -860,7 +860,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractVerificationRequest>()
-                        .SetOrder(int.MinValue + 100_000)
+                        .SetOrder(100_000)
                         .Build();
 
                 /// <summary>
@@ -1049,7 +1049,7 @@ namespace OpenIddict.Server
 
                     if (notification.Principal != null)
                     {
-                        var @event = new ProcessSigninContext(context.Transaction)
+                        var @event = new ProcessSignInContext(context.Transaction)
                         {
                             Principal = notification.Principal,
                             Response = new OpenIddictResponse()

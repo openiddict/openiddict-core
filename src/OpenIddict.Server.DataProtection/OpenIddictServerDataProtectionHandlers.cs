@@ -155,7 +155,7 @@ namespace OpenIddict.Server.DataProtection
         /// <summary>
         /// Contains the logic responsible of generating an access token using Data Protection.
         /// </summary>
-        public class GenerateDataProtectionAccessToken : IOpenIddictServerHandler<ProcessSigninContext>
+        public class GenerateDataProtectionAccessToken : IOpenIddictServerHandler<ProcessSignInContext>
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
@@ -166,7 +166,7 @@ namespace OpenIddict.Server.DataProtection
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireAccessTokenIncluded>()
                     .AddFilter<RequirePreferDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAccessToken>()
@@ -180,7 +180,7 @@ namespace OpenIddict.Server.DataProtection
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -219,7 +219,7 @@ namespace OpenIddict.Server.DataProtection
         /// <summary>
         /// Contains the logic responsible of generating an authorization code using Data Protection.
         /// </summary>
-        public class GenerateDataProtectionAuthorizationCode : IOpenIddictServerHandler<ProcessSigninContext>
+        public class GenerateDataProtectionAuthorizationCode : IOpenIddictServerHandler<ProcessSignInContext>
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
@@ -230,7 +230,7 @@ namespace OpenIddict.Server.DataProtection
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireAuthorizationCodeIncluded>()
                     .AddFilter<RequirePreferDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAuthorizationCode>()
@@ -244,7 +244,7 @@ namespace OpenIddict.Server.DataProtection
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -283,7 +283,7 @@ namespace OpenIddict.Server.DataProtection
         /// <summary>
         /// Contains the logic responsible of generating a device code using Data Protection.
         /// </summary>
-        public class GenerateDataProtectionDeviceCode : IOpenIddictServerHandler<ProcessSigninContext>
+        public class GenerateDataProtectionDeviceCode : IOpenIddictServerHandler<ProcessSignInContext>
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
@@ -294,7 +294,7 @@ namespace OpenIddict.Server.DataProtection
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDeviceCodeIncluded>()
                     .AddFilter<RequirePreferDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionDeviceCode>()
@@ -308,7 +308,7 @@ namespace OpenIddict.Server.DataProtection
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -347,7 +347,7 @@ namespace OpenIddict.Server.DataProtection
         /// <summary>
         /// Contains the logic responsible of generating a refresh token using Data Protection.
         /// </summary>
-        public class GenerateDataProtectionRefreshToken : IOpenIddictServerHandler<ProcessSigninContext>
+        public class GenerateDataProtectionRefreshToken : IOpenIddictServerHandler<ProcessSignInContext>
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
@@ -358,7 +358,7 @@ namespace OpenIddict.Server.DataProtection
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireRefreshTokenIncluded>()
                     .AddFilter<RequirePreferDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionRefreshToken>()
@@ -372,7 +372,7 @@ namespace OpenIddict.Server.DataProtection
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
             {
                 if (context == null)
                 {
@@ -411,7 +411,7 @@ namespace OpenIddict.Server.DataProtection
         /// <summary>
         /// Contains the logic responsible of generating a user code using Data Protection.
         /// </summary>
-        public class GenerateDataProtectionUserCode : IOpenIddictServerHandler<ProcessSigninContext>
+        public class GenerateDataProtectionUserCode : IOpenIddictServerHandler<ProcessSignInContext>
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
@@ -422,7 +422,7 @@ namespace OpenIddict.Server.DataProtection
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSigninContext>()
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireUserCodeIncluded>()
                     .AddFilter<RequirePreferDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionUserCode>()
@@ -436,7 +436,7 @@ namespace OpenIddict.Server.DataProtection
             /// <returns>
             /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
             /// </returns>
-            public ValueTask HandleAsync([NotNull] ProcessSigninContext context)
+            public ValueTask HandleAsync([NotNull] ProcessSignInContext context)
             {
                 if (context == null)
                 {

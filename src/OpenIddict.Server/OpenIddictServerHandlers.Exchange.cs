@@ -36,7 +36,7 @@ namespace OpenIddict.Server
                 ApplyTokenResponse<ProcessChallengeContext>.Descriptor,
                 ApplyTokenResponse<ProcessErrorContext>.Descriptor,
                 ApplyTokenResponse<ProcessRequestContext>.Descriptor,
-                ApplyTokenResponse<ProcessSigninContext>.Descriptor,
+                ApplyTokenResponse<ProcessSignInContext>.Descriptor,
 
                 /*
                  * Token request validation:
@@ -83,7 +83,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractTokenRequest>()
-                        .SetOrder(int.MinValue + 100_000)
+                        .SetOrder(100_000)
                         .Build();
 
                 /// <summary>
@@ -276,7 +276,7 @@ namespace OpenIddict.Server
 
                     if (notification.Principal != null)
                     {
-                        var @event = new ProcessSigninContext(context.Transaction)
+                        var @event = new ProcessSignInContext(context.Transaction)
                         {
                             Principal = notification.Principal,
                             Response = new OpenIddictResponse()

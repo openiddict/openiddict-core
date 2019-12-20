@@ -213,7 +213,7 @@ namespace OpenIddict.Server.AspNetCore
 
             transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
 
-            var context = new ProcessSigninContext(transaction)
+            var context = new ProcessSignInContext(transaction)
             {
                 Principal = user,
                 Response = new OpenIddictResponse()
@@ -261,7 +261,7 @@ namespace OpenIddict.Server.AspNetCore
                 throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
             }
 
-            var context = new ProcessSignoutContext(transaction)
+            var context = new ProcessSignOutContext(transaction)
             {
                 Response = new OpenIddictResponse()
             };
