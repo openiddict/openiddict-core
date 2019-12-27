@@ -18,6 +18,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Core
@@ -110,7 +111,7 @@ namespace OpenIddict.Core
             // If no status was explicitly specified, assume that the authorization is valid.
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
             {
-                await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Valid, cancellationToken);
+                await Store.SetStatusAsync(authorization, Statuses.Valid, cancellationToken);
             }
 
             var results = await ValidateAsync(authorization, cancellationToken).ToListAsync(cancellationToken);
@@ -204,7 +205,7 @@ namespace OpenIddict.Core
             {
                 ApplicationId = client,
                 Principal = principal,
-                Status = OpenIddictConstants.Statuses.Valid,
+                Status = Statuses.Valid,
                 Subject = subject,
                 Type = type
             };
@@ -878,12 +879,12 @@ namespace OpenIddict.Core
             }
 
             var status = await Store.GetStatusAsync(authorization, cancellationToken);
-            if (string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(status, Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            await Store.SetStatusAsync(authorization, OpenIddictConstants.Statuses.Revoked, cancellationToken);
+            await Store.SetStatusAsync(authorization, Statuses.Revoked, cancellationToken);
 
             try
             {
@@ -997,8 +998,8 @@ namespace OpenIddict.Core
                 yield return new ValidationResult("The authorization type cannot be null or empty.");
             }
 
-            else if (!string.Equals(type, OpenIddictConstants.AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, OpenIddictConstants.AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
+            else if (!string.Equals(type, AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
             {
                 yield return new ValidationResult("The specified authorization type is not supported by the default token manager.");
             }
@@ -1018,7 +1019,7 @@ namespace OpenIddict.Core
                     break;
                 }
 
-                if (scope.Contains(OpenIddictConstants.Separators.Space[0]))
+                if (scope.Contains(Separators.Space[0]))
                 {
                     yield return new ValidationResult("Scopes cannot contain spaces.");
 

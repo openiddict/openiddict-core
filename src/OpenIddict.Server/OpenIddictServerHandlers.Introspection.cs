@@ -1035,7 +1035,7 @@ namespace OpenIddict.Server
                     }
 
                     context.TokenId = context.Principal.GetClaim(Claims.JwtId);
-                    context.TokenUsage = context.Principal.GetTokenUsage();
+                    context.TokenUsage = context.Principal.GetTokenType();
                     context.Subject = context.Principal.GetClaim(Claims.Subject);
 
                     context.IssuedAt = context.NotBefore = context.Principal.GetCreationDate();

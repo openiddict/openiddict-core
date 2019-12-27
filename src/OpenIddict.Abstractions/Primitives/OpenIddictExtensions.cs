@@ -1359,12 +1359,12 @@ namespace OpenIddict.Abstractions
             => principal.GetClaim(Claims.Private.TokenId);
 
         /// <summary>
-        /// Gets the token usage associated with the claims principal.
+        /// Gets the token type associated with the claims principal.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
-        /// <returns>The token usage or <c>null</c> if the claim cannot be found.</returns>
-        public static string GetTokenUsage([NotNull] this ClaimsPrincipal principal)
-            => principal.GetClaim(Claims.Private.TokenUsage);
+        /// <returns>The token type or <c>null</c> if the claim cannot be found.</returns>
+        public static string GetTokenType([NotNull] this ClaimsPrincipal principal)
+            => principal.GetClaim(Claims.Private.TokenType);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
@@ -1378,7 +1378,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(principal.GetTokenType(), TokenTypeHints.AccessToken, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1393,7 +1393,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(principal.GetTokenType(), TokenTypeHints.AuthorizationCode, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1408,7 +1408,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.DeviceCode, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(principal.GetTokenType(), TokenTypeHints.DeviceCode, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1423,7 +1423,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.IdToken, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(principal.GetTokenType(), TokenTypeHints.IdToken, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1438,7 +1438,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(principal.GetTokenType(), TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1453,7 +1453,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return string.Equals(principal.GetTokenUsage(), TokenUsages.UserCode, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(principal.GetTokenType(), TokenTypeHints.UserCode, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1887,13 +1887,13 @@ namespace OpenIddict.Abstractions
             => principal.SetClaim(Claims.Private.TokenId, identifier);
 
         /// <summary>
-        /// Sets the token usage associated with the claims principal.
+        /// Sets the token type associated with the claims principal.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
-        /// <param name="usage">The token usage to store.</param>
+        /// <param name="type">The token type to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetTokenUsage([NotNull] this ClaimsPrincipal principal, string usage)
-            => principal.SetClaim(Claims.Private.TokenUsage, usage);
+        public static ClaimsPrincipal SetTokenType([NotNull] this ClaimsPrincipal principal, string type)
+            => principal.SetClaim(Claims.Private.TokenType, type);
 
         private static IEnumerable<string> GetValues(string source, char[] separators)
         {

@@ -44,6 +44,7 @@ namespace OpenIddict.Server.DataProtection
                 .SetCreationDate(GetDateProperty(properties, Properties.Issued))
                 .SetExpirationDate(GetDateProperty(properties, Properties.Expires))
                 .SetPresenters(GetArrayProperty(properties, Properties.Presenters))
+                .SetResources(GetArrayProperty(properties, Properties.Resources))
                 .SetScopes(GetArrayProperty(properties, Properties.Scopes))
 
                 .SetClaim(Claims.Private.AccessTokenLifetime, GetProperty(properties, Properties.AccessTokenLifetime))
@@ -219,6 +220,7 @@ namespace OpenIddict.Server.DataProtection
 
             SetArrayProperty(properties, Properties.Audiences, principal.GetAudiences());
             SetArrayProperty(properties, Properties.Presenters, principal.GetPresenters());
+            SetArrayProperty(properties, Properties.Resources, principal.GetResources());
             SetArrayProperty(properties, Properties.Scopes, principal.GetScopes());
 
             // Copy the principal and exclude the claim that were mapped to authentication properties.
@@ -238,6 +240,7 @@ namespace OpenIddict.Server.DataProtection
                 Claims.Private.Presenters                => false,
                 Claims.Private.RedirectUri               => false,
                 Claims.Private.RefreshTokenLifetime      => false,
+                Claims.Private.Resources                 => false,
                 Claims.Private.Scopes                    => false,
                 Claims.Private.TokenId                   => false,
 

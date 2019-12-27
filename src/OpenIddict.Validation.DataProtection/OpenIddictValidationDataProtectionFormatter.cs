@@ -10,8 +10,8 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Security.Claims;
-using JetBrains.Annotations;
 using System.Text.Json;
+using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Properties = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Properties;
@@ -42,6 +42,7 @@ namespace OpenIddict.Validation.DataProtection
                 .SetCreationDate(GetDateProperty(properties, Properties.Issued))
                 .SetExpirationDate(GetDateProperty(properties, Properties.Expires))
                 .SetPresenters(GetArrayProperty(properties, Properties.Presenters))
+                .SetResources(GetArrayProperty(properties, Properties.Resources))
                 .SetScopes(GetArrayProperty(properties, Properties.Scopes))
 
                 .SetClaim(Claims.Private.AccessTokenLifetime, GetProperty(properties, Properties.AccessTokenLifetime))

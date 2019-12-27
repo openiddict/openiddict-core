@@ -1906,13 +1906,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetTokenUsage_ThrowsAnExceptionForNullPrincipal()
+        public void GetTokenType_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetTokenUsage());
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetTokenType());
 
             Assert.Equal("principal", exception.ParamName);
         }
@@ -1920,16 +1920,16 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("access_token")]
-        public void GetTokenUsage_ReturnsExpectedResult(string usage)
+        public void GetTokenType_ReturnsExpectedResult(string type)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenType, type);
 
             // Act and assert
-            Assert.Equal(usage, principal.GetTokenUsage());
+            Assert.Equal(type, principal.GetTokenType());
         }
 
         [Fact]
@@ -2203,19 +2203,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, true)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.DeviceCode, false)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, false)]
-        public void IsAccessToken_ReturnsExpectedResult(string usage, bool result)
+        [InlineData(TokenTypeHints.AccessToken, true)]
+        [InlineData(TokenTypeHints.AuthorizationCode, false)]
+        [InlineData(TokenTypeHints.DeviceCode, false)]
+        [InlineData(TokenTypeHints.IdToken, false)]
+        [InlineData(TokenTypeHints.RefreshToken, false)]
+        [InlineData(TokenTypeHints.UserCode, false)]
+        public void IsAccessToken_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenType, type);
 
             // Act and assert
             Assert.Equal(result, principal.IsAccessToken());
@@ -2236,19 +2236,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, true)]
-        [InlineData(TokenUsages.DeviceCode, false)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, false)]
-        public void IsAuthorizationCode_ReturnsExpectedResult(string usage, bool result)
+        [InlineData(TokenTypeHints.AccessToken, false)]
+        [InlineData(TokenTypeHints.AuthorizationCode, true)]
+        [InlineData(TokenTypeHints.DeviceCode, false)]
+        [InlineData(TokenTypeHints.IdToken, false)]
+        [InlineData(TokenTypeHints.RefreshToken, false)]
+        [InlineData(TokenTypeHints.UserCode, false)]
+        public void IsAuthorizationCode_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenType, type);
 
             // Act and assert
             Assert.Equal(result, principal.IsAuthorizationCode());
@@ -2269,19 +2269,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.DeviceCode, true)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, false)]
-        public void IsDeviceCode_ReturnsExpectedResult(string usage, bool result)
+        [InlineData(TokenTypeHints.AccessToken, false)]
+        [InlineData(TokenTypeHints.AuthorizationCode, false)]
+        [InlineData(TokenTypeHints.DeviceCode, true)]
+        [InlineData(TokenTypeHints.IdToken, false)]
+        [InlineData(TokenTypeHints.RefreshToken, false)]
+        [InlineData(TokenTypeHints.UserCode, false)]
+        public void IsDeviceCode_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenType, type);
 
             // Act and assert
             Assert.Equal(result, principal.IsDeviceCode());
@@ -2302,19 +2302,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.DeviceCode, false)]
-        [InlineData(TokenUsages.IdToken, true)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, false)]
-        public void IsIdentityToken_ReturnsExpectedResult(string usage, bool result)
+        [InlineData(TokenTypeHints.AccessToken, false)]
+        [InlineData(TokenTypeHints.AuthorizationCode, false)]
+        [InlineData(TokenTypeHints.DeviceCode, false)]
+        [InlineData(TokenTypeHints.IdToken, true)]
+        [InlineData(TokenTypeHints.RefreshToken, false)]
+        [InlineData(TokenTypeHints.UserCode, false)]
+        public void IsIdentityToken_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenType, type);
 
             // Act and assert
             Assert.Equal(result, principal.IsIdentityToken());
@@ -2335,17 +2335,17 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, true)]
-        public void IsRefreshToken_ReturnsExpectedResult(string usage, bool result)
+        [InlineData(TokenTypeHints.AccessToken, false)]
+        [InlineData(TokenTypeHints.AuthorizationCode, false)]
+        [InlineData(TokenTypeHints.IdToken, false)]
+        [InlineData(TokenTypeHints.RefreshToken, true)]
+        public void IsRefreshToken_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenType, type);
 
             // Act and assert
             Assert.Equal(result, principal.IsRefreshToken());
@@ -2366,19 +2366,19 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null, false)]
         [InlineData("unknown", false)]
-        [InlineData(TokenUsages.AccessToken, false)]
-        [InlineData(TokenUsages.AuthorizationCode, false)]
-        [InlineData(TokenUsages.DeviceCode, false)]
-        [InlineData(TokenUsages.IdToken, false)]
-        [InlineData(TokenUsages.RefreshToken, false)]
-        [InlineData(TokenUsages.UserCode, true)]
-        public void IsUserCode_ReturnsExpectedResult(string usage, bool result)
+        [InlineData(TokenTypeHints.AccessToken, false)]
+        [InlineData(TokenTypeHints.AuthorizationCode, false)]
+        [InlineData(TokenTypeHints.DeviceCode, false)]
+        [InlineData(TokenTypeHints.IdToken, false)]
+        [InlineData(TokenTypeHints.RefreshToken, false)]
+        [InlineData(TokenTypeHints.UserCode, true)]
+        public void IsUserCode_ReturnsExpectedResult(string type, bool result)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenUsage, usage);
+            principal.SetClaim(Claims.Private.TokenType, type);
 
             // Act and assert
             Assert.Equal(result, principal.IsUserCode());
@@ -2973,13 +2973,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetTokenUsage_ThrowsAnExceptionForNullPrincipal()
+        public void SetTokenType_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetTokenUsage(null));
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetTokenType(null));
 
             Assert.Equal("principal", exception.ParamName);
         }
@@ -2987,17 +2987,17 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("access_token")]
-        public void SetTokenUsage_AddsUsage(string usage)
+        public void SetTokenType_AddsType(string type)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            principal.SetTokenUsage(usage);
+            principal.SetTokenType(type);
 
             // Assert
-            Assert.Equal(usage, principal.GetClaim(Claims.Private.TokenUsage));
+            Assert.Equal(type, principal.GetClaim(Claims.Private.TokenType));
         }
 
         private TimeSpan? ParseLifeTime(string lifetime)

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Mvc.Server.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Mvc.Server.Controllers
 {
@@ -15,9 +16,7 @@ namespace Mvc.Server.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
 
         public UserinfoController(UserManager<ApplicationUser> userManager)
-        {
-            _userManager = userManager;
-        }
+            => _userManager = userManager;
 
         //
         // GET: /api/userinfo
@@ -31,24 +30,25 @@ namespace Mvc.Server.Controllers
                 return Challenge(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
             }
 
-            var claims = new Dictionary<string, object>(StringComparer.Ordinal);
-
-            // Note: the "sub" claim is a mandatory claim and must be included in the JSON response.
-            claims[OpenIddictConstants.Claims.Subject] = await _userManager.GetUserIdAsync(user);
-
-            if (User.HasClaim(OpenIddictConstants.Claims.Scope, OpenIddictConstants.Scopes.Email))
+            var claims = new Dictionary<string, object>(StringComparer.Ordinal)
             {
-                claims[OpenIddictConstants.Claims.Email] = await _userManager.GetEmailAsync(user);
-                claims[OpenIddictConstants.Claims.EmailVerified] = await _userManager.IsEmailConfirmedAsync(user);
+                // Note: the "sub" claim is a mandatory claim and must be included in the JSON response.
+                [Claims.Subject] = await _userManager.GetUserIdAsync(user)
+            };
+
+            if (User.HasScope(Scopes.Email))
+            {
+                claims[Claims.Email] = await _userManager.GetEmailAsync(user);
+                claims[Claims.EmailVerified] = await _userManager.IsEmailConfirmedAsync(user);
             }
 
-            if (User.HasClaim(OpenIddictConstants.Claims.Scope, OpenIddictConstants.Scopes.Phone))
+            if (User.HasScope(Scopes.Phone))
             {
-                claims[OpenIddictConstants.Claims.PhoneNumber] = await _userManager.GetPhoneNumberAsync(user);
-                claims[OpenIddictConstants.Claims.PhoneNumberVerified] = await _userManager.IsPhoneNumberConfirmedAsync(user);
+                claims[Claims.PhoneNumber] = await _userManager.GetPhoneNumberAsync(user);
+                claims[Claims.PhoneNumberVerified] = await _userManager.IsPhoneNumberConfirmedAsync(user);
             }
 
-            if (User.HasClaim(OpenIddictConstants.Claims.Scope, "roles"))
+            if (User.HasScope("roles"))
             {
                 claims["roles"] = await _userManager.GetRolesAsync(user);
             }
