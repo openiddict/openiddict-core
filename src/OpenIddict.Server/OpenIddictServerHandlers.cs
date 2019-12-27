@@ -198,8 +198,8 @@ namespace OpenIddict.Server
 
                 var (token, type) = context.EndpointType switch
                 {
-                    OpenIddictServerEndpointType.Authorization => (context.Request.IdTokenHint, TokenUsages.IdToken),
-                    OpenIddictServerEndpointType.Logout        => (context.Request.IdTokenHint, TokenUsages.IdToken),
+                    OpenIddictServerEndpointType.Authorization => (context.Request.IdTokenHint, TokenTypeHints.IdToken),
+                    OpenIddictServerEndpointType.Logout        => (context.Request.IdTokenHint, TokenTypeHints.IdToken),
 
                     // Generic tokens received by the introspection and revocation can be of any type.
                     // Additional token type filtering is made by the endpoint themselves, if needed.
@@ -207,15 +207,15 @@ namespace OpenIddict.Server
                     OpenIddictServerEndpointType.Revocation    => (context.Request.Token, null),
 
                     OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                        => (context.Request.Code, TokenUsages.AuthorizationCode),
+                        => (context.Request.Code, TokenTypeHints.AuthorizationCode),
                     OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                        => (context.Request.DeviceCode, TokenUsages.DeviceCode),
+                        => (context.Request.DeviceCode, TokenTypeHints.DeviceCode),
                     OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                        => (context.Request.RefreshToken, TokenUsages.RefreshToken),
+                        => (context.Request.RefreshToken, TokenTypeHints.RefreshToken),
 
-                    OpenIddictServerEndpointType.Userinfo => (context.Request.AccessToken, TokenUsages.AccessToken),
+                    OpenIddictServerEndpointType.Userinfo => (context.Request.AccessToken, TokenTypeHints.AccessToken),
 
-                    OpenIddictServerEndpointType.Verification => (context.Request.UserCode, TokenUsages.UserCode),
+                    OpenIddictServerEndpointType.Verification => (context.Request.UserCode, TokenTypeHints.UserCode),
 
                     _ => (null, null)
                 };
@@ -279,7 +279,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (!string.Equals(context.TokenType, TokenUsages.UserCode, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(context.TokenType, TokenTypeHints.UserCode, StringComparison.OrdinalIgnoreCase))
                 {
                     return default;
                 }
@@ -445,13 +445,13 @@ namespace OpenIddict.Server
                     {
                         context.TokenType switch
                         {
-                            TokenUsages.AccessToken => JsonWebTokenTypes.AccessToken,
-                            TokenUsages.IdToken     => JsonWebTokenTypes.IdentityToken,
+                            TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
+                            TokenTypeHints.IdToken     => JsonWebTokenTypes.IdentityToken,
 
-                            TokenUsages.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
-                            TokenUsages.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
-                            TokenUsages.RefreshToken      => JsonWebTokenTypes.Private.RefreshToken,
-                            TokenUsages.UserCode          => JsonWebTokenTypes.Private.UserCode,
+                            TokenTypeHints.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
+                            TokenTypeHints.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
+                            TokenTypeHints.RefreshToken      => JsonWebTokenTypes.Private.RefreshToken,
+                            TokenTypeHints.UserCode          => JsonWebTokenTypes.Private.UserCode,
 
                             _ => throw new InvalidOperationException("The token type is not supported.")
                         }
@@ -478,15 +478,15 @@ namespace OpenIddict.Server
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
 
                 // Store the token type as a special private claim.
-                context.Principal.SetClaim(Claims.Private.TokenUsage, token.Typ switch
+                context.Principal.SetClaim(Claims.Private.TokenType, token.Typ switch
                 {
-                    JsonWebTokenTypes.AccessToken   => TokenUsages.AccessToken,
-                    JsonWebTokenTypes.IdentityToken => TokenUsages.IdToken,
+                    JsonWebTokenTypes.AccessToken   => TokenTypeHints.AccessToken,
+                    JsonWebTokenTypes.IdentityToken => TokenTypeHints.IdToken,
 
-                    JsonWebTokenTypes.Private.AuthorizationCode => TokenUsages.AuthorizationCode,
-                    JsonWebTokenTypes.Private.DeviceCode        => TokenUsages.DeviceCode,
-                    JsonWebTokenTypes.Private.RefreshToken      => TokenUsages.RefreshToken,
-                    JsonWebTokenTypes.Private.UserCode          => TokenUsages.UserCode,
+                    JsonWebTokenTypes.Private.AuthorizationCode => TokenTypeHints.AuthorizationCode,
+                    JsonWebTokenTypes.Private.DeviceCode        => TokenTypeHints.DeviceCode,
+                    JsonWebTokenTypes.Private.RefreshToken      => TokenTypeHints.RefreshToken,
+                    JsonWebTokenTypes.Private.UserCode          => TokenTypeHints.UserCode,
 
                     _ => throw new InvalidOperationException("The token type is not supported.")
                 });
@@ -495,6 +495,19 @@ namespace OpenIddict.Server
                 if (token.TryGetPayloadValue(Claims.Private.ClaimDestinations, out ImmutableDictionary<string, string[]> destinations))
                 {
                     context.Principal.SetDestinations(destinations);
+                }
+
+                if (context.Principal.IsAccessToken())
+                {
+                    // Map the standardized "azp" and "scope" claims to their "oi_" equivalent so that
+                    // the ClaimsPrincipal extensions exposed by OpenIddict return consistent results.
+                    context.Principal.SetPresenters(context.Principal.GetClaims(Claims.AuthorizedParty));
+
+                    // Note: starting in OpenIddict 3.0, the public "scope" claim is formatted
+                    // as a unique space-separated string containing all the granted scopes.
+                    // Visit https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03 for more information.
+                    context.Principal.SetScopes(context.Principal.GetClaim(Claims.Scope)
+                        ?.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries));
                 }
 
                 context.Logger.LogTrace("The token '{Token}' was successfully validated and the following claims " +
@@ -563,7 +576,7 @@ namespace OpenIddict.Server
                     .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
                     .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                     .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                    .SetClaim(Claims.Private.TokenUsage, await _tokenManager.GetTypeAsync(token));
+                    .SetClaim(Claims.Private.TokenType, await _tokenManager.GetTypeAsync(token));
             }
         }
 
@@ -801,7 +814,7 @@ namespace OpenIddict.Server
                                  .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
                                  .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                                  .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                                 .SetClaim(Claims.Private.TokenUsage, await _tokenManager.GetTypeAsync(token));
+                                 .SetClaim(Claims.Private.TokenType, await _tokenManager.GetTypeAsync(token));
 
                 async ValueTask TryRevokeAuthorizationChainAsync(string identifier)
                 {
@@ -2791,7 +2804,7 @@ namespace OpenIddict.Server
                     ReferenceId = Base64UrlEncoder.Encode(data),
                     Status = Statuses.Valid,
                     Subject = context.AccessTokenPrincipal.GetClaim(Claims.Subject),
-                    Type = TokenUsages.AccessToken
+                    Type = TokenTypeHints.AccessToken
                 };
 
                 // If the client application is known, associate it with the token.
@@ -2968,7 +2981,7 @@ namespace OpenIddict.Server
                     ReferenceId = Base64UrlEncoder.Encode(data),
                     Status = Statuses.Valid,
                     Subject = context.AuthorizationCodePrincipal.GetClaim(Claims.Subject),
-                    Type = TokenUsages.AuthorizationCode
+                    Type = TokenTypeHints.AuthorizationCode
                 };
 
                 // If the client application is known, associate it with the token.
@@ -3150,7 +3163,7 @@ namespace OpenIddict.Server
                     ReferenceId = Base64UrlEncoder.Encode(data),
                     Status = Statuses.Inactive,
                     Subject = null, // Device codes are not bound to a user, which is not known until the user code is populated.
-                    Type = TokenUsages.DeviceCode
+                    Type = TokenTypeHints.DeviceCode
                 };
 
                 // If the client application is known, associate it with the token.
@@ -3423,7 +3436,7 @@ namespace OpenIddict.Server
                     ReferenceId = Base64UrlEncoder.Encode(data),
                     Status = Statuses.Valid,
                     Subject = context.RefreshTokenPrincipal.GetClaim(Claims.Subject),
-                    Type = TokenUsages.RefreshToken
+                    Type = TokenTypeHints.RefreshToken
                 };
 
                 // If the client application is known, associate it with the token.
@@ -3641,7 +3654,7 @@ namespace OpenIddict.Server
                     ReferenceId = builder.ToString(),
                     Status = Statuses.Valid,
                     Subject = null, // User codes are not bound to a user until authorization is granted.
-                    Type = TokenUsages.UserCode
+                    Type = TokenTypeHints.UserCode
                 };
 
                 // If the client application is known, associate it with the token.

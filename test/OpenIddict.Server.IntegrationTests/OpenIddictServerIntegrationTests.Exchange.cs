@@ -398,7 +398,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1));
@@ -436,7 +436,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1));
@@ -473,7 +473,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters(Enumerable.Empty<string>());
@@ -512,7 +512,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Contoso");
@@ -550,7 +550,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Contoso");
@@ -588,7 +588,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -628,7 +628,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -669,7 +669,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -712,7 +712,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -755,7 +755,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetClaim(Claims.Subject, "Bob le Magnifique")
@@ -796,7 +796,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -836,7 +836,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -876,7 +876,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetScopes(Enumerable.Empty<string>());
@@ -914,7 +914,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetScopes("profile", "email");
@@ -1552,7 +1552,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -1604,7 +1604,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
@@ -1648,7 +1648,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -1706,7 +1706,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -1760,7 +1760,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -1828,7 +1828,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103");
@@ -1876,7 +1876,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -1959,7 +1959,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
@@ -2049,7 +2049,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -2136,7 +2136,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -2198,7 +2198,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -2271,7 +2271,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -2319,7 +2319,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -2404,7 +2404,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
@@ -2471,7 +2471,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -2556,7 +2556,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetPresenters("Fabrikam")
@@ -2637,7 +2637,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
@@ -2708,7 +2708,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("8xLOxBtZp8", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")

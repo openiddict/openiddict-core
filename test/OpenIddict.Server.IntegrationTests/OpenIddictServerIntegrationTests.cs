@@ -191,7 +191,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("id_token", context.Token);
-                        Assert.Equal(TokenUsages.IdToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.IdToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetClaim(Claims.Subject, "Bob le Magnifique");
@@ -295,7 +295,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("authorization_code", context.Token);
-                        Assert.Equal(TokenUsages.AuthorizationCode, context.TokenType);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetClaim(Claims.Subject, "Bob le Magnifique")
@@ -400,7 +400,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         Assert.Equal("refresh_token", context.Token);
-                        Assert.Equal(TokenUsages.RefreshToken, context.TokenType);
+                        Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetClaim(Claims.Subject, "Bob le Magnifique");

@@ -27,8 +27,6 @@ namespace OpenIddict.Server.DataProtection
             public const string RefreshTokenLifetime = ".refresh_token_lifetime";
             public const string Resources = ".resources";
             public const string Scopes = ".scopes";
-            public const string TokenId = ".token_id";
-            public const string TokenUsage = ".token_usage";
         }
 
         public static class Purposes
