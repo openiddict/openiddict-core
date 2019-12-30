@@ -671,14 +671,7 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    // Only populate code_challenge_methods_supported if the code flow was enabled.
-                    if (context.GrantTypes.Contains(GrantTypes.AuthorizationCode))
-                    {
-                        // Note: supporting S256 is mandatory for authorization servers that implement PKCE.
-                        // See https://tools.ietf.org/html/rfc7636#section-4.2 for more information.
-                        context.CodeChallengeMethods.Add(CodeChallengeMethods.Plain);
-                        context.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
-                    }
+                    context.CodeChallengeMethods.UnionWith(context.Options.CodeChallengeMethods);
 
                     return default;
                 }

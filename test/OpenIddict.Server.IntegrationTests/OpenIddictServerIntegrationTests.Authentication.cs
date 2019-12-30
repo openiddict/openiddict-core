@@ -452,7 +452,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified code_challenge_method is not supported.", response.ErrorDescription);
+            Assert.Equal("The specified 'code_challenge_method' parameter is not supported.", response.ErrorDescription);
         }
 
         [Fact]
@@ -720,7 +720,7 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The specified 'response_mode' parameter is not supported.", response.ErrorDescription);
         }
 
-        [Fact(Skip = "The handler responsible of rejecting such requests has not been ported.")]
+        [Fact]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsMissing()
         {
             // Arrange
@@ -741,8 +741,34 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The 'code_challenge_method' parameter must be specified.", response.ErrorDescription);
         }
 
-        [Fact(Skip = "The handler responsible of rejecting such requests has not been ported.")]
-        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsPlain()
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsNotEnabled()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.Services.PostConfigure<OpenIddictServerOptions>(options =>
+                    options.CodeChallengeMethods.Clear());
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                CodeChallengeMethod = CodeChallengeMethods.Sha256,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal("The specified 'code_challenge_method' parameter is not supported.", response.ErrorDescription);
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenPlainCodeChallengeMethodIsNotExplicitlyEnabled()
         {
             // Arrange
             var client = CreateClient(options => options.EnableDegradedMode());
@@ -759,13 +785,44 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'code_challenge_method' parameter is not allowed.", response.ErrorDescription);
+            Assert.Equal("The specified 'code_challenge_method' parameter is not supported.", response.ErrorDescription);
+        }
+
+        [Theory]
+        [InlineData(CodeChallengeMethods.Plain)]
+        [InlineData(CodeChallengeMethods.Sha256)]
+        [InlineData("custom_code_challenge_method")]
+        public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenCodeChallengeMethodIsRegistered(string method)
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.Configure(options => options.CodeChallengeMethods.Clear());
+                options.Configure(options => options.CodeChallengeMethods.Add(method));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                CodeChallengeMethod = method,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.Null(response.Error);
+            Assert.Null(response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+            Assert.NotNull(response.Code);
         }
 
         [Theory]
         [InlineData("code id_token token")]
         [InlineData("code token")]
-        public async Task ValidateAuthorizationRequest_CodeChallengeRequestWithForbiddenResponseTypeIsRejected(string type)
+        public async Task ValidateAuthorizationRequest_PkceRequestWithForbiddenResponseTypeIsRejected(string type)
         {
             // Arrange
             var client = CreateClient(options => options.EnableDegradedMode());

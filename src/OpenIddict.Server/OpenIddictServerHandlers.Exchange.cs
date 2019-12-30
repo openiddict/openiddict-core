@@ -1636,7 +1636,7 @@ namespace OpenIddict.Server
                     var method = context.Principal.GetClaim(Claims.Private.CodeChallengeMethod);
                     if (string.IsNullOrEmpty(method))
                     {
-                        method = CodeChallengeMethods.Sha256;
+                        throw new InvalidOperationException("The code challenge method cannot be retrieved from the authorization code.");
                     }
 
                     // Note: when using the "plain" code challenge method, no hashing is actually performed.
@@ -1656,13 +1656,7 @@ namespace OpenIddict.Server
 
                     else
                     {
-                        context.Logger.LogError("The token request was rejected because the 'code_challenge_method' was invalid.");
-
-                        context.Reject(
-                            error: Errors.InvalidGrant,
-                            description: "The specified 'code_challenge_method' is invalid.");
-
-                        return default;
+                        throw new InvalidOperationException("The specified code challenge method is not supported.");
                     }
 
                     // Compare the verifier and the code challenge: if the two don't match, return an error.

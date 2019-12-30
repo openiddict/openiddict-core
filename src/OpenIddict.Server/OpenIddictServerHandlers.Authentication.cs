@@ -950,6 +950,35 @@ namespace OpenIddict.Server
                         return default;
                     }
 
+                    // If the plain code challenge method was not explicitly enabled,
+                    // reject the request indicating that a method must be set.
+                    if (string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
+                        !context.Options.CodeChallengeMethods.Contains(CodeChallengeMethods.Plain))
+                    {
+                        context.Logger.LogError("The authorization request was rejected because the " +
+                                                "required 'code_challenge_method' parameter was missing.");
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The 'code_challenge_method' parameter must be specified.");
+
+                        return default;
+                    }
+
+                    // If a code_challenge_method was specified, ensure the algorithm is supported.
+                    if (!string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
+                        !context.Options.CodeChallengeMethods.Contains(context.Request.CodeChallengeMethod))
+                    {
+                        context.Logger.LogError("The authorization request was rejected because " +
+                                                "the specified code challenge method was not supported.");
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The specified 'code_challenge_method' parameter is not supported.");
+
+                        return default;
+                    }
+
                     // When code_challenge or code_challenge_method is specified, ensure the response_type includes "code".
                     if (!context.Request.HasResponseType(ResponseTypes.Code))
                     {
@@ -973,21 +1002,6 @@ namespace OpenIddict.Server
                         context.Reject(
                             error: Errors.InvalidRequest,
                             description: "The specified 'response_type' parameter is not allowed when using PKCE.");
-
-                        return default;
-                    }
-
-                    // If a code_challenge_method was specified, ensure the algorithm is supported.
-                    if (!string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
-                        !string.Equals(context.Request.CodeChallengeMethod, CodeChallengeMethods.Plain, StringComparison.Ordinal) &&
-                        !string.Equals(context.Request.CodeChallengeMethod, CodeChallengeMethods.Sha256, StringComparison.Ordinal))
-                    {
-                        context.Logger.LogError("The authorization request was rejected because " +
-                                                "the specified code challenge method was not supported.");
-
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: "The specified code_challenge_method is not supported.");
 
                         return default;
                     }
