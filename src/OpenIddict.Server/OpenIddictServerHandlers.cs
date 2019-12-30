@@ -1908,10 +1908,10 @@ namespace OpenIddict.Server
                 {
                     principal.SetClaim(Claims.Private.CodeChallenge, context.Request.CodeChallenge);
 
-                    // Default to S256 if no explicit code challenge method was specified.
+                    // Default to plain if no explicit code challenge method was specified.
                     principal.SetClaim(Claims.Private.CodeChallengeMethod,
                         !string.IsNullOrEmpty(context.Request.CodeChallengeMethod) ?
-                        context.Request.CodeChallengeMethod : CodeChallengeMethods.Sha256);
+                        context.Request.CodeChallengeMethod : CodeChallengeMethods.Plain);
                 }
 
                 // Attach the nonce so that it can be later returned by

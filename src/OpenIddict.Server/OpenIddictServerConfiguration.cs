@@ -248,6 +248,8 @@ namespace OpenIddict.Server
 
             if (options.GrantTypes.Contains(GrantTypes.AuthorizationCode))
             {
+                options.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
+
                 options.ResponseTypes.Add(ResponseTypes.Code);
             }
 

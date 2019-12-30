@@ -697,6 +697,90 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The mandatory 'code_verifier' parameter is missing.", response.ErrorDescription);
         }
 
+        [Fact]
+        public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeChallengeMethodIsMIssing()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetPresenters("Fabrikam")
+                            .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
+                            .SetClaim(Claims.Private.CodeChallengeMethod, null);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.PostAsync("/connect/token", new OpenIddictRequest
+                {
+                    ClientId = "Fabrikam",
+                    Code = "SplxlOBeZQQYbYS6WxSbIA",
+                    CodeVerifier = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                    GrantType = GrantTypes.AuthorizationCode
+                });
+            });
+
+            Assert.Equal("The code challenge method cannot be retrieved from the authorization code.", exception.Message);
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeChallengeMethodIsInvalid()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetPresenters("Fabrikam")
+                            .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
+                            .SetClaim(Claims.Private.CodeChallengeMethod, "custom_code_challenge_method");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.PostAsync("/connect/token", new OpenIddictRequest
+                {
+                    ClientId = "Fabrikam",
+                    Code = "SplxlOBeZQQYbYS6WxSbIA",
+                    CodeVerifier = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                    GrantType = GrantTypes.AuthorizationCode
+                });
+            });
+
+            Assert.Equal("The specified code challenge method is not supported.", exception.Message);
+        }
+
         [Theory]
         [InlineData(CodeChallengeMethods.Plain, "challenge", "invalid_verifier")]
         [InlineData(CodeChallengeMethods.Sha256, "challenge", "invalid_verifier")]
