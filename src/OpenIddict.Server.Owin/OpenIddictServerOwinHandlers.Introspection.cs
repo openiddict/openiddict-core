@@ -18,6 +18,7 @@ namespace OpenIddict.Server.Owin
                  * Introspection request extraction:
                  */
                 ExtractGetOrPostRequest<ExtractIntrospectionRequestContext>.Descriptor,
+                ExtractBasicAuthenticationCredentials<ExtractIntrospectionRequestContext>.Descriptor,
 
                 /*
                  * Introspection response processing:
