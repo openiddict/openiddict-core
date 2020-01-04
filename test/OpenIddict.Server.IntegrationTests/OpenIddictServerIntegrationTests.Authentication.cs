@@ -864,110 +864,6 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The mandatory 'redirect_uri' parameter is missing.", response.ErrorDescription);
         }
 
-        [Theory]
-        [InlineData("custom_error", null, null)]
-        [InlineData("custom_error", "custom_description", null)]
-        [InlineData("custom_error", "custom_description", "custom_uri")]
-        [InlineData(null, "custom_description", null)]
-        [InlineData(null, "custom_description", "custom_uri")]
-        [InlineData(null, null, "custom_uri")]
-        [InlineData(null, null, null)]
-        public async Task ValidateAuthorizationRequest_AllowsRejectingRequest(string error, string description, string uri)
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ValidateAuthorizationRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Reject(error, description, uri);
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.Code,
-                Scope = Scopes.OpenId
-            });
-
-            // Assert
-            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
-            Assert.Equal(description, response.ErrorDescription);
-            Assert.Equal(uri, response.ErrorUri);
-        }
-
-        [Fact]
-        public async Task ValidateAuthorizationRequest_AllowsHandlingResponse()
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ValidateAuthorizationRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Transaction.SetProperty("custom_response", new
-                        {
-                            name = "Bob le Bricoleur"
-                        });
-
-                        context.HandleRequest();
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.Code,
-                Scope = Scopes.OpenId
-            });
-
-            // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
-        }
-
-        [Fact]
-        public async Task ValidateAuthorizationRequest_AllowsSkippingHandler()
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ValidateAuthorizationRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.SkipRequest();
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                RedirectUri = "http://www.fabrikam.com/path",
-                ResponseType = ResponseTypes.Code,
-                Scope = Scopes.OpenId
-            });
-
-            // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
-        }
-
         [Fact]
         public async Task ValidateAuthorizationRequest_MissingRedirectUriCausesAnException()
         {
@@ -1346,6 +1242,110 @@ namespace OpenIddict.Server.FunctionalTests
                 Permissions.Prefixes.Scope + Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.Prefixes.Scope + Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Theory]
+        [InlineData("custom_error", null, null)]
+        [InlineData("custom_error", "custom_description", null)]
+        [InlineData("custom_error", "custom_description", "custom_uri")]
+        [InlineData(null, "custom_description", null)]
+        [InlineData(null, "custom_description", "custom_uri")]
+        [InlineData(null, null, "custom_uri")]
+        [InlineData(null, null, null)]
+        public async Task ValidateAuthorizationRequest_AllowsRejectingRequest(string error, string description, string uri)
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ValidateAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Reject(error, description, uri);
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
+            Assert.Equal(description, response.ErrorDescription);
+            Assert.Equal(uri, response.ErrorUri);
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_AllowsHandlingResponse()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ValidateAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Transaction.SetProperty("custom_response", new
+                        {
+                            name = "Bob le Bricoleur"
+                        });
+
+                        context.HandleRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_AllowsSkippingHandler()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ValidateAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code,
+                Scope = Scopes.OpenId
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response["name"]);
         }
 
         [Theory]

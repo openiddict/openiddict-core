@@ -17,7 +17,7 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Revocation request extraction:
                  */
-                ExtractGetOrPostRequest<ExtractRevocationRequestContext>.Descriptor,
+                ExtractPostRequest<ExtractRevocationRequestContext>.Descriptor,
                 ExtractBasicAuthenticationCredentials<ExtractRevocationRequestContext>.Descriptor,
 
                 /*
