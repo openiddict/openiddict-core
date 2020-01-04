@@ -17,7 +17,7 @@ namespace OpenIddict.Server.AspNetCore
                 /*
                  * Revocation request extraction:
                  */
-                ExtractGetOrPostRequest<ExtractRevocationRequestContext>.Descriptor,
+                ExtractPostRequest<ExtractRevocationRequestContext>.Descriptor,
                 ExtractBasicAuthenticationCredentials<ExtractRevocationRequestContext>.Descriptor,
 
                 /*

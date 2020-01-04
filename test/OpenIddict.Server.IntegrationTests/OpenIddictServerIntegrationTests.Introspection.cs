@@ -147,146 +147,6 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The mandatory 'token' parameter is missing.", response.ErrorDescription);
         }
 
-        [Theory]
-        [InlineData("custom_error", null, null)]
-        [InlineData("custom_error", "custom_description", null)]
-        [InlineData("custom_error", "custom_description", "custom_uri")]
-        [InlineData(null, "custom_description", null)]
-        [InlineData(null, "custom_description", "custom_uri")]
-        [InlineData(null, null, "custom_uri")]
-        [InlineData(null, null, null)]
-        public async Task ValidateIntrospectionRequest_AllowsRejectingRequest(string error, string description, string uri)
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AccessToken);
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.AddEventHandler<ValidateIntrospectionRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Reject(error, description, uri);
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            });
-
-            // Assert
-            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
-            Assert.Equal(description, response.ErrorDescription);
-            Assert.Equal(uri, response.ErrorUri);
-        }
-
-        [Fact]
-        public async Task ValidateIntrospectionRequest_AllowsHandlingResponse()
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AccessToken);
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.AddEventHandler<ValidateIntrospectionRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Transaction.SetProperty("custom_response", new
-                        {
-                            name = "Bob le Bricoleur"
-                        });
-
-                        context.HandleRequest();
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            });
-
-            // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
-        }
-
-        [Fact]
-        public async Task ValidateIntrospectionRequest_AllowsSkippingHandler()
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AccessToken);
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.AddEventHandler<ValidateIntrospectionRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.SkipRequest();
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            });
-
-            // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
-        }
-
         [Fact]
         public async Task ValidateIntrospectionRequest_InvalidTokenCausesAnError()
         {
@@ -589,6 +449,9 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
+                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ClientTypes.Public);
+
                 mock.Setup(manager => manager.HasPermissionAsync(application,
                     Permissions.Endpoints.Introspection, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
@@ -653,6 +516,146 @@ namespace OpenIddict.Server.FunctionalTests
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Theory]
+        [InlineData("custom_error", null, null)]
+        [InlineData("custom_error", "custom_description", null)]
+        [InlineData("custom_error", "custom_description", "custom_uri")]
+        [InlineData(null, "custom_description", null)]
+        [InlineData(null, "custom_description", "custom_uri")]
+        [InlineData(null, null, "custom_uri")]
+        [InlineData(null, null, null)]
+        public async Task ValidateIntrospectionRequest_AllowsRejectingRequest(string error, string description, string uri)
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<ValidateIntrospectionRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Reject(error, description, uri);
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            });
+
+            // Assert
+            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
+            Assert.Equal(description, response.ErrorDescription);
+            Assert.Equal(uri, response.ErrorUri);
+        }
+
+        [Fact]
+        public async Task ValidateIntrospectionRequest_AllowsHandlingResponse()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<ValidateIntrospectionRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Transaction.SetProperty("custom_response", new
+                        {
+                            name = "Bob le Bricoleur"
+                        });
+
+                        context.HandleRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+        }
+
+        [Fact]
+        public async Task ValidateIntrospectionRequest_AllowsSkippingHandler()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<ValidateIntrospectionRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response["name"]);
         }
 
         [Fact]
@@ -1054,146 +1057,6 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal(2, ((JsonElement) response["object_claim"]).GetArrayLength());
             Assert.Equal("value-1", ((JsonElement) response["object_claim"])[0].GetProperty("parameter_1").GetString());
             Assert.Equal("value-2", ((JsonElement) response["object_claim"])[1].GetProperty("parameter_2").GetString());
-        }
-
-        [Theory]
-        [InlineData("custom_error", null, null)]
-        [InlineData("custom_error", "custom_description", null)]
-        [InlineData("custom_error", "custom_description", "custom_uri")]
-        [InlineData(null, "custom_description", null)]
-        [InlineData(null, "custom_description", "custom_uri")]
-        [InlineData(null, null, "custom_uri")]
-        [InlineData(null, null, null)]
-        public async Task HandleIntrospectionRequest_AllowsRejectingRequest(string error, string description, string uri)
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AccessToken);
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.AddEventHandler<HandleIntrospectionRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Reject(error, description, uri);
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            });
-
-            // Assert
-            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
-            Assert.Equal(description, response.ErrorDescription);
-            Assert.Equal(uri, response.ErrorUri);
-        }
-
-        [Fact]
-        public async Task HandleIntrospectionRequest_AllowsHandlingResponse()
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AccessToken);
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.AddEventHandler<HandleIntrospectionRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Transaction.SetProperty("custom_response", new
-                        {
-                            name = "Bob le Bricoleur"
-                        });
-
-                        context.HandleRequest();
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            });
-
-            // Assert
-            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
-        }
-
-        [Fact]
-        public async Task HandleIntrospectionRequest_AllowsSkippingHandler()
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AccessToken);
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.AddEventHandler<HandleIntrospectionRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.SkipRequest();
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
-            {
-                Token = "2YotnFZFEjr1zCsicMWpAA"
-            });
-
-            // Assert
-            Assert.Equal("Bob le Magnifique", (string) response["name"]);
         }
 
         [Fact]
@@ -1610,6 +1473,146 @@ namespace OpenIddict.Server.FunctionalTests
 
             Mock.Get(manager).Verify(manager => manager.FindByReferenceIdAsync("QaTk2f6UPe9trKismGBJr0OIs0KqpvNrqRsJqGuJAAI", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Theory]
+        [InlineData("custom_error", null, null)]
+        [InlineData("custom_error", "custom_description", null)]
+        [InlineData("custom_error", "custom_description", "custom_uri")]
+        [InlineData(null, "custom_description", null)]
+        [InlineData(null, "custom_description", "custom_uri")]
+        [InlineData(null, null, "custom_uri")]
+        [InlineData(null, null, null)]
+        public async Task HandleIntrospectionRequest_AllowsRejectingRequest(string error, string description, string uri)
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<HandleIntrospectionRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Reject(error, description, uri);
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            });
+
+            // Assert
+            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
+            Assert.Equal(description, response.ErrorDescription);
+            Assert.Equal(uri, response.ErrorUri);
+        }
+
+        [Fact]
+        public async Task HandleIntrospectionRequest_AllowsHandlingResponse()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<HandleIntrospectionRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Transaction.SetProperty("custom_response", new
+                        {
+                            name = "Bob le Bricoleur"
+                        });
+
+                        context.HandleRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
+        }
+
+        [Fact]
+        public async Task HandleIntrospectionRequest_AllowsSkippingHandler()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<HandleIntrospectionRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response["name"]);
         }
 
         [Fact]
