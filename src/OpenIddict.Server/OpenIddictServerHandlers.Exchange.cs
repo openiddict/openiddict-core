@@ -299,7 +299,7 @@ namespace OpenIddict.Server
                         else if (@event.IsRejected)
                         {
                             context.Reject(
-                                error: @event.Error ?? Errors.InvalidGrant,
+                                error: @event.Error ?? Errors.InvalidRequest,
                                 description: @event.ErrorDescription,
                                 uri: @event.ErrorUri);
                             return;

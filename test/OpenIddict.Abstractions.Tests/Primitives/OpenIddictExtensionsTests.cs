@@ -1362,7 +1362,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = (ClaimsIdentity) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => identity.Clone(c => true));
+            var exception = Assert.Throws<ArgumentNullException>(() => identity.Clone(claim => true));
 
             Assert.Equal("identity", exception.ParamName);
         }
@@ -1375,7 +1375,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             identity.AddClaim("type", "value");
 
             // Act
-            var copy = identity.Clone(c => true);
+            var copy = identity.Clone(claim => true);
 
             // Assert
             Assert.Equal("value", copy.GetClaim("type"));
@@ -1389,7 +1389,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.Clone(c => true));
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.Clone(claim => true));
 
             Assert.Equal("principal", exception.ParamName);
         }
@@ -1404,7 +1404,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            var copy = principal.Clone(c => true);
+            var copy = principal.Clone(claim => true);
 
             // Assert
             Assert.Equal("Bob le Bricoleur", copy.GetClaim(Claims.Name));
@@ -1419,7 +1419,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             identity.AddClaim("type", "value");
 
             // Act
-            var copy = identity.Clone(c => true);
+            var copy = identity.Clone(claim => true);
             copy.AddClaim("clone_type", "value");
 
             // Assert
@@ -1437,7 +1437,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            var copy = principal.Clone(c => true);
+            var copy = principal.Clone(claim => true);
             copy.SetClaim("clone_claim", "value");
 
             // Assert

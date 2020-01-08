@@ -247,17 +247,6 @@ namespace OpenIddict.Server
             /// Gets the client identifier, or <c>null</c> if the client application is unknown.
             /// </summary>
             public string ClientId => Request.ClientId;
-
-            /// <summary>
-            /// Gets a boolean indicating whether the
-            /// <see cref="HandleAuthentication()"/> method was called.
-            /// </summary>
-            public bool IsHandled { get; private set; }
-
-            /// <summary>
-            /// Marks the authentication process as handled by the application code.
-            /// </summary>
-            public void HandleAuthentication() => IsHandled = true;
         }
 
         /// <summary>

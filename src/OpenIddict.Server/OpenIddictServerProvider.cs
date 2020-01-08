@@ -67,10 +67,6 @@ namespace OpenIddict.Server
                         _logger.LogDebug("The request was rejected in user code.");
                         return;
 
-                    case BaseValidatingTicketContext notification when notification.IsHandled:
-                        _logger.LogDebug("Authentication was handled in user code.");
-                        return;
-
                     default: continue;
                 }
             }
