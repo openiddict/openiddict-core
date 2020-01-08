@@ -55,7 +55,7 @@ namespace OpenIddict.Server
             /*
             * Sign-in processing:
             */
-            ValidateSigninDemand.Descriptor,
+            ValidateSignInDemand.Descriptor,
             RestoreInternalClaims.Descriptor,
             AttachDefaultScopes.Descriptor,
             AttachDefaultPresenters.Descriptor,
@@ -155,7 +155,6 @@ namespace OpenIddict.Server
                         .Append("This generally indicates that the OpenIddict server stack was asked ")
                         .AppendLine("to validate a token for an invalid grant type (e.g password).")
                         .ToString());
-
 
                     default: throw new InvalidOperationException(new StringBuilder()
                         .AppendLine("An identity cannot be extracted from this request.")
@@ -1221,14 +1220,14 @@ namespace OpenIddict.Server
         /// Contains the logic responsible of ensuring that the sign-in demand
         /// is compatible with the type of the endpoint that handled the request.
         /// </summary>
-        public class ValidateSigninDemand : IOpenIddictServerHandler<ProcessSignInContext>
+        public class ValidateSignInDemand : IOpenIddictServerHandler<ProcessSignInContext>
         {
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .UseSingletonHandler<ValidateSigninDemand>()
+                    .UseSingletonHandler<ValidateSignInDemand>()
                     .SetOrder(int.MinValue + 100_000)
                     .Build();
 
@@ -1303,7 +1302,7 @@ namespace OpenIddict.Server
                 if (string.IsNullOrEmpty(context.Principal.GetClaim(Claims.Subject)))
                 {
                     throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The specified principal was rejected because the mandatory subject claim was missing.")
+                        .Append("The specified principal was rejected because the mandatory subject claim was missing.")
                         .ToString());
                 }
 
@@ -1322,7 +1321,7 @@ namespace OpenIddict.Server
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .UseSingletonHandler<RestoreInternalClaims>()
-                    .SetOrder(ValidateSigninDemand.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateSignInDemand.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -1754,6 +1753,13 @@ namespace OpenIddict.Server
                         return true;
                     }
 
+                    // Never exclude the presenters and scope private claims.
+                    if (string.Equals(claim.Type, Claims.Private.Presenters, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.Scopes, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
                     // Never include the public or internal token identifiers to ensure the identifiers
                     // that are automatically inherited from the parent token are not reused for the new token.
                     if (string.Equals(claim.Type, Claims.JwtId, StringComparison.OrdinalIgnoreCase) ||
@@ -1807,22 +1813,13 @@ namespace OpenIddict.Server
                 // Set the public audiences collection using the private resource claims stored in the principal.
                 principal.SetAudiences(context.Principal.GetResources());
 
-                // Set the authorized party using the first presenters (typically the client identifier), if available.
-                principal.SetClaim(Claims.AuthorizedParty, context.Principal.GetPresenters().FirstOrDefault());
-
-                // Set the public scope claim using the private scope claims from the principal.
-                // Note: scopes are deliberately formatted as a single space-separated
-                // string to respect the usual representation of the standard scope claim.
-                // See https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02.
-                principal.SetClaim(Claims.Scope, string.Join(" ", context.Principal.GetScopes()));
-
                 // When receiving a grant_type=refresh_token request, determine whether the client application
                 // requests a limited set of scopes and immediately replace the scopes collection if necessary.
                 if (context.EndpointType == OpenIddictServerEndpointType.Token &&
                     context.Request.IsRefreshTokenGrantType() && !string.IsNullOrEmpty(context.Request.Scope))
                 {
                     var scopes = context.Request.GetScopes();
-                    principal.SetClaim(Claims.Scope, string.Join(" ", scopes.Intersect(context.Principal.GetScopes())));
+                    principal.SetScopes(scopes.Intersect(context.Principal.GetScopes()));
 
                     context.Logger.LogDebug("The access token scopes will be limited to the scopes " +
                                             "requested by the client application: {Scopes}.", scopes);
@@ -2695,6 +2692,26 @@ namespace OpenIddict.Server
                     return default;
                 }
 
+                // Copy the principal and exclude the presenters/scopes private claims,
+                // that are manually mapped to public standard azp/scope JWT claims.
+                var principal = context.AccessTokenPrincipal.Clone(claim => claim.Type switch
+                {
+                    Claims.Private.Presenters => false,
+                    Claims.Private.Scopes     => false,
+                    Claims.Private.TokenId    => false,
+
+                    _ => true
+                });
+
+                // Set the authorized party using the first presenters (typically the client identifier), if available.
+                principal.SetClaim(Claims.AuthorizedParty, context.AccessTokenPrincipal.GetPresenters().FirstOrDefault());
+
+                // Set the public scope claim using the private scope claims from the principal.
+                // Note: scopes are deliberately formatted as a single space-separated
+                // string to respect the usual representation of the standard scope claim.
+                // See https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-02.
+                principal.SetClaim(Claims.Scope, string.Join(" ", context.AccessTokenPrincipal.GetScopes()));
+
                 var token = context.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
                 {
                     AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
@@ -2704,7 +2721,7 @@ namespace OpenIddict.Server
                     Issuer = context.Issuer?.AbsoluteUri,
                     SigningCredentials = context.Options.SigningCredentials.FirstOrDefault(credentials =>
                         credentials.Key is SymmetricSecurityKey) ?? context.Options.SigningCredentials.First(),
-                    Subject = (ClaimsIdentity) context.AccessTokenPrincipal.Identity
+                    Subject = (ClaimsIdentity) principal.Identity
                 });
 
                 var credentials = context.Options.EncryptionCredentials.FirstOrDefault(
@@ -2723,7 +2740,7 @@ namespace OpenIddict.Server
                 context.Logger.LogTrace("The access token '{Identifier}' was successfully created: {Payload}. " +
                                         "The principal used to create the token contained the following claims: {Claims}.",
                                         context.AccessTokenPrincipal.GetClaim(Claims.JwtId),
-                                        context.Response.AccessToken, context.AccessTokenPrincipal.Claims);
+                                        context.Response.AccessToken, principal.Claims);
 
                 return default;
             }
