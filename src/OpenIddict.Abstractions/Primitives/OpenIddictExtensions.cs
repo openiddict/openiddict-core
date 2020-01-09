@@ -1,5 +1,4 @@
-﻿    
-/*
+﻿/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
@@ -1793,14 +1792,14 @@ namespace OpenIddict.Abstractions
             return null;
         }
 
-        private static bool CheckTokenType(this ClaimsPrincipal principal, string tokenUsage)
+        private static bool CheckTokenType(this ClaimsPrincipal principal, string tokenType)
         {
             if (principal == null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return string.Equals(principal.GetTokenType(), tokenUsage, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(principal.GetTokenType(), tokenType, StringComparison.OrdinalIgnoreCase);
         }
 
         private static ClaimsPrincipal SetDateClaim(this ClaimsPrincipal principal, string claimType, DateTimeOffset? date)
