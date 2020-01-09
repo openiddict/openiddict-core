@@ -36,7 +36,7 @@ namespace OpenIddict.Server
                 ApplyTokenResponse<ProcessChallengeContext>.Descriptor,
                 ApplyTokenResponse<ProcessErrorContext>.Descriptor,
                 ApplyTokenResponse<ProcessRequestContext>.Descriptor,
-                ApplyTokenResponse<ProcessSigninContext>.Descriptor,
+                ApplyTokenResponse<ProcessSignInContext>.Descriptor,
 
                 /*
                  * Token request validation:
@@ -83,7 +83,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractTokenRequest>()
-                        .SetOrder(int.MinValue + 100_000)
+                        .SetOrder(100_000)
                         .Build();
 
                 /// <summary>
@@ -268,7 +268,7 @@ namespace OpenIddict.Server
                     else if (notification.IsRejected)
                     {
                         context.Reject(
-                            error: notification.Error ?? Errors.InvalidRequest,
+                            error: notification.Error ?? Errors.InvalidGrant,
                             description: notification.ErrorDescription,
                             uri: notification.ErrorUri);
                         return;
@@ -276,7 +276,7 @@ namespace OpenIddict.Server
 
                     if (notification.Principal != null)
                     {
-                        var @event = new ProcessSigninContext(context.Transaction)
+                        var @event = new ProcessSignInContext(context.Transaction)
                         {
                             Principal = notification.Principal,
                             Response = new OpenIddictResponse()
@@ -293,6 +293,15 @@ namespace OpenIddict.Server
                         else if (@event.IsRequestSkipped)
                         {
                             context.SkipRequest();
+                            return;
+                        }
+
+                        else if (@event.IsRejected)
+                        {
+                            context.Reject(
+                                error: @event.Error ?? Errors.InvalidRequest,
+                                description: @event.ErrorDescription,
+                                uri: @event.ErrorUri);
                             return;
                         }
                     }
@@ -1627,7 +1636,7 @@ namespace OpenIddict.Server
                     var method = context.Principal.GetClaim(Claims.Private.CodeChallengeMethod);
                     if (string.IsNullOrEmpty(method))
                     {
-                        method = CodeChallengeMethods.Sha256;
+                        throw new InvalidOperationException("The code challenge method cannot be retrieved from the authorization code.");
                     }
 
                     // Note: when using the "plain" code challenge method, no hashing is actually performed.
@@ -1641,23 +1650,18 @@ namespace OpenIddict.Server
                     else if (string.Equals(method, CodeChallengeMethods.Sha256, StringComparison.Ordinal))
                     {
                         using var algorithm = SHA256.Create();
-                        data = algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.Request.CodeVerifier));
+                        data = Encoding.ASCII.GetBytes(Base64UrlEncoder.Encode(
+                            algorithm.ComputeHash(Encoding.ASCII.GetBytes(context.Request.CodeVerifier))));
                     }
 
                     else
                     {
-                        context.Logger.LogError("The token request was rejected because the 'code_challenge_method' was invalid.");
-
-                        context.Reject(
-                            error: Errors.InvalidGrant,
-                            description: "The specified 'code_challenge_method' is invalid.");
-
-                        return default;
+                        throw new InvalidOperationException("The specified code challenge method is not supported.");
                     }
 
                     // Compare the verifier and the code challenge: if the two don't match, return an error.
                     // Note: to prevent timing attacks, a time-constant comparer is always used.
-                    if (!FixedTimeEquals(data, Base64UrlEncoder.DecodeBytes(challenge)))
+                    if (!FixedTimeEquals(data, Encoding.UTF8.GetBytes(challenge)))
                     {
                         context.Logger.LogError("The token request was rejected because the 'code_verifier' was invalid.");
 
@@ -1721,7 +1725,12 @@ namespace OpenIddict.Server
                         throw new ArgumentNullException(nameof(context));
                     }
 
-                    if (!context.Request.IsAuthorizationCodeGrantType() || string.IsNullOrEmpty(context.Request.Scope))
+                    if (string.IsNullOrEmpty(context.Request.Scope))
+                    {
+                        return default;
+                    }
+
+                    if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsRefreshTokenGrantType())
                     {
                         return default;
                     }

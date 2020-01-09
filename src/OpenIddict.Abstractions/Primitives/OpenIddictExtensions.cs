@@ -1,4 +1,5 @@
-﻿/*
+﻿    
+/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
@@ -1231,12 +1232,12 @@ namespace OpenIddict.Abstractions
             => principal.GetClaim(Claims.Private.TokenId);
 
         /// <summary>
-        /// Gets the token usage associated with the claims principal.
+        /// Gets the token type associated with the claims principal.
         /// </summary>
         /// <param name="principal">The claims principal.</param>
-        /// <returns>The token usage or <c>null</c> if the claim cannot be found.</returns>
-        public static string GetTokenUsage([NotNull] this ClaimsPrincipal principal)
-            => principal.GetClaim(Claims.Private.TokenUsage);
+        /// <returns>The token type or <c>null</c> if the claim cannot be found.</returns>
+        public static string GetTokenType([NotNull] this ClaimsPrincipal principal)
+            => principal.GetClaim(Claims.Private.TokenType);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
@@ -1244,7 +1245,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an access token.</returns>
         public static bool IsAccessToken([NotNull] this ClaimsPrincipal principal)
-            => principal.CheckTokenUsage(TokenUsages.AccessToken);
+            => principal.CheckTokenType(TokenTypeHints.AccessToken);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to an access token.
@@ -1252,7 +1253,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an authorization code.</returns>
         public static bool IsAuthorizationCode([NotNull] this ClaimsPrincipal principal)
-            => principal.CheckTokenUsage(TokenUsages.AuthorizationCode);
+            => principal.CheckTokenType(TokenTypeHints.AuthorizationCode);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to a device code.
@@ -1260,7 +1261,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to a device code.</returns>
         public static bool IsDeviceCode([NotNull] this ClaimsPrincipal principal)
-            => principal.CheckTokenUsage(TokenUsages.DeviceCode);
+            => principal.CheckTokenType(TokenTypeHints.DeviceCode);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to an identity token.
@@ -1268,7 +1269,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to an identity token.</returns>
         public static bool IsIdentityToken([NotNull] this ClaimsPrincipal principal)
-            => principal.CheckTokenUsage(TokenUsages.IdToken);
+            => principal.CheckTokenType(TokenTypeHints.IdToken);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to a refresh token.
@@ -1276,7 +1277,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to a refresh token.</returns>
         public static bool IsRefreshToken([NotNull] this ClaimsPrincipal principal)
-            => principal.CheckTokenUsage(TokenUsages.RefreshToken);
+            => principal.CheckTokenType(TokenTypeHints.RefreshToken);
 
         /// <summary>
         /// Gets a boolean value indicating whether the claims principal corresponds to a user code.
@@ -1284,7 +1285,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal corresponds to a user code.</returns>
         public static bool IsUserCode([NotNull] this ClaimsPrincipal principal)
-            => principal.CheckTokenUsage(TokenUsages.UserCode);
+            => principal.CheckTokenType(TokenTypeHints.UserCode);
 
         /// <summary>
         /// Determines whether the claims principal contains at least one audience.
@@ -1656,6 +1657,15 @@ namespace OpenIddict.Abstractions
         public static ClaimsPrincipal SetInternalTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
             => principal.SetClaim(Claims.Private.TokenId, identifier);
 
+        /// <summary>
+        /// Sets the token type associated with the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="type">The token type to store.</param>
+        /// <returns>The claims principal.</returns>
+        public static ClaimsPrincipal SetTokenType([NotNull] this ClaimsPrincipal principal, string type)
+            => principal.SetClaim(Claims.Private.TokenType, type);
+
         private static IEnumerable<string> GetValues(string source, char[] separators)
         {
             Debug.Assert(!string.IsNullOrEmpty(source), "The source string shouldn't be null or empty.");
@@ -1783,14 +1793,14 @@ namespace OpenIddict.Abstractions
             return null;
         }
 
-        private static bool CheckTokenUsage(this ClaimsPrincipal principal, string tokenUsage)
+        private static bool CheckTokenType(this ClaimsPrincipal principal, string tokenUsage)
         {
             if (principal == null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return string.Equals(principal.GetTokenUsage(), tokenUsage, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(principal.GetTokenType(), tokenUsage, StringComparison.OrdinalIgnoreCase);
         }
 
         private static ClaimsPrincipal SetDateClaim(this ClaimsPrincipal principal, string claimType, DateTimeOffset? date)

@@ -102,7 +102,7 @@ namespace OpenIddict.Validation.DataProtection
 
                 // Note: since the data format relies on a data protector using different "purposes" strings
                 // per token type, the token processed at this stage is guaranteed to be of the expected type.
-                context.Principal = principal.SetClaim(Claims.Private.TokenUsage, TokenUsages.AccessToken);
+                context.Principal = principal.SetClaim(Claims.Private.TokenType, TokenTypeHints.AccessToken);
 
                 context.Logger.LogTrace("The self-contained DP token '{Token}' was successfully validated and the following " +
                                         "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);

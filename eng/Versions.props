@@ -29,6 +29,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <AngleSharpVersion>0.13.0</AngleSharpVersion>
     <BclAsyncInterfacesVersion>1.0.0</BclAsyncInterfacesVersion>
     <BclHashCodeVersion>1.0.0</BclHashCodeVersion>
     <BouncyCastleVersion>1.8.5</BouncyCastleVersion>
@@ -39,7 +40,7 @@
     <ImmutableCollectionsVersion>1.5.0</ImmutableCollectionsVersion>
     <LinqAsyncVersion>4.0.0</LinqAsyncVersion>
     <MongoDbVersion>2.9.0</MongoDbVersion>
-    <MoqVersion>4.7.63</MoqVersion>
+    <MoqVersion>4.13.1</MoqVersion>
     <NHibernateVersion>5.2.2</NHibernateVersion>
     <OwinVersion>4.0.0</OwinVersion>
     <SystemTextJsonVersion>4.6.0</SystemTextJsonVersion>

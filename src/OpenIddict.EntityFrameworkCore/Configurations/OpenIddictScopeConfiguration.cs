@@ -46,6 +46,9 @@ namespace OpenIddict.EntityFrameworkCore
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
+            builder.Property(scope => scope.Id)
+                   .ValueGeneratedOnAdd();
+
             builder.Property(scope => scope.Name)
                    .HasMaxLength(200)
                    .IsRequired();

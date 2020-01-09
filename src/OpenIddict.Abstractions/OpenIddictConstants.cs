@@ -103,7 +103,7 @@ namespace OpenIddict.Abstractions
                 public const string Resources = "oi_rsrc";
                 public const string Scopes = "oi_scp";
                 public const string TokenId = "oi_tkn_id";
-                public const string TokenUsage = "oi_tkn_use";
+                public const string TokenType = "oi_tkn_typ";
                 public const string UserCodeLifetime = "oi_usrc_lft";
             }
         }
@@ -427,16 +427,6 @@ namespace OpenIddict.Abstractions
         public static class TokenTypes
         {
             public const string Bearer = "Bearer";
-        }
-
-        public static class TokenUsages
-        {
-            public const string AccessToken = "access_token";
-            public const string AuthorizationCode = "authorization_code";
-            public const string DeviceCode = "device_code";
-            public const string IdToken = "id_token";
-            public const string RefreshToken = "refresh_token";
-            public const string UserCode = "user_code";
         }
     }
 }

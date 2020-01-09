@@ -17,6 +17,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Core
 {
@@ -688,7 +689,7 @@ namespace OpenIddict.Core
                 yield return new ValidationResult("The scope name cannot be null or empty.");
             }
 
-            else if (name.Contains(OpenIddictConstants.Separators.Space[0]))
+            else if (name.Contains(Separators.Space[0]))
             {
                 yield return new ValidationResult("The scope name cannot contain spaces.");
             }

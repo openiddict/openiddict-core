@@ -18,6 +18,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Core
@@ -110,7 +111,7 @@ namespace OpenIddict.Core
             // If no status was explicitly specified, assume that the token is valid.
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
             {
-                await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Valid, cancellationToken);
+                await Store.SetStatusAsync(token, Statuses.Valid, cancellationToken);
             }
 
             // If a reference identifier was set, obfuscate it.
@@ -1022,12 +1023,12 @@ namespace OpenIddict.Core
             }
 
             var status = await Store.GetStatusAsync(token, cancellationToken);
-            if (string.Equals(status, OpenIddictConstants.Statuses.Redeemed, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(status, Statuses.Redeemed, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Redeemed, cancellationToken);
+            await Store.SetStatusAsync(token, Statuses.Redeemed, cancellationToken);
 
             try
             {
@@ -1070,12 +1071,12 @@ namespace OpenIddict.Core
             }
 
             var status = await Store.GetStatusAsync(token, cancellationToken);
-            if (string.Equals(status, OpenIddictConstants.Statuses.Rejected, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(status, Statuses.Rejected, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Rejected, cancellationToken);
+            await Store.SetStatusAsync(token, Statuses.Rejected, cancellationToken);
 
             try
             {
@@ -1118,12 +1119,12 @@ namespace OpenIddict.Core
             }
 
             var status = await Store.GetStatusAsync(token, cancellationToken);
-            if (string.Equals(status, OpenIddictConstants.Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(status, Statuses.Revoked, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            await Store.SetStatusAsync(token, OpenIddictConstants.Statuses.Revoked, cancellationToken);
+            await Store.SetStatusAsync(token, Statuses.Revoked, cancellationToken);
 
             try
             {
@@ -1266,11 +1267,11 @@ namespace OpenIddict.Core
                 yield return new ValidationResult("The token type cannot be null or empty.");
             }
 
-            else if (!string.Equals(type, OpenIddictConstants.TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, OpenIddictConstants.TokenUsages.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, OpenIddictConstants.TokenUsages.DeviceCode, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, OpenIddictConstants.TokenUsages.RefreshToken, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, OpenIddictConstants.TokenUsages.UserCode, StringComparison.OrdinalIgnoreCase))
+            else if (!string.Equals(type, TokenTypeHints.AccessToken, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, TokenTypeHints.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, TokenTypeHints.DeviceCode, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(type, TokenTypeHints.UserCode, StringComparison.OrdinalIgnoreCase))
             {
                 yield return new ValidationResult("The specified token type is not supported by the default token manager.");
             }
@@ -1281,8 +1282,8 @@ namespace OpenIddict.Core
             }
 
             if (string.IsNullOrEmpty(await Store.GetSubjectAsync(token, cancellationToken)) &&
-               !string.Equals(type, OpenIddictConstants.TokenUsages.DeviceCode, StringComparison.OrdinalIgnoreCase) &&
-               !string.Equals(type, OpenIddictConstants.TokenUsages.UserCode, StringComparison.OrdinalIgnoreCase))
+               !string.Equals(type, TokenTypeHints.DeviceCode, StringComparison.OrdinalIgnoreCase) &&
+               !string.Equals(type, TokenTypeHints.UserCode, StringComparison.OrdinalIgnoreCase))
             {
                 yield return new ValidationResult("The subject cannot be null or empty.");
             }

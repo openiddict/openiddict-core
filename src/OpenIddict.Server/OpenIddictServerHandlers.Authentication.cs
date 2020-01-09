@@ -33,7 +33,7 @@ namespace OpenIddict.Server
                 ApplyAuthorizationResponse<ProcessChallengeContext>.Descriptor,
                 ApplyAuthorizationResponse<ProcessErrorContext>.Descriptor,
                 ApplyAuthorizationResponse<ProcessRequestContext>.Descriptor,
-                ApplyAuthorizationResponse<ProcessSigninContext>.Descriptor,
+                ApplyAuthorizationResponse<ProcessSignInContext>.Descriptor,
 
                 /*
                  * Authorization request validation:
@@ -80,7 +80,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractAuthorizationRequest>()
-                        .SetOrder(int.MinValue + 100_000)
+                        .SetOrder(100_000)
                         .Build();
 
                 /// <summary>
@@ -207,7 +207,7 @@ namespace OpenIddict.Server
 
                     if (string.IsNullOrEmpty(notification.RedirectUri))
                     {
-                        throw new InvalidOperationException("The request cannot be validated because no client_id was specified.");
+                        throw new InvalidOperationException("The request cannot be validated because no redirect_uri was specified.");
                     }
 
                     context.Logger.LogInformation("The authorization request was successfully validated.");
@@ -278,7 +278,7 @@ namespace OpenIddict.Server
 
                     if (notification.Principal != null)
                     {
-                        var @event = new ProcessSigninContext(context.Transaction)
+                        var @event = new ProcessSignInContext(context.Transaction)
                         {
                             Principal = notification.Principal,
                             Response = new OpenIddictResponse()
@@ -295,6 +295,15 @@ namespace OpenIddict.Server
                         else if (@event.IsRequestSkipped)
                         {
                             context.SkipRequest();
+                            return;
+                        }
+
+                        else if (@event.IsRejected)
+                        {
+                            context.Reject(
+                                error: @event.Error ?? Errors.InvalidRequest,
+                                description: @event.ErrorDescription,
+                                uri: @event.ErrorUri);
                             return;
                         }
                     }
@@ -424,7 +433,7 @@ namespace OpenIddict.Server
                 /// </summary>
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
-                        .UseSingletonHandler<ValidateRedirectUriParameter>()
+                        .UseSingletonHandler<ValidateRequestUriParameter>()
                         .SetOrder(ValidateRequestParameter.Descriptor.Order + 1_000)
                         .Build();
 
@@ -645,7 +654,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnsupportedResponseType,
-                            description: "The specified 'response_type' parameter is not supported.");
+                            description: "The specified 'response_type' parameter is not allowed.");
 
                         return default;
                     }
@@ -941,6 +950,35 @@ namespace OpenIddict.Server
                         return default;
                     }
 
+                    // If the plain code challenge method was not explicitly enabled,
+                    // reject the request indicating that a method must be set.
+                    if (string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
+                        !context.Options.CodeChallengeMethods.Contains(CodeChallengeMethods.Plain))
+                    {
+                        context.Logger.LogError("The authorization request was rejected because the " +
+                                                "required 'code_challenge_method' parameter was missing.");
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The 'code_challenge_method' parameter must be specified.");
+
+                        return default;
+                    }
+
+                    // If a code_challenge_method was specified, ensure the algorithm is supported.
+                    if (!string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
+                        !context.Options.CodeChallengeMethods.Contains(context.Request.CodeChallengeMethod))
+                    {
+                        context.Logger.LogError("The authorization request was rejected because " +
+                                                "the specified code challenge method was not supported.");
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: "The specified 'code_challenge_method' parameter is not supported.");
+
+                        return default;
+                    }
+
                     // When code_challenge or code_challenge_method is specified, ensure the response_type includes "code".
                     if (!context.Request.HasResponseType(ResponseTypes.Code))
                     {
@@ -964,21 +1002,6 @@ namespace OpenIddict.Server
                         context.Reject(
                             error: Errors.InvalidRequest,
                             description: "The specified 'response_type' parameter is not allowed when using PKCE.");
-
-                        return default;
-                    }
-
-                    // If a code_challenge_method was specified, ensure the algorithm is supported.
-                    if (!string.IsNullOrEmpty(context.Request.CodeChallengeMethod) &&
-                        !string.Equals(context.Request.CodeChallengeMethod, CodeChallengeMethods.Plain, StringComparison.Ordinal) &&
-                        !string.Equals(context.Request.CodeChallengeMethod, CodeChallengeMethods.Sha256, StringComparison.Ordinal))
-                    {
-                        context.Logger.LogError("The authorization request was rejected because " +
-                                                "the specified code challenge method was not supported.");
-
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: "The specified code_challenge_method is not supported'.");
 
                         return default;
                     }

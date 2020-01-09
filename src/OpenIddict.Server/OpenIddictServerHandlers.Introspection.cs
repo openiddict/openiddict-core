@@ -79,7 +79,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractIntrospectionRequest>()
-                        .SetOrder(int.MinValue + 100_000)
+                        .SetOrder(100_000)
                         .Build();
 
                 /// <summary>
@@ -1035,7 +1035,7 @@ namespace OpenIddict.Server
                     }
 
                     context.TokenId = context.Principal.GetClaim(Claims.JwtId);
-                    context.TokenUsage = context.Principal.GetTokenUsage();
+                    context.TokenUsage = context.Principal.GetTokenType();
                     context.Subject = context.Principal.GetClaim(Claims.Subject);
 
                     context.IssuedAt = context.NotBefore = context.Principal.GetCreationDate();
