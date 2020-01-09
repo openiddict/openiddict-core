@@ -1646,7 +1646,7 @@ namespace OpenIddict.Server.FunctionalTests
         [InlineData(null, "custom_description", "custom_uri")]
         [InlineData(null, null, "custom_uri")]
         [InlineData(null, null, null)]
-        public async Task ProcessSignIn_AllowsRejectingAuthorizationRequest(string error, string description, string uri)
+        public async Task ProcessSignIn_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
             var client = CreateClient(options =>
@@ -1669,44 +1669,6 @@ namespace OpenIddict.Server.FunctionalTests
                 RedirectUri = "http://www.fabrikam.com/path",
                 ResponseType = ResponseTypes.Code,
                 Scope = Scopes.OpenId
-            });
-
-            // Assert
-            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
-            Assert.Equal(description, response.ErrorDescription);
-            Assert.Equal(uri, response.ErrorUri);
-        }
-
-        [Theory]
-        [InlineData("custom_error", null, null)]
-        [InlineData("custom_error", "custom_description", null)]
-        [InlineData("custom_error", "custom_description", "custom_uri")]
-        [InlineData(null, "custom_description", null)]
-        [InlineData(null, "custom_description", "custom_uri")]
-        [InlineData(null, null, "custom_uri")]
-        [InlineData(null, null, null)]
-        public async Task ProcessSignIn_AllowsRejectingTokenRequest(string error, string description, string uri)
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessSignInContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.Reject(error, description, uri);
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
             });
 
             // Assert
@@ -2832,6 +2794,95 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.NotNull(response.Code);
 
             Mock.Get(manager).Verify(manager => manager.CreateAsync(It.IsAny<OpenIddictAuthorizationDescriptor>(), It.IsAny<CancellationToken>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task ProcessSignOut_InvalidEndpointCausesAnException()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetConfigurationEndpointUris("/signout");
+
+                options.AddEventHandler<HandleConfigurationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/signout");
+            });
+
+            Assert.Equal("An OpenID Connect response cannot be returned from this endpoint.", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("custom_error", null, null)]
+        [InlineData("custom_error", "custom_description", null)]
+        [InlineData("custom_error", "custom_description", "custom_uri")]
+        [InlineData(null, "custom_description", null)]
+        [InlineData(null, "custom_description", "custom_uri")]
+        [InlineData(null, null, "custom_uri")]
+        [InlineData(null, null, null)]
+        public async Task ProcessSignOut_AllowsRejectingRequest(string error, string description, string uri)
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessSignOutContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Reject(error, description, uri);
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
+
+            // Assert
+            Assert.Equal(error ?? Errors.InvalidRequest, response.Error);
+            Assert.Equal(description, response.ErrorDescription);
+            Assert.Equal(uri, response.ErrorUri);
+        }
+
+        [Fact]
+        public async Task ProcessSignOut_AllowsHandlingResponse()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessSignOutContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Transaction.SetProperty("custom_response", new
+                        {
+                            name = "Bob le Bricoleur"
+                        });
+
+                        context.HandleRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
+
+            // Assert
+            Assert.Equal("Bob le Bricoleur", (string) response["name"]);
         }
 
         protected virtual void ConfigureServices(IServiceCollection services)
