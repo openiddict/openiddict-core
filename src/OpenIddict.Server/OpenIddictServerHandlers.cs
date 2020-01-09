@@ -98,7 +98,12 @@ namespace OpenIddict.Server
 
             BeautifyUserCode.Descriptor,
             AttachAccessTokenProperties.Descriptor,
-            AttachDeviceCodeProperties.Descriptor)
+            AttachDeviceCodeProperties.Descriptor,
+
+            /*
+             * Sign-out processing:
+             */
+            ValidateSignOutDemand.Descriptor)
 
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Device.DefaultHandlers)
@@ -4047,6 +4052,44 @@ namespace OpenIddict.Server
                 if (date.HasValue && date.Value > DateTimeOffset.UtcNow)
                 {
                     context.Response.ExpiresIn = (long) ((date.Value - DateTimeOffset.UtcNow).TotalSeconds + .5);
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of ensuring that the sign-out demand
+        /// is compatible with the type of the endpoint that handled the request.
+        /// </summary>
+        public class ValidateSignOutDemand : IOpenIddictServerHandler<ProcessSignOutContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                    .UseSingletonHandler<ValidateSignOutDemand>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessSignOutContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.EndpointType != OpenIddictServerEndpointType.Logout)
+                {
+                    throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
 
                 return default;
