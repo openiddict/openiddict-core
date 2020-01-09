@@ -18,6 +18,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 #if !SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
 using Org.BouncyCastle.Crypto;
@@ -139,8 +140,7 @@ namespace OpenIddict.Core
             if (string.IsNullOrEmpty(type))
             {
                 await Store.SetClientTypeAsync(application, string.IsNullOrEmpty(secret) ?
-                    OpenIddictConstants.ClientTypes.Public :
-                    OpenIddictConstants.ClientTypes.Confidential, cancellationToken);
+                    ClientTypes.Public : ClientTypes.Confidential, cancellationToken);
             }
 
             // If a client secret was provided, obfuscate it.
@@ -479,7 +479,7 @@ namespace OpenIddict.Core
             var type = await Store.GetConsentTypeAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                return OpenIddictConstants.ConsentTypes.Explicit;
+                return ConsentTypes.Explicit;
             }
 
             return type;
@@ -669,7 +669,7 @@ namespace OpenIddict.Core
                 return false;
             }
 
-            return string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -691,7 +691,7 @@ namespace OpenIddict.Core
                 return false;
             }
 
-            return string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(type, ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -714,7 +714,7 @@ namespace OpenIddict.Core
                 return true;
             }
 
-            return string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1027,9 +1027,9 @@ namespace OpenIddict.Core
             else
             {
                 // Ensure the application type is supported by the manager.
-                if (!string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(type, OpenIddictConstants.ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(type, ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return new ValidationResult("Only 'confidential', 'hybrid' or 'public' applications are " +
                                                       "supported by the default application manager.");
@@ -1037,15 +1037,13 @@ namespace OpenIddict.Core
 
                 // Ensure a client secret was specified if the client is a confidential application.
                 var secret = await Store.GetClientSecretAsync(application, cancellationToken);
-                if (string.IsNullOrEmpty(secret) &&
-                    string.Equals(type, OpenIddictConstants.ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return new ValidationResult("The client secret cannot be null or empty for a confidential application.");
                 }
 
                 // Ensure no client secret was specified if the client is a public application.
-                else if (!string.IsNullOrEmpty(secret) &&
-                          string.Equals(type, OpenIddictConstants.ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
+                else if (!string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return new ValidationResult("A client secret cannot be associated with a public application.");
                 }

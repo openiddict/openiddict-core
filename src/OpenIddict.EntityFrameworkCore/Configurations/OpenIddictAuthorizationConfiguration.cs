@@ -50,6 +50,9 @@ namespace OpenIddict.EntityFrameworkCore
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
+            builder.Property(authorization => authorization.Id)
+                   .ValueGeneratedOnAdd();
+
             builder.Property(authorization => authorization.Status)
                    .HasMaxLength(25)
                    .IsRequired();

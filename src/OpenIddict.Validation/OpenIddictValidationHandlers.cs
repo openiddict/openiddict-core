@@ -130,7 +130,7 @@ namespace OpenIddict.Validation
                 }
 
                 var type = await _tokenManager.GetTypeAsync(token);
-                if (!string.Equals(type, TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(type, TokenTypeHints.AccessToken, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -221,7 +221,17 @@ namespace OpenIddict.Validation
 
                 // Attach the principal extracted from the token to the parent event context.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
-                context.Principal.SetClaim(Claims.Private.TokenUsage, TokenUsages.AccessToken);
+                context.Principal.SetClaim(Claims.Private.TokenType, TokenTypeHints.AccessToken);
+
+                // Map the standardized "azp" and "scope" claims to their "oi_" equivalent so that
+                // the ClaimsPrincipal extensions exposed by OpenIddict return consistent results.
+                context.Principal.SetPresenters(context.Principal.GetClaims(Claims.AuthorizedParty));
+
+                // Note: starting in OpenIddict 3.0, the public "scope" claim is formatted
+                // as a unique space-separated string containing all the granted scopes.
+                // Visit https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03 for more information.
+                context.Principal.SetScopes(context.Principal.GetClaim(Claims.Scope)
+                    ?.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries));
 
                 context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
                                         "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
@@ -286,7 +296,7 @@ namespace OpenIddict.Validation
                     .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
                     .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                     .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                    .SetClaim(Claims.Private.TokenUsage, await _tokenManager.GetTypeAsync(token));
+                    .SetClaim(Claims.Private.TokenType, await _tokenManager.GetTypeAsync(token));
             }
         }
 

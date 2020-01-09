@@ -19,4 +19,4 @@ os:
   - osx
 osx_image: xcode8.2
 script:
-  - ./eng/common/cibuild.sh -configuration Release -prepareMachine
+  - ./eng/common/cibuild.sh -configuration Release -prepareMachine -integrationTest

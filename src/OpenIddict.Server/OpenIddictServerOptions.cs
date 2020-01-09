@@ -238,6 +238,12 @@ namespace OpenIddict.Server
         public bool DisableScopeValidation { get; set; }
 
         /// <summary>
+        /// Gets the OAuth 2.0 code challenge methods enabled for this application.
+        /// By default, only the S256 method is allowed (if the code flow is enabled).
+        /// </summary>
+        public ISet<string> CodeChallengeMethods { get; } = new HashSet<string>(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect flows enabled for this application.
         /// </summary>
         public ISet<string> GrantTypes { get; } = new HashSet<string>(StringComparer.Ordinal);

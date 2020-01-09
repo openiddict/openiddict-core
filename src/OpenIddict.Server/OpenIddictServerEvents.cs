@@ -247,17 +247,6 @@ namespace OpenIddict.Server
             /// Gets the client identifier, or <c>null</c> if the client application is unknown.
             /// </summary>
             public string ClientId => Request.ClientId;
-
-            /// <summary>
-            /// Gets a boolean indicating whether the
-            /// <see cref="HandleAuthentication()"/> method was called.
-            /// </summary>
-            public bool IsHandled { get; private set; }
-
-            /// <summary>
-            /// Marks the authentication process as handled by the application code.
-            /// </summary>
-            public void HandleAuthentication() => IsHandled = true;
         }
 
         /// <summary>
@@ -334,12 +323,12 @@ namespace OpenIddict.Server
         /// <summary>
         /// Represents an event called when processing a sign-in response.
         /// </summary>
-        public class ProcessSigninContext : BaseValidatingTicketContext
+        public class ProcessSignInContext : BaseValidatingTicketContext
         {
             /// <summary>
-            /// Creates a new instance of the <see cref="ProcessSigninContext"/> class.
+            /// Creates a new instance of the <see cref="ProcessSignInContext"/> class.
             /// </summary>
-            public ProcessSigninContext([NotNull] OpenIddictServerTransaction transaction)
+            public ProcessSignInContext([NotNull] OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }
@@ -432,12 +421,12 @@ namespace OpenIddict.Server
         /// <summary>
         /// Represents an event called when processing a sign-out response.
         /// </summary>
-        public class ProcessSignoutContext : BaseValidatingContext
+        public class ProcessSignOutContext : BaseValidatingContext
         {
             /// <summary>
-            /// Creates a new instance of the <see cref="ProcessSignoutContext"/> class.
+            /// Creates a new instance of the <see cref="ProcessSignOutContext"/> class.
             /// </summary>
-            public ProcessSignoutContext([NotNull] OpenIddictServerTransaction transaction)
+            public ProcessSignOutContext([NotNull] OpenIddictServerTransaction transaction)
                 : base(transaction)
             {
             }

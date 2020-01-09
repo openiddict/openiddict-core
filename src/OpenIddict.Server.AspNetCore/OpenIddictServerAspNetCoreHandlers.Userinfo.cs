@@ -18,7 +18,7 @@ namespace OpenIddict.Server.AspNetCore
                 /*
                  * Userinfo request extraction:
                  */
-                ExtractGetRequest<ExtractUserinfoRequestContext>.Descriptor,
+                ExtractGetOrPostRequest<ExtractUserinfoRequestContext>.Descriptor,
                 ExtractAccessToken<ExtractUserinfoRequestContext>.Descriptor,
 
                 /*

@@ -56,6 +56,9 @@ namespace OpenIddict.EntityFrameworkCore
                    .HasMaxLength(50)
                    .IsConcurrencyToken();
 
+            builder.Property(token => token.Id)
+                   .ValueGeneratedOnAdd();
+
             builder.Property(token => token.ReferenceId)
                    .HasMaxLength(100);
 

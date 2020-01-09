@@ -1,4 +1,4 @@
-﻿# OpenIddict
+﻿# OpenIddict :santa:
 ### The OpenID Connect server you'll be addicted to.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/46ofo2eusje0hcw2/branch/dev?svg=true)](https://ci.appveyor.com/project/openiddict/openiddict-core/branch/dev)
@@ -6,6 +6,15 @@
 
 > **Warning: this branch contains the OpenIddict 3.0 source code, which is still a work in progress. The 3.0.0 alpha packages haven't been heavily tested: don't use them in production**.
 Nightly builds can be downloaded from the MyGet repository: https://www.myget.org/F/openiddict/api/v3/index.json
+
+### Compatibility matrix
+
+|                  | OpenIddict 1.0     | OpenIddict 2.0     | OpenIddict 2.0.1   | OpenIddict 3.0 (alpha) |
+|------------------|--------------------|--------------------|--------------------|------------------------|
+| ASP.NET Core 1.x | :heavy_check_mark: | :x:                | :x:                | :x:                    |
+| ASP.NET Core 2.x | :x:                | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:     |
+| ASP.NET Core 3.x | :x:                | :warning:          | :heavy_check_mark: | :heavy_check_mark:     |
+| ASP.NET 4.x/OWIN | :x:                | :x:                | :x:                | :heavy_check_mark:     |
 
 ### What's OpenIddict?
 

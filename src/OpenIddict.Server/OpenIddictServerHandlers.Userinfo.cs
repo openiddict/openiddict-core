@@ -61,7 +61,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                         .UseScopedHandler<ExtractUserinfoRequest>()
-                        .SetOrder(int.MinValue + 100_000)
+                        .SetOrder(100_000)
                         .Build();
 
                 /// <summary>
