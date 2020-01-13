@@ -53,6 +53,42 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void GetPrompts_ThrowsAnExceptionForNullRequest()
+        {
+            // Arrange
+            var request = (OpenIddictRequest) null;
+
+            // Act
+            var exception = Assert.Throws<ArgumentNullException>(() => request.GetPrompts());
+
+            // Assert
+            Assert.Equal("request", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null, new string[0])]
+        [InlineData("login", new[] { "login" })]
+        [InlineData("login ", new[] { "login" })]
+        [InlineData(" login ", new[] { "login" })]
+        [InlineData("login consent", new[] { "login", "consent" })]
+        [InlineData("login     consent", new[] { "login", "consent" })]
+        [InlineData("login consent ", new[] { "login", "consent" })]
+        [InlineData(" login consent", new[] { "login", "consent" })]
+        [InlineData("login login consent", new[] { "login", "consent" })]
+        [InlineData("login LOGIN consent", new[] { "login", "LOGIN", "consent" })]
+        public void GetPrompts_ReturnsExpectedPrompts(string value, string[] values)
+        {
+            // Arrange
+            var request = new OpenIddictRequest
+            {
+                Prompt = value
+            };
+
+            // Act and assert
+            Assert.Equal(values, request.GetPrompts());
+        }
+
+        [Fact]
         public void GetResponseTypes_ThrowsAnExceptionForNullRequest()
         {
             // Arrange

@@ -45,6 +45,25 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Extracts the prompt values from an <see cref="OpenIddictRequest"/>.
+        /// </summary>
+        /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+        public static ImmutableArray<string> GetPrompts([NotNull] this OpenIddictRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (string.IsNullOrEmpty(request.Prompt))
+            {
+                return ImmutableArray.Create<string>();
+            }
+
+            return GetValues(request.Prompt, Separators.Space).Distinct(StringComparer.Ordinal).ToImmutableArray();
+        }
+
+        /// <summary>
         /// Extracts the response types from an <see cref="OpenIddictRequest"/>.
         /// </summary>
         /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
