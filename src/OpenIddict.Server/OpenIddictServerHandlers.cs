@@ -1022,7 +1022,7 @@ namespace OpenIddict.Server
                     case OpenIddictServerEndpointType.Verification:
                         return default;
 
-                    default: throw new InvalidOperationException("No challenge can be triggered from this endpoint.");
+                    default: throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
             }
         }

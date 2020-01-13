@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -312,9 +313,20 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
 
                     else if (context.Request.Path == "/challenge")
                     {
-                        await context.ChallengeAsync(
-                            OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                            new AuthenticationProperties());
+                        await context.ChallengeAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+                        return;
+                    }
+
+                    else if (context.Request.Path == "/challenge/custom")
+                    {
+                        var properties = new AuthenticationProperties(new Dictionary<string, string>
+                        {
+                            [OpenIddictServerAspNetCoreConstants.Properties.Error] = "custom_error",
+                            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "custom_error_description",
+                            [OpenIddictServerAspNetCoreConstants.Properties.ErrorUri] = "custom_error_uri"
+                        });
+
+                        await context.ChallengeAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, properties);
                         return;
                     }
 
