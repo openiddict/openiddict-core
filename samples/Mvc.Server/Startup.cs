@@ -182,6 +182,7 @@ namespace Mvc.Server
                 {
                     ClientId = "mvc",
                     ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+                    ConsentType = OpenIddictConstants.ConsentTypes.Explicit,
                     DisplayName = "MVC client application",
                     PostLogoutRedirectUris = { new Uri("http://localhost:53507/signout-callback-oidc") },
                     RedirectUris = { new Uri("http://localhost:53507/signin-oidc") },
@@ -219,8 +220,9 @@ namespace Mvc.Server
                 var descriptor = new OpenIddictApplicationDescriptor
                 {
                     ClientId = "postman",
+                    ConsentType = OpenIddictConstants.ConsentTypes.Systematic,
                     DisplayName = "Postman",
-                    RedirectUris = { new Uri("https://www.getpostman.com/oauth2/callback") },
+                    RedirectUris = { new Uri("urn:postman") },
                     Permissions =
                     {
                         OpenIddictConstants.Permissions.Endpoints.Authorization,

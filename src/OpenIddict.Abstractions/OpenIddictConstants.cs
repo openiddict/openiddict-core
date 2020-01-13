@@ -132,6 +132,7 @@ namespace OpenIddict.Abstractions
             public const string Explicit = "explicit";
             public const string External = "external";
             public const string Implicit = "implicit";
+            public const string Systematic = "systematic";
         }
 
         public static class Destinations
