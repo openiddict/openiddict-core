@@ -762,6 +762,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
             });
 
             // Act
@@ -1028,8 +1037,16 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-
                 options.RegisterScopes("registered_scope");
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
             });
 
             // Act
@@ -1070,6 +1087,15 @@ namespace OpenIddict.Server.FunctionalTests
                 options.RegisterScopes("scope_registered_in_options");
 
                 options.Services.AddSingleton(manager);
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
             });
 
             // Act
@@ -1664,6 +1690,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -1716,6 +1751,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableTokenStorage();
                 options.DisableSlidingExpiration();
@@ -1760,6 +1804,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -1821,6 +1874,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(manager);
             });
 
@@ -1875,6 +1937,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -1944,6 +2015,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(manager);
             });
 
@@ -1994,6 +2074,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -2077,6 +2166,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
                 {
@@ -2170,6 +2268,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -2258,6 +2365,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(manager);
             });
 
@@ -2320,6 +2436,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -2395,6 +2520,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(manager);
             });
 
@@ -2443,6 +2577,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -2509,6 +2652,7 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new OpenIddictAuthorization());
             });
+
             var client = CreateClient(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
@@ -2528,6 +2672,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
                 {
@@ -2597,6 +2750,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -2684,6 +2846,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -2765,6 +2936,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateTokenManager(mock =>
                 {
                     var token = new OpenIddictToken();
@@ -2836,6 +3016,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
                 {
@@ -2925,6 +3114,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -3072,6 +3270,15 @@ namespace OpenIddict.Server.FunctionalTests
             {
                 options.EnableDegradedMode();
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.AddEventHandler<ApplyTokenResponseContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
@@ -3105,6 +3312,15 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.AddEventHandler<ApplyTokenResponseContext>(builder =>
                     builder.UseInlineHandler(context =>

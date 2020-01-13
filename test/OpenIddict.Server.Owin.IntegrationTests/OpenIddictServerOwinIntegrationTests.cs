@@ -5,12 +5,14 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
+using Microsoft.Owin.Security;
 using Microsoft.Owin.Testing;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.FunctionalTests;
@@ -323,6 +325,19 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                     else if (context.Request.Path == new PathString("/challenge"))
                     {
                         context.Authentication.Challenge(OpenIddictServerOwinDefaults.AuthenticationType);
+                        return;
+                    }
+
+                    else if (context.Request.Path == new PathString("/challenge/custom"))
+                    {
+                        var properties = new AuthenticationProperties(new Dictionary<string, string>
+                        {
+                            [OpenIddictServerOwinConstants.Properties.Error] = "custom_error",
+                            [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "custom_error_description",
+                            [OpenIddictServerOwinConstants.Properties.ErrorUri] = "custom_error_uri"
+                        });
+
+                        context.Authentication.Challenge(properties, OpenIddictServerOwinDefaults.AuthenticationType);
                         return;
                     }
 
