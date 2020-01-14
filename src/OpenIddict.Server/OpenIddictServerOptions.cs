@@ -219,6 +219,13 @@ namespace OpenIddict.Server
         };
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether access token encryption should be disabled.
+        /// Disabling encryption is NOT recommended and SHOULD only be done when issuing tokens
+        /// to third-party resource servers/APIs you don't control and don't fully trust.
+        /// </summary>
+        public bool DisableAccessTokenEncryption { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether authorization storage should be disabled.
         /// When disabled, ad-hoc authorizations are not created when an authorization code or
         /// refresh token is issued and can't be revoked to prevent associated tokens from being used.
