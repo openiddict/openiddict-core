@@ -2729,12 +2729,13 @@ namespace OpenIddict.Server
                     Subject = (ClaimsIdentity) principal.Identity
                 });
 
-                var credentials = context.Options.EncryptionCredentials.FirstOrDefault(
-                    credentials => credentials.Key is SymmetricSecurityKey);
-                if (credentials != null)
+                if (!context.Options.DisableAccessTokenEncryption)
                 {
-                    token = context.Options.JsonWebTokenHandler.EncryptToken(
-                        token, credentials, new Dictionary<string, object>(StringComparer.Ordinal)
+                    token = context.Options.JsonWebTokenHandler.EncryptToken(token,
+                        context.Options.EncryptionCredentials.FirstOrDefault(
+                            credentials => credentials.Key is SymmetricSecurityKey) ??
+                            context.Options.EncryptionCredentials.First(),
+                        new Dictionary<string, object>(StringComparer.Ordinal)
                         {
                             [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AccessToken
                         });
@@ -2912,7 +2913,9 @@ namespace OpenIddict.Server
                 // Sign and encrypt the authorization code.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    context.Options.EncryptionCredentials.First(),
+                    context.Options.EncryptionCredentials.FirstOrDefault(
+                        credentials => credentials.Key is SymmetricSecurityKey) ??
+                        context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationCode
@@ -3089,7 +3092,9 @@ namespace OpenIddict.Server
                 // Sign and encrypt the device code.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    context.Options.EncryptionCredentials.First(),
+                    context.Options.EncryptionCredentials.FirstOrDefault(
+                        credentials => credentials.Key is SymmetricSecurityKey) ??
+                        context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.DeviceCode
@@ -3367,7 +3372,9 @@ namespace OpenIddict.Server
                 // Sign and encrypt the refresh token.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    context.Options.EncryptionCredentials.First(),
+                    context.Options.EncryptionCredentials.FirstOrDefault(
+                        credentials => credentials.Key is SymmetricSecurityKey) ??
+                        context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.RefreshToken
@@ -3573,7 +3580,9 @@ namespace OpenIddict.Server
                 });
 
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    context.Options.EncryptionCredentials.First(),
+                    context.Options.EncryptionCredentials.FirstOrDefault(
+                        credentials => credentials.Key is SymmetricSecurityKey) ??
+                        context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.UserCode

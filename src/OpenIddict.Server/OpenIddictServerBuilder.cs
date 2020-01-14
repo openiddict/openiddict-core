@@ -1622,6 +1622,15 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Disables JWT access token encryption (this option doesn't affect Data Protection tokens).
+        /// Disabling encryption is NOT recommended and SHOULD only be done when issuing tokens
+        /// to third-party resource servers/APIs you don't control and don't fully trust.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder DisableAccessTokenEncryption()
+            => Configure(options => options.DisableAccessTokenEncryption = true);
+
+        /// <summary>
         /// Disables authorization storage so that ad-hoc authorizations are
         /// not created when an authorization code or refresh token is issued
         /// and can't be revoked to prevent associated tokens from being used.

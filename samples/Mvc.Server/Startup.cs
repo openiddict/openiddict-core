@@ -114,6 +114,11 @@ namespace Mvc.Server
                     // options.IgnoreEndpointPermissions()
                     //        .IgnoreGrantTypePermissions()
                     //        .IgnoreScopePermissions();
+
+                    // Note: when issuing access tokens used by third-party APIs
+                    // you don't own, you can disable access token encryption:
+                    //
+                    // options.DisableAccessTokenEncryption();
                 })
 
                 // Register the OpenIddict validation components.
