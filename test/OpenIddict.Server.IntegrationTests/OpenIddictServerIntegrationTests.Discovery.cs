@@ -245,19 +245,19 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
-        public async Task HandleConfigurationRequest_EnabledEndpointsAreExposed()
+        public async Task HandleConfigurationRequest_AbsoluteEndpointsAreCorrectlyExposed()
         {
             // Arrange
             var client = CreateClient(options =>
             {
-                options.SetIssuer(new Uri("https://www.fabrikam.com/"));
-
-                options.SetAuthorizationEndpointUris("/path/authorization_endpoint")
-                       .SetIntrospectionEndpointUris("/path/introspection_endpoint")
-                       .SetLogoutEndpointUris("/path/logout_endpoint")
-                       .SetRevocationEndpointUris("/path/revocation_endpoint")
-                       .SetTokenEndpointUris("/path/token_endpoint")
-                       .SetUserinfoEndpointUris("/path/userinfo_endpoint");
+                options.SetAuthorizationEndpointUris("https://www.fabrikam.com/path/authorization_endpoint")
+                       .SetCryptographyEndpointUris("https://www.fabrikam.com/path/cryptography_endpoint")
+                       .SetDeviceEndpointUris("https://www.fabrikam.com/path/device_endpoint")
+                       .SetIntrospectionEndpointUris("https://www.fabrikam.com/path/introspection_endpoint")
+                       .SetLogoutEndpointUris("https://www.fabrikam.com/path/logout_endpoint")
+                       .SetRevocationEndpointUris("https://www.fabrikam.com/path/revocation_endpoint")
+                       .SetTokenEndpointUris("https://www.fabrikam.com/path/token_endpoint")
+                       .SetUserinfoEndpointUris("https://www.fabrikam.com/path/userinfo_endpoint");
             });
 
             // Act
@@ -266,6 +266,15 @@ namespace OpenIddict.Server.FunctionalTests
             // Assert
             Assert.Equal("https://www.fabrikam.com/path/authorization_endpoint",
                 (string) response[Metadata.AuthorizationEndpoint]);
+
+            Assert.Equal("https://www.fabrikam.com/path/cryptography_endpoint",
+                (string) response[Metadata.JwksUri]);
+
+            Assert.Equal("https://www.fabrikam.com/path/authorization_endpoint",
+                (string) response[Metadata.AuthorizationEndpoint]);
+
+            Assert.Equal("https://www.fabrikam.com/path/device_endpoint",
+                (string) response[Metadata.DeviceAuthorizationEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/introspection_endpoint",
                 (string) response[Metadata.IntrospectionEndpoint]);
@@ -280,6 +289,97 @@ namespace OpenIddict.Server.FunctionalTests
                 (string) response[Metadata.TokenEndpoint]);
 
             Assert.Equal("https://www.fabrikam.com/path/userinfo_endpoint",
+                (string) response[Metadata.UserinfoEndpoint]);
+        }
+
+        [Theory]
+        [InlineData("https://www.fabrikam.com/tenant1", new[]
+        {
+            "path/authorization_endpoint",
+            "path/cryptography_endpoint",
+            "path/device_endpoint",
+            "path/introspection_endpoint",
+            "path/logout_endpoint",
+            "path/revocation_endpoint",
+            "path/token_endpoint",
+            "path/userinfo_endpoint"
+        })]
+        [InlineData("https://www.fabrikam.com/tenant1/", new[]
+        {
+            "path/authorization_endpoint",
+            "path/cryptography_endpoint",
+            "path/device_endpoint",
+            "path/introspection_endpoint",
+            "path/logout_endpoint",
+            "path/revocation_endpoint",
+            "path/token_endpoint",
+            "path/userinfo_endpoint"
+        })]
+        [InlineData("https://www.fabrikam.com/tenant1", new[]
+        {
+            "/path/authorization_endpoint",
+            "/path/cryptography_endpoint",
+            "/path/device_endpoint",
+            "/path/introspection_endpoint",
+            "/path/logout_endpoint",
+            "/path/revocation_endpoint",
+            "/path/token_endpoint",
+            "/path/userinfo_endpoint"
+        })]
+        [InlineData("https://www.fabrikam.com/tenant1/", new[]
+        {
+            "/path/authorization_endpoint",
+            "/path/cryptography_endpoint",
+            "/path/device_endpoint",
+            "/path/introspection_endpoint",
+            "/path/logout_endpoint",
+            "/path/revocation_endpoint",
+            "/path/token_endpoint",
+            "/path/userinfo_endpoint"
+        })]
+        public async Task HandleConfigurationRequest_RelativeEndpointsAreCorrectlyComputed(string issuer, string[] endpoints)
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.SetIssuer(new Uri(issuer, UriKind.Absolute));
+
+                options.SetAuthorizationEndpointUris(endpoints[0])
+                       .SetCryptographyEndpointUris(endpoints[1])
+                       .SetDeviceEndpointUris(endpoints[2])
+                       .SetIntrospectionEndpointUris(endpoints[3])
+                       .SetLogoutEndpointUris(endpoints[4])
+                       .SetRevocationEndpointUris(endpoints[5])
+                       .SetTokenEndpointUris(endpoints[6])
+                       .SetUserinfoEndpointUris(endpoints[7]);
+            });
+
+            // Act
+            var response = await client.GetAsync("/.well-known/openid-configuration");
+
+            // Assert
+            Assert.Equal("https://www.fabrikam.com/tenant1/path/authorization_endpoint",
+                (string) response[Metadata.AuthorizationEndpoint]);
+
+            Assert.Equal("https://www.fabrikam.com/tenant1/path/cryptography_endpoint",
+                (string) response[Metadata.JwksUri]);
+
+            Assert.Equal("https://www.fabrikam.com/tenant1/path/device_endpoint",
+                (string) response[Metadata.DeviceAuthorizationEndpoint]);
+
+            Assert.Equal("https://www.fabrikam.com/tenant1/path/introspection_endpoint",
+                (string) response[Metadata.IntrospectionEndpoint]);
+
+            Assert.Equal("https://www.fabrikam.com/tenant1/path/logout_endpoint",
+                (string) response[Metadata.EndSessionEndpoint]);
+
+            Assert.Equal("https://www.fabrikam.com/tenant1/path/revocation_endpoint",
+                (string) response[Metadata.RevocationEndpoint]);
+
+            Assert.Equal("https://www.fabrikam.com/tenant1/path/token_endpoint",
+                (string) response[Metadata.TokenEndpoint]);
+
+            Assert.Equal("https://www.fabrikam.com/tenant1/path/userinfo_endpoint",
                 (string) response[Metadata.UserinfoEndpoint]);
         }
 

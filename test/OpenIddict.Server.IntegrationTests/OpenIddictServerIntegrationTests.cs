@@ -659,7 +659,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ProcessSignIn_UnknownEndpointCausesAnException()
         {
             // Arrange
-            var client = CreateClient();
+            var client = CreateClient(options => options.EnableDegradedMode());
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate

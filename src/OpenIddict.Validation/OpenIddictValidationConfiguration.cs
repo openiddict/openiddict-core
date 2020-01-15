@@ -60,6 +60,12 @@ namespace OpenIddict.Validation
                         options.Issuer = new Uri(options.Issuer.OriginalString + "/", UriKind.Absolute);
                     }
 
+                    if (options.MetadataAddress.OriginalString.StartsWith("/"))
+                    {
+                        options.MetadataAddress = new Uri(options.MetadataAddress.OriginalString.Substring(
+                            1, options.MetadataAddress.OriginalString.Length - 1), UriKind.Relative);
+                    }
+
                     options.MetadataAddress = new Uri(options.Issuer, options.MetadataAddress);
                 }
             }

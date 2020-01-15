@@ -1137,11 +1137,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.AuthorizationEndpointUris.Clear();
@@ -1187,11 +1182,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
             }
 
             return Configure(options =>
@@ -1241,11 +1231,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.CryptographyEndpointUris.Clear();
@@ -1291,11 +1276,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
             }
 
             return Configure(options =>
@@ -1345,11 +1325,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.IntrospectionEndpointUris.Clear();
@@ -1395,11 +1370,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
             }
 
             return Configure(options =>
@@ -1449,11 +1419,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.RevocationEndpointUris.Clear();
@@ -1499,11 +1464,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
             }
 
             return Configure(options =>
@@ -1553,11 +1513,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.UserinfoEndpointUris.Clear();
@@ -1603,11 +1558,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
             }
 
             return Configure(options =>

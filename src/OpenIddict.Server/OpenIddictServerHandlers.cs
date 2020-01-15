@@ -4038,15 +4038,9 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var endpoint = context.Options.VerificationEndpointUris.FirstOrDefault();
-                if (endpoint != null)
+                var address = GetEndpointAbsoluteUrl(context.Issuer, context.Options.VerificationEndpointUris.FirstOrDefault());
+                if (address != null)
                 {
-                    if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                    {
-                        throw new InvalidOperationException("An absolute URL cannot be built for the device endpoint path.");
-                    }
-
-                    var address = new Uri(context.Issuer, endpoint);
                     var builder = new UriBuilder(address)
                     {
                         Query = string.Concat(Parameters.UserCode, "=", context.Response.UserCode)
@@ -4064,6 +4058,43 @@ namespace OpenIddict.Server
                 }
 
                 return default;
+
+                static Uri GetEndpointAbsoluteUrl(Uri issuer, Uri endpoint)
+                {
+                    // If the endpoint is disabled (i.e a null address is specified), return null.
+                    if (endpoint == null)
+                    {
+                        return null;
+                    }
+
+                    // If the endpoint address is already an absolute URL, return it as-is.
+                    if (endpoint.IsAbsoluteUri)
+                    {
+                        return endpoint;
+                    }
+
+                    // At this stage, throw an exception if the issuer cannot be retrieved.
+                    if (issuer == null || !issuer.IsAbsoluteUri)
+                    {
+                        throw new InvalidOperationException("The issuer must be a non-null, non-empty absolute URL.");
+                    }
+
+                    // Ensure the issuer ends with a trailing slash, as it is necessary
+                    // for Uri's constructor to correctly compute correct absolute URLs.
+                    if (!issuer.OriginalString.EndsWith("/"))
+                    {
+                        issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
+                    }
+
+                    // Ensure the endpoint does not start with a leading slash, as it is necessary
+                    // for Uri's constructor to correctly compute correct absolute URLs.
+                    if (endpoint.OriginalString.StartsWith("/"))
+                    {
+                        endpoint = new Uri(endpoint.OriginalString.Substring(1, endpoint.OriginalString.Length - 1), UriKind.Relative);
+                    }
+
+                    return new Uri(issuer, endpoint);
+                }
             }
         }
 
