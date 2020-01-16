@@ -54,8 +54,8 @@ namespace OpenIddict.Server
                 ValidateClientSecret.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
                 ValidateGrantTypePermissions.Descriptor,
-                ValidateProofKeyForCodeExchangeRequirement.Descriptor,
                 ValidateScopePermissions.Descriptor,
+                ValidateProofKeyForCodeExchangeRequirement.Descriptor,
                 ValidateToken.Descriptor,
                 ValidatePresenters.Descriptor,
                 ValidateRedirectUri.Descriptor,
@@ -1171,6 +1171,83 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting token requests made by applications
+            /// that haven't been granted the appropriate grant type permission.
+            /// Note: this handler is not used when the degraded mode is enabled.
+            /// </summary>
+            public class ValidateScopePermissions : IOpenIddictServerHandler<ValidateTokenRequestContext>
+            {
+                private readonly IOpenIddictApplicationManager _applicationManager;
+
+                public ValidateScopePermissions() => throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                    .ToString());
+
+                public ValidateScopePermissions([NotNull] IOpenIddictApplicationManager applicationManager)
+                    => _applicationManager = applicationManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
+                        .AddFilter<RequireClientIdParameter>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .AddFilter<RequireScopePermissionsEnabled>()
+                        .UseScopedHandler<ValidateScopePermissions>()
+                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public async ValueTask HandleAsync([NotNull] ValidateTokenRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                    }
+
+                    foreach (var scope in context.Request.GetScopes())
+                    {
+                        // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
+                        if (string.Equals(scope, Scopes.OfflineAccess, StringComparison.Ordinal) ||
+                            string.Equals(scope, Scopes.OpenId, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+
+                        // Reject the request if the application is not allowed to use the iterated scope.
+                        if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
+                        {
+                            context.Logger.LogError("The token request was rejected because the application '{ClientId}' " +
+                                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+
+                            context.Reject(
+                                error: Errors.InvalidRequest,
+                                description: "This client application is not allowed to use the specified scope.");
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting token requests made by
             /// applications for which proof key for code exchange (PKCE) was enforced.
             /// Note: this handler is not used when the degraded mode is enabled.
@@ -1198,7 +1275,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireClientIdParameter>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateProofKeyForCodeExchangeRequirement>()
-                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateScopePermissions.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -1248,83 +1325,6 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting token requests made by applications
-            /// that haven't been granted the appropriate grant type permission.
-            /// Note: this handler is not used when the degraded mode is enabled.
-            /// </summary>
-            public class ValidateScopePermissions : IOpenIddictServerHandler<ValidateTokenRequestContext>
-            {
-                private readonly IOpenIddictApplicationManager _applicationManager;
-
-                public ValidateScopePermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
-
-                public ValidateScopePermissions([NotNull] IOpenIddictApplicationManager applicationManager)
-                    => _applicationManager = applicationManager;
-
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                        .AddFilter<RequireClientIdParameter>()
-                        .AddFilter<RequireDegradedModeDisabled>()
-                        .AddFilter<RequireScopePermissionsEnabled>()
-                        .UseScopedHandler<ValidateScopePermissions>()
-                        .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateTokenRequestContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
-                    {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
-                    }
-
-                    foreach (var scope in context.Request.GetScopes())
-                    {
-                        // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
-                        if (string.Equals(scope, Scopes.OfflineAccess, StringComparison.Ordinal) ||
-                            string.Equals(scope, Scopes.OpenId, StringComparison.Ordinal))
-                        {
-                            continue;
-                        }
-
-                        // Reject the request if the application is not allowed to use the iterated scope.
-                        if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
-                        {
-                            context.Logger.LogError("The token request was rejected because the application '{ClientId}' " +
-                                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
-
-                            context.Reject(
-                                error: Errors.InvalidRequest,
-                                description: "This client application is not allowed to use the specified scope.");
-
-                            return;
-                        }
-                    }
-                }
-            }
-
-            /// <summary>
             /// Contains the logic responsible of rejecting token requests that don't
             /// specify a valid authorization code, device code or refresh token.
             /// </summary>
@@ -1341,7 +1341,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                         .UseScopedHandler<ValidateToken>()
-                        .SetOrder(ValidateScopePermissions.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>

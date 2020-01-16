@@ -1192,133 +1192,6 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
-        public async Task ValidateTokenRequest_RequestIsRejectedWhenEndpointPermissionIsNotGranted()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                mock.Setup(manager => manager.HasPermissionAsync(application,
-                    Permissions.Endpoints.Token, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-            });
-
-            var client = CreateClient(options =>
-            {
-                options.Services.AddSingleton(manager);
-
-                options.Configure(options => options.IgnoreEndpointPermissions = false);
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            });
-
-            // Assert
-            Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal("This client application is not allowed to use the token endpoint.", response.ErrorDescription);
-
-            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Endpoints.Token, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ValidateTokenRequest_RequestIsRejectedWhenGrantTypePermissionIsNotGranted()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                mock.Setup(manager => manager.HasPermissionAsync(application,
-                    Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-            });
-
-            var client = CreateClient(options =>
-            {
-                options.Services.AddSingleton(manager);
-
-                options.Configure(options => options.IgnoreGrantTypePermissions = false);
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            });
-
-            // Assert
-            Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal("This client application is not allowed to use the specified grant type.", response.ErrorDescription);
-
-            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ValidateTokenRequest_RequestWithOfflineAccessScopeIsRejectedWhenRefreshTokenPermissionIsNotGranted()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                mock.Setup(manager => manager.HasPermissionAsync(application,
-                    Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.HasPermissionAsync(application,
-                    Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-            });
-
-            var client = CreateClient(options =>
-            {
-                options.Services.AddSingleton(manager);
-
-                options.Configure(options => options.IgnoreGrantTypePermissions = false);
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w",
-                Scope = Scopes.OfflineAccess
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The client application is not allowed to use the 'offline_access' scope.", response.ErrorDescription);
-
-            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
         public async Task ValidateTokenRequest_ClientCredentialsRequestFromPublicClientIsRejected()
         {
             // Arrange
@@ -1352,61 +1225,6 @@ namespace OpenIddict.Server.FunctionalTests
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ValidateTokenRequest_RequestIsRejectedWhenScopePermissionIsNotGranted()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Public);
-
-                mock.Setup(manager => manager.HasPermissionAsync(application,
-                    Permissions.Prefixes.Scope + Scopes.Profile, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(true);
-
-                mock.Setup(manager => manager.HasPermissionAsync(application,
-                    Permissions.Prefixes.Scope + Scopes.Email, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-            });
-
-            var client = CreateClient(options =>
-            {
-                options.Services.AddSingleton(manager);
-
-                options.RegisterScopes(Scopes.Email, Scopes.Profile);
-                options.Configure(options => options.IgnoreScopePermissions = false);
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w",
-                Scope = "openid offline_access profile email"
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
-
-            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Prefixes.Scope + Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
-            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Prefixes.Scope + Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
-            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Prefixes.Scope + Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
-            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
-                Permissions.Prefixes.Scope + Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -1563,6 +1381,358 @@ namespace OpenIddict.Server.FunctionalTests
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsRejectedWhenEndpointPermissionIsNotGranted()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasPermissionAsync(application,
+                    Permissions.Endpoints.Token, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.Configure(options => options.IgnoreEndpointPermissions = false);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.Equal(Errors.UnauthorizedClient, response.Error);
+            Assert.Equal("This client application is not allowed to use the token endpoint.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+                Permissions.Endpoints.Token, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsRejectedWhenGrantTypePermissionIsNotGranted()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasPermissionAsync(application,
+                    Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.Configure(options => options.IgnoreGrantTypePermissions = false);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.Equal(Errors.UnauthorizedClient, response.Error);
+            Assert.Equal("This client application is not allowed to use the specified grant type.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+                Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestWithOfflineAccessScopeIsRejectedWhenRefreshTokenPermissionIsNotGranted()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasPermissionAsync(application,
+                    Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasPermissionAsync(application,
+                    Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.Configure(options => options.IgnoreGrantTypePermissions = false);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w",
+                Scope = Scopes.OfflineAccess
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal("The client application is not allowed to use the 'offline_access' scope.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+                Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsRejectedWhenScopePermissionIsNotGranted()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ClientTypes.Public);
+
+                mock.Setup(manager => manager.HasPermissionAsync(application,
+                    Permissions.Prefixes.Scope + Scopes.Profile, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasPermissionAsync(application,
+                    Permissions.Prefixes.Scope + Scopes.Email, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.RegisterScopes(Scopes.Email, Scopes.Profile);
+                options.Configure(options => options.IgnoreScopePermissions = false);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w",
+                Scope = "openid offline_access profile email"
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+                Permissions.Prefixes.Scope + Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
+            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+                Permissions.Prefixes.Scope + Scopes.OfflineAccess, It.IsAny<CancellationToken>()), Times.Never());
+            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+                Permissions.Prefixes.Scope + Scopes.Profile, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
+                Permissions.Prefixes.Scope + Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsRejectedWhenCodeVerifierIsMissingWithPkceFeatureEnforced()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ClientTypes.Public);
+
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                CodeVerifier = null,
+                GrantType = GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal("The mandatory 'code_verifier' parameter is missing.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsValidatedWhenCodeVerifierIsMissingWithPkceFeatureNotEnforced()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ClientTypes.Public);
+
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetPresenters("Fabrikam")
+                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.Services.AddSingleton(manager);
+
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableTokenStorage();
+                options.DisableSlidingExpiration();
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                CodeVerifier = null,
+                GrantType = GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
+            });
+
+            // Assert
+            Assert.NotNull(response.AccessToken);
+
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsValidatedWhenCodeVerifierIsPresentWithPkceFeatureEnforced()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ClientTypes.Public);
+
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetPresenters("Fabrikam")
+                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur")
+                            .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
+                            .SetClaim(Claims.Private.CodeChallengeMethod, CodeChallengeMethods.Sha256);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.Services.AddSingleton(manager);
+
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableTokenStorage();
+                options.DisableSlidingExpiration();
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                CodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+                GrantType = GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
+            });
+
+            // Assert
+            Assert.NotNull(response.AccessToken);
+
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Theory]
