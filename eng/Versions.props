@@ -41,7 +41,6 @@
     <LinqAsyncVersion>4.0.0</LinqAsyncVersion>
     <MongoDbVersion>2.9.0</MongoDbVersion>
     <MoqVersion>4.13.1</MoqVersion>
-    <NHibernateVersion>5.2.2</NHibernateVersion>
     <OwinVersion>4.0.0</OwinVersion>
     <SystemTextJsonVersion>4.6.0</SystemTextJsonVersion>
     <TasksExtensionsVersion>4.5.3</TasksExtensionsVersion>
