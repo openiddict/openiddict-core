@@ -1283,6 +1283,151 @@ namespace OpenIddict.Server.FunctionalTests
                 Permissions.Prefixes.Scope + Scopes.Email, It.IsAny<CancellationToken>()), Times.Once());
         }
 
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeIsMissingWithPkceFeatureEnforced()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = null,
+                CodeChallengeMethod = null,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal("The mandatory 'code_challenge' parameter is missing.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenCodeChallengeIsMissingWithPkceFeatureNotEnforced()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = null,
+                CodeChallengeMethod = null,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.NotNull(response.Code);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenCodeChallengeIsPresentWithPkceFeatureEnforced()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+
+                options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                CodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                CodeChallengeMethod = CodeChallengeMethods.Sha256,
+                RedirectUri = "http://www.fabrikam.com/path",
+                ResponseType = ResponseTypes.Code
+            });
+
+            // Assert
+            Assert.NotNull(response.Code);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Never());
+        }
+
         [Theory]
         [InlineData("custom_error", null, null)]
         [InlineData("custom_error", "custom_description", null)]
