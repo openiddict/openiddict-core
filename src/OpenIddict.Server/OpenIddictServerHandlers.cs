@@ -1055,31 +1055,35 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Error))
+                // If error details were explicitly set by the application, don't override them.
+                if (!string.IsNullOrEmpty(context.Response.Error) ||
+                    !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
+                    !string.IsNullOrEmpty(context.Response.ErrorUri))
                 {
-                    context.Response.Error = context.EndpointType switch
-                    {
-                        OpenIddictServerEndpointType.Authorization => Errors.AccessDenied,
-                        OpenIddictServerEndpointType.Token         => Errors.InvalidGrant,
-                        OpenIddictServerEndpointType.Userinfo      => Errors.InvalidToken,
-                        OpenIddictServerEndpointType.Verification  => Errors.AccessDenied,
-
-                        _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
-                    };
+                    return default;
                 }
 
-                if (string.IsNullOrEmpty(context.Response.ErrorDescription))
+                context.Response.Error = context.EndpointType switch
                 {
-                    context.Response.ErrorDescription = context.EndpointType switch
-                    {
-                        OpenIddictServerEndpointType.Authorization => "The authorization was denied by the resource owner.",
-                        OpenIddictServerEndpointType.Token         => "The token request was rejected by the authorization server.",
-                        OpenIddictServerEndpointType.Userinfo      => "The access token is not valid or cannot be used to retrieve user information.",
-                        OpenIddictServerEndpointType.Verification  => "The authorization was denied by the resource owner.",
+                    OpenIddictServerEndpointType.Authorization => Errors.AccessDenied,
+                    OpenIddictServerEndpointType.Token         => Errors.InvalidGrant,
+                    OpenIddictServerEndpointType.Userinfo      => Errors.InsufficientAccess,
+                    OpenIddictServerEndpointType.Verification  => Errors.AccessDenied,
 
-                        _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
-                    };
-                }
+                    _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
+                };
+
+                context.Response.ErrorDescription = context.EndpointType switch
+                {
+                    OpenIddictServerEndpointType.Authorization => "The authorization was denied by the resource owner.",
+                    OpenIddictServerEndpointType.Token         => "The token request was rejected by the authorization server.",
+                    OpenIddictServerEndpointType.Userinfo      => "The user information access demand was rejected by the authorization server.",
+                    OpenIddictServerEndpointType.Verification  => "The authorization was denied by the resource owner.",
+
+                    _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
+                };
+
+                context.Response.Realm = context.Options.Realm;
 
                 return default;
             }

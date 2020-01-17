@@ -112,6 +112,10 @@ namespace OpenIddict.Server.Owin
             {
                 context = new ProcessAuthenticationContext(transaction);
                 await _provider.DispatchAsync(context);
+
+                // Store the context object in the transaction so it can be later retrieved by handlers
+                // that want to access the authentication result without triggering a new authentication flow.
+                transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName, context);
             }
 
             if (context.IsRequestHandled || context.IsRequestSkipped)

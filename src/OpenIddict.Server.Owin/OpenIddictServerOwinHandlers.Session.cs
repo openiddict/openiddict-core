@@ -50,8 +50,10 @@ namespace OpenIddict.Server.Owin
                  * Logout response processing:
                  */
                 RemoveCachedRequest.Descriptor,
+                AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
+                AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
                 ProcessQueryResponse.Descriptor,
-                ProcessHostRedirectionResponse<ApplyVerificationResponseContext>.Descriptor,
+                ProcessHostRedirectionResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
                 ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);

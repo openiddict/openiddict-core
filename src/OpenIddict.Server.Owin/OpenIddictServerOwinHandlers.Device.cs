@@ -23,6 +23,9 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Device response processing:
                  */
+                AttachHttpResponseCode<ApplyDeviceResponseContext>.Descriptor,
+                AttachCacheControlHeader<ApplyDeviceResponseContext>.Descriptor,
+                AttachWwwAuthenticateHeader<ApplyDeviceResponseContext>.Descriptor,
                 ProcessJsonResponse<ApplyDeviceResponseContext>.Descriptor,
 
                 /*
@@ -38,6 +41,8 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Verification response processing:
                  */
+                AttachHttpResponseCode<ApplyVerificationResponseContext>.Descriptor,
+                AttachCacheControlHeader<ApplyVerificationResponseContext>.Descriptor,
                 ProcessHostRedirectionResponse<ApplyVerificationResponseContext>.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyVerificationResponseContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor,
                 ProcessLocalErrorResponse<ApplyVerificationResponseContext>.Descriptor,

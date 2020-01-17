@@ -148,6 +148,8 @@ namespace OpenIddict.Abstractions
             public const string AuthorizationPending = "authorization_pending";
             public const string ConsentRequired = "consent_required";
             public const string ExpiredToken = "expired_token";
+            public const string InsufficientAccess = "insufficient_access";
+            public const string InsufficientScope = "insufficient_scope";
             public const string InteractionRequired = "interaction_required";
             public const string InvalidClient = "invalid_client";
             public const string InvalidGrant = "invalid_grant";

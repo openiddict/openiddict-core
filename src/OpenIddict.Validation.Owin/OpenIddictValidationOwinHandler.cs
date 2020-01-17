@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,6 @@ using Microsoft.Owin.Security.Infrastructure;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
-using Properties = OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants.Properties;
 
 namespace OpenIddict.Validation.Owin
 {
@@ -104,25 +104,35 @@ namespace OpenIddict.Validation.Owin
                 throw new InvalidOperationException("An identity cannot be extracted from this request.");
             }
 
-            var context = new ProcessAuthenticationContext(transaction);
-            await _provider.DispatchAsync(context);
+            // Note: in many cases, the authentication token was already validated by the time this action is called
+            // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
+            // the authentication context is resolved from the transaction. If it's not available, a new one is created.
+            var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName);
+            if (context == null)
+            {
+                context = new ProcessAuthenticationContext(transaction);
+                await _provider.DispatchAsync(context);
 
-            if (context.Principal == null || context.IsRequestHandled || context.IsRequestSkipped)
+                // Store the context object in the transaction so it can be later retrieved by handlers
+                // that want to access the authentication result without triggering a new authentication flow.
+                transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName, context);
+            }
+
+            if (context.IsRequestHandled || context.IsRequestSkipped)
             {
                 return null;
             }
 
             else if (context.IsRejected)
             {
-                return new AuthenticationTicket(identity: null, new AuthenticationProperties
+                var properties = new AuthenticationProperties(new Dictionary<string, string>
                 {
-                    Dictionary =
-                    {
-                        [Parameters.Error] = context.Error,
-                        [Parameters.ErrorDescription] = context.ErrorDescription,
-                        [Parameters.ErrorUri] = context.ErrorUri
-                    }
+                    [OpenIddictValidationOwinConstants.Properties.Error] = context.Error,
+                    [OpenIddictValidationOwinConstants.Properties.ErrorDescription] = context.ErrorDescription,
+                    [OpenIddictValidationOwinConstants.Properties.ErrorUri] = context.ErrorUri
                 });
+
+                return new AuthenticationTicket(null, properties);
             }
 
             return new AuthenticationTicket((ClaimsIdentity) context.Principal.Identity, new AuthenticationProperties());
@@ -151,14 +161,11 @@ namespace OpenIddict.Validation.Owin
                     throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
 
+                transaction.Properties[typeof(AuthenticationProperties).FullName] = challenge.Properties ?? new AuthenticationProperties();
+
                 var context = new ProcessChallengeContext(transaction)
                 {
-                    Response = new OpenIddictResponse
-                    {
-                        Error = GetProperty(challenge.Properties, Properties.Error),
-                        ErrorDescription = GetProperty(challenge.Properties, Properties.ErrorDescription),
-                        ErrorUri = GetProperty(challenge.Properties, Properties.ErrorUri)
-                    }
+                    Response = new OpenIddictResponse()
                 };
 
                 await _provider.DispatchAsync(context);
@@ -193,9 +200,6 @@ namespace OpenIddict.Validation.Owin
                         .Append("was not registered or was explicitly removed from the handlers list.")
                         .ToString());
                 }
-
-                static string GetProperty(AuthenticationProperties properties, string name)
-                    => properties != null && properties.Dictionary.TryGetValue(name, out string value) ? value : null;
             }
         }
     }

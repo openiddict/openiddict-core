@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
@@ -76,7 +75,7 @@ namespace OpenIddict.Validation
                     context.Logger.LogError("The request was rejected because the access token was missing.");
 
                     context.Reject(
-                        error: Errors.InvalidToken,
+                        error: Errors.InvalidRequest,
                         description: "The access token is missing.");
 
                     return default;
@@ -533,15 +532,38 @@ namespace OpenIddict.Validation
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Error))
+                // If an error was explicitly set by the application, don't override it.
+                if (!string.IsNullOrEmpty(context.Response.Error) ||
+                    !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
+                    !string.IsNullOrEmpty(context.Response.ErrorUri))
                 {
-                    context.Response.Error = Errors.InvalidToken;
+                    return default;
                 }
 
-                if (string.IsNullOrEmpty(context.Response.ErrorDescription))
+                // Try to retrieve the authentication context from the validation transaction and use
+                // the error details returned during the authentication processing, if available.
+                // If no error is attached to the authentication context, this likely means that
+                // the request was rejected very early without even checking the access token or was
+                // rejected due to a lack of permission. In this case, return an insufficient_access error
+                // to inform the client that the user is not allowed to perform the requested action.
+
+                var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
+                    typeof(ProcessAuthenticationContext).FullName);
+
+                if (!string.IsNullOrEmpty(notification?.Error))
                 {
-                    context.Response.ErrorDescription = "The access token is not valid.";
+                    context.Response.Error = notification.Error;
+                    context.Response.ErrorDescription = notification.ErrorDescription;
+                    context.Response.ErrorUri = notification.ErrorUri;
                 }
+
+                else
+                {
+                    context.Response.Error = Errors.InsufficientAccess;
+                    context.Response.ErrorDescription = "The user represented by the token is not allowed to perform the requested action.";
+                }
+
+                context.Response.Realm = context.Options.Realm;
 
                 return default;
             }

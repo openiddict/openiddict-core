@@ -13,18 +13,13 @@ namespace Mvc.Client.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly HttpClient _client;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public HomeController(HttpClient client)
-        {
-            _client = client;
-        }
+        public HomeController(IHttpClientFactory httpClientFactory)
+            => _httpClientFactory = httpClientFactory;
 
         [HttpGet("~/")]
-        public ActionResult Index()
-        {
-            return View("Home");
-        }
+        public ActionResult Index() => View("Home");
 
         [Authorize, HttpPost("~/")]
         public async Task<ActionResult> Index(CancellationToken cancellationToken)
@@ -36,10 +31,11 @@ namespace Mvc.Client.Controllers
                                                     "Make sure that SaveTokens is set to true in the OIDC options.");
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:54540/api/message");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:54540/api/message");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var response = await _client.SendAsync(request, cancellationToken);
+            using var client = _httpClientFactory.CreateClient();
+            using var response = await client.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             return View("Home", model: await response.Content.ReadAsStringAsync());

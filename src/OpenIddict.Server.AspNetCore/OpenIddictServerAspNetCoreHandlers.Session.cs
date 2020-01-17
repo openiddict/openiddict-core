@@ -50,6 +50,8 @@ namespace OpenIddict.Server.AspNetCore
                  * Logout response processing:
                  */
                 RemoveCachedRequest.Descriptor,
+                AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
+                AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
                 ProcessQueryResponse.Descriptor,
                 ProcessHostRedirectionResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessStatusCodePagesErrorResponse<ApplyLogoutResponseContext>.Descriptor,

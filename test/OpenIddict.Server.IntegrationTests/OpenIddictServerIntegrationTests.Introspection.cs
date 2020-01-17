@@ -409,6 +409,26 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
+        public async Task ValidateIntrospectionRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
+        {
+            // Arrange
+            var client = CreateClient(builder =>
+            {
+                builder.Configure(options => options.AcceptAnonymousClients = false);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/introspect", new OpenIddictRequest
+            {
+                Token = "2YotnFZFEjr1zCsicMWpAA"
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidClient, response.Error);
+            Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
+        }
+
+        [Fact]
         public async Task ValidateIntrospectionRequest_RequestIsRejectedWhenClientCannotBeFound()
         {
             // Arrange
