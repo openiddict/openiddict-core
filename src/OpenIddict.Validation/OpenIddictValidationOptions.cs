@@ -79,6 +79,12 @@ namespace OpenIddict.Validation
         public ISet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets the optional "realm" value returned to
+        /// the caller as part of the WWW-Authenticate header.
+        /// </summary>
+        public string Realm { get; set; }
+
+        /// <summary>
         /// Gets the token validation parameters used by the OpenIddict validation services.
         /// </summary>
         public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters

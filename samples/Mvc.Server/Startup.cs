@@ -11,6 +11,7 @@ using Mvc.Server.Services;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.EntityFrameworkCore.Models;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Mvc.Server
 {
@@ -46,9 +47,9 @@ namespace Mvc.Server
             // which saves you from doing the mapping in your authorization controller.
             services.Configure<IdentityOptions>(options =>
             {
-                options.ClaimsIdentity.UserNameClaimType = OpenIddictConstants.Claims.Name;
-                options.ClaimsIdentity.UserIdClaimType = OpenIddictConstants.Claims.Subject;
-                options.ClaimsIdentity.RoleClaimType = OpenIddictConstants.Claims.Role;
+                options.ClaimsIdentity.UserNameClaimType = Claims.Name;
+                options.ClaimsIdentity.UserIdClaimType = Claims.Subject;
+                options.ClaimsIdentity.RoleClaimType = Claims.Role;
             });
 
             services.AddOpenIddict()
@@ -79,10 +80,8 @@ namespace Mvc.Server
                            .AllowPasswordFlow()
                            .AllowRefreshTokenFlow();
 
-                    // Mark the "email", "profile" and "roles" scopes as supported scopes.
-                    options.RegisterScopes(OpenIddictConstants.Scopes.Email,
-                                           OpenIddictConstants.Scopes.Profile,
-                                           OpenIddictConstants.Scopes.Roles);
+                    // Mark the "email", "profile", "roles" and "demo_api" scopes as supported scopes.
+                    options.RegisterScopes(Scopes.Email, Scopes.Profile, Scopes.Roles, "demo_api");
 
                     // Register the signing and encryption credentials.
                     options.AddDevelopmentEncryptionCertificate()
@@ -125,6 +124,8 @@ namespace Mvc.Server
                 .AddValidation(options =>
                 {
                     // Configure the audience accepted by this resource server.
+                    // The value MUST match the audience associated with the
+                    // "demo_api" scope, which is used by ResourceController.
                     options.AddAudiences("resource_server");
 
                     // Import the configuration from the local OpenIddict server instance.
@@ -179,71 +180,89 @@ namespace Mvc.Server
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await context.Database.EnsureCreatedAsync();
 
-            var manager = scope.ServiceProvider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
+            await RegisterApplicationsAsync(scope.ServiceProvider);
+            await RegisterScopesAsync(scope.ServiceProvider);
 
-            if (await manager.FindByClientIdAsync("mvc") == null)
+            static async Task RegisterApplicationsAsync(IServiceProvider provider)
             {
-                var descriptor = new OpenIddictApplicationDescriptor
-                {
-                    ClientId = "mvc",
-                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-                    ConsentType = OpenIddictConstants.ConsentTypes.Explicit,
-                    DisplayName = "MVC client application",
-                    PostLogoutRedirectUris = { new Uri("http://localhost:53507/signout-callback-oidc") },
-                    RedirectUris = { new Uri("http://localhost:53507/signin-oidc") },
-                    Permissions =
-                    {
-                        OpenIddictConstants.Permissions.Endpoints.Authorization,
-                        OpenIddictConstants.Permissions.Endpoints.Logout,
-                        OpenIddictConstants.Permissions.Endpoints.Token,
-                        OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
-                        OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
-                        OpenIddictConstants.Permissions.Scopes.Email,
-                        OpenIddictConstants.Permissions.Scopes.Profile,
-                        OpenIddictConstants.Permissions.Scopes.Roles
-                    },
-                    Requirements =
-                    {
-                        OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange
-                    }
-                };
+                var manager = provider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
 
-                await manager.CreateAsync(descriptor);
+                if (await manager.FindByClientIdAsync("mvc") == null)
+                {
+                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                    {
+                        ClientId = "mvc",
+                        ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+                        ConsentType = ConsentTypes.Explicit,
+                        DisplayName = "MVC client application",
+                        PostLogoutRedirectUris = { new Uri("http://localhost:53507/signout-callback-oidc") },
+                        RedirectUris = { new Uri("http://localhost:53507/signin-oidc") },
+                        Permissions =
+                        {
+                            Permissions.Endpoints.Authorization,
+                            Permissions.Endpoints.Logout,
+                            Permissions.Endpoints.Token,
+                            Permissions.GrantTypes.AuthorizationCode,
+                            Permissions.GrantTypes.RefreshToken,
+                            Permissions.Scopes.Email,
+                            Permissions.Scopes.Profile,
+                            Permissions.Scopes.Roles,
+                            Permissions.Prefixes.Scope + "demo_api"
+                        },
+                        Requirements =
+                        {
+                            Requirements.Features.ProofKeyForCodeExchange
+                        }
+                    });
+                }
+
+                // To test this sample with Postman, use the following settings:
+                //
+                // * Authorization URL: http://localhost:54540/connect/authorize
+                // * Access token URL: http://localhost:54540/connect/token
+                // * Client ID: postman
+                // * Client secret: [blank] (not used with public clients)
+                // * Scope: openid email profile roles
+                // * Grant type: authorization code
+                // * Request access token locally: yes
+                if (await manager.FindByClientIdAsync("postman") == null)
+                {
+                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
+                    {
+                        ClientId = "postman",
+                        ConsentType = ConsentTypes.Systematic,
+                        DisplayName = "Postman",
+                        RedirectUris = { new Uri("urn:postman") },
+                        Permissions =
+                        {
+                            Permissions.Endpoints.Authorization,
+                            Permissions.Endpoints.Device,
+                            Permissions.Endpoints.Token,
+                            Permissions.GrantTypes.AuthorizationCode,
+                            Permissions.GrantTypes.DeviceCode,
+                            Permissions.GrantTypes.Password,
+                            Permissions.GrantTypes.RefreshToken,
+                            Permissions.Scopes.Email,
+                            Permissions.Scopes.Profile,
+                            Permissions.Scopes.Roles
+                        }
+                    });
+                }
             }
 
-            // To test this sample with Postman, use the following settings:
-            //
-            // * Authorization URL: http://localhost:54540/connect/authorize
-            // * Access token URL: http://localhost:54540/connect/token
-            // * Client ID: postman
-            // * Client secret: [blank] (not used with public clients)
-            // * Scope: openid email profile roles
-            // * Grant type: authorization code
-            // * Request access token locally: yes
-            if (await manager.FindByClientIdAsync("postman") == null)
+            static async Task RegisterScopesAsync(IServiceProvider provider)
             {
-                var descriptor = new OpenIddictApplicationDescriptor
-                {
-                    ClientId = "postman",
-                    ConsentType = OpenIddictConstants.ConsentTypes.Systematic,
-                    DisplayName = "Postman",
-                    RedirectUris = { new Uri("urn:postman") },
-                    Permissions =
-                    {
-                        OpenIddictConstants.Permissions.Endpoints.Authorization,
-                        OpenIddictConstants.Permissions.Endpoints.Device,
-                        OpenIddictConstants.Permissions.Endpoints.Token,
-                        OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
-                        OpenIddictConstants.Permissions.GrantTypes.DeviceCode,
-                        OpenIddictConstants.Permissions.GrantTypes.Password,
-                        OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
-                        OpenIddictConstants.Permissions.Scopes.Email,
-                        OpenIddictConstants.Permissions.Scopes.Profile,
-                        OpenIddictConstants.Permissions.Scopes.Roles
-                    }
-                };
+                var manager = provider.GetRequiredService<OpenIddictScopeManager<OpenIddictScope>>();
 
-                await manager.CreateAsync(descriptor);
+                if (await manager.FindByNameAsync("demo_api") == null)
+                {
+                    await manager.CreateAsync(new OpenIddictScopeDescriptor
+                    {
+                        DisplayName = "Demo API access",
+                        Name = "demo_api",
+                        Resources = { "resource_server" }
+                    });
+                }
             }
         }
     }

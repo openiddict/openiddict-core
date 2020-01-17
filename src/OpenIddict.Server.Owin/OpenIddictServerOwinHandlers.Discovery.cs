@@ -22,6 +22,8 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Configuration response processing:
                  */
+                AttachHttpResponseCode<ApplyConfigurationResponseContext>.Descriptor,
+                AttachWwwAuthenticateHeader<ApplyConfigurationResponseContext>.Descriptor,
                 ProcessJsonResponse<ApplyConfigurationResponseContext>.Descriptor,
 
                 /*
@@ -32,6 +34,8 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Cryptography response processing:
                  */
+                AttachHttpResponseCode<ApplyCryptographyResponseContext>.Descriptor,
+                AttachWwwAuthenticateHeader<ApplyCryptographyResponseContext>.Descriptor,
                 ProcessJsonResponse<ApplyCryptographyResponseContext>.Descriptor);
         }
     }

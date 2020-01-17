@@ -408,7 +408,7 @@ namespace OpenIddict.Server
                         context.Logger.LogError("The device request was rejected because the mandatory 'client_id' was missing.");
 
                         context.Reject(
-                            error: Errors.InvalidRequest,
+                            error: Errors.InvalidClient,
                             description: "The mandatory 'client_id' parameter is missing.");
 
                         return default;
@@ -610,7 +610,7 @@ namespace OpenIddict.Server
                                                     "was not allowed to send a client secret.", context.ClientId);
 
                             context.Reject(
-                                error: Errors.InvalidRequest,
+                                error: Errors.InvalidClient,
                                 description: "The 'client_secret' parameter is not valid for this client application.");
 
                             return;

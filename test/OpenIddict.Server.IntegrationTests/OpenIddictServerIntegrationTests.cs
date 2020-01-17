@@ -534,6 +534,51 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
+        public async Task ProcessChallenge_ReturnsDefaultErrorForUserinfoRequestsWhenNoneIsSpecified()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/challenge");
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SlAV32hkKG", context.Token);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/challenge", new OpenIddictRequest
+            {
+                AccessToken = "SlAV32hkKG"
+            });
+
+            // Assert
+            Assert.Equal(Errors.InsufficientAccess, response.Error);
+            Assert.Equal("The user information access demand was rejected by the authorization server.", response.ErrorDescription);
+            Assert.Null(response.ErrorUri);
+        }
+
+        [Fact]
         public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
         {
             // Arrange

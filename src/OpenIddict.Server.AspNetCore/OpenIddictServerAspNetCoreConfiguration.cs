@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
@@ -70,10 +71,10 @@ namespace OpenIddict.Server.AspNetCore
                 throw new ArgumentNullException(nameof(options));
             }
 
-            bool TryValidate(string scheme)
+            static bool TryValidate(IDictionary<string, AuthenticationSchemeBuilder> map, string scheme)
             {
                 // If the scheme was not set or if it cannot be found in the map, return true.
-                if (string.IsNullOrEmpty(scheme) || !options.SchemeMap.TryGetValue(scheme, out var builder))
+                if (string.IsNullOrEmpty(scheme) || !map.TryGetValue(scheme, out var builder))
                 {
                     return true;
                 }
@@ -81,9 +82,12 @@ namespace OpenIddict.Server.AspNetCore
                 return builder.HandlerType != typeof(OpenIddictServerAspNetCoreHandler);
             }
 
-            if (!TryValidate(options.DefaultAuthenticateScheme) || !TryValidate(options.DefaultChallengeScheme) ||
-                !TryValidate(options.DefaultForbidScheme) || !TryValidate(options.DefaultScheme) ||
-                !TryValidate(options.DefaultSignInScheme) || !TryValidate(options.DefaultSignOutScheme))
+            if (!TryValidate(options.SchemeMap, options.DefaultAuthenticateScheme) ||
+                !TryValidate(options.SchemeMap, options.DefaultChallengeScheme) ||
+                !TryValidate(options.SchemeMap, options.DefaultForbidScheme) ||
+                !TryValidate(options.SchemeMap, options.DefaultScheme) ||
+                !TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
+                !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))
             {
                 throw new InvalidOperationException(new StringBuilder()
                     .AppendLine("The OpenIddict ASP.NET Core server cannot be used as the default scheme handler.")

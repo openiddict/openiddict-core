@@ -161,7 +161,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
         }
 
@@ -1156,7 +1156,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
         }
 
@@ -1258,7 +1258,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal("The 'client_secret' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());

@@ -314,12 +314,14 @@ namespace OpenIddict.Server.AspNetCore
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Transaction.Properties.TryGetValue(typeof(AuthenticationProperties).FullName, out var property) &&
-                    property is AuthenticationProperties properties)
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                if (properties != null)
                 {
                     context.Response.Error = properties.GetString(Properties.Error);
                     context.Response.ErrorDescription = properties.GetString(Properties.ErrorDescription);
                     context.Response.ErrorUri = properties.GetString(Properties.ErrorUri);
+                    context.Response.Realm = properties.GetString(Properties.Realm);
+                    context.Response.Scope = properties.GetString(Properties.Scope);
                 }
 
                 return default;
@@ -785,14 +787,291 @@ namespace OpenIddict.Server.AspNetCore
                     throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
                 }
 
-                if (context.Transaction.Properties.TryGetValue(typeof(AuthenticationProperties).FullName, out var property) &&
-                    property is AuthenticationProperties properties && !string.IsNullOrEmpty(properties.RedirectUri))
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                if (properties != null && !string.IsNullOrEmpty(properties.RedirectUri))
                 {
                     response.Redirect(properties.RedirectUri);
 
                     context.Logger.LogInformation("The response was successfully returned as a 302 response.");
                     context.HandleRequest();
                 }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching an appropriate HTTP response code header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class AttachHttpResponseCode<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
+                    .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Response == null)
+                {
+                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
+                }
+
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                // When client authentication is made using basic authentication, the authorization server MUST return
+                // a 401 response with a valid WWW-Authenticate header containing the Basic scheme and a non-empty realm.
+                // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
+                // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
+                // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
+                // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
+                // were specified in the request form instead of the HTTP headers, as allowed by the specification.
+                response.StatusCode = context.Response.Error switch
+                {
+                    null => 200, // Note: the default code may be replaced by another handler (e.g when doing redirects).
+
+                    Errors.InvalidClient => 401,
+                    Errors.InvalidToken  => 401,
+
+                    Errors.InsufficientAccess => 403,
+                    Errors.InsufficientScope  => 403,
+
+                    _  => 400
+                };
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching the appropriate HTTP response cache headers.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class AttachCacheControlHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
+                    .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                // Prevent the response from being cached.
+                response.Headers[HeaderNames.CacheControl] = "no-store";
+                response.Headers[HeaderNames.Pragma] = "no-cache";
+                response.Headers[HeaderNames.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching errors details to the WWW-Authenticate header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class AttachWwwAuthenticateHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
+                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Response == null)
+                {
+                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
+                }
+
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                // When client authentication is made using basic authentication, the authorization server MUST return
+                // a 401 response with a valid WWW-Authenticate header containing the HTTP Basic authentication scheme.
+                // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
+                // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
+                // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
+                // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
+                // were specified in the request form instead of the HTTP headers, as allowed by the specification.
+                var scheme = context.Response.Error switch
+                {
+                    Errors.InvalidClient      => Schemes.Basic,
+
+                    Errors.InvalidToken       => Schemes.Bearer,
+                    Errors.InsufficientAccess => Schemes.Bearer,
+                    Errors.InsufficientScope  => Schemes.Bearer,
+
+                    _ => null
+                };
+
+                if (string.IsNullOrEmpty(scheme))
+                {
+                    return default;
+                }
+
+                // Optimization: avoid allocating a StringBuilder if the
+                // WWW-Authenticate header doesn't contain any parameter.
+                if (string.IsNullOrEmpty(context.Response.Realm) &&
+                    string.IsNullOrEmpty(context.Response.Error) &&
+                    string.IsNullOrEmpty(context.Response.ErrorDescription) &&
+                    string.IsNullOrEmpty(context.Response.ErrorUri) &&
+                    string.IsNullOrEmpty(context.Response.Scope))
+                {
+                    response.Headers.Append(HeaderNames.WWWAuthenticate, scheme);
+
+                    return default;
+                }
+
+                var builder = new StringBuilder(scheme);
+
+                // Append the realm if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.Realm))
+                {
+                    builder.Append(' ');
+                    builder.Append(Parameters.Realm);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.Realm.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the error if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.Error);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.Error.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the error_description if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.ErrorDescription))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
+                        !string.IsNullOrEmpty(context.Response.Error))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.ErrorDescription);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.ErrorDescription.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the error_uri if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.ErrorUri))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
+                        !string.IsNullOrEmpty(context.Response.Error) ||
+                        !string.IsNullOrEmpty(context.Response.ErrorDescription))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.ErrorUri);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.ErrorUri.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the scope if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.Scope))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
+                        !string.IsNullOrEmpty(context.Response.Error) ||
+                        !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
+                        !string.IsNullOrEmpty(context.Response.ErrorUri))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.Scope);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.Scope.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
 
                 return default;
             }
@@ -835,8 +1114,8 @@ namespace OpenIddict.Server.AspNetCore
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var request = context.Transaction.GetHttpRequest();
-                if (request == null)
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
+                if (response == null)
                 {
                     throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
                 }
@@ -850,52 +1129,11 @@ namespace OpenIddict.Server.AspNetCore
                     WriteIndented = false
                 });
 
-                if (!string.IsNullOrEmpty(context.Response.Error))
-                {
-                    // When client authentication is made using basic authentication, the authorization server MUST return
-                    // a 401 response with a valid WWW-Authenticate header containing the Basic scheme and a non-empty realm.
-                    // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
-                    // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
-                    // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
-                    // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
-                    // were specified in the request form instead of the HTTP headers, as allowed by the specification.
-                    var scheme = context.Response.Error switch
-                    {
-                        Errors.InvalidClient => Schemes.Basic,
-                        Errors.InvalidToken  => Schemes.Bearer,
-                        _ => null
-                    };
-
-                    if (!string.IsNullOrEmpty(scheme))
-                    {
-                        if (context.Issuer == null)
-                        {
-                            throw new InvalidOperationException("The issuer address cannot be inferred from the current request.");
-                        }
-
-                        request.HttpContext.Response.StatusCode = 401;
-
-                        request.HttpContext.Response.Headers[HeaderNames.WWWAuthenticate] = new StringBuilder()
-                            .Append(scheme)
-                            .Append(' ')
-                            .Append(Parameters.Realm)
-                            .Append("=\"")
-                            .Append(context.Issuer.AbsoluteUri)
-                            .Append('"')
-                            .ToString();
-                    }
-
-                    else
-                    {
-                        request.HttpContext.Response.StatusCode = 400;
-                    }
-                }
-
-                request.HttpContext.Response.ContentLength = stream.Length;
-                request.HttpContext.Response.ContentType = "application/json;charset=UTF-8";
+                response.ContentLength = stream.Length;
+                response.ContentType = "application/json;charset=UTF-8";
 
                 stream.Seek(offset: 0, loc: SeekOrigin.Begin);
-                await stream.CopyToAsync(request.HttpContext.Response.Body, 4096, request.HttpContext.RequestAborted);
+                await stream.CopyToAsync(response.Body, 4096, response.HttpContext.RequestAborted);
 
                 context.HandleRequest();
             }
@@ -948,9 +1186,6 @@ namespace OpenIddict.Server.AspNetCore
                 {
                     return default;
                 }
-
-                // Apply a 400 status code by default.
-                response.StatusCode = 400;
 
                 context.SkipRequest();
 
@@ -1017,9 +1252,6 @@ namespace OpenIddict.Server.AspNetCore
                     return default;
                 }
 
-                // Replace the default status code to return a 400 response.
-                response.StatusCode = 400;
-
                 // Mark the request as fully handled to prevent the other OpenIddict server handlers
                 // from displaying the default error page and to allow the status code pages middleware
                 // to rewrite the response using the logic defined by the developer when registering it.
@@ -1076,40 +1308,32 @@ namespace OpenIddict.Server.AspNetCore
                 // Don't return the state originally sent by the client application.
                 context.Response.State = null;
 
-                // Apply a 400 status code by default.
-                response.StatusCode = 400;
-
                 context.Logger.LogInformation("The authorization response was successfully returned " +
                                               "as a plain-text document: {Response}.", context.Response);
 
-                using (var buffer = new MemoryStream())
-                using (var writer = new StreamWriter(buffer))
-                {
-                    foreach (var parameter in context.Response.GetParameters())
-                    {
-                        // Ignore null or empty parameters, including JSON
-                        // objects that can't be represented as strings.
-                        var value = (string) parameter.Value;
-                        if (string.IsNullOrEmpty(value))
-                        {
-                            continue;
-                        }
+                using var buffer = new MemoryStream();
+                using var writer = new StreamWriter(buffer);
 
-                        writer.WriteLine("{0}:{1}", parameter.Key, value);
+                foreach (var parameter in context.Response.GetParameters())
+                {
+                    // Ignore null or empty parameters, including JSON
+                    // objects that can't be represented as strings.
+                    var value = (string) parameter.Value;
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
                     }
 
-                    writer.Flush();
-
-                    response.ContentLength = buffer.Length;
-                    response.ContentType = "text/plain;charset=UTF-8";
-
-                    response.Headers[HeaderNames.CacheControl] = "no-cache";
-                    response.Headers[HeaderNames.Pragma] = "no-cache";
-                    response.Headers[HeaderNames.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
-
-                    buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                    await buffer.CopyToAsync(response.Body, 4096, response.HttpContext.RequestAborted);
+                    writer.WriteLine("{0}:{1}", parameter.Key, value);
                 }
+
+                writer.Flush();
+
+                response.ContentLength = buffer.Length;
+                response.ContentType = "text/plain;charset=UTF-8";
+
+                buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
+                await buffer.CopyToAsync(response.Body, 4096, response.HttpContext.RequestAborted);
 
                 context.HandleRequest();
             }
@@ -1144,14 +1368,6 @@ namespace OpenIddict.Server.AspNetCore
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
-                }
-
-                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
-                // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
-                if (response == null)
-                {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
                 }
 
                 context.Logger.LogInformation("The response was successfully returned as an empty 200 response.");

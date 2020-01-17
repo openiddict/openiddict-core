@@ -52,6 +52,8 @@ namespace OpenIddict.Server.AspNetCore
                  * Authorization response processing:
                  */
                 RemoveCachedRequest.Descriptor,
+                AttachHttpResponseCode<ApplyAuthorizationResponseContext>.Descriptor,
+                AttachCacheControlHeader<ApplyAuthorizationResponseContext>.Descriptor,
                 ProcessFormPostResponse.Descriptor,
                 ProcessQueryResponse.Descriptor,
                 ProcessFragmentResponse.Descriptor,

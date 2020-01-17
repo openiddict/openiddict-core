@@ -14,11 +14,13 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using Microsoft.Owin.Security;
 using OpenIddict.Abstractions;
 using Owin;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.Owin.OpenIddictValidationOwinHandlerFilters;
+using Properties = OpenIddict.Validation.Owin.OpenIddictValidationOwinConstants.Properties;
 
 namespace OpenIddict.Validation.Owin
 {
@@ -34,9 +36,21 @@ namespace OpenIddict.Validation.Owin
             ExtractAccessToken.Descriptor,
 
             /*
+             * Challenge processing:
+             */
+            AttachHostChallengeError.Descriptor,
+
+            /*
              * Response processing:
              */
+            AttachHttpResponseCode<ProcessChallengeContext>.Descriptor,
+            AttachCacheControlHeader<ProcessChallengeContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ProcessChallengeContext>.Descriptor,
             ProcessJsonResponse<ProcessChallengeContext>.Descriptor,
+
+            AttachHttpResponseCode<ProcessErrorContext>.Descriptor,
+            AttachCacheControlHeader<ProcessErrorContext>.Descriptor,
+            AttachWwwAuthenticateHeader<ProcessErrorContext>.Descriptor,
             ProcessJsonResponse<ProcessErrorContext>.Descriptor);
 
         /// <summary>
@@ -218,6 +232,318 @@ namespace OpenIddict.Validation.Owin
         }
 
         /// <summary>
+        /// Contains the logic responsible of attaching the error details using the OWIN authentication properties.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class AttachHostChallengeError : IOpenIddictValidationHandler<ProcessChallengeContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<AttachHostChallengeError>()
+                    .SetOrder(int.MinValue + 50_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessChallengeContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                if (properties != null)
+                {
+                    context.Response.Error = GetProperty(properties, Properties.Error);
+                    context.Response.ErrorDescription = GetProperty(properties, Properties.ErrorDescription);
+                    context.Response.ErrorUri = GetProperty(properties, Properties.ErrorUri);
+                    context.Response.Realm = GetProperty(properties, Properties.Realm);
+                    context.Response.Scope = GetProperty(properties, Properties.Scope);
+                }
+
+                return default;
+
+                static string GetProperty(AuthenticationProperties properties, string name)
+                    => properties.Dictionary.TryGetValue(name, out string value) ? value : null;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching an appropriate HTTP response code header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class AttachHttpResponseCode<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
+                    .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Response == null)
+                {
+                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
+                }
+
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                }
+
+                response.StatusCode = context.Response.Error switch
+                {
+                    null => 200,
+
+                    Errors.InvalidToken  => 401,
+
+                    Errors.InsufficientAccess => 403,
+                    Errors.InsufficientScope  => 403,
+
+                    _ => 400
+                };
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching the appropriate HTTP response cache headers.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class AttachCacheControlHeader<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
+                    .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                // Prevent the response from being cached.
+                response.Headers["Cache-Control"] = "no-store";
+                response.Headers["Pragma"] = "no-cache";
+                response.Headers["Expires"] = "Thu, 01 Jan 1970 00:00:00 GMT";
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching errors details to the WWW-Authenticate header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class AttachWwwAuthenticateHeader<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
+                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Response == null)
+                {
+                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
+                }
+
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                }
+
+                if (string.IsNullOrEmpty(context.Response.Error))
+                {
+                    return default;
+                }
+
+                var scheme = context.Response.Error switch
+                {
+                    Errors.InvalidToken       => Schemes.Bearer,
+                    Errors.InsufficientAccess => Schemes.Bearer,
+                    Errors.InsufficientScope  => Schemes.Bearer,
+
+                    _ => null
+                };
+
+                if (string.IsNullOrEmpty(scheme))
+                {
+                    return default;
+                }
+
+                // Optimization: avoid allocating a StringBuilder if the
+                // WWW-Authenticate header doesn't contain any parameter.
+                if (string.IsNullOrEmpty(context.Response.Realm) &&
+                    string.IsNullOrEmpty(context.Response.Error) &&
+                    string.IsNullOrEmpty(context.Response.ErrorDescription) &&
+                    string.IsNullOrEmpty(context.Response.ErrorUri) &&
+                    string.IsNullOrEmpty(context.Response.Scope))
+                {
+                    response.Headers.Append("WWW-Authenticate", scheme);
+
+                    return default;
+                }
+
+                var builder = new StringBuilder(scheme);
+
+                // Append the realm if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.Realm))
+                {
+                    builder.Append(' ');
+                    builder.Append(Parameters.Realm);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.Realm.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the error if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.Error);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.Error.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the error_description if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.ErrorDescription))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
+                        !string.IsNullOrEmpty(context.Response.Error))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.ErrorDescription);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.ErrorDescription.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the error_uri if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.ErrorUri))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
+                        !string.IsNullOrEmpty(context.Response.Error) ||
+                        !string.IsNullOrEmpty(context.Response.ErrorDescription))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.ErrorUri);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.ErrorUri.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the scope if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.Scope))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
+                        !string.IsNullOrEmpty(context.Response.Error) ||
+                        !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
+                        !string.IsNullOrEmpty(context.Response.ErrorUri))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.Scope);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.Scope.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                response.Headers.Append("WWW-Authenticate", builder.ToString());
+
+                return default;
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of processing OpenID Connect responses that must be returned as JSON.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
@@ -230,7 +556,7 @@ namespace OpenIddict.Validation.Owin
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessJsonResponse<TContext>>()
-                    .SetOrder(int.MinValue + 100_000)
+                    .SetOrder(int.MaxValue - 100_000)
                     .Build();
 
             /// <summary>
@@ -254,8 +580,8 @@ namespace OpenIddict.Validation.Owin
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
-                var request = context.Transaction.GetOwinRequest();
-                if (request == null)
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response == null)
                 {
                     throw new InvalidOperationException("The OWIN request cannot be resolved.");
                 }
@@ -269,30 +595,11 @@ namespace OpenIddict.Validation.Owin
                     WriteIndented = false
                 });
 
-                if (!string.IsNullOrEmpty(context.Response.Error))
-                {
-                    if (context.Issuer == null)
-                    {
-                        throw new InvalidOperationException("The issuer address cannot be inferred from the current request.");
-                    }
-
-                    request.Context.Response.StatusCode = 401;
-
-                    request.Context.Response.Headers["WWW-Authenticate"] = new StringBuilder()
-                        .Append(Schemes.Bearer)
-                        .Append(' ')
-                        .Append(Parameters.Realm)
-                        .Append("=\"")
-                        .Append(context.Issuer.AbsoluteUri)
-                        .Append('"')
-                        .ToString();
-                }
-
-                request.Context.Response.ContentLength = stream.Length;
-                request.Context.Response.ContentType = "application/json;charset=UTF-8";
+                response.ContentLength = stream.Length;
+                response.ContentType = "application/json;charset=UTF-8";
 
                 stream.Seek(offset: 0, loc: SeekOrigin.Begin);
-                await stream.CopyToAsync(request.Context.Response.Body, 4096, request.CallCancelled);
+                await stream.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
 
                 context.HandleRequest();
             }

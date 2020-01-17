@@ -314,12 +314,14 @@ namespace OpenIddict.Server.Owin
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Transaction.Properties.TryGetValue(typeof(AuthenticationProperties).FullName, out var property) &&
-                    property is AuthenticationProperties properties)
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                if (properties != null)
                 {
                     context.Response.Error = GetProperty(properties, Properties.Error);
                     context.Response.ErrorDescription = GetProperty(properties, Properties.ErrorDescription);
                     context.Response.ErrorUri = GetProperty(properties, Properties.ErrorUri);
+                    context.Response.Realm = GetProperty(properties, Properties.Realm);
+                    context.Response.Scope = GetProperty(properties, Properties.Scope);
                 }
 
                 return default;
@@ -788,14 +790,291 @@ namespace OpenIddict.Server.Owin
                     throw new InvalidOperationException("The OWIN request cannot be resolved.");
                 }
 
-                if (context.Transaction.Properties.TryGetValue(typeof(AuthenticationProperties).FullName, out var property) &&
-                    property is AuthenticationProperties properties && !string.IsNullOrEmpty(properties.RedirectUri))
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                if (properties != null && !string.IsNullOrEmpty(properties.RedirectUri))
                 {
                     response.Redirect(properties.RedirectUri);
 
                     context.Logger.LogInformation("The response was successfully returned as a 302 response.");
                     context.HandleRequest();
                 }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching an appropriate HTTP response code header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class AttachHttpResponseCode<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
+                    .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Response == null)
+                {
+                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
+                }
+
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                }
+
+                // When client authentication is made using basic authentication, the authorization server MUST return
+                // a 401 response with a valid WWW-Authenticate header containing the Basic scheme and a non-empty realm.
+                // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
+                // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
+                // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
+                // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
+                // were specified in the request form instead of the HTTP headers, as allowed by the specification.
+                response.StatusCode = context.Response.Error switch
+                {
+                    null => 200, // Note: the default code may be replaced by another handler (e.g when doing redirects).
+
+                    Errors.InvalidClient => 401,
+                    Errors.InvalidToken  => 401,
+
+                    Errors.InsufficientAccess => 403,
+                    Errors.InsufficientScope  => 403,
+
+                    _ => 400
+                };
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching the appropriate HTTP response cache headers.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class AttachCacheControlHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
+                    .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                // Prevent the response from being cached.
+                response.Headers["Cache-Control"] = "no-store";
+                response.Headers["Pragma"] = "no-cache";
+                response.Headers["Expires"] = "Thu, 01 Jan 1970 00:00:00 GMT";
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching errors details to the WWW-Authenticate header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class AttachWwwAuthenticateHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
+                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Response == null)
+                {
+                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
+                }
+
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                }
+
+                // When client authentication is made using basic authentication, the authorization server MUST return
+                // a 401 response with a valid WWW-Authenticate header containing the HTTP Basic authentication scheme.
+                // A similar error MAY be returned even when basic authentication is not used and MUST also be returned
+                // when an invalid token is received by the userinfo endpoint using the Bearer authentication scheme.
+                // To simplify the logic, a 401 response with the Bearer scheme is returned for invalid_token errors
+                // and a 401 response with the Basic scheme is returned for invalid_client, even if the credentials
+                // were specified in the request form instead of the HTTP headers, as allowed by the specification.
+                var scheme = context.Response.Error switch
+                {
+                    Errors.InvalidClient      => Schemes.Basic,
+
+                    Errors.InvalidToken       => Schemes.Bearer,
+                    Errors.InsufficientAccess => Schemes.Bearer,
+                    Errors.InsufficientScope  => Schemes.Bearer,
+
+                    _ => null
+                };
+
+                if (string.IsNullOrEmpty(scheme))
+                {
+                    return default;
+                }
+
+                // Optimization: avoid allocating a StringBuilder if the
+                // WWW-Authenticate header doesn't contain any parameter.
+                if (string.IsNullOrEmpty(context.Response.Realm) &&
+                    string.IsNullOrEmpty(context.Response.Error) &&
+                    string.IsNullOrEmpty(context.Response.ErrorDescription) &&
+                    string.IsNullOrEmpty(context.Response.ErrorUri) &&
+                    string.IsNullOrEmpty(context.Response.Scope))
+                {
+                    response.Headers.Append("WWW-Authenticate", scheme);
+
+                    return default;
+                }
+
+                var builder = new StringBuilder(scheme);
+
+                // Append the realm if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.Realm))
+                {
+                    builder.Append(' ');
+                    builder.Append(Parameters.Realm);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.Realm.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the error if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.Error))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.Error);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.Error.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the error_description if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.ErrorDescription))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
+                        !string.IsNullOrEmpty(context.Response.Error))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.ErrorDescription);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.ErrorDescription.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the error_uri if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.ErrorUri))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
+                        !string.IsNullOrEmpty(context.Response.Error) ||
+                        !string.IsNullOrEmpty(context.Response.ErrorDescription))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.ErrorUri);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.ErrorUri.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                // Append the scope if one was specified.
+                if (!string.IsNullOrEmpty(context.Response.Scope))
+                {
+                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
+                        !string.IsNullOrEmpty(context.Response.Error) ||
+                        !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
+                        !string.IsNullOrEmpty(context.Response.ErrorUri))
+                    {
+                        builder.Append(',');
+                    }
+
+                    builder.Append(' ');
+                    builder.Append(Parameters.Scope);
+                    builder.Append("=\"");
+                    builder.Append(context.Response.Scope.Replace("\"", "\\\""));
+                    builder.Append('"');
+                }
+
+                response.Headers.Append("WWW-Authenticate", builder.ToString());
 
                 return default;
             }
@@ -852,15 +1131,6 @@ namespace OpenIddict.Server.Owin
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                     WriteIndented = false
                 });
-
-                if (!string.IsNullOrEmpty(context.Response.Error))
-                {
-                    // Note: when using basic authentication, returning an invalid_client error MUST result in
-                    // an unauthorized response but returning a 401 status code would invoke the previously
-                    // registered authentication middleware and potentially replace it by a 302 response.
-                    // To work around this OWIN/Katana limitation, a 400 response code is always returned.
-                    response.StatusCode = 400;
-                }
 
                 response.ContentLength = stream.Length;
                 response.ContentType = "application/json;charset=UTF-8";
@@ -923,9 +1193,6 @@ namespace OpenIddict.Server.Owin
                 // Don't return the state originally sent by the client application.
                 context.Response.State = null;
 
-                // Apply a 400 status code by default.
-                response.StatusCode = 400;
-
                 context.SkipRequest();
 
                 return default;
@@ -979,40 +1246,32 @@ namespace OpenIddict.Server.Owin
                 // Don't return the state originally sent by the client application.
                 context.Response.State = null;
 
-                // Apply a 400 status code by default.
-                response.StatusCode = 400;
-
                 context.Logger.LogInformation("The authorization response was successfully returned " +
                                               "as a plain-text document: {Response}.", context.Response);
 
-                using (var buffer = new MemoryStream())
-                using (var writer = new StreamWriter(buffer))
-                {
-                    foreach (var parameter in context.Response.GetParameters())
-                    {
-                        // Ignore null or empty parameters, including JSON
-                        // objects that can't be represented as strings.
-                        var value = (string) parameter.Value;
-                        if (string.IsNullOrEmpty(value))
-                        {
-                            continue;
-                        }
+                using var buffer = new MemoryStream();
+                using var writer = new StreamWriter(buffer);
 
-                        writer.WriteLine("{0}:{1}", parameter.Key, value);
+                foreach (var parameter in context.Response.GetParameters())
+                {
+                    // Ignore null or empty parameters, including JSON
+                    // objects that can't be represented as strings.
+                    var value = (string) parameter.Value;
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
                     }
 
-                    writer.Flush();
-
-                    response.ContentLength = buffer.Length;
-                    response.ContentType = "text/plain;charset=UTF-8";
-
-                    response.Headers["Cache-Control"] = "no-cache";
-                    response.Headers["Pragma"] = "no-cache";
-                    response.Headers["Expires"] = "Thu, 01 Jan 1970 00:00:00 GMT";
-
-                    buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                    await buffer.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
+                    writer.WriteLine("{0}:{1}", parameter.Key, value);
                 }
+
+                writer.Flush();
+
+                response.ContentLength = buffer.Length;
+                response.ContentType = "text/plain;charset=UTF-8";
+
+                buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
+                await buffer.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
 
                 context.HandleRequest();
             }
@@ -1047,14 +1306,6 @@ namespace OpenIddict.Server.Owin
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
-                }
-
-                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
-                // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
-                {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
                 }
 
                 context.Logger.LogInformation("The response was successfully returned as an empty 200 response.");
