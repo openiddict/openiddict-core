@@ -1623,6 +1623,8 @@ namespace OpenIddict.Server
                       context.Reject(
                         error: Errors.InvalidRequest,
                         description: "The 'code_verifier' parameter is uncalled for in this request.");
+
+                      return default;
                     }
 
                     // If a code challenge was initially sent in the authorization request and associated with the
