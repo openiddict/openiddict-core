@@ -563,6 +563,46 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
+        public async Task ValidateTokenRequest_RequestCausesErrorWhenSendingCodeVerifier()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetPresenters("Fabrikam")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                CodeVerifier = "AbCd97394879834759873497549237098273498072304987523948673248972349857982345",
+                GrantType = GrantTypes.AuthorizationCode
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal("The 'code_verifier' parameter is uncalled for in this request.", response.ErrorDescription);
+        }
+
+        [Fact]
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeVerifierIsMissing()
         {
             // Arrange
