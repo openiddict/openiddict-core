@@ -1611,26 +1611,24 @@ namespace OpenIddict.Server
                     // is active even if the degraded mode is enabled and ensures that a code_verifier is sent if a
                     // code_challenge was stored in the authorization code when the authorization request was handled.
 
-                    // Validate that the token request did not include the code_verifier parameter if the
-                    // authorization request was not provided with both code_challenge and code_challenge_method.
                     var challenge = context.Principal.GetClaim(Claims.Private.CodeChallenge);
-                    if (!string.IsNullOrEmpty(context.Request.CodeVerifier) && string.IsNullOrEmpty(challenge))
-                    {
-                      context.Logger.LogError("The token request was rejected because a 'code_verifier' " +
-                                              "parameter was presented but 'code_challenge' and/or 'code_challenge_method' " +
-                                              "was not a part of the authorization request.");
-
-                      context.Reject(
-                        error: Errors.InvalidRequest,
-                        description: "The 'code_verifier' parameter is uncalled for in this request.");
-
-                      return default;
-                    }
-
-                    // If a code challenge was initially sent in the authorization request and associated with the
-                    // code, validate the code verifier to ensure the token request is sent by a legit caller.
                     if (string.IsNullOrEmpty(challenge))
                     {
+                        // Validate that the token request does not include a code_verifier parameter
+                        // when code_challenge private claim was attached to the authorization code.
+                        if (!string.IsNullOrEmpty(context.Request.CodeVerifier))
+                        {
+                            context.Logger.LogError("The token request was rejected because a 'code_verifier' parameter " +
+                                                    "was presented with an authorization code to which no code challenge " +
+                                                    "was attached when processing the initial authorization request.");
+
+                            context.Reject(
+                                error: Errors.InvalidRequest,
+                                description: "The 'code_verifier' parameter is uncalled for in this request.");
+
+                            return default;
+                        }
+
                         return default;
                     }
 
@@ -1676,7 +1674,7 @@ namespace OpenIddict.Server
 
                     // Compare the verifier and the code challenge: if the two don't match, return an error.
                     // Note: to prevent timing attacks, a time-constant comparer is always used.
-                    if (!FixedTimeEquals(data, Encoding.UTF8.GetBytes(challenge)))
+                    if (!FixedTimeEquals(data, Encoding.ASCII.GetBytes(challenge)))
                     {
                         context.Logger.LogError("The token request was rejected because the 'code_verifier' was invalid.");
 

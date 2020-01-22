@@ -380,6 +380,9 @@ namespace OpenIddict.Server.FunctionalTests
 
             else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
             {
+                // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
+                // that always return their HTTP responses encoded using UTF-8. As such, the stream
+                // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
                 using var stream = await message.Content.ReadAsStreamAsync();
 
                 return await JsonSerializer.DeserializeAsync<OpenIddictResponse>(stream);
@@ -387,6 +390,9 @@ namespace OpenIddict.Server.FunctionalTests
 
             else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/html", StringComparison.OrdinalIgnoreCase))
             {
+                // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
+                // that always return their HTTP responses encoded using UTF-8. As such, the stream
+                // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
                 using var stream = await message.Content.ReadAsStreamAsync();
                 using var document = await HtmlParser.ParseDocumentAsync(stream);
                 
@@ -417,39 +423,41 @@ namespace OpenIddict.Server.FunctionalTests
 
             else if (string.Equals(message.Content?.Headers?.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))
             {
-                using (var stream = await message.Content.ReadAsStreamAsync())
-                using (var reader = new StreamReader(stream))
+                // Note: this test client is only used with OpenIddict's ASP.NET Core or OWIN hosts,
+                // that always return their HTTP responses encoded using UTF-8. As such, the stream
+                // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
+                using var stream = await message.Content.ReadAsStreamAsync();
+                using var reader = new StreamReader(stream);
+
+                // Note: a dictionary is deliberately not used here to allow multiple parameters with the
+                // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
+                // this is required for derived drafts like the OAuth2 token exchange specification.
+                var parameters = new List<KeyValuePair<string, string>>();
+
+                for (var line = await reader.ReadLineAsync(); line != null; line = await reader.ReadLineAsync())
                 {
-                    // Note: a dictionary is deliberately not used here to allow multiple parameters with the
-                    // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
-                    // this is required for derived drafts like the OAuth2 token exchange specification.
-                    var parameters = new List<KeyValuePair<string, string>>();
-
-                    for (var line = await reader.ReadLineAsync(); line != null; line = await reader.ReadLineAsync())
+                    var index = line.IndexOf(':');
+                    if (index == -1)
                     {
-                        var index = line.IndexOf(':');
-                        if (index == -1)
-                        {
-                            continue;
-                        }
-
-                        var name = line.Substring(0, index);
-                        if (string.IsNullOrEmpty(name))
-                        {
-                            continue;
-                        }
-
-                        var value = line.Substring(index + 1);
-
-                        parameters.Add(new KeyValuePair<string, string>(name, value));
+                        continue;
                     }
 
-                    return new OpenIddictResponse(
-                        from parameter in parameters
-                        group parameter by parameter.Key into grouping
-                        let values = grouping.Select(parameter => parameter.Value)
-                        select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
+                    var name = line.Substring(0, index);
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        continue;
+                    }
+
+                    var value = line.Substring(index + 1);
+
+                    parameters.Add(new KeyValuePair<string, string>(name, value));
                 }
+
+                return new OpenIddictResponse(
+                    from parameter in parameters
+                    group parameter by parameter.Key into grouping
+                    let values = grouping.Select(parameter => parameter.Value)
+                    select new KeyValuePair<string, StringValues>(grouping.Key, values.ToArray()));
             }
 
             return new OpenIddictResponse();
