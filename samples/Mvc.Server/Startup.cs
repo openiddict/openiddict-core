@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -8,9 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mvc.Server.Models;
 using Mvc.Server.Services;
-using OpenIddict.Abstractions;
-using OpenIddict.Core;
-using OpenIddict.EntityFrameworkCore.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Mvc.Server
@@ -137,6 +132,10 @@ namespace Mvc.Server
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
+
+            // Register the worker responsible of seeding the database with the sample clients.
+            // Note: in a real world application, this step should be part of a setup script.
+            services.AddHostedService<Worker>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -166,104 +165,6 @@ namespace Mvc.Server
             app.UseEndpoints(options => options.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"));
-
-            // Seed the database with the sample applications.
-            // Note: in a real world application, this step should be part of a setup script.
-            InitializeAsync(app.ApplicationServices).GetAwaiter().GetResult();
-        }
-
-        private async Task InitializeAsync(IServiceProvider services)
-        {
-            // Create a new service scope to ensure the database context is correctly disposed when this methods returns.
-            using var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
-
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await context.Database.EnsureCreatedAsync();
-
-            await RegisterApplicationsAsync(scope.ServiceProvider);
-            await RegisterScopesAsync(scope.ServiceProvider);
-
-            static async Task RegisterApplicationsAsync(IServiceProvider provider)
-            {
-                var manager = provider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
-
-                if (await manager.FindByClientIdAsync("mvc") == null)
-                {
-                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
-                    {
-                        ClientId = "mvc",
-                        ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-                        ConsentType = ConsentTypes.Explicit,
-                        DisplayName = "MVC client application",
-                        PostLogoutRedirectUris = { new Uri("http://localhost:53507/signout-callback-oidc") },
-                        RedirectUris = { new Uri("http://localhost:53507/signin-oidc") },
-                        Permissions =
-                        {
-                            Permissions.Endpoints.Authorization,
-                            Permissions.Endpoints.Logout,
-                            Permissions.Endpoints.Token,
-                            Permissions.GrantTypes.AuthorizationCode,
-                            Permissions.GrantTypes.RefreshToken,
-                            Permissions.Scopes.Email,
-                            Permissions.Scopes.Profile,
-                            Permissions.Scopes.Roles,
-                            Permissions.Prefixes.Scope + "demo_api"
-                        },
-                        Requirements =
-                        {
-                            Requirements.Features.ProofKeyForCodeExchange
-                        }
-                    });
-                }
-
-                // To test this sample with Postman, use the following settings:
-                //
-                // * Authorization URL: http://localhost:54540/connect/authorize
-                // * Access token URL: http://localhost:54540/connect/token
-                // * Client ID: postman
-                // * Client secret: [blank] (not used with public clients)
-                // * Scope: openid email profile roles
-                // * Grant type: authorization code
-                // * Request access token locally: yes
-                if (await manager.FindByClientIdAsync("postman") == null)
-                {
-                    await manager.CreateAsync(new OpenIddictApplicationDescriptor
-                    {
-                        ClientId = "postman",
-                        ConsentType = ConsentTypes.Systematic,
-                        DisplayName = "Postman",
-                        RedirectUris = { new Uri("urn:postman") },
-                        Permissions =
-                        {
-                            Permissions.Endpoints.Authorization,
-                            Permissions.Endpoints.Device,
-                            Permissions.Endpoints.Token,
-                            Permissions.GrantTypes.AuthorizationCode,
-                            Permissions.GrantTypes.DeviceCode,
-                            Permissions.GrantTypes.Password,
-                            Permissions.GrantTypes.RefreshToken,
-                            Permissions.Scopes.Email,
-                            Permissions.Scopes.Profile,
-                            Permissions.Scopes.Roles
-                        }
-                    });
-                }
-            }
-
-            static async Task RegisterScopesAsync(IServiceProvider provider)
-            {
-                var manager = provider.GetRequiredService<OpenIddictScopeManager<OpenIddictScope>>();
-
-                if (await manager.FindByNameAsync("demo_api") == null)
-                {
-                    await manager.CreateAsync(new OpenIddictScopeDescriptor
-                    {
-                        DisplayName = "Demo API access",
-                        Name = "demo_api",
-                        Resources = { "resource_server" }
-                    });
-                }
-            }
         }
     }
 }
