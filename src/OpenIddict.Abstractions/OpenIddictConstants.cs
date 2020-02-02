@@ -184,7 +184,7 @@ namespace OpenIddict.Abstractions
         public static class JsonWebTokenTypes
         {
             public const string AccessToken = "at+jwt";
-            public const string IdentityToken = "jwt";
+            public const string IdentityToken = "JWT";
 
             public static class Private
             {
