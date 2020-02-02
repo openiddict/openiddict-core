@@ -199,7 +199,7 @@ namespace OpenIddict.Server.DataProtection
 
             // Unlike ASP.NET Core Data Protection-based tokens, tokens serialized using the new format
             // can't include authentication properties. To ensure tokens can be used with previous versions
-            // of OpenIddict are issued, well-known claims are manually mapped to their properties equivalents.
+            // of OpenIddict (1.x/2.x), well-known claims are manually mapped to their properties equivalents.
 
             SetProperty(properties, Properties.Issued, principal.GetCreationDate()?.ToString("r", CultureInfo.InvariantCulture));
             SetProperty(properties, Properties.Expires, principal.GetExpirationDate()?.ToString("r", CultureInfo.InvariantCulture));

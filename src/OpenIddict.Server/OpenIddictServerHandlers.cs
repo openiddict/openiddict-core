@@ -1822,6 +1822,9 @@ namespace OpenIddict.Server
                 // Set the public audiences collection using the private resource claims stored in the principal.
                 principal.SetAudiences(context.Principal.GetResources());
 
+                // Store the client_id as a public client_id claim, if available.
+                principal.SetClaim(Claims.ClientId, context.ClientId);
+
                 // When receiving a grant_type=refresh_token request, determine whether the client application
                 // requests a limited set of scopes and immediately replace the scopes collection if necessary.
                 if (context.EndpointType == OpenIddictServerEndpointType.Token &&
@@ -2712,7 +2715,7 @@ namespace OpenIddict.Server
                     _ => true
                 });
 
-                // Set the authorized party using the first presenters (typically the client identifier), if available.
+                // Set the authorized party using the first presenter (typically the client identifier), if available.
                 principal.SetClaim(Claims.AuthorizedParty, context.AccessTokenPrincipal.GetPresenters().FirstOrDefault());
 
                 // Set the public scope claim using the private scope claims from the principal.
