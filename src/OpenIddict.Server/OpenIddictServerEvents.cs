@@ -80,6 +80,9 @@ namespace OpenIddict.Server
             }
         }
 
+        /// <summary>
+        /// Represents an abstract base class used for certain event contexts.
+        /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public abstract class BaseRequestContext : BaseContext
         {

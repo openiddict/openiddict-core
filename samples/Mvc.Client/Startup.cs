@@ -62,7 +62,7 @@ namespace Mvc.Client
 
             services.AddHttpClient();
 
-            services.AddMvc();
+            services.AddControllersWithViews();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -71,10 +71,9 @@ namespace Mvc.Client
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
-
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(options => options.MapControllerRoute(

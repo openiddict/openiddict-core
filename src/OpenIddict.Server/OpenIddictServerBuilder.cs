@@ -16,8 +16,8 @@ using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Abstractions;
 using OpenIddict.Server;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -1042,7 +1042,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowAuthorizationCodeFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.AuthorizationCode));
+            => Configure(options => options.GrantTypes.Add(GrantTypes.AuthorizationCode));
 
         /// <summary>
         /// Enables client credentials flow support. For more information about this
@@ -1050,7 +1050,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowClientCredentialsFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.ClientCredentials));
+            => Configure(options => options.GrantTypes.Add(GrantTypes.ClientCredentials));
 
         /// <summary>
         /// Enables custom grant type support.
@@ -1073,7 +1073,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowDeviceCodeFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.DeviceCode));
+            => Configure(options => options.GrantTypes.Add(GrantTypes.DeviceCode));
 
         /// <summary>
         /// Enables implicit flow support. For more information
@@ -1083,7 +1083,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowImplicitFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.Implicit));
+            => Configure(options => options.GrantTypes.Add(GrantTypes.Implicit));
 
         /// <summary>
         /// Enables password flow support. For more information about this specific
@@ -1091,7 +1091,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowPasswordFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.Password));
+            => Configure(options => options.GrantTypes.Add(GrantTypes.Password));
 
         /// <summary>
         /// Enables refresh token flow support. For more information about this
@@ -1099,7 +1099,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder AllowRefreshTokenFlow()
-            => Configure(options => options.GrantTypes.Add(OpenIddictConstants.GrantTypes.RefreshToken));
+            => Configure(options => options.GrantTypes.Add(GrantTypes.RefreshToken));
 
         /// <summary>
         /// Sets the relative or absolute URLs associated to the authorization endpoint.
@@ -1778,18 +1778,18 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Updates the token validation parameters using the specified delegate.
+        /// Sets the realm returned to the caller as part of challenge responses.
         /// </summary>
-        /// <param name="configuration">The configuration delegate.</param>
+        /// <param name="realm">The issuer address.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetTokenValidationParameters([NotNull] Action<TokenValidationParameters> configuration)
+        public OpenIddictServerBuilder SetRealm([NotNull] string realm)
         {
-            if (configuration == null)
+            if (string.IsNullOrEmpty(realm))
             {
-                throw new ArgumentNullException(nameof(configuration));
+                throw new ArgumentException("The realm cannot be null or empty.", nameof(realm));
             }
 
-            return Configure(options => configuration(options.TokenValidationParameters));
+            return Configure(options => options.Realm = realm);
         }
 
         /// <summary>

@@ -36,7 +36,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.AddHttpClient();
-            builder.Services.AddMemoryCache();
 
             // Register the built-in validation event handlers used by the OpenIddict System.Net.Http components.
             // Note: the order used here is not important, as the actual order is set in the options.

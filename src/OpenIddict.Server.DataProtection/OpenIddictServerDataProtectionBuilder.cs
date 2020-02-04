@@ -81,8 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures OpenIddict to use the default token format (JWT) when
-        /// issuing new access tokens, refresh tokens and authorization codes.
+        /// Configures OpenIddict to use the default token format (JWT) when issuing new tokens.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
         public OpenIddictServerDataProtectionBuilder PreferDefaultTokenFormat()

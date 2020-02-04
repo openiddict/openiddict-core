@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -228,7 +229,8 @@ namespace OpenIddict.Abstractions
         /// Gets all the parameters associated with this instance.
         /// </summary>
         /// <returns>The parameters associated with this instance.</returns>
-        public IReadOnlyDictionary<string, OpenIddictParameter> GetParameters() => Parameters;
+        public IReadOnlyDictionary<string, OpenIddictParameter> GetParameters()
+            => new ReadOnlyDictionary<string, OpenIddictParameter>(Parameters);
 
         /// <summary>
         /// Determines whether the current message contains the specified parameter.

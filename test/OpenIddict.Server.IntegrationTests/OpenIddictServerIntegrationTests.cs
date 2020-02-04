@@ -1093,7 +1093,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             Assert.Equal(new StringBuilder()
                 .AppendLine("The specified principal doesn't contain any claims-based identity.")
-                .Append("Make sure that both 'ClaimsPrincipal.Identity' is not null.")
+                .Append("Make sure that 'ClaimsPrincipal.Identity' is not null.")
                 .ToString(), exception.Message);
         }
 

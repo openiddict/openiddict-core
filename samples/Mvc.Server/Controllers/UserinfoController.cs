@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +28,14 @@ namespace Mvc.Server.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return Challenge(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+                return Challenge(
+                    authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                    properties: new AuthenticationProperties(new Dictionary<string, string>
+                    {
+                        [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidToken,
+                        [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
+                            "The specified access token is bound to an account that no longer exists."
+                    }));
             }
 
             var claims = new Dictionary<string, object>(StringComparer.Ordinal)
@@ -48,9 +56,9 @@ namespace Mvc.Server.Controllers
                 claims[Claims.PhoneNumberVerified] = await _userManager.IsPhoneNumberConfirmedAsync(user);
             }
 
-            if (User.HasScope("roles"))
+            if (User.HasScope(Scopes.Roles))
             {
-                claims["roles"] = await _userManager.GetRolesAsync(user);
+                claims[Claims.Role] = await _userManager.GetRolesAsync(user);
             }
 
             // Note: the complete list of standard claims supported by the OpenID Connect specification

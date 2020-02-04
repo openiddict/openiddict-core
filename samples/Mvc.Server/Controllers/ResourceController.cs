@@ -42,7 +42,14 @@ namespace Mvc.Server.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return Challenge(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+                return Challenge(
+                    authenticationSchemes: OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,
+                    properties: new AuthenticationProperties(new Dictionary<string, string>
+                    {
+                        [OpenIddictValidationAspNetCoreConstants.Properties.Error] = Errors.InvalidToken,
+                        [OpenIddictValidationAspNetCoreConstants.Properties.ErrorDescription] =
+                            "The specified access token is bound to an account that no longer exists."
+                    }));
             }
 
             return Content($"{user.UserName} has been successfully authenticated.");

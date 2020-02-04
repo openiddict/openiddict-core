@@ -5,12 +5,10 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.Claims;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Validation
@@ -63,12 +61,6 @@ namespace OpenIddict.Validation
             public OpenIddictValidationOptions Options => Transaction.Options;
 
             /// <summary>
-            /// Gets the dictionary containing the properties associated with this event.
-            /// </summary>
-            public IDictionary<string, object> Properties { get; }
-                = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-            /// <summary>
             /// Gets or sets the OpenIddict request or <c>null</c> if it couldn't be extracted.
             /// </summary>
             public OpenIddictRequest Request
@@ -87,6 +79,9 @@ namespace OpenIddict.Validation
             }
         }
 
+        /// <summary>
+        /// Represents an abstract base class used for certain event contexts.
+        /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public abstract class BaseRequestContext : BaseContext
         {
@@ -121,6 +116,26 @@ namespace OpenIddict.Validation
             /// (if this pattern is supported by the underlying host).
             /// </summary>
             public void SkipRequest() => IsRequestSkipped = true;
+        }
+
+        /// <summary>
+        /// Represents an abstract base class used for certain event contexts.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public abstract class BaseExternalContext : BaseValidatingContext
+        {
+            /// <summary>
+            /// Creates a new instance of the <see cref="BaseRequestContext"/> class.
+            /// </summary>
+            protected BaseExternalContext([NotNull] OpenIddictValidationTransaction transaction)
+                : base(transaction)
+            {
+            }
+
+            /// <summary>
+            /// Gets or sets the address of the external endpoint to communicate with.
+            /// </summary>
+            public Uri Address { get; set; }
         }
 
         /// <summary>
@@ -240,12 +255,8 @@ namespace OpenIddict.Validation
             /// </summary>
             public ProcessAuthenticationContext([NotNull] OpenIddictValidationTransaction transaction)
                 : base(transaction)
-                => TokenValidationParameters = transaction.Options.TokenValidationParameters.Clone();
-
-            /// <summary>
-            /// Gets the token validation parameters used for the current request.
-            /// </summary>
-            public TokenValidationParameters TokenValidationParameters { get; }
+            {
+            }
 
             /// <summary>
             /// Gets or sets the security principal.

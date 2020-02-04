@@ -214,12 +214,11 @@ namespace Mvc.Server
                         }));
 
                 // In every other case, render the consent form.
-                default:
-                    return View(new AuthorizeViewModel
-                    {
-                        ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
-                        Scope = request.Scope
-                    });
+                default: return View(new AuthorizeViewModel
+                {
+                    ApplicationName = await _applicationManager.GetDisplayNameAsync(application),
+                    Scope = request.Scope
+                });
             }
         }
 

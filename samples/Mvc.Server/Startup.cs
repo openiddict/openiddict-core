@@ -18,7 +18,7 @@ namespace Mvc.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddControllersWithViews();
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -59,7 +59,7 @@ namespace Mvc.Server
                 // Register the OpenIddict server components.
                 .AddServer(options =>
                 {
-                    // Enable the authorization, logout, token and userinfo endpoints.
+                    // Enable the authorization, device, logout, token, userinfo and verification endpoints.
                     options.SetAuthorizationEndpointUris("/connect/authorize")
                            .SetDeviceEndpointUris("/connect/device")
                            .SetLogoutEndpointUris("/connect/logout")
@@ -133,9 +133,8 @@ namespace Mvc.Server
                     // associated authorizations can be validated for each API call.
                     // Enabling these options may have a negative impact on performance.
                     //
-                    // options.EnableAuthorizationValidation();
-                    //
-                    // options.EnableTokenValidation();
+                    // options.EnableAuthorizationEntryValidation();
+                    // options.EnableTokenEntryValidation();
                 });
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
@@ -157,7 +156,6 @@ namespace Mvc.Server
             app.UseRouting();
 
             app.UseAuthentication();
-
             app.UseAuthorization();
 
             app.UseEndpoints(options => options.MapControllerRoute(

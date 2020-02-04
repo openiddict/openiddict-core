@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net461;net472;netcoreapp2.1;netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -16,7 +16,11 @@
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="$(IdentityModelVersion)" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(IdentityModelVersion)" />
   </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' And '$(TargetFramework)' != 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_EPHEMERAL_KEY_SETS</DefineConstants>
+  </PropertyGroup>
 
 </Project>
