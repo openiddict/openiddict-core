@@ -1384,8 +1384,8 @@ namespace OpenIddict.Server.AspNetCore
                 context.Logger.LogInformation("The authorization response was successfully returned " +
                                               "as a plain-text document: {Response}.", context.Response);
 
-                using var buffer = new MemoryStream();
-                using var writer = new StreamWriter(buffer);
+                using var stream = new MemoryStream();
+                using var writer = new StreamWriter(stream);
 
                 foreach (var parameter in context.Response.GetParameters())
                 {
@@ -1397,16 +1397,19 @@ namespace OpenIddict.Server.AspNetCore
                         continue;
                     }
 
-                    writer.WriteLine("{0}:{1}", parameter.Key, value);
+                    writer.Write(parameter.Key);
+                    writer.Write(':');
+                    writer.Write(value);
+                    writer.WriteLine();
                 }
 
                 writer.Flush();
 
-                response.ContentLength = buffer.Length;
+                response.ContentLength = stream.Length;
                 response.ContentType = "text/plain;charset=UTF-8";
 
-                buffer.Seek(offset: 0, loc: SeekOrigin.Begin);
-                await buffer.CopyToAsync(response.Body, 4096, response.HttpContext.RequestAborted);
+                stream.Seek(offset: 0, loc: SeekOrigin.Begin);
+                await stream.CopyToAsync(response.Body, 4096, response.HttpContext.RequestAborted);
 
                 context.HandleRequest();
             }

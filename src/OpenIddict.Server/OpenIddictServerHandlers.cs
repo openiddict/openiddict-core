@@ -357,8 +357,7 @@ namespace OpenIddict.Server
                 }
 
                 // If the type associated with the token entry doesn't match the expected type, return an error.
-                if (!string.IsNullOrEmpty(context.TokenType) &&
-                    !string.Equals(context.TokenType, await _tokenManager.GetTypeAsync(token)))
+                if (!string.IsNullOrEmpty(context.TokenType) && !await _tokenManager.HasTypeAsync(token, context.TokenType))
                 {
                     context.Reject(
                         error: context.EndpointType switch
@@ -433,7 +432,7 @@ namespace OpenIddict.Server
                     return default;
                 }
 
-                // If the token cannot be validated, don't return an error to allow another handle to validate it.
+                // If the token cannot be validated, don't return an error to allow another handler to validate it.
                 if (!context.Options.JsonWebTokenHandler.CanReadToken(context.Token))
                 {
                     return default;
@@ -1046,8 +1045,12 @@ namespace OpenIddict.Server
                     context.Reject(
                         error: context.EndpointType switch
                         {
+                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                => Errors.ExpiredToken,
+
                             OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
-                            _                                  => Errors.InvalidToken
+
+                            _ => Errors.InvalidToken
                         },
                         description: context.EndpointType switch
                         {
@@ -1351,7 +1354,7 @@ namespace OpenIddict.Server
                 {
                     throw new InvalidOperationException(new StringBuilder()
                         .AppendLine("The specified principal doesn't contain any claims-based identity.")
-                        .Append("Make sure that both 'ClaimsPrincipal.Identity' is not null.")
+                        .Append("Make sure that 'ClaimsPrincipal.Identity' is not null.")
                         .ToString());
                 }
 
@@ -1437,8 +1440,7 @@ namespace OpenIddict.Server
                     case OpenIddictServerEndpointType.Verification:
                         break;
 
-                    default:
-                        return default;
+                    default: return default;
                 }
 
                 var identity = (ClaimsIdentity) context.Principal.Identity;
@@ -1586,7 +1588,7 @@ namespace OpenIddict.Server
                 }
 
                 // Reset the audiences collection, as it's later set, based on the token type.
-                context.Principal.SetAudiences(Array.Empty<string>());
+                context.Principal.SetAudiences(ImmutableArray.Create<string>());
 
                 return default;
             }
@@ -2760,7 +2762,6 @@ namespace OpenIddict.Server
                 {
                     Claims.Private.Presenter => false,
                     Claims.Private.Scope     => false,
-                    Claims.Private.TokenId   => false,
 
                     _ => true
                 });

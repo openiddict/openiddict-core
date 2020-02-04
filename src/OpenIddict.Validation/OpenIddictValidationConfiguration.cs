@@ -5,11 +5,13 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using static OpenIddict.Validation.OpenIddictValidationEvents;
 
 namespace OpenIddict.Validation
 {
@@ -18,6 +20,11 @@ namespace OpenIddict.Validation
     /// </summary>
     public class OpenIddictValidationConfiguration : IPostConfigureOptions<OpenIddictValidationOptions>
     {
+        private readonly OpenIddictValidationService _service;
+
+        public OpenIddictValidationConfiguration([NotNull] OpenIddictValidationService service)
+            => _service = service;
+
         /// <summary>
         /// Populates the default OpenIddict validation options and ensures
         /// that the configuration is in a consistent and valid state.
@@ -36,8 +43,72 @@ namespace OpenIddict.Validation
                 throw new InvalidOperationException("The security token handler cannot be null.");
             }
 
-            if (options.Issuer != null || options.MetadataAddress != null)
+            if (options.Configuration == null && options.ConfigurationManager == null &&
+                options.Issuer == null && options.MetadataAddress == null)
             {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("An OAuth 2.0/OpenID Connect server configuration or an issuer address must be registered.")
+                    .Append("To use a local OpenIddict server, reference the 'OpenIddict.Validation.ServerIntegration' package ")
+                    .AppendLine("and call 'services.AddOpenIddict().AddValidation().UseLocalServer()' to import the server settings.")
+                    .Append("To use a remote server, reference the 'OpenIddict.Validation.SystemNetHttp' package and call ")
+                    .Append("'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' ")
+                    .AppendLine("and 'services.AddOpenIddict().AddValidation().SetIssuer()' to use server discovery.")
+                    .Append("Alternatively, you can register a static server configuration by calling ")
+                    .Append("'services.AddOpenIddict().AddValidation().SetConfiguration()'.")
+                    .ToString());
+            }
+
+            if (options.ValidationType == OpenIddictValidationType.Introspection)
+            {
+                if (!options.DefaultHandlers.Any(descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("An introspection client must be registered when using introspection.")
+                        .Append("Reference the 'OpenIddict.Validation.SystemNetHttp' package and call ")
+                        .Append("'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' ")
+                        .Append("to register the default System.Net.Http-based integration.")
+                        .ToString());
+                }
+
+                if (options.Issuer == null && options.MetadataAddress == null)
+                {
+                    throw new InvalidOperationException("The issuer or the metadata address must be set when using introspection.");
+                }
+
+                if (string.IsNullOrEmpty(options.ClientId))
+                {
+                    throw new InvalidOperationException("The client identifier cannot be null or empty when using introspection.");
+                }
+
+                if (string.IsNullOrEmpty(options.ClientSecret))
+                {
+                    throw new InvalidOperationException("The client secret cannot be null or empty when using introspection.");
+                }
+
+                if (options.EnableAuthorizationEntryValidation)
+                {
+                    throw new InvalidOperationException("Authorization validation cannot be enabled when using introspection.");
+                }
+
+                if (options.EnableTokenEntryValidation)
+                {
+                    throw new InvalidOperationException("Token validation cannot be enabled when using introspection.");
+                }
+            }
+
+            if (options.Configuration == null && options.ConfigurationManager == null)
+            {
+                if (!options.DefaultHandlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
+                    !options.DefaultHandlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("A discovery client must be registered when using server discovery.")
+                        .Append("Reference the 'OpenIddict.Validation.SystemNetHttp' package and call ")
+                        .Append("'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' ")
+                        .Append("to register the default System.Net.Http-based integration.")
+                        .ToString());
+                }
+
                 if (options.MetadataAddress == null)
                 {
                     options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
@@ -70,61 +141,22 @@ namespace OpenIddict.Validation
                 }
             }
 
-            foreach (var key in options.EncryptionCredentials.Select(credentials => credentials.Key))
+            if (options.ConfigurationManager == null)
             {
-                if (!string.IsNullOrEmpty(key.KeyId))
+                if (options.Configuration != null)
                 {
-                    continue;
+                    options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(options.Configuration);
                 }
 
-                key.KeyId = GetKeyIdentifier(key);
-            }
-
-            static string GetKeyIdentifier(SecurityKey key)
-            {
-                // When no key identifier can be retrieved from the security keys, a value is automatically
-                // inferred from the hexadecimal representation of the certificate thumbprint (SHA-1)
-                // when the key is bound to a X.509 certificate or from the public part of the signing key.
-
-                if (key is X509SecurityKey x509SecurityKey)
+                else
                 {
-                    return x509SecurityKey.Certificate.Thumbprint;
-                }
-
-                if (key is RsaSecurityKey rsaSecurityKey)
-                {
-                    // Note: if the RSA parameters are not attached to the signing key,
-                    // extract them by calling ExportParameters on the RSA instance.
-                    var parameters = rsaSecurityKey.Parameters;
-                    if (parameters.Modulus == null)
+                    options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                        options.MetadataAddress.AbsoluteUri, new OpenIddictValidationRetriever(_service))
                     {
-                        parameters = rsaSecurityKey.Rsa.ExportParameters(includePrivateParameters: false);
-
-                        Debug.Assert(parameters.Modulus != null,
-                            "A null modulus shouldn't be returned by RSA.ExportParameters().");
-                    }
-
-                    // Only use the 40 first chars of the base64url-encoded modulus.
-                    var identifier = Base64UrlEncoder.Encode(parameters.Modulus);
-                    return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
+                        AutomaticRefreshInterval = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval,
+                        RefreshInterval = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval
+                    };
                 }
-
-#if SUPPORTS_ECDSA
-                if (key is ECDsaSecurityKey ecsdaSecurityKey)
-                {
-                    // Extract the ECDSA parameters from the signing credentials.
-                    var parameters = ecsdaSecurityKey.ECDsa.ExportParameters(includePrivateParameters: false);
-
-                    Debug.Assert(parameters.Q.X != null,
-                        "Invalid coordinates shouldn't be returned by ECDsa.ExportParameters().");
-
-                    // Only use the 40 first chars of the base64url-encoded X coordinate.
-                    var identifier = Base64UrlEncoder.Encode(parameters.Q.X);
-                    return identifier.Substring(0, Math.Min(identifier.Length, 40)).ToUpperInvariant();
-                }
-#endif
-
-                return null;
             }
         }
     }

@@ -111,6 +111,7 @@ namespace OpenIddict.Server
         /// </summary>
         public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
         {
+            AuthenticationType = TokenValidationParameters.DefaultAuthenticationType,
             ClockSkew = TimeSpan.Zero,
             NameClaimType = OpenIddictConstants.Claims.Name,
             RoleClaimType = OpenIddictConstants.Claims.Role,
@@ -331,7 +332,7 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets or sets the optional "realm" value returned to
-        /// the caller as part of the WWW-Authenticate header.
+        /// the caller as part of challenge responses.
         /// </summary>
         public string Realm { get; set; }
 

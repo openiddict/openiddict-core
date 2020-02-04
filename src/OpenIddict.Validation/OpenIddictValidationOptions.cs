@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -46,12 +48,28 @@ namespace OpenIddict.Validation
             new List<OpenIddictValidationHandlerDescriptor>(OpenIddictValidationHandlers.DefaultHandlers);
 
         /// <summary>
+        /// Gets or sets the type of validation used by the OpenIddict validation services.
+        /// By default, local validation is always used.
+        /// </summary>
+        public OpenIddictValidationType ValidationType { get; set; } = OpenIddictValidationType.Direct;
+
+        /// <summary>
+        /// Gets or sets the client identifier sent to the authorization server when using remote validation.
+        /// </summary>
+        public string ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client secret sent to the authorization server when using remote validation.
+        /// </summary>
+        public string ClientSecret { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a database call is made
         /// to validate the authorization entry associated with the received tokens.
         /// Note: enabling this option may have an impact on performance and
         /// can only be used with an OpenIddict-based authorization server.
         /// </summary>
-        public bool EnableAuthorizationValidation { get; set; }
+        public bool EnableAuthorizationEntryValidation { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a database call is made
@@ -59,7 +77,7 @@ namespace OpenIddict.Validation
         /// Note: enabling this option may have an impact on performance but
         /// is required when the OpenIddict server emits reference tokens.
         /// </summary>
-        public bool EnableTokenValidation { get; set; }
+        public bool EnableTokenEntryValidation { get; set; }
 
         /// <summary>
         /// Gets or sets the absolute URL of the OAuth 2.0/OpenID Connect server.
@@ -73,6 +91,17 @@ namespace OpenIddict.Validation
         public Uri MetadataAddress { get; set; }
 
         /// <summary>
+        /// Gets or sets the OAuth 2.0/OpenID Connect static server configuration, if applicable.
+        /// </summary>
+        public OpenIdConnectConfiguration Configuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration manager used to retrieve
+        /// and cache the OAuth 2.0/OpenID Connect server configuration.
+        /// </summary>
+        public IConfigurationManager<OpenIdConnectConfiguration> ConfigurationManager { get; set; }
+
+        /// <summary>
         /// Gets the intended audiences of this resource server.
         /// Setting this property is recommended when the authorization
         /// server issues access tokens for multiple distinct resource servers.
@@ -81,7 +110,7 @@ namespace OpenIddict.Validation
 
         /// <summary>
         /// Gets or sets the optional "realm" value returned to
-        /// the caller as part of the WWW-Authenticate header.
+        /// the caller as part of challenge responses.
         /// </summary>
         public string Realm { get; set; }
 
@@ -90,6 +119,7 @@ namespace OpenIddict.Validation
         /// </summary>
         public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
         {
+            AuthenticationType = TokenValidationParameters.DefaultAuthenticationType,
             ClockSkew = TimeSpan.Zero,
             NameClaimType = Claims.Name,
             RoleClaimType = Claims.Role,

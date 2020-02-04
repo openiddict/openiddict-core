@@ -5,10 +5,10 @@
  */
 
 using System;
-using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using OpenIddict.Server;
 
 namespace OpenIddict.Validation.ServerIntegration
@@ -40,14 +40,18 @@ namespace OpenIddict.Validation.ServerIntegration
                 throw new ArgumentNullException(nameof(options));
             }
 
-            // Note: the issuer may be null. In this case, it will be usually be provided by
-            // a validation handler registered by the host (e.g ASP.NET Core or OWIN/Katana)
-            options.Issuer = _options.CurrentValue.Issuer;
+            // Note: the issuer may be null. In this case, it will be usually provided by
+            // a validation handler registered by the host (e.g ASP.NET Core or OWIN/Katana).
+            options.Configuration = new OpenIdConnectConfiguration
+            {
+                Issuer = _options.CurrentValue.Issuer?.AbsoluteUri
+            };
 
-            // Import the token validation parameters from the server configuration.
-            options.TokenValidationParameters.IssuerSigningKeys =
-                (from credentials in _options.CurrentValue.SigningCredentials
-                 select credentials.Key).ToList();
+            // Import the signing keys from the server configuration.
+            foreach (var credentials in _options.CurrentValue.SigningCredentials)
+            {
+                options.Configuration.SigningKeys.Add(credentials.Key);
+            }
 
             // Import the encryption keys from the server configuration.
             foreach (var credentials in _options.CurrentValue.EncryptionCredentials)
@@ -55,8 +59,8 @@ namespace OpenIddict.Validation.ServerIntegration
                 options.EncryptionCredentials.Add(credentials);
             }
 
-            // Note: token validation must be enabled to be able to validate reference tokens.
-            options.EnableTokenValidation = _options.CurrentValue.UseReferenceTokens;
+            // Note: token entry validation must be enabled to be able to validate reference tokens.
+            options.EnableTokenEntryValidation = _options.CurrentValue.UseReferenceTokens;
         }
 
         /// <summary>
@@ -67,13 +71,23 @@ namespace OpenIddict.Validation.ServerIntegration
         /// <param name="options">The options instance to initialize.</param>
         public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictValidationOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (options.ValidationType != OpenIddictValidationType.Direct)
+            {
+                throw new InvalidOperationException("The local server integration can only be used with direct validation.");
+            }
+
             // Note: authorization validation requires that authorizations have an entry
             // in the database (containing at least the authorization metadata), which is
             // not created if the authorization storage is disabled in the server options.
-            if (options.EnableAuthorizationValidation && _options.CurrentValue.DisableAuthorizationStorage)
+            if (options.EnableAuthorizationEntryValidation && _options.CurrentValue.DisableAuthorizationStorage)
             {
                 throw new InvalidOperationException(new StringBuilder()
-                    .Append("Authorization validation cannot be enabled when authorization ")
+                    .Append("Authorization entry validation cannot be enabled when authorization ")
                     .Append("storage is disabled in the OpenIddict server options.")
                     .ToString());
             }
@@ -81,10 +95,10 @@ namespace OpenIddict.Validation.ServerIntegration
             // Note: token validation requires that tokens have an entry in the database
             // (containing at least the token metadata), which is not created if the
             // token storage is disabled in the OpenIddict server options.
-            if (options.EnableTokenValidation && _options.CurrentValue.DisableTokenStorage)
+            if (options.EnableTokenEntryValidation && _options.CurrentValue.DisableTokenStorage)
             {
                 throw new InvalidOperationException(new StringBuilder()
-                    .Append("Token validation cannot be enabled when token storage ")
+                    .Append("Token entry validation cannot be enabled when token storage ")
                     .Append("is disabled in the OpenIddict server options.")
                     .ToString());
             }

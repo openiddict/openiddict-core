@@ -34,8 +34,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.AddWebEncoders();
-
             // Note: unlike regular OWIN middleware, the OpenIddict validation middleware is registered
             // as a scoped service in the DI container. This allows containers that support middleware
             // resolution (like Autofac) to use it without requiring additional configuration.

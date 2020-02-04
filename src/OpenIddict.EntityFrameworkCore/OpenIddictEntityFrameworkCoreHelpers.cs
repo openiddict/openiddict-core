@@ -127,7 +127,7 @@ namespace Microsoft.EntityFrameworkCore
         internal static IAsyncEnumerable<T> AsAsyncEnumerable<T>(
             [NotNull] this IQueryable<T> source, CancellationToken cancellationToken = default)
         {
-            if (source is null)
+            if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }

@@ -29,9 +29,8 @@ namespace OpenIddict.Server.DataProtection
             = new OpenIddictServerDataProtectionFormatter();
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether the default token format
-        /// should be preferred when issuing new access tokens, refresh tokens
-        /// and authorization codes. This property is set to <c>false</c> by default.
+        /// Gets or sets a boolean indicating whether the default token format should be
+        /// used when issuing new tokens. This property is set to <c>false</c> by default.
         /// </summary>
         public bool PreferDefaultTokenFormat { get; set; }
     }

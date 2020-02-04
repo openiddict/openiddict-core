@@ -16,7 +16,6 @@
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(ExtensionsVersion)" />
     <PackageReference Include="Microsoft.Owin.Security" Version="$(OwinVersion)" />
   </ItemGroup>
 

@@ -36,6 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddLogging();
             builder.Services.AddOptions();
 
+            builder.Services.TryAddSingleton<OpenIddictValidationService>();
             builder.Services.TryAddScoped<IOpenIddictValidationProvider, OpenIddictValidationProvider>();
 
             // Register the built-in validation event handlers used by the OpenIddict validation components.
@@ -43,8 +44,10 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
             // Register the built-in filters used by the default OpenIddict validation event handlers.
-            builder.Services.TryAddSingleton<RequireAuthorizationValidationEnabled>();
-            builder.Services.TryAddSingleton<RequireTokenValidationEnabled>();
+            builder.Services.TryAddSingleton<RequireAuthorizationEntryValidationEnabled>();
+            builder.Services.TryAddSingleton<RequireLocalValidation>();
+            builder.Services.TryAddSingleton<RequireTokenEntryValidationEnabled>();
+            builder.Services.TryAddSingleton<RequireIntrospectionValidation>();
 
             // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

@@ -27,14 +27,9 @@ namespace OpenIddict.Validation.SystemNetHttp
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Options.MetadataAddress == null)
-                {
-                    return new ValueTask<bool>(false);
-                }
-
                 return new ValueTask<bool>(
-                    string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(context.Options.MetadataAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
+                    string.Equals(context.Options.MetadataAddress?.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(context.Options.MetadataAddress?.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
             }
         }
     }

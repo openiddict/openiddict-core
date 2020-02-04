@@ -9,10 +9,12 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Validation;
 
@@ -411,8 +413,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// can only be used with an OpenIddict-based authorization server.
         /// </summary>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder EnableAuthorizationValidation()
-            => Configure(options => options.EnableAuthorizationValidation = true);
+        public OpenIddictValidationBuilder EnableAuthorizationEntryValidation()
+            => Configure(options => options.EnableAuthorizationEntryValidation = true);
 
         /// <summary>
         /// Enables token validation so that a database call is made for each API request
@@ -421,8 +423,56 @@ namespace Microsoft.Extensions.DependencyInjection
         /// when the OpenIddict server is configured to use reference tokens.
         /// </summary>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder EnableTokenValidation()
-            => Configure(options => options.EnableTokenValidation = true);
+        public OpenIddictValidationBuilder EnableTokenEntryValidation()
+            => Configure(options => options.EnableTokenEntryValidation = true);
+
+        /// <summary>
+        /// Sets a static OpenID Connect server configuration, that will be used to
+        /// resolve the metadata/introspection endpoints and the issuer signing keys.
+        /// </summary>
+        /// <param name="configuration">The server configuration.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        public OpenIddictValidationBuilder SetConfiguration([NotNull] OpenIdConnectConfiguration configuration)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            return Configure(options => options.Configuration = configuration);
+        }
+
+        /// <summary>
+        /// Sets the client identifier client_id used when communicating
+        /// with the remote authorization server (e.g for introspection).
+        /// </summary>
+        /// <param name="identifier">The client identifier.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        public OpenIddictValidationBuilder SetClientId([NotNull] string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(identifier));
+            }
+
+            return Configure(options => options.ClientId = identifier);
+        }
+
+        /// <summary>
+        /// Sets the client identifier client_secret used when communicating
+        /// with the remote authorization server (e.g for introspection).
+        /// </summary>
+        /// <param name="secret">The client secret.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        public OpenIddictValidationBuilder SetClientSecret([NotNull] string secret)
+        {
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new ArgumentException("The client secret cannot be null or empty.", nameof(secret));
+            }
+
+            return Configure(options => options.ClientSecret = secret);
+        }
 
         /// <summary>
         /// Sets the issuer address, which is used to determine the actual location of the
@@ -441,19 +491,47 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Updates the token validation parameters using the specified delegate.
+        /// Sets the issuer address, which is used to determine the actual location of the
+        /// OAuth 2.0/OpenID Connect configuration document when using provider discovery.
         /// </summary>
-        /// <param name="configuration">The configuration delegate.</param>
+        /// <param name="address">The issuer address.</param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder SetTokenValidationParameters([NotNull] Action<TokenValidationParameters> configuration)
+        public OpenIddictValidationBuilder SetIssuer([NotNull] string address)
         {
-            if (configuration == null)
+            if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentNullException(nameof(configuration));
+                throw new ArgumentException("The issuer cannot be null or empty.", nameof(address));
+            }
+            
+            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
+            {
+                throw new ArgumentException("The issuer must be a valid absolute URL.", nameof(address));
             }
 
-            return Configure(options => configuration(options.TokenValidationParameters));
+            return SetIssuer(uri);
         }
+
+        /// <summary>
+        /// Sets the realm returned to the caller as part of challenge responses.
+        /// </summary>
+        /// <param name="realm">The issuer address.</param>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        public OpenIddictValidationBuilder SetRealm([NotNull] string realm)
+        {
+            if (string.IsNullOrEmpty(realm))
+            {
+                throw new ArgumentException("The realm cannot be null or empty.", nameof(realm));
+            }
+
+            return Configure(options => options.Realm = realm);
+        }
+
+        /// <summary>
+        /// Configures OpenIddict to use introspection instead of local/direct validation.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        public OpenIddictValidationBuilder UseIntrospection()
+            => Configure(options => options.ValidationType = OpenIddictValidationType.Introspection);
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object.
