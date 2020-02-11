@@ -7,6 +7,7 @@
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
@@ -63,6 +64,19 @@ namespace Microsoft.Extensions.DependencyInjection
             where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
+            // Note: unlike Entity Framework Core 1.x/2.x/3.x, Entity Framework 6.x
+            // always throws an exception when using generic types as entity types.
+            // To ensure a better exception is thrown, a manual check is made here.
+            if (typeof(TApplication).IsGenericType || typeof(TAuthorization).IsGenericType ||
+                typeof(TScope).IsGenericType || typeof(TToken).IsGenericType)
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The Entity Framework 6.x stores cannot be used with generic types.")
+                    .Append("Consider creating non-generic classes derived from the default entities ")
+                    .Append("for the application, authorization, scope and token entities.")
+                    .ToString());
+            }
+
             Services.Configure<OpenIddictCoreOptions>(options =>
             {
                 options.DefaultApplicationType = typeof(TApplication);
