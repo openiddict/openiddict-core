@@ -9,7 +9,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.ModelConfiguration;
-using System.Text;
 using OpenIddict.EntityFramework.Models;
 
 namespace OpenIddict.EntityFramework
@@ -30,17 +29,6 @@ namespace OpenIddict.EntityFramework
     {
         public OpenIddictTokenConfiguration()
         {
-            // Note: unlike Entity Framework Core 1.x/2.x, Entity Framework 6.x
-            // always throws an exception when using generic types as entity types.
-            // To ensure a better exception is thrown, a manual check is made here.
-            if (typeof(TToken).IsGenericType)
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The token entity cannot be a generic type.")
-                    .Append("Consider creating a non-generic derived class.")
-                    .ToString());
-            }
-
             // Warning: optional foreign keys MUST NOT be added as CLR properties because
             // Entity Framework would throw an exception due to the TKey generic parameter
             // being non-nullable when using value types like short, int, long or Guid.
