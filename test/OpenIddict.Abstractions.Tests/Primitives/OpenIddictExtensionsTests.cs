@@ -1659,7 +1659,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Presenter, presenter.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(presenters, principal.GetPresenters());
@@ -1689,7 +1689,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Resource, resource.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(resources, principal.GetResources());
@@ -1719,7 +1719,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scope, scope.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(scopes, principal.GetScopes());
@@ -2068,7 +2068,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Presenter, presenter.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasPresenter());
@@ -2090,7 +2090,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Presenter, presenter.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasPresenter("fabrikam"));
@@ -2132,7 +2132,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Resource, resource.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasResource());
@@ -2154,7 +2154,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Resource, resource.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasResource("fabrikam"));
@@ -2196,7 +2196,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scope, scope.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasScope());
@@ -2218,7 +2218,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scope, scope.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasScope(Scopes.OpenId));
@@ -2523,7 +2523,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetPresenters(presenters);
 
             // Assert
-            Assert.Equal(presenter, principal.GetClaims(Claims.Private.Presenters));
+            Assert.Equal(presenter, principal.GetClaims(Claims.Private.Presenter));
         }
 
         [Fact]
@@ -2555,7 +2555,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetResources(resources);
 
             // Assert
-            Assert.Equal(resource, principal.GetClaims(Claims.Private.Resources));
+            Assert.Equal(resource, principal.GetClaims(Claims.Private.Resource));
         }
 
         [Fact]
@@ -2587,7 +2587,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetScopes(scopes);
 
             // Assert
-            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
+            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scope));
         }
 
         [Theory]
@@ -2607,7 +2607,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetScopes((IEnumerable<string>)scopes);
 
             // Assert
-            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
+            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scope));
         }
 
         [Theory]
@@ -2627,7 +2627,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetScopes(ImmutableArray.Create(scopes));
 
             // Assert
-            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
+            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scope));
         }
 
         [Fact]

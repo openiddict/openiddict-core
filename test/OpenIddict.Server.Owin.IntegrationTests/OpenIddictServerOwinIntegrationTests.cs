@@ -351,7 +351,9 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 
                         context.Response.ContentType = "application/json";
                         await context.Response.WriteAsync(JsonSerializer.Serialize(
-                            result.Identity.Claims.ToDictionary(claim => claim.Type, claim => claim.Value)));
+                            new OpenIddictResponse(result.Identity.Claims.GroupBy(claim => claim.Type)
+                                .Select(group => new KeyValuePair<string, string[]>(
+                                    group.Key, group.Select(claim => claim.Value).ToArray())))));
                         return;
                     }
 

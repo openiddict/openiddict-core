@@ -31,6 +31,7 @@ namespace OpenIddict.Validation
             ValidateAccessTokenParameter.Descriptor,
             ValidateReferenceTokenIdentifier.Descriptor,
             ValidateIdentityModelToken.Descriptor,
+            MapInternalClaims.Descriptor,
             RestoreReferenceTokenProperties.Descriptor,
             ValidatePrincipal.Descriptor,
             ValidateExpirationDate.Descriptor,
@@ -207,7 +208,6 @@ namespace OpenIddict.Validation
                 parameters = parameters.Clone();
                 parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
                 parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
-                parameters.ValidTypes = new[] { JsonWebTokenTypes.AccessToken };
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
@@ -220,20 +220,75 @@ namespace OpenIddict.Validation
 
                 // Attach the principal extracted from the token to the parent event context.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
+
+                // Note: tokens that are considered valid at this point are guaranteed to be access tokens,
+                // as a "typ" header validation is performed by the JWT handler, based on the valid values
+                // set in the token validation parameters (by default, only "at+jwt" is considered valid).
                 context.Principal.SetClaim(Claims.Private.TokenType, TokenTypeHints.AccessToken);
-
-                // Map the standardized "azp" and "scope" claims to their "oi_" equivalent so that
-                // the ClaimsPrincipal extensions exposed by OpenIddict return consistent results.
-                context.Principal.SetPresenters(context.Principal.GetClaims(Claims.AuthorizedParty));
-
-                // Note: starting in OpenIddict 3.0, the public "scope" claim is formatted
-                // as a unique space-separated string containing all the granted scopes.
-                // Visit https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03 for more information.
-                context.Principal.SetScopes(context.Principal.GetClaim(Claims.Scope)
-                    ?.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries));
 
                 context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
                                         "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of mapping internal claims used by OpenIddict.
+        /// </summary>
+        public class MapInternalClaims : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                    .UseSingletonHandler<MapInternalClaims>()
+                    .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Principal == null)
+                {
+                    return default;
+                }
+
+                // Map the standardized "azp" and "scope" claims to their "oi_" equivalent so that
+                // the ClaimsPrincipal extensions exposed by OpenIddict return consistent results.
+                if (!context.Principal.HasPresenter())
+                {
+                    context.Principal.SetPresenters(context.Principal.GetClaims(Claims.AuthorizedParty));
+                }
+
+                // Note: in previous OpenIddict versions, scopes were represented as a JSON array
+                // and deserialized as multiple claims. In OpenIddict 3.0, the public "scope" claim
+                // is formatted as a unique space-separated string containing all the granted scopes.
+                // To ensure access tokens generated by previous versions are still correctly handled,
+                // both formats (unique space-separated string or multiple scope claims) must be supported.
+                // Visit https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03 for more information.
+                if (!context.Principal.HasScope())
+                {
+                    var scopes = context.Principal.GetClaims(Claims.Scope);
+                    if (scopes.Length == 1)
+                    {
+                        scopes = scopes[0].Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
+                    }
+
+                    context.Principal.SetScopes(scopes);
+                }
 
                 return default;
             }
@@ -263,7 +318,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireReferenceAccessTokensEnabled>()
                     .UseScopedHandler<RestoreReferenceTokenProperties>()
-                    .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
+                    .SetOrder(MapInternalClaims.Descriptor.Order + 1_000)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)

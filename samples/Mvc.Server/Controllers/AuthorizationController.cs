@@ -150,7 +150,7 @@ namespace Mvc.Server
                 client : await _applicationManager.GetIdAsync(application),
                 status : Statuses.Valid,
                 type   : AuthorizationTypes.Permanent,
-                scopes : ImmutableArray.CreateRange(request.GetScopes())).ToListAsync();
+                scopes : request.GetScopes()).ToListAsync();
 
             switch (await _applicationManager.GetConsentTypeAsync(application))
             {
@@ -189,7 +189,7 @@ namespace Mvc.Server
                             subject  : await _userManager.GetUserIdAsync(user),
                             client   : await _applicationManager.GetIdAsync(application),
                             type     : AuthorizationTypes.Permanent,
-                            scopes   : ImmutableArray.CreateRange(principal.GetScopes()));
+                            scopes   : principal.GetScopes());
                     }
 
                     principal.SetInternalAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
@@ -245,7 +245,7 @@ namespace Mvc.Server
                 client : await _applicationManager.GetIdAsync(application),
                 status : Statuses.Valid,
                 type   : AuthorizationTypes.Permanent,
-                scopes : ImmutableArray.CreateRange(request.GetScopes())).ToListAsync();
+                scopes : request.GetScopes()).ToListAsync();
 
             // Note: the same check is already made in the other action but is repeated
             // here to ensure a malicious user can't abuse this POST-only endpoint and
@@ -281,7 +281,7 @@ namespace Mvc.Server
                     subject  : await _userManager.GetUserIdAsync(user),
                     client   : await _applicationManager.GetIdAsync(application),
                     type     : AuthorizationTypes.Permanent,
-                    scopes   : ImmutableArray.CreateRange(principal.GetScopes()));
+                    scopes   : principal.GetScopes());
             }
 
             principal.SetInternalAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
