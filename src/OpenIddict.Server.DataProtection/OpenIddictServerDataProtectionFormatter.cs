@@ -237,11 +237,11 @@ namespace OpenIddict.Server.DataProtection
                 Claims.Private.CodeChallengeMethod       => false,
                 Claims.Private.IdentityTokenLifetime     => false,
                 Claims.Private.Nonce                     => false,
-                Claims.Private.Presenters                => false,
+                Claims.Private.Presenter                 => false,
                 Claims.Private.RedirectUri               => false,
                 Claims.Private.RefreshTokenLifetime      => false,
-                Claims.Private.Resources                 => false,
-                Claims.Private.Scopes                    => false,
+                Claims.Private.Resource                  => false,
+                Claims.Private.Scope                     => false,
                 Claims.Private.TokenId                   => false,
 
                 _ => true

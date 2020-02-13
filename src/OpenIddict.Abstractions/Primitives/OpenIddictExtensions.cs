@@ -1167,7 +1167,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The presenters list or an empty set if the claims cannot be found.</returns>
         public static ImmutableArray<string> GetPresenters([NotNull] this ClaimsPrincipal principal)
-            => principal.GetClaims(Claims.Private.Presenters);
+            => principal.GetClaims(Claims.Private.Presenter);
 
         /// <summary>
         /// Gets the resources list stored in the claims principal.
@@ -1175,7 +1175,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The resources list or an empty set if the claims cannot be found.</returns>
         public static ImmutableArray<string> GetResources([NotNull] this ClaimsPrincipal principal)
-            => principal.GetClaims(Claims.Private.Resources);
+            => principal.GetClaims(Claims.Private.Resource);
 
         /// <summary>
         /// Gets the scopes list stored in the claims principal.
@@ -1183,7 +1183,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The scopes list or an empty set if the claim cannot be found.</returns>
         public static ImmutableArray<string> GetScopes([NotNull] this ClaimsPrincipal principal)
-            => principal.GetClaims(Claims.Private.Scopes);
+            => principal.GetClaims(Claims.Private.Scope);
 
         /// <summary>
         /// Gets the access token lifetime associated with the claims principal.
@@ -1290,15 +1290,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The audience cannot be null or empty.", nameof(audience));
             }
 
-            foreach (var claim in principal.FindAll(Claims.Audience))
-            {
-                if (string.Equals(claim.Value, audience, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return principal.HasClaim(Claims.Audience, audience);
         }
 
         /// <summary>
@@ -1313,7 +1305,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.FindAll(Claims.Private.Presenters).Any();
+            return principal.FindAll(Claims.Private.Presenter).Any();
         }
 
         /// <summary>
@@ -1334,15 +1326,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The presenter cannot be null or empty.", nameof(presenter));
             }
 
-            foreach (var claim in principal.FindAll(Claims.Private.Presenters))
-            {
-                if (string.Equals(claim.Value, presenter, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return principal.HasClaim(Claims.Private.Presenter, presenter);
         }
 
         /// <summary>
@@ -1357,7 +1341,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.FindAll(Claims.Private.Resources).Any();
+            return principal.FindAll(Claims.Private.Resource).Any();
         }
 
         /// <summary>
@@ -1378,15 +1362,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
             }
 
-            foreach (var claim in principal.FindAll(Claims.Private.Resources))
-            {
-                if (string.Equals(claim.Value, resource, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return principal.HasClaim(Claims.Private.Resource, resource);
         }
 
         /// <summary>
@@ -1401,7 +1377,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return principal.FindAll(Claims.Private.Scopes).Any();
+            return principal.FindAll(Claims.Private.Scope).Any();
         }
 
         /// <summary>
@@ -1422,15 +1398,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The scope cannot be null or empty.", nameof(scope));
             }
 
-            foreach (var claim in principal.FindAll(Claims.Private.Scopes))
-            {
-                if (string.Equals(claim.Value, scope, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return principal.HasClaim(Claims.Private.Scope, scope);
         }
 
         /// <summary>
@@ -1514,7 +1482,7 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetPresenters(
             [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> presenters)
-            => principal.SetClaims(Claims.Private.Presenters, presenters);
+            => principal.SetClaims(Claims.Private.Presenter, presenters);
 
         /// <summary>
         /// Sets the presenters list in the claims principal.
@@ -1547,7 +1515,7 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetResources(
             [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> resources)
-            => principal.SetClaims(Claims.Private.Resources, resources);
+            => principal.SetClaims(Claims.Private.Resource, resources);
 
         /// <summary>
         /// Sets the resources list in the claims principal.
@@ -1580,7 +1548,7 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetScopes(
             [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> scopes)
-            => principal.SetClaims(Claims.Private.Scopes, scopes);
+            => principal.SetClaims(Claims.Private.Scope, scopes);
 
         /// <summary>
         /// Sets the scopes list in the claims principal.

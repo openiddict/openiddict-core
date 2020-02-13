@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Validation
 {
@@ -90,11 +90,12 @@ namespace OpenIddict.Validation
         public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
         {
             ClockSkew = TimeSpan.Zero,
-            NameClaimType = OpenIddictConstants.Claims.Name,
-            RoleClaimType = OpenIddictConstants.Claims.Role,
+            NameClaimType = Claims.Name,
+            RoleClaimType = Claims.Role,
             // Note: audience and lifetime are manually validated by OpenIddict itself.
             ValidateAudience = false,
-            ValidateLifetime = false
+            ValidateLifetime = false,
+            ValidTypes = new[] { JsonWebTokenTypes.AccessToken }
         };
     }
 }

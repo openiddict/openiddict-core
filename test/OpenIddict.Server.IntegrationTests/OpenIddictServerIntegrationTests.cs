@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -113,6 +114,250 @@ namespace OpenIddict.Server.FunctionalTests
                 .Append("This generally indicates that the OpenIddict server stack was asked ")
                 .AppendLine("to validate a token for an invalid grant type (e.g password).")
                 .ToString(), exception.Message);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_MissingAccessTokenReturnsNull()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetLogoutEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = null
+            });
+
+            // Assert
+            Assert.Null((string) response[Claims.Subject]);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_InvalidAccessTokenReturnsNull()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetLogoutEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "38323A4B-6CB2-41B8-B457-1951987CB383"
+            });
+
+            // Assert
+            Assert.Null((string) response[Claims.Subject]);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_ValidAccessTokenReturnsExpectedIdentity()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_AuthorizedPartyIsMappedToPresenter()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique")
+                            .SetClaim(Claims.AuthorizedParty, "Fabrikam");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Fabrikam", (string) response[Claims.AuthorizedParty]);
+            Assert.Equal("Fabrikam", (string) response[Claims.Private.Presenter]);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_SinglePublicScopeIsMappedToPrivateClaims()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique")
+                            .SetClaim(Claims.Scope, "openid profile");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("openid profile", (string) response[Claims.Scope]);
+            Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]) response[Claims.Private.Scope]);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_MultiplePublicScopesAreMappedToPrivateClaims()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique")
+                            .SetClaims(Claims.Scope, ImmutableArray.Create(Scopes.OpenId, Scopes.Profile));
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]) response[Claims.Scope]);
+            Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]) response[Claims.Private.Scope]);
         }
 
         [Fact]
