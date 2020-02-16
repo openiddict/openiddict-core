@@ -300,6 +300,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1))
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -339,6 +340,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1))
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -377,6 +379,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters(Enumerable.Empty<string>())
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -417,6 +420,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Contoso")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -456,6 +460,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetPresenters("Contoso")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -495,6 +500,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.RedirectUri, "http://www.fabrikam.com/callback");
@@ -536,6 +542,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.RedirectUri, "http://www.fabrikam.com/callback");
@@ -578,6 +585,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -618,6 +626,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
@@ -660,6 +669,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
@@ -703,6 +713,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
@@ -748,6 +759,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, challenge)
@@ -792,6 +804,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, challenge)
@@ -842,6 +855,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetScopes(Enumerable.Empty<string>())
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -883,6 +897,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetScopes("profile", "email")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -924,6 +939,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Enumerable.Empty<string>())
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -963,6 +979,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes("profile", "email")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -1676,6 +1693,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -1739,6 +1757,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
@@ -1890,6 +1909,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -1952,6 +1972,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -2006,6 +2027,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -2074,6 +2096,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -2138,6 +2161,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -2216,6 +2240,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -2274,6 +2299,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2367,6 +2393,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -2467,6 +2494,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2564,6 +2592,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2636,6 +2665,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2719,6 +2749,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2777,6 +2808,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2873,6 +2905,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -2950,6 +2983,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -3045,6 +3079,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -3136,6 +3171,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -3217,6 +3253,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -3310,6 +3347,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(context.TokenType)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("0270F515-C5B1-4FBF-B673-D7CAF7CCDABC")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
