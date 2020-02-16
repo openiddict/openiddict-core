@@ -218,13 +218,10 @@ namespace OpenIddict.Validation
                     return default;
                 }
 
-                // Attach the principal extracted from the token to the parent event context.
-                context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
-
                 // Note: tokens that are considered valid at this point are guaranteed to be access tokens,
                 // as a "typ" header validation is performed by the JWT handler, based on the valid values
                 // set in the token validation parameters (by default, only "at+jwt" is considered valid).
-                context.Principal.SetClaim(Claims.Private.TokenType, TokenTypeHints.AccessToken);
+                context.Principal = new ClaimsPrincipal(result.ClaimsIdentity).SetTokenType(TokenTypeHints.AccessToken);
 
                 context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
                                         "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
@@ -350,7 +347,7 @@ namespace OpenIddict.Validation
                     .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
                     .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                     .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                    .SetClaim(Claims.Private.TokenType, await _tokenManager.GetTypeAsync(token));
+                    .SetTokenType(await _tokenManager.GetTypeAsync(token));
             }
         }
 
@@ -389,6 +386,28 @@ namespace OpenIddict.Validation
                         description: "The specified token is not valid.");
 
                     return default;
+                }
+
+                // When using JWT or Data Protection tokens, the correct token type is always enforced by IdentityModel
+                // (using the "typ" header) or by ASP.NET Core Data Protection (using per-token-type purposes strings).
+                // To ensure tokens deserialized using a custom routine are of the expected type, a manual check is used,
+                // which requires that a special claim containing the token type be present in the security principal.
+                var type = context.Principal.GetTokenType();
+                if (string.IsNullOrEmpty(type))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.")
+                        .Append("When implementing custom token deserialization, a 'oi_tkn_typ' claim containing ")
+                        .Append("the type of the token being processed must be added to the security principal.")
+                        .ToString());
+                }
+
+                if (!string.Equals(type, TokenTypeHints.AccessToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendFormat("The type of token associated with the deserialized principal ({0})", type)
+                        .AppendFormat("doesn't match the expected token type ({0}).", TokenTypeHints.AccessToken)
+                        .ToString());
                 }
 
                 return default;

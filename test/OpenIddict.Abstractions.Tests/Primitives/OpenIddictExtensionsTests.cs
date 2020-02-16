@@ -1962,7 +1962,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenType, type);
+            principal.SetTokenType(type);
 
             // Act and assert
             Assert.Equal(type, principal.GetTokenType());
@@ -2259,7 +2259,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenType, TokenTypeHints.AccessToken);
+            principal.SetTokenType(TokenTypeHints.AccessToken);
 
             // Act and assert
             Assert.True(principal.HasTokenType(TokenTypeHints.AccessToken));

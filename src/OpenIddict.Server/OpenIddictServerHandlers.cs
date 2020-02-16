@@ -483,7 +483,7 @@ namespace OpenIddict.Server
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
 
                 // Store the token type as a special private claim.
-                context.Principal.SetClaim(Claims.Private.TokenType, token.Typ switch
+                context.Principal.SetTokenType(token.Typ switch
                 {
                     JsonWebTokenTypes.AccessToken   => TokenTypeHints.AccessToken,
                     JsonWebTokenTypes.IdentityToken => TokenTypeHints.IdToken,
@@ -634,7 +634,7 @@ namespace OpenIddict.Server
                     .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
                     .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                     .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                    .SetClaim(Claims.Private.TokenType, await _tokenManager.GetTypeAsync(token));
+                    .SetTokenType(await _tokenManager.GetTypeAsync(token));
             }
         }
 
@@ -691,6 +691,31 @@ namespace OpenIddict.Server
 
 
                     return default;
+                }
+
+                // When using JWT or Data Protection tokens, the correct token type is always enforced by IdentityModel
+                // (using the "typ" header) or by ASP.NET Core Data Protection (using per-token-type purposes strings).
+                // To ensure tokens deserialized using a custom routine are of the expected type, a manual check is used,
+                // which requires that a special claim containing the token type be present in the security principal.
+                if (!string.IsNullOrEmpty(context.TokenType))
+                {
+                    var type = context.Principal.GetTokenType();
+                    if (string.IsNullOrEmpty(type))
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .AppendLine("The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.")
+                            .Append("When implementing custom token deserialization, a 'oi_tkn_typ' claim containing ")
+                            .Append("the type of the token being processed must be added to the security principal.")
+                            .ToString());
+                    }
+
+                    if (!string.Equals(type, context.TokenType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .AppendFormat("The type of token associated with the deserialized principal ({0})", type)
+                            .AppendFormat("doesn't match the expected token type ({0}).", context.TokenType)
+                            .ToString());
+                    }
                 }
 
                 return default;
@@ -872,7 +897,7 @@ namespace OpenIddict.Server
                                  .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
                                  .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                                  .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                                 .SetClaim(Claims.Private.TokenType, await _tokenManager.GetTypeAsync(token));
+                                 .SetTokenType(await _tokenManager.GetTypeAsync(token));
 
                 async ValueTask TryRevokeAuthorizationChainAsync(string identifier)
                 {
