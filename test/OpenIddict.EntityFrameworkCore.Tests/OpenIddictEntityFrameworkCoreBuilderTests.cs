@@ -62,10 +62,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             var provider = services.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
 
-            Assert.Equal(typeof(OpenIddictApplication<long>), options.DefaultApplicationType);
-            Assert.Equal(typeof(OpenIddictAuthorization<long>), options.DefaultAuthorizationType);
-            Assert.Equal(typeof(OpenIddictScope<long>), options.DefaultScopeType);
-            Assert.Equal(typeof(OpenIddictToken<long>), options.DefaultTokenType);
+            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreApplication<long>), options.DefaultApplicationType);
+            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreAuthorization<long>), options.DefaultAuthorizationType);
+            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreScope<long>), options.DefaultScopeType);
+            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreToken<long>), options.DefaultTokenType);
         }
 
         [Fact]
@@ -129,10 +129,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             return services;
         }
 
-        public class CustomApplication : OpenIddictApplication<long, CustomAuthorization, CustomToken> { }
-        public class CustomAuthorization : OpenIddictAuthorization<long, CustomApplication, CustomToken> { }
-        public class CustomScope : OpenIddictScope<long> { }
-        public class CustomToken : OpenIddictToken<long, CustomApplication, CustomAuthorization> { }
+        public class CustomApplication : OpenIddictEntityFrameworkCoreApplication<long, CustomAuthorization, CustomToken> { }
+        public class CustomAuthorization : OpenIddictEntityFrameworkCoreAuthorization<long, CustomApplication, CustomToken> { }
+        public class CustomScope : OpenIddictEntityFrameworkCoreScope<long> { }
+        public class CustomToken : OpenIddictEntityFrameworkCoreToken<long, CustomApplication, CustomAuthorization> { }
 
         public class CustomDbContext : DbContext
         {

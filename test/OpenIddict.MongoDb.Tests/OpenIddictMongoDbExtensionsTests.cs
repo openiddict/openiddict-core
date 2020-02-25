@@ -55,17 +55,17 @@ namespace OpenIddict.MongoDb.Tests
             var provider = services.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
 
-            Assert.Equal(typeof(OpenIddictApplication), options.DefaultApplicationType);
-            Assert.Equal(typeof(OpenIddictAuthorization), options.DefaultAuthorizationType);
-            Assert.Equal(typeof(OpenIddictScope), options.DefaultScopeType);
-            Assert.Equal(typeof(OpenIddictToken), options.DefaultTokenType);
+            Assert.Equal(typeof(OpenIddictMongoDbApplication), options.DefaultApplicationType);
+            Assert.Equal(typeof(OpenIddictMongoDbAuthorization), options.DefaultAuthorizationType);
+            Assert.Equal(typeof(OpenIddictMongoDbScope), options.DefaultScopeType);
+            Assert.Equal(typeof(OpenIddictMongoDbToken), options.DefaultTokenType);
         }
 
         [Theory]
-        [InlineData(typeof(IOpenIddictApplicationStoreResolver), typeof(OpenIddictApplicationStoreResolver))]
-        [InlineData(typeof(IOpenIddictAuthorizationStoreResolver), typeof(OpenIddictAuthorizationStoreResolver))]
-        [InlineData(typeof(IOpenIddictScopeStoreResolver), typeof(OpenIddictScopeStoreResolver))]
-        [InlineData(typeof(IOpenIddictTokenStoreResolver), typeof(OpenIddictTokenStoreResolver))]
+        [InlineData(typeof(IOpenIddictApplicationStoreResolver), typeof(OpenIddictMongoDbApplicationStoreResolver))]
+        [InlineData(typeof(IOpenIddictAuthorizationStoreResolver), typeof(OpenIddictMongoDbAuthorizationStoreResolver))]
+        [InlineData(typeof(IOpenIddictScopeStoreResolver), typeof(OpenIddictMongoDbScopeStoreResolver))]
+        [InlineData(typeof(IOpenIddictTokenStoreResolver), typeof(OpenIddictMongoDbTokenStoreResolver))]
         public void UseMongoDb_RegistersMongoDbStoreResolvers(Type serviceType, Type implementationType)
         {
             // Arrange
@@ -81,10 +81,10 @@ namespace OpenIddict.MongoDb.Tests
         }
 
         [Theory]
-        [InlineData(typeof(OpenIddictApplicationStore<>))]
-        [InlineData(typeof(OpenIddictAuthorizationStore<>))]
-        [InlineData(typeof(OpenIddictScopeStore<>))]
-        [InlineData(typeof(OpenIddictTokenStore<>))]
+        [InlineData(typeof(OpenIddictMongoDbApplicationStore<>))]
+        [InlineData(typeof(OpenIddictMongoDbAuthorizationStore<>))]
+        [InlineData(typeof(OpenIddictMongoDbScopeStore<>))]
+        [InlineData(typeof(OpenIddictMongoDbTokenStore<>))]
         public void UseMongoDb_RegistersMongoDbStore(Type type)
         {
             // Arrange

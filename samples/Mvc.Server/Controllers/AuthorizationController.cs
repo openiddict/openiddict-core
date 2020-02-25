@@ -29,16 +29,16 @@ namespace Mvc.Server
 {
     public class AuthorizationController : Controller
     {
-        private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
-        private readonly OpenIddictAuthorizationManager<OpenIddictAuthorization> _authorizationManager;
-        private readonly OpenIddictScopeManager<OpenIddictScope> _scopeManager;
+        private readonly OpenIddictApplicationManager<OpenIddictEntityFrameworkCoreApplication> _applicationManager;
+        private readonly OpenIddictAuthorizationManager<OpenIddictEntityFrameworkCoreAuthorization> _authorizationManager;
+        private readonly OpenIddictScopeManager<OpenIddictEntityFrameworkCoreScope> _scopeManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public AuthorizationController(
-            OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
-            OpenIddictAuthorizationManager<OpenIddictAuthorization> authorizationManager,
-            OpenIddictScopeManager<OpenIddictScope> scopeManager,
+            OpenIddictApplicationManager<OpenIddictEntityFrameworkCoreApplication> applicationManager,
+            OpenIddictAuthorizationManager<OpenIddictEntityFrameworkCoreAuthorization> authorizationManager,
+            OpenIddictScopeManager<OpenIddictEntityFrameworkCoreScope> scopeManager,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager)
         {

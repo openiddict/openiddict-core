@@ -125,10 +125,10 @@ namespace OpenIddict.EntityFramework.Tests
             return services;
         }
 
-        public class CustomApplication : OpenIddictApplication<long, CustomAuthorization, CustomToken> { }
-        public class CustomAuthorization : OpenIddictAuthorization<long, CustomApplication, CustomToken> { }
-        public class CustomScope : OpenIddictScope<long> { }
-        public class CustomToken : OpenIddictToken<long, CustomApplication, CustomAuthorization> { }
+        public class CustomApplication : OpenIddictEntityFrameworkApplication<long, CustomAuthorization, CustomToken> { }
+        public class CustomAuthorization : OpenIddictEntityFrameworkAuthorization<long, CustomApplication, CustomToken> { }
+        public class CustomScope : OpenIddictEntityFrameworkScope<long> { }
+        public class CustomToken : OpenIddictEntityFrameworkToken<long, CustomApplication, CustomAuthorization> { }
 
         public class CustomDbContext : DbContext
         {

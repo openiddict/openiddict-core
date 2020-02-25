@@ -35,22 +35,22 @@ namespace Microsoft.Extensions.DependencyInjection
             // query filtering applied by the default OpenIddict managers can be safely disabled.
             builder.DisableAdditionalFiltering();
 
-            builder.SetDefaultApplicationEntity<OpenIddictApplication>()
-                   .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
-                   .SetDefaultScopeEntity<OpenIddictScope>()
-                   .SetDefaultTokenEntity<OpenIddictToken>();
+            builder.SetDefaultApplicationEntity<OpenIddictMongoDbApplication>()
+                   .SetDefaultAuthorizationEntity<OpenIddictMongoDbAuthorization>()
+                   .SetDefaultScopeEntity<OpenIddictMongoDbScope>()
+                   .SetDefaultTokenEntity<OpenIddictMongoDbToken>();
 
             // Note: the Mongo stores/resolvers don't depend on scoped/transient services and thus
             // can be safely registered as singleton services and shared/reused across requests.
-            builder.ReplaceApplicationStoreResolver<OpenIddictApplicationStoreResolver>(ServiceLifetime.Singleton)
-                   .ReplaceAuthorizationStoreResolver<OpenIddictAuthorizationStoreResolver>(ServiceLifetime.Singleton)
-                   .ReplaceScopeStoreResolver<OpenIddictScopeStoreResolver>(ServiceLifetime.Singleton)
-                   .ReplaceTokenStoreResolver<OpenIddictTokenStoreResolver>(ServiceLifetime.Singleton);
+            builder.ReplaceApplicationStoreResolver<OpenIddictMongoDbApplicationStoreResolver>(ServiceLifetime.Singleton)
+                   .ReplaceAuthorizationStoreResolver<OpenIddictMongoDbAuthorizationStoreResolver>(ServiceLifetime.Singleton)
+                   .ReplaceScopeStoreResolver<OpenIddictMongoDbScopeStoreResolver>(ServiceLifetime.Singleton)
+                   .ReplaceTokenStoreResolver<OpenIddictMongoDbTokenStoreResolver>(ServiceLifetime.Singleton);
 
-            builder.Services.TryAddSingleton(typeof(OpenIddictApplicationStore<>));
-            builder.Services.TryAddSingleton(typeof(OpenIddictAuthorizationStore<>));
-            builder.Services.TryAddSingleton(typeof(OpenIddictScopeStore<>));
-            builder.Services.TryAddSingleton(typeof(OpenIddictTokenStore<>));
+            builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbApplicationStore<>));
+            builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbAuthorizationStore<>));
+            builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbScopeStore<>));
+            builder.Services.TryAddSingleton(typeof(OpenIddictMongoDbTokenStore<>));
 
             builder.Services.TryAddSingleton<IOpenIddictMongoDbContext, OpenIddictMongoDbContext>();
 

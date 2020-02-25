@@ -58,10 +58,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/>.</returns>
         public OpenIddictEntityFrameworkBuilder ReplaceDefaultEntities<TApplication, TAuthorization, TScope, TToken, TKey>()
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
-            where TScope : OpenIddictScope<TKey>
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
+            where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
+            where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
+            where TScope : OpenIddictEntityFrameworkScope<TKey>
+            where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
             // Note: unlike Entity Framework Core 1.x/2.x/3.x, Entity Framework 6.x

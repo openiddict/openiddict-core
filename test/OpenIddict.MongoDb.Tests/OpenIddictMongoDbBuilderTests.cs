@@ -308,9 +308,9 @@ namespace OpenIddict.MongoDb.Tests
             return services;
         }
 
-        public class CustomApplication : OpenIddictApplication { }
-        public class CustomAuthorization : OpenIddictAuthorization { }
-        public class CustomScope : OpenIddictScope { }
-        public class CustomToken : OpenIddictToken { }
+        public class CustomApplication : OpenIddictMongoDbApplication { }
+        public class CustomAuthorization : OpenIddictMongoDbAuthorization { }
+        public class CustomScope : OpenIddictMongoDbScope { }
+        public class CustomToken : OpenIddictMongoDbToken { }
     }
 }

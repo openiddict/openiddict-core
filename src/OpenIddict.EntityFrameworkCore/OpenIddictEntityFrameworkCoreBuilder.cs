@@ -57,10 +57,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
         public OpenIddictEntityFrameworkCoreBuilder ReplaceDefaultEntities<TKey>()
             where TKey : IEquatable<TKey>
-            => ReplaceDefaultEntities<OpenIddictApplication<TKey>,
-                                      OpenIddictAuthorization<TKey>,
-                                      OpenIddictScope<TKey>,
-                                      OpenIddictToken<TKey>, TKey>();
+            => ReplaceDefaultEntities<OpenIddictEntityFrameworkCoreApplication<TKey>,
+                                      OpenIddictEntityFrameworkCoreAuthorization<TKey>,
+                                      OpenIddictEntityFrameworkCoreScope<TKey>,
+                                      OpenIddictEntityFrameworkCoreToken<TKey>, TKey>();
 
         /// <summary>
         /// Configures OpenIddict to use the specified entities, derived
@@ -68,10 +68,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <returns>The <see cref="OpenIddictEntityFrameworkCoreBuilder"/>.</returns>
         public OpenIddictEntityFrameworkCoreBuilder ReplaceDefaultEntities<TApplication, TAuthorization, TScope, TToken, TKey>()
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
-            where TScope : OpenIddictScope<TKey>
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
+            where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
+            where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+            where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
+            where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
             Services.Configure<OpenIddictCoreOptions>(options =>
