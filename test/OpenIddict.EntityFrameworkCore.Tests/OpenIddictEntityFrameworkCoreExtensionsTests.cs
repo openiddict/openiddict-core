@@ -55,17 +55,17 @@ namespace OpenIddict.EntityFrameworkCore.Tests
             var provider = services.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictCoreOptions>>().CurrentValue;
 
-            Assert.Equal(typeof(OpenIddictApplication), options.DefaultApplicationType);
-            Assert.Equal(typeof(OpenIddictAuthorization), options.DefaultAuthorizationType);
-            Assert.Equal(typeof(OpenIddictScope), options.DefaultScopeType);
-            Assert.Equal(typeof(OpenIddictToken), options.DefaultTokenType);
+            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreApplication), options.DefaultApplicationType);
+            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreAuthorization), options.DefaultAuthorizationType);
+            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreScope), options.DefaultScopeType);
+            Assert.Equal(typeof(OpenIddictEntityFrameworkCoreToken), options.DefaultTokenType);
         }
 
         [Theory]
-        [InlineData(typeof(IOpenIddictApplicationStoreResolver), typeof(OpenIddictApplicationStoreResolver))]
-        [InlineData(typeof(IOpenIddictAuthorizationStoreResolver), typeof(OpenIddictAuthorizationStoreResolver))]
-        [InlineData(typeof(IOpenIddictScopeStoreResolver), typeof(OpenIddictScopeStoreResolver))]
-        [InlineData(typeof(IOpenIddictTokenStoreResolver), typeof(OpenIddictTokenStoreResolver))]
+        [InlineData(typeof(IOpenIddictApplicationStoreResolver), typeof(OpenIddictEntityFrameworkCoreApplicationStoreResolver))]
+        [InlineData(typeof(IOpenIddictAuthorizationStoreResolver), typeof(OpenIddictEntityFrameworkCoreAuthorizationStoreResolver))]
+        [InlineData(typeof(IOpenIddictScopeStoreResolver), typeof(OpenIddictEntityFrameworkCoreScopeStoreResolver))]
+        [InlineData(typeof(IOpenIddictTokenStoreResolver), typeof(OpenIddictEntityFrameworkCoreTokenStoreResolver))]
         public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolvers(Type serviceType, Type implementationType)
         {
             // Arrange
@@ -81,10 +81,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         }
 
         [Theory]
-        [InlineData(typeof(OpenIddictApplicationStoreResolver.TypeResolutionCache))]
-        [InlineData(typeof(OpenIddictAuthorizationStoreResolver.TypeResolutionCache))]
-        [InlineData(typeof(OpenIddictScopeStoreResolver.TypeResolutionCache))]
-        [InlineData(typeof(OpenIddictTokenStoreResolver.TypeResolutionCache))]
+        [InlineData(typeof(OpenIddictEntityFrameworkCoreApplicationStoreResolver.TypeResolutionCache))]
+        [InlineData(typeof(OpenIddictEntityFrameworkCoreAuthorizationStoreResolver.TypeResolutionCache))]
+        [InlineData(typeof(OpenIddictEntityFrameworkCoreScopeStoreResolver.TypeResolutionCache))]
+        [InlineData(typeof(OpenIddictEntityFrameworkCoreTokenStoreResolver.TypeResolutionCache))]
         public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStoreResolverCaches(Type type)
         {
             // Arrange
@@ -100,10 +100,10 @@ namespace OpenIddict.EntityFrameworkCore.Tests
         }
 
         [Theory]
-        [InlineData(typeof(OpenIddictApplicationStore<,,,,>))]
-        [InlineData(typeof(OpenIddictAuthorizationStore<,,,,>))]
-        [InlineData(typeof(OpenIddictScopeStore<,,>))]
-        [InlineData(typeof(OpenIddictTokenStore<,,,,>))]
+        [InlineData(typeof(OpenIddictEntityFrameworkCoreApplicationStore<,,,,>))]
+        [InlineData(typeof(OpenIddictEntityFrameworkCoreAuthorizationStore<,,,,>))]
+        [InlineData(typeof(OpenIddictEntityFrameworkCoreScopeStore<,,>))]
+        [InlineData(typeof(OpenIddictEntityFrameworkCoreTokenStore<,,,,>))]
         public void UseEntityFrameworkCore_RegistersEntityFrameworkCoreStore(Type type)
         {
             // Arrange

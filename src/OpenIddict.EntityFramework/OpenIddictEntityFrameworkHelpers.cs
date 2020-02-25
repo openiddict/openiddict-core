@@ -26,10 +26,10 @@ namespace System.Data.Entity
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
         public static DbModelBuilder UseOpenIddict([NotNull] this DbModelBuilder builder)
-            => builder.UseOpenIddict<OpenIddictApplication,
-                                     OpenIddictAuthorization,
-                                     OpenIddictScope,
-                                     OpenIddictToken, string>();
+            => builder.UseOpenIddict<OpenIddictEntityFrameworkApplication,
+                                     OpenIddictEntityFrameworkAuthorization,
+                                     OpenIddictEntityFrameworkScope,
+                                     OpenIddictEntityFrameworkToken, string>();
 
         /// <summary>
         /// Registers the OpenIddict entity sets in the Entity Framework 6.x
@@ -40,10 +40,10 @@ namespace System.Data.Entity
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
         public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this DbModelBuilder builder)
-            where TApplication : OpenIddictApplication<TKey, TAuthorization, TToken>
-            where TAuthorization : OpenIddictAuthorization<TKey, TApplication, TToken>
-            where TScope : OpenIddictScope<TKey>
-            where TToken : OpenIddictToken<TKey, TApplication, TAuthorization>
+            where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
+            where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
+            where TScope : OpenIddictEntityFrameworkScope<TKey>
+            where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
             where TKey : IEquatable<TKey>
         {
             if (builder == null)
@@ -52,10 +52,10 @@ namespace System.Data.Entity
             }
 
             builder.Configurations
-                .Add(new OpenIddictApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
-                .Add(new OpenIddictAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
-                .Add(new OpenIddictScopeConfiguration<TScope, TKey>())
-                .Add(new OpenIddictTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
+                .Add(new OpenIddictEntityFrameworkApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
+                .Add(new OpenIddictEntityFrameworkAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
+                .Add(new OpenIddictEntityFrameworkScopeConfiguration<TScope, TKey>())
+                .Add(new OpenIddictEntityFrameworkTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
 
             return builder;
         }

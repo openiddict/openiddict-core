@@ -30,7 +30,7 @@ namespace Mvc.Server
 
             static async Task RegisterApplicationsAsync(IServiceProvider provider)
             {
-                var manager = provider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
+                var manager = provider.GetRequiredService<OpenIddictApplicationManager<OpenIddictEntityFrameworkCoreApplication>>();
 
                 if (await manager.FindByClientIdAsync("mvc") == null)
                 {
@@ -106,7 +106,7 @@ namespace Mvc.Server
 
             static async Task RegisterScopesAsync(IServiceProvider provider)
             {
-                var manager = provider.GetRequiredService<OpenIddictScopeManager<OpenIddictScope>>();
+                var manager = provider.GetRequiredService<OpenIddictScopeManager<OpenIddictEntityFrameworkCoreScope>>();
 
                 if (await manager.FindByNameAsync("demo_api") == null)
                 {

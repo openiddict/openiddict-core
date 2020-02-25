@@ -36,25 +36,25 @@ namespace Microsoft.Extensions.DependencyInjection
             // in case case-sensitive stores were registered before this extension was called.
             builder.Configure(options => options.DisableAdditionalFiltering = false);
 
-            builder.SetDefaultApplicationEntity<OpenIddictApplication>()
-                   .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
-                   .SetDefaultScopeEntity<OpenIddictScope>()
-                   .SetDefaultTokenEntity<OpenIddictToken>();
+            builder.SetDefaultApplicationEntity<OpenIddictEntityFrameworkApplication>()
+                   .SetDefaultAuthorizationEntity<OpenIddictEntityFrameworkAuthorization>()
+                   .SetDefaultScopeEntity<OpenIddictEntityFrameworkScope>()
+                   .SetDefaultTokenEntity<OpenIddictEntityFrameworkToken>();
 
-            builder.ReplaceApplicationStoreResolver<OpenIddictApplicationStoreResolver>()
-                   .ReplaceAuthorizationStoreResolver<OpenIddictAuthorizationStoreResolver>()
-                   .ReplaceScopeStoreResolver<OpenIddictScopeStoreResolver>()
-                   .ReplaceTokenStoreResolver<OpenIddictTokenStoreResolver>();
+            builder.ReplaceApplicationStoreResolver<OpenIddictEntityFrameworkApplicationStoreResolver>()
+                   .ReplaceAuthorizationStoreResolver<OpenIddictEntityFrameworkAuthorizationStoreResolver>()
+                   .ReplaceScopeStoreResolver<OpenIddictEntityFrameworkScopeStoreResolver>()
+                   .ReplaceTokenStoreResolver<OpenIddictEntityFrameworkTokenStoreResolver>();
 
-            builder.Services.TryAddSingleton<OpenIddictApplicationStoreResolver.TypeResolutionCache>();
-            builder.Services.TryAddSingleton<OpenIddictAuthorizationStoreResolver.TypeResolutionCache>();
-            builder.Services.TryAddSingleton<OpenIddictScopeStoreResolver.TypeResolutionCache>();
-            builder.Services.TryAddSingleton<OpenIddictTokenStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictEntityFrameworkApplicationStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictEntityFrameworkAuthorizationStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictEntityFrameworkScopeStoreResolver.TypeResolutionCache>();
+            builder.Services.TryAddSingleton<OpenIddictEntityFrameworkTokenStoreResolver.TypeResolutionCache>();
 
-            builder.Services.TryAddScoped(typeof(OpenIddictApplicationStore<,,,,>));
-            builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationStore<,,,,>));
-            builder.Services.TryAddScoped(typeof(OpenIddictScopeStore<,,>));
-            builder.Services.TryAddScoped(typeof(OpenIddictTokenStore<,,,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkApplicationStore<,,,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkAuthorizationStore<,,,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkScopeStore<,,>));
+            builder.Services.TryAddScoped(typeof(OpenIddictEntityFrameworkTokenStore<,,,,>));
 
             return new OpenIddictEntityFrameworkBuilder(builder.Services);
         }
