@@ -229,17 +229,7 @@ namespace OpenIddict.Server
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.EndpointType switch
-                        {
-                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The authorization code is missing.",
-                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is missing.",
-                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is missing.",
-
-                            _ => "The security token is missing."
-                        });
+                        description: "The security token is missing.");
 
                     return default;
                 }

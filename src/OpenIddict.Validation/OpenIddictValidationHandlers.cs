@@ -76,7 +76,7 @@ namespace OpenIddict.Validation
                     context.Logger.LogError("The request was rejected because the access token was missing.");
 
                     context.Reject(
-                        error: Errors.InvalidRequest,
+                        error: Errors.MissingToken,
                         description: "The access token is missing.");
 
                     return default;
