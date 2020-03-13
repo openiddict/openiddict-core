@@ -325,7 +325,8 @@ namespace OpenIddict.Validation.Owin
                 {
                     null => 200,
 
-                    Errors.InvalidToken  => 401,
+                    Errors.InvalidToken => 401,
+                    Errors.MissingToken => 401,
 
                     Errors.InsufficientAccess => 403,
                     Errors.InsufficientScope  => 403,
@@ -372,7 +373,7 @@ namespace OpenIddict.Validation.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
                 }
 
                 // Prevent the response from being cached.
@@ -435,6 +436,7 @@ namespace OpenIddict.Validation.Owin
                 var scheme = context.Response.Error switch
                 {
                     Errors.InvalidToken       => Schemes.Bearer,
+                    Errors.MissingToken       => Schemes.Bearer,
                     Errors.InsufficientAccess => Schemes.Bearer,
                     Errors.InsufficientScope  => Schemes.Bearer,
 

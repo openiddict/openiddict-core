@@ -137,8 +137,8 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'access_token' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(Errors.MissingToken, response.Error);
+            Assert.Equal("The mandatory access token is missing.", response.ErrorDescription);
         }
 
         [Fact]

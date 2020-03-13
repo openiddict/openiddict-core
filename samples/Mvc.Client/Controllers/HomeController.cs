@@ -31,10 +31,11 @@ namespace Mvc.Client.Controllers
                                                     "Make sure that SaveTokens is set to true in the OIDC options.");
             }
 
+            using var client = _httpClientFactory.CreateClient();
+
             using var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:54540/api/message");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            using var client = _httpClientFactory.CreateClient();
             using var response = await client.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 

@@ -159,6 +159,7 @@ namespace OpenIddict.Abstractions
             public const string InvalidScope = "invalid_scope";
             public const string InvalidToken = "invalid_token";
             public const string LoginRequired = "login_required";
+            public const string MissingToken = "missing_token";
             public const string RegistrationNotSupported = "registration_not_supported";
             public const string RequestNotSupported = "request_not_supported";
             public const string RequestUriNotSupported = "request_uri_not_supported";

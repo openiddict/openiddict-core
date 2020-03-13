@@ -856,6 +856,7 @@ namespace OpenIddict.Server.AspNetCore
 
                     Errors.InvalidClient => 401,
                     Errors.InvalidToken  => 401,
+                    Errors.MissingToken  => 401,
 
                     Errors.InsufficientAccess => 403,
                     Errors.InsufficientScope  => 403,
@@ -969,6 +970,7 @@ namespace OpenIddict.Server.AspNetCore
                     Errors.InvalidClient      => Schemes.Basic,
 
                     Errors.InvalidToken       => Schemes.Bearer,
+                    Errors.MissingToken       => Schemes.Bearer,
                     Errors.InsufficientAccess => Schemes.Bearer,
                     Errors.InsufficientScope  => Schemes.Bearer,
 
