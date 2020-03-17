@@ -6,7 +6,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Xunit;
@@ -56,29 +55,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
+            var exception = Assert.Throws<ArgumentNullException>(delegate
             {
                 var reader = new Utf8JsonReader();
-                converter.Read(ref reader, type: null, options: null);
+                return converter.Read(ref reader, type: null, options: null);
             });
 
             Assert.Equal("type", exception.ParamName);
-        }
-
-        [Fact]
-        public void Read_ThrowsAnExceptionForUnexpectedJsonToken()
-        {
-            // Arrange
-            var converter = new OpenIddictConverter();
-
-            // Act and assert
-            var exception = Assert.Throws<JsonException>(() =>
-            {
-                var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes("[0,1,2,3]"));
-                converter.Read(ref reader, type: typeof(OpenIddictRequest), options: null);
-            });
-
-            Assert.Equal("An error occurred while reading the JSON payload.", exception.Message);
         }
 
         [Theory]
@@ -97,10 +80,10 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var converter = new OpenIddictConverter();
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() =>
+            var exception = Assert.Throws<ArgumentException>(delegate
             {
                 var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(@"{""name"":""value""}"));
-                converter.Read(ref reader, type, options: null);
+                return converter.Read(ref reader, type, options: null);
             });
 
             Assert.StartsWith("The specified type is not supported.", exception.Message);
@@ -118,11 +101,11 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(@"{""name"":""value""}"));
 
             // Act
-            var result = converter.Read(ref reader, type, options: null);
+            var message = converter.Read(ref reader, type, options: null);
 
             // Assert
-            Assert.IsType(type, result);
-            Assert.Equal("value", (string) result.GetParameter("name"));
+            Assert.IsType(type, message);
+            Assert.Equal("value", (string) message.GetParameter("name"));
         }
 
         [Fact]
@@ -134,20 +117,20 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 @"{""string"":null,""bool"":null,""long"":null,""array"":null,""object"":null}"));
 
             // Act
-            var result = converter.Read(ref reader, typeof(OpenIddictMessage), options: null);
+            var message = converter.Read(ref reader, typeof(OpenIddictMessage), options: null);
 
             // Assert
-            Assert.Equal(5, result.GetParameters().Count());
-            Assert.NotNull(result.GetParameter("string"));
-            Assert.NotNull(result.GetParameter("bool"));
-            Assert.NotNull(result.GetParameter("long"));
-            Assert.NotNull(result.GetParameter("array"));
-            Assert.NotNull(result.GetParameter("object"));
-            Assert.Null((string) result.GetParameter("string"));
-            Assert.Null((bool?) result.GetParameter("bool"));
-            Assert.Null((long?) result.GetParameter("long"));
-            Assert.Null((JsonElement?) result.GetParameter("array"));
-            Assert.Null((JsonElement?) result.GetParameter("object"));
+            Assert.Equal(5, message.Count);
+            Assert.NotNull(message.GetParameter("string"));
+            Assert.NotNull(message.GetParameter("bool"));
+            Assert.NotNull(message.GetParameter("long"));
+            Assert.NotNull(message.GetParameter("array"));
+            Assert.NotNull(message.GetParameter("object"));
+            Assert.Null((string) message.GetParameter("string"));
+            Assert.Null((bool?) message.GetParameter("bool"));
+            Assert.Null((long?) message.GetParameter("long"));
+            Assert.Equal(JsonValueKind.Null, ((JsonElement) message.GetParameter("array")).ValueKind);
+            Assert.Equal(JsonValueKind.Null, ((JsonElement) message.GetParameter("object")).ValueKind);
         }
 
         [Fact]
@@ -158,16 +141,16 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(@"{""string"":"""",""array"":[],""object"":{}}"));
 
             // Act
-            var result = converter.Read(ref reader, typeof(OpenIddictMessage), options: null);
+            var message = converter.Read(ref reader, typeof(OpenIddictMessage), options: null);
 
             // Assert
-            Assert.Equal(3, result.GetParameters().Count());
-            Assert.NotNull(result.GetParameter("string"));
-            Assert.NotNull(result.GetParameter("array"));
-            Assert.NotNull(result.GetParameter("object"));
-            Assert.Empty((string) result.GetParameter("string"));
-            Assert.NotNull((JsonElement?) result.GetParameter("array"));
-            Assert.NotNull((JsonElement?) result.GetParameter("object"));
+            Assert.Equal(3, message.Count);
+            Assert.NotNull(message.GetParameter("string"));
+            Assert.NotNull(message.GetParameter("array"));
+            Assert.NotNull(message.GetParameter("object"));
+            Assert.Empty((string) message.GetParameter("string"));
+            Assert.NotNull((JsonElement?) message.GetParameter("array"));
+            Assert.NotNull((JsonElement?) message.GetParameter("object"));
         }
 
         [Fact]
@@ -232,8 +215,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             message.AddParameter("string", new OpenIddictParameter((string) null));
             message.AddParameter("bool", new OpenIddictParameter((bool?) null));
             message.AddParameter("long", new OpenIddictParameter((long?) null));
-            message.AddParameter("array", new OpenIddictParameter((JsonElement?) null));
-            message.AddParameter("object", new OpenIddictParameter((JsonElement?) null));
+            message.AddParameter("node", new OpenIddictParameter(default(JsonElement)));
 
             // Act
             converter.Write(writer, value: message, options: null);
@@ -241,7 +223,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Assert
             writer.Flush();
             stream.Seek(0L, SeekOrigin.Begin);
-            Assert.Equal(@"{""string"":null,""bool"":null,""long"":null,""array"":null,""object"":null}", reader.ReadToEnd());
+            Assert.Equal(@"{""string"":null,""bool"":null,""long"":null,""node"":null}", reader.ReadToEnd());
         }
 
         [Fact]

@@ -1168,7 +1168,7 @@ namespace OpenIddict.Server
 
                             // When multiple claims share the same type, retrieve the underlying
                             // JSON values and add everything to a new unique JSON array.
-                            _ => JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(
+                            _ => DeserializeElement(JsonSerializer.Serialize(
                                 claims.Select(claim => ConvertToParameter(claim).Value), new JsonSerializerOptions
                                 {
                                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -1185,11 +1185,17 @@ namespace OpenIddict.Server
                         ClaimValueTypes.Integer32 => int.Parse(claim.Value, CultureInfo.InvariantCulture),
                         ClaimValueTypes.Integer64 => long.Parse(claim.Value, CultureInfo.InvariantCulture),
 
-                        JsonClaimValueTypes.Json      => JsonSerializer.Deserialize<JsonElement>(claim.Value),
-                        JsonClaimValueTypes.JsonArray => JsonSerializer.Deserialize<JsonElement>(claim.Value),
+                        JsonClaimValueTypes.Json      => DeserializeElement(claim.Value),
+                        JsonClaimValueTypes.JsonArray => DeserializeElement(claim.Value),
 
                         _ => new OpenIddictParameter(claim.Value)
                     };
+
+                    static JsonElement DeserializeElement(string value)
+                    {
+                        using var document = JsonDocument.Parse(value);
+                        return document.RootElement.Clone();
+                    }
                 }
             }
 

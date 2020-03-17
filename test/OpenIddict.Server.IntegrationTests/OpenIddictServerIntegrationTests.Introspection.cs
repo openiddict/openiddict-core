@@ -718,7 +718,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(11, response.GetParameters().Count());
+            Assert.Equal(11, response.Count);
             Assert.True((bool) response[Claims.Active]);
             Assert.Equal("66B65AED-4033-4E9C-B975-A8CA7FB6FA79", (string) response[Claims.JwtId]);
             Assert.Equal(TokenTypes.Bearer, (string) response[Claims.TokenType]);

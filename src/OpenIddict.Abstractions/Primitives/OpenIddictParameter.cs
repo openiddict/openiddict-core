@@ -22,57 +22,43 @@ namespace OpenIddict.Abstractions
     public readonly struct OpenIddictParameter : IEquatable<OpenIddictParameter>
     {
         /// <summary>
-        /// Initializes a new OpenID Connect
-        /// parameter using the specified value.
+        /// Initializes a new OpenID Connect parameter using the specified value.
         /// </summary>
         /// <param name="value">The parameter value.</param>
         public OpenIddictParameter(bool value) => Value = value;
 
         /// <summary>
-        /// Initializes a new OpenID Connect
-        /// parameter using the specified value.
+        /// Initializes a new OpenID Connect parameter using the specified value.
         /// </summary>
         /// <param name="value">The parameter value.</param>
         public OpenIddictParameter(bool? value) => Value = value;
 
         /// <summary>
-        /// Initializes a new OpenID Connect
-        /// parameter using the specified value.
+        /// Initializes a new OpenID Connect parameter using the specified value.
         /// </summary>
         /// <param name="value">The parameter value.</param>
         public OpenIddictParameter(JsonElement value) => Value = value;
 
         /// <summary>
-        /// Initializes a new OpenID Connect
-        /// parameter using the specified value.
-        /// </summary>
-        /// <param name="value">The parameter value.</param>
-        public OpenIddictParameter(JsonElement? value) => Value = value;
-
-        /// <summary>
-        /// Initializes a new OpenID Connect
-        /// parameter using the specified value.
+        /// Initializes a new OpenID Connect parameter using the specified value.
         /// </summary>
         /// <param name="value">The parameter value.</param>
         public OpenIddictParameter(long value) => Value = value;
 
         /// <summary>
-        /// Initializes a new OpenID Connect
-        /// parameter using the specified value.
+        /// Initializes a new OpenID Connect parameter using the specified value.
         /// </summary>
         /// <param name="value">The parameter value.</param>
         public OpenIddictParameter(long? value) => Value = value;
 
         /// <summary>
-        /// Initializes a new OpenID Connect
-        /// parameter using the specified value.
+        /// Initializes a new OpenID Connect parameter using the specified value.
         /// </summary>
         /// <param name="value">The parameter value.</param>
         public OpenIddictParameter(string value) => Value = value;
 
         /// <summary>
-        /// Initializes a new OpenID Connect
-        /// parameter using the specified value.
+        /// Initializes a new OpenID Connect parameter using the specified value.
         /// </summary>
         /// <param name="value">The parameter value.</param>
         public OpenIddictParameter(string[] value) => Value = value;
@@ -449,6 +435,56 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Writes the parameter value to the specified JSON writer.
+        /// </summary>
+        /// <param name="writer">The UTF-8 JSON writer.</param>
+        public void WriteTo(Utf8JsonWriter writer)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            switch (Value)
+            {
+                // Note: undefined JsonElement values are assimilated to null values.
+                case null:
+                case JsonElement value when value.ValueKind == JsonValueKind.Undefined:
+                    writer.WriteNullValue();
+                    break;
+
+                case bool value:
+                    writer.WriteBooleanValue(value);
+                    break;
+
+                case long value:
+                    writer.WriteNumberValue(value);
+                    break;
+
+                case string value:
+                    writer.WriteStringValue(value);
+                    break;
+
+                case string[] value:
+                    writer.WriteStartArray();
+
+                    for (var index = 0; index < value.Length; index++)
+                    {
+                        writer.WriteStringValue(value[index]);
+                    }
+
+                    writer.WriteEndArray();
+                    break;
+
+                case JsonElement value:
+                    value.WriteTo(writer);
+                    break;
+
+                default: throw new InvalidOperationException("The type of the parameter value is not supported.");
+            }
+        }
+
+        /// <summary>
         /// Determines whether two <see cref="OpenIddictParameter"/> instances are equal.
         /// </summary>
         /// <param name="left">The first instance.</param>
@@ -510,40 +546,31 @@ namespace OpenIddict.Abstractions
         /// <param name="parameter">The parameter to convert.</param>
         /// <returns>The converted value.</returns>
         public static explicit operator JsonElement(OpenIddictParameter? parameter)
-            => ((JsonElement?) parameter).GetValueOrDefault();
-
-        /// <summary>
-        /// Converts an <see cref="OpenIddictParameter"/> instance to a nullale <see cref="JsonElement"/>.
-        /// </summary>
-        /// <param name="parameter">The parameter to convert.</param>
-        /// <returns>The converted value.</returns>
-        public static explicit operator JsonElement?(OpenIddictParameter? parameter)
         {
             return parameter?.Value switch
             {
-                // When the parameter is a null value, return null.
-                null => null,
-
-                // When the parameter is a JsonElement representing null, return null.
-                JsonElement value when value.ValueKind == JsonValueKind.Undefined => null,
-                JsonElement value when value.ValueKind == JsonValueKind.Null => null,
+                // When the parameter is a null value, return default.
+                null => default,
 
                 // When the parameter is already a JsonElement, return it as-is.
                 JsonElement value => value,
 
-                // When the parameter is a string, try to derialize it to get a JsonElement instance.
-                string value => DeserializeElement(value) ?? DeserializeElement(JsonSerializer.Serialize(value, new JsonSerializerOptions
-                {
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    WriteIndented = false
-                })),
+                // When the parameter is a string starting with '{' or '[' (which would correspond
+                // to a JSON object or array), try to deserialize it to get a JsonElement instance.
+                string value when value.Length != 0 && (value[0] == '{' || value[0] == '[') =>
+                    DeserializeElement(value) ??
+                    DeserializeElement(JsonSerializer.Serialize(value, new JsonSerializerOptions
+                    {
+                        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                        WriteIndented = false
+                    })) ?? default,
 
                 // Otherwise, serialize it to get a JsonElement instance.
                 var value => DeserializeElement(JsonSerializer.Serialize(value, new JsonSerializerOptions
                 {
                     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                     WriteIndented = false
-                }))
+                })) ?? default
             };
 
             static JsonElement? DeserializeElement(string value)

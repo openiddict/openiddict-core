@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -32,27 +33,31 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Initializes a new OpenIddict message.
         /// </summary>
-        public OpenIddictMessage() { }
+        public OpenIddictMessage()
+        {
+        }
 
         /// <summary>
         /// Initializes a new OpenIddict message.
         /// </summary>
         /// <param name="parameters">The message parameters.</param>
-        public OpenIddictMessage([NotNull] IEnumerable<KeyValuePair<string, JsonElement>> parameters)
+        public OpenIddictMessage(JsonElement parameters)
         {
-            if (parameters == null)
+            if (parameters.ValueKind != JsonValueKind.Object)
             {
-                throw new ArgumentNullException(nameof(parameters));
+                throw new ArgumentException("The specified JSON element is not an object.", nameof(parameters));
             }
 
-            foreach (var parameter in parameters)
+            foreach (var parameter in parameters.EnumerateObject())
             {
-                if (string.IsNullOrEmpty(parameter.Key))
+                // While generally discouraged, JSON objects can contain multiple properties with
+                // the same name. In this case, the last occurrence replaces the previous ones.
+                if (HasParameter(parameter.Name))
                 {
-                    continue;
+                    RemoveParameter(parameter.Name);
                 }
 
-                AddParameter(parameter.Key, parameter.Value);
+                AddParameter(parameter.Name, parameter.Value);
             }
         }
 
@@ -69,11 +74,6 @@ namespace OpenIddict.Abstractions
 
             foreach (var parameter in parameters)
             {
-                if (string.IsNullOrEmpty(parameter.Key))
-                {
-                    continue;
-                }
-
                 AddParameter(parameter.Key, parameter.Value);
             }
         }
@@ -89,14 +89,9 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            foreach (var parameter in parameters)
+            foreach (var parameter in parameters.GroupBy(parameter => parameter.Key))
             {
-                if (string.IsNullOrEmpty(parameter.Key))
-                {
-                    continue;
-                }
-
-                AddParameter(parameter.Key, parameter.Value);
+                AddParameter(parameter.Key, parameter.Select(parameter => parameter.Value).ToArray());
             }
         }
 
@@ -113,11 +108,6 @@ namespace OpenIddict.Abstractions
 
             foreach (var parameter in parameters)
             {
-                if (string.IsNullOrEmpty(parameter.Key))
-                {
-                    continue;
-                }
-
                 // Note: the core OAuth 2.0 specification requires that request parameters
                 // not be present more than once but derived specifications like the
                 // token exchange RFC deliberately allow specifying multiple resource
@@ -126,8 +116,8 @@ namespace OpenIddict.Abstractions
                 {
                     null => default,
                     0    => default,
-                    1    => new OpenIddictParameter(parameter.Value[0]),
-                    _    => new OpenIddictParameter(parameter.Value)
+                    1    => parameter.Value[0],
+                    _    => parameter.Value
                 });
             }
         }
@@ -145,11 +135,6 @@ namespace OpenIddict.Abstractions
 
             foreach (var parameter in parameters)
             {
-                if (string.IsNullOrEmpty(parameter.Key))
-                {
-                    continue;
-                }
-
                 // Note: the core OAuth 2.0 specification requires that request parameters
                 // not be present more than once but derived specifications like the
                 // token exchange RFC deliberately allow specifying multiple resource
@@ -157,8 +142,8 @@ namespace OpenIddict.Abstractions
                 AddParameter(parameter.Key, parameter.Value.Count switch
                 {
                     0 => default,
-                    1 => new OpenIddictParameter(parameter.Value[0]),
-                    _ => new OpenIddictParameter(parameter.Value.ToArray())
+                    1 => parameter.Value[0],
+                    _ => parameter.Value.ToArray()
                 });
             }
         }
@@ -186,8 +171,7 @@ namespace OpenIddict.Abstractions
             = new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Adds a parameter. Note: if a parameter with the
-        /// same name was already added, this method has no effect.
+        /// Adds a parameter. Note: an exception is thrown if a parameter with the same name was already added.
         /// </summary>
         /// <param name="name">The parameter name.</param>
         /// <param name="value">The parameter value.</param>
@@ -199,10 +183,12 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The parameter name cannot be null or empty.", nameof(name));
             }
 
-            if (!Parameters.ContainsKey(name))
+            if (Parameters.ContainsKey(name))
             {
-                Parameters.Add(name, value);
+                throw new ArgumentException("A parameter with the same name already exists.", nameof(name));
             }
+
+            Parameters.Add(name, value);
 
             return this;
         }
@@ -279,8 +265,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The parameter name cannot be null or empty.", nameof(name));
             }
 
-            // If the parameter value is null or empty,
-            // remove the corresponding entry from the collection.
+            // If the parameter value is null or empty, remove the corresponding entry from the collection.
             if (value == null || OpenIddictParameter.IsNullOrEmpty(value.GetValueOrDefault()))
             {
                 Parameters.Remove(name);
@@ -343,28 +328,39 @@ namespace OpenIddict.Abstractions
                     case OpenIddictConstants.Parameters.Password:
                     case OpenIddictConstants.Parameters.RefreshToken:
                     case OpenIddictConstants.Parameters.Token:
-                    {
-                        writer.WriteStringValue("[removed for security reasons]");
-
+                        writer.WriteStringValue("[redacted]");
                         continue;
-                    }
                 }
 
-                var token = (JsonElement?) parameter.Value;
-                if (token == null)
-                {
-                    writer.WriteNullValue();
-
-                    continue;
-                }
-
-                token.Value.WriteTo(writer);
+                parameter.Value.WriteTo(writer);
             }
 
             writer.WriteEndObject();
             writer.Flush();
 
             return Encoding.UTF8.GetString(stream.ToArray());
+        }
+
+        /// <summary>
+        /// Writes the message to the specified JSON writer.
+        /// </summary>
+        /// <param name="writer">The UTF-8 JSON writer.</param>
+        public void WriteTo(Utf8JsonWriter writer)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            writer.WriteStartObject();
+
+            foreach (var parameter in Parameters)
+            {
+                writer.WritePropertyName(parameter.Key);
+                parameter.Value.WriteTo(writer);
+            }
+
+            writer.WriteEndObject();
         }
     }
 }
