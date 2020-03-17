@@ -931,38 +931,6 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Null(response.ErrorUri);
         }
 
-        [Fact]
-        public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-                options.SetTokenEndpointUris("/challenge/custom");
-
-                options.AddEventHandler<HandleTokenRequestContext>(builder =>
-                    builder.UseInlineHandler(context =>
-                    {
-                        context.SkipRequest();
-
-                        return default;
-                    }));
-            });
-
-            // Act
-            var response = await client.PostAsync("/challenge/custom", new OpenIddictRequest
-            {
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            });
-
-            // Assert
-            Assert.Equal("custom_error", response.Error);
-            Assert.Equal("custom_error_description", response.ErrorDescription);
-            Assert.Equal("custom_error_uri", response.ErrorUri);
-        }
-
         [Theory]
         [InlineData("custom_error", null, null)]
         [InlineData("custom_error", "custom_description", null)]

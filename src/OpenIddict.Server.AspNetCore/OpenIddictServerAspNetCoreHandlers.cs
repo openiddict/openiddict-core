@@ -43,7 +43,18 @@ namespace OpenIddict.Server.AspNetCore
             /*
              * Challenge processing:
              */
-            AttachHostChallengeError.Descriptor)
+            AttachHostChallengeError.Descriptor,
+            AttachHostParameters<ProcessChallengeContext>.Descriptor,
+
+            /*
+             * Sign-in processing:
+             */
+            AttachHostParameters<ProcessSignInContext>.Descriptor,
+
+            /*
+             * Sign-out processing:
+             */
+            AttachHostParameters<ProcessSignOutContext>.Descriptor)
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Device.DefaultHandlers)
             .AddRange(Discovery.DefaultHandlers)
@@ -322,6 +333,66 @@ namespace OpenIddict.Server.AspNetCore
                     context.Response.ErrorUri = properties.GetString(Properties.ErrorUri);
                     context.Response.Realm = properties.GetString(Properties.Realm);
                     context.Response.Scope = properties.GetString(Properties.Scope);
+                }
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching custom parameters stored in the ASP.NET Core authentication properties.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class AttachHostParameters<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<AttachHostParameters<TContext>>()
+                    .SetOrder(int.MaxValue - 150_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                if (properties == null)
+                {
+                    return default;
+                }
+
+                foreach (var parameter in properties.Parameters)
+                {
+                    // Note: AddParameter() is used to ensure existing parameters are not overriden.
+                    context.Response.AddParameter(parameter.Key, parameter.Value switch
+                    {
+                        OpenIddictParameter value => value,
+                        JsonElement         value => value,
+                        bool                value => value,
+                        int                 value => value,
+                        long                value => value,
+                        string              value => value,
+                        string[]            value => value,
+
+                        _ => throw new InvalidOperationException(new StringBuilder()
+                            .Append("Only strings, booleans, integers, arrays of strings and instances of type ")
+                            .Append("'OpenIddictParameter' or 'JsonElement' can be returned as custom parameters.")
+                            .ToString())
+                    });
                 }
 
                 return default;
@@ -801,7 +872,7 @@ namespace OpenIddict.Server.AspNetCore
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching an appropriate HTTP response code header.
+        /// Contains the logic responsible of attaching an appropriate HTTP status code.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
         /// </summary>
         public class AttachHttpResponseCode<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
