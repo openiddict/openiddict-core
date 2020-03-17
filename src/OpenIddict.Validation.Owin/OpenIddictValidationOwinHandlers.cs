@@ -279,7 +279,7 @@ namespace OpenIddict.Validation.Owin
         }
 
         /// <summary>
-        /// Contains the logic responsible of attaching an appropriate HTTP response code header.
+        /// Contains the logic responsible of attaching an appropriate HTTP status code.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
         public class AttachHttpResponseCode<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext

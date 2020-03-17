@@ -186,7 +186,8 @@ namespace OpenIddict.Abstractions
             = new Dictionary<string, OpenIddictParameter>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Adds a parameter.
+        /// Adds a parameter. Note: if a parameter with the
+        /// same name was already added, this method has no effect.
         /// </summary>
         /// <param name="name">The parameter name.</param>
         /// <param name="value">The parameter value.</param>

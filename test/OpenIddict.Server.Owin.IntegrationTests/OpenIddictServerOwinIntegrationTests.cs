@@ -26,6 +26,38 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 {
     public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerIntegrationTests
     {
+        [Fact]
+        public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetTokenEndpointUris("/challenge/custom");
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/challenge/custom", new OpenIddictRequest
+            {
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.Equal("custom_error", response.Error);
+            Assert.Equal("custom_error_description", response.ErrorDescription);
+            Assert.Equal("custom_error_uri", response.ErrorUri);
+        }
+
         [Theory]
         [InlineData("/", OpenIddictServerEndpointType.Unknown)]
         [InlineData("/connect", OpenIddictServerEndpointType.Unknown)]
@@ -164,7 +196,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         [InlineData("/connect/revoke")]
         [InlineData("/connect/token")]
         [InlineData("/connect/userinfo")]
-        public async Task HandleRequestAsync_RejectsInsecureHttpRequests(string address)
+        public async Task ProcessRequest_RejectsInsecureHttpRequests(string address)
         {
             // Arrange
             var client = CreateClient(options =>
