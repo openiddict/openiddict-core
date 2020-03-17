@@ -6,7 +6,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Xunit;
 
@@ -111,13 +114,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Equals_SupportsNullJsonValues()
+        public void Equals_SupportsUndefinedJsonValues()
         {
             // Arrange
             var parameter = new OpenIddictParameter(42);
 
             // Act and assert
-            Assert.False(parameter.Equals(new OpenIddictParameter((JsonElement?) null)));
+            Assert.False(parameter.Equals(new OpenIddictParameter(default(JsonElement))));
         }
 
         [Fact]
@@ -424,7 +427,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             Assert.True(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter((long?) null)));
             Assert.True(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter((string) null)));
             Assert.True(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter((string[]) null)));
-            Assert.True(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter((JsonElement?) null)));
+        }
+
+        [Fact]
+        public void IsNullOrEmpty_ReturnsTrueForUndefinedValues()
+        {
+            // Arrange, act and assert
+            Assert.True(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter(default(JsonElement))));
         }
 
         [Fact]
@@ -568,6 +577,38 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void WriteTo_ThrowsAnExceptionForNullWriter()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter();
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => parameter.WriteTo(writer: null));
+            Assert.Equal("writer", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteTo_WritesUtf8JsonRepresentation()
+        {
+            // Arrange
+            var parameter = new OpenIddictParameter(JsonSerializer.Deserialize<JsonElement>(@"{
+  ""redirect_uris"": [""https://abc.org/callback""],
+  ""client_name"":""My Example Client""
+}"));
+
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream);
+
+            // Act
+            parameter.WriteTo(writer);
+            writer.Flush();
+
+            // Assert
+            Assert.Equal(@"{""redirect_uris"":[""https://abc.org/callback""],""client_name"":""My Example Client""}",
+                Encoding.UTF8.GetString(stream.ToArray()));
+        }
+
+        [Fact]
         public void BoolConverter_CanCreateParameterFromBooleanValue()
         {
             // Arrange, act and assert
@@ -655,15 +696,15 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void JsonElementConverter_ReturnsDefaultValueForNullValues()
         {
             // Arrange, act and assert
-            Assert.Null((JsonElement?) new OpenIddictParameter());
-            Assert.Null((JsonElement?) (OpenIddictParameter?) null);
+            Assert.Equal(JsonValueKind.Undefined, ((JsonElement) new OpenIddictParameter()).ValueKind);
+            Assert.Equal(JsonValueKind.Undefined, ((JsonElement) (OpenIddictParameter?) null).ValueKind);
         }
 
         [Fact]
         public void JsonElementConverter_ReturnsDefaultValueForUnsupportedJsonValues()
         {
             // Arrange, act and assert
-            Assert.Null((JsonElement?) new OpenIddictParameter(new JsonElement()));
+            Assert.Equal(JsonValueKind.Undefined, ((JsonElement) new OpenIddictParameter(new JsonElement())).ValueKind);
         }
 
         [Fact]

@@ -29,42 +29,54 @@ namespace OpenIddict.Abstractions
         /// Initializes a new OpenIddict response.
         /// </summary>
         public OpenIddictResponse()
-            : base() { }
+            : base()
+        {
+        }
 
         /// <summary>
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
-        public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, JsonElement>> parameters)
-            : base(parameters) { }
+        public OpenIddictResponse(JsonElement parameters)
+            : base(parameters)
+        {
+        }
 
         /// <summary>
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
         public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, OpenIddictParameter>> parameters)
-            : base(parameters) { }
+            : base(parameters)
+        {
+        }
 
         /// <summary>
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
         public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, string>> parameters)
-            : base(parameters) { }
+            : base(parameters)
+        {
+        }
 
         /// <summary>
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
         public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, string[]>> parameters)
-            : base(parameters) { }
+            : base(parameters)
+        {
+        }
 
         /// <summary>
         /// Initializes a new OpenIddict response.
         /// </summary>
         /// <param name="parameters">The response parameters.</param>
         public OpenIddictResponse([NotNull] IEnumerable<KeyValuePair<string, StringValues>> parameters)
-            : base(parameters) { }
+            : base(parameters)
+        {
+        }
 
         /// <summary>
         /// Gets or sets the "access_token" parameter.

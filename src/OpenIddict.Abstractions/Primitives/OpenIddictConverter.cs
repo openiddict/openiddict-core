@@ -28,7 +28,9 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(type));
             }
 
-            return typeof(OpenIddictMessage).IsAssignableFrom(type);
+            return type == typeof(OpenIddictMessage) ||
+                   type == typeof(OpenIddictRequest) ||
+                   type == typeof(OpenIddictResponse);
         }
 
         /// <summary>
@@ -45,41 +47,12 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(type));
             }
 
-            // Note: OpenIddict primitives are always represented as JSON objects.
-            var payload = JsonSerializer.Deserialize<JsonElement>(ref reader, options);
-            if (payload.ValueKind != JsonValueKind.Object)
-            {
-                throw new JsonException("An error occurred while reading the JSON payload.");
-            }
+            using var document = JsonDocument.ParseValue(ref reader);
 
-            OpenIddictMessage message;
-
-            if (type == typeof(OpenIddictMessage))
-            {
-                message = new OpenIddictMessage();
-            }
-
-            else if (type == typeof(OpenIddictRequest))
-            {
-                message = new OpenIddictRequest();
-            }
-
-            else if (type == typeof(OpenIddictResponse))
-            {
-                message = new OpenIddictResponse();
-            }
-
-            else
-            {
-                throw new ArgumentException("The specified type is not supported.", nameof(type));
-            }
-
-            foreach (var parameter in payload.EnumerateObject())
-            {
-                message.AddParameter(parameter.Name, parameter.Value);
-            }
-
-            return message;
+            return type == typeof(OpenIddictMessage) ? new OpenIddictMessage(document.RootElement.Clone()) :
+                   type == typeof(OpenIddictRequest) ? (OpenIddictMessage) new OpenIddictRequest(document.RootElement.Clone()) :
+                   type == typeof(OpenIddictResponse) ? new OpenIddictResponse(document.RootElement.Clone()) :
+                   throw new ArgumentException("The specified type is not supported.", nameof(type));
         }
 
         /// <summary>
@@ -100,24 +73,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(value));
             }
 
-            writer.WriteStartObject();
-
-            foreach (var parameter in value.GetParameters())
-            {
-                writer.WritePropertyName(parameter.Key);
-
-                var token = (JsonElement?) parameter.Value;
-                if (token == null)
-                {
-                    writer.WriteNullValue();
-
-                    continue;
-                }
-
-                token.Value.WriteTo(writer);
-            }
-
-            writer.WriteEndObject();
+            value.WriteTo(writer);
         }
     }
 }
