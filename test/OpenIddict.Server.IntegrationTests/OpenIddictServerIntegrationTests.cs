@@ -2679,8 +2679,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(manager);
@@ -2749,8 +2749,11 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
+
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(manager);
@@ -3465,8 +3468,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
 
                     mock.Setup(manager => manager.GetIdAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
@@ -3536,8 +3539,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
 
                     mock.Setup(manager => manager.GetIdAsync(application, It.IsAny<CancellationToken>()))
                         .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");

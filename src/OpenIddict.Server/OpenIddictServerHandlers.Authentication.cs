@@ -1122,7 +1122,8 @@ namespace OpenIddict.Server
                     // from the authorization endpoint are rejected if the client_id corresponds to a confidential application.
                     // Note: when using the authorization code grant, the ValidateClientSecret handler is responsible of rejecting
                     // the token request if the client_id corresponds to an unauthenticated confidential client.
-                    if (context.Request.HasResponseType(ResponseTypes.Token) && await _applicationManager.IsConfidentialAsync(application))
+                    if (context.Request.HasResponseType(ResponseTypes.Token) &&
+                        await _applicationManager.HasClientTypeAsync(application, ClientTypes.Confidential))
                     {
                         context.Logger.LogError("The authorization request was rejected because the confidential application '{ClientId}' " +
                                                 "was not allowed to retrieve an access token from the authorization endpoint.", context.ClientId);

@@ -725,6 +725,29 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Determines whether a given authorization has the specified type.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="type">The expected type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the authorization has the specified type, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> HasTypeAsync(
+            [NotNull] TAuthorization authorization, [NotNull] string type, CancellationToken cancellationToken = default)
+        {
+            if (authorization == null)
+            {
+                throw new ArgumentNullException(nameof(authorization));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+            }
+
+            return string.Equals(await Store.GetTypeAsync(authorization, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <param name="count">The number of results to return.</param>
@@ -1096,6 +1119,9 @@ namespace OpenIddict.Core
 
         ValueTask<bool> IOpenIddictAuthorizationManager.HasStatusAsync(object authorization, string status, CancellationToken cancellationToken)
             => HasStatusAsync((TAuthorization) authorization, status, cancellationToken);
+
+        ValueTask<bool> IOpenIddictAuthorizationManager.HasTypeAsync(object authorization, string type, CancellationToken cancellationToken)
+            => HasTypeAsync((TAuthorization) authorization, type, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictAuthorizationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
             => ListAsync(count, offset, cancellationToken).OfType<object>();

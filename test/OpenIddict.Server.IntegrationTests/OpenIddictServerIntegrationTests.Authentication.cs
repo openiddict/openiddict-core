@@ -555,8 +555,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(CreateScopeManager(mock =>
@@ -600,8 +600,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
@@ -614,8 +614,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
@@ -665,8 +665,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(CreateScopeManager(mock =>
@@ -1002,8 +1002,8 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Confidential);
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
             });
 
             var client = CreateClient(options =>
@@ -1026,7 +1026,7 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The specified 'response_type' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]

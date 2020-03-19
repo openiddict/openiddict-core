@@ -909,7 +909,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException("The client application details cannot be found in the database.");
                     }
 
-                    if (await _applicationManager.IsPublicAsync(application))
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
                     {
                         // Public applications are not allowed to use the client credentials grant.
                         if (context.Request.IsClientCredentialsGrantType())
@@ -1006,7 +1006,7 @@ namespace OpenIddict.Server
                     }
 
                     // If the application is not a public client, validate the client secret.
-                    if (!await _applicationManager.IsPublicAsync(application) &&
+                    if (!await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public) &&
                         !await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
                         context.Logger.LogError("The token request was rejected because the confidential or hybrid application " +

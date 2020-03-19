@@ -409,8 +409,8 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Public);
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.HasPermissionAsync(application,
                     Permissions.Endpoints.Revocation, It.IsAny<CancellationToken>()))
@@ -452,8 +452,8 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Public);
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
             });
 
             var client = CreateClient(builder =>
@@ -475,11 +475,11 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The 'client_secret' parameter is not valid for this client application.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
-        public async Task ValidateRevocationRequest_ClientSecretIsRequiredForConfidentialClients()
+        public async Task ValidateRevocationRequest_ClientSecretIsRequiredForNonPublicClients()
         {
             // Arrange
             var application = new OpenIddictApplication();
@@ -489,8 +489,8 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Confidential);
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
             });
 
             var client = CreateClient(builder =>
@@ -512,44 +512,7 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ValidateRevocationRequest_ClientSecretIsRequiredForHybridClients()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Hybrid);
-            });
-
-            var client = CreateClient(builder =>
-            {
-                builder.Services.AddSingleton(manager);
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = null,
-                Token = "SlAV32hkKG",
-                TokenTypeHint = TokenTypeHints.RefreshToken
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
-
-            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -563,8 +526,8 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Confidential);
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
 
                 mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
@@ -589,7 +552,7 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("The specified client credentials are invalid.", response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
         }
 
