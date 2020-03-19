@@ -605,6 +605,52 @@ namespace OpenIddict.Core
         }
 
         /// <summary>
+        /// Determines whether a given application has the specified client type.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="type">The expected client type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the application has the specified client type, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> HasClientTypeAsync(
+            [NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken = default)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The client type cannot be null or empty.", nameof(type));
+            }
+
+            return string.Equals(await GetClientTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Determines whether a given application has the specified consent type.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="type">The expected consent type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the application has the specified consent type, <c>false</c> otherwise.</returns>
+        public virtual async ValueTask<bool> HasConsentTypeAsync(
+            [NotNull] TApplication application, [NotNull] string type, CancellationToken cancellationToken = default)
+        {
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The consent type cannot be null or empty.", nameof(type));
+            }
+
+            return string.Equals(await GetConsentTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Determines whether the specified permission has been granted to the application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -648,73 +694,6 @@ namespace OpenIddict.Core
             }
 
             return (await GetRequirementsAsync(application, cancellationToken)).Contains(requirement, StringComparer.Ordinal);
-        }
-
-        /// <summary>
-        /// Determines whether an application is a confidential client.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the application is a confidential client, <c>false</c> otherwise.</returns>
-        public async ValueTask<bool> IsConfidentialAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            var type = await GetClientTypeAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(type))
-            {
-                return false;
-            }
-
-            return string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Determines whether an application is a hybrid client.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the application is a hybrid client, <c>false</c> otherwise.</returns>
-        public async ValueTask<bool> IsHybridAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            var type = await GetClientTypeAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(type))
-            {
-                return false;
-            }
-
-            return string.Equals(type, ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Determines whether an application is a public client.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the application is a public client, <c>false</c> otherwise.</returns>
-        public async ValueTask<bool> IsPublicAsync([NotNull] TApplication application, CancellationToken cancellationToken = default)
-        {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            // Assume client applications are public if their type is not explicitly set.
-            var type = await GetClientTypeAsync(application, cancellationToken);
-            if (string.IsNullOrEmpty(type))
-            {
-                return true;
-            }
-
-            return string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1104,7 +1083,7 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
             }
 
-            if (await IsPublicAsync(application, cancellationToken))
+            if (await HasClientTypeAsync(application, ClientTypes.Public, cancellationToken))
             {
                 Logger.LogWarning("Client authentication cannot be enforced for public applications.");
 
@@ -1463,20 +1442,17 @@ namespace OpenIddict.Core
         ValueTask<ImmutableArray<string>> IOpenIddictApplicationManager.GetRequirementsAsync(object application, CancellationToken cancellationToken)
             => GetRequirementsAsync((TApplication) application, cancellationToken);
 
+        ValueTask<bool> IOpenIddictApplicationManager.HasClientTypeAsync(object application, string type, CancellationToken cancellationToken)
+            => HasClientTypeAsync((TApplication) application, type, cancellationToken);
+
+        ValueTask<bool> IOpenIddictApplicationManager.HasConsentTypeAsync(object application, string type, CancellationToken cancellationToken)
+            => HasConsentTypeAsync((TApplication) application, type, cancellationToken);
+
         ValueTask<bool> IOpenIddictApplicationManager.HasPermissionAsync(object application, string permission, CancellationToken cancellationToken)
             => HasPermissionAsync((TApplication) application, permission, cancellationToken);
 
         ValueTask<bool> IOpenIddictApplicationManager.HasRequirementAsync(object application, string requirement, CancellationToken cancellationToken)
             => HasRequirementAsync((TApplication) application, requirement, cancellationToken);
-
-        ValueTask<bool> IOpenIddictApplicationManager.IsConfidentialAsync(object application, CancellationToken cancellationToken)
-            => IsConfidentialAsync((TApplication) application, cancellationToken);
-
-        ValueTask<bool> IOpenIddictApplicationManager.IsHybridAsync(object application, CancellationToken cancellationToken)
-            => IsHybridAsync((TApplication) application, cancellationToken);
-
-        ValueTask<bool> IOpenIddictApplicationManager.IsPublicAsync(object application, CancellationToken cancellationToken)
-            => IsPublicAsync((TApplication) application, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictApplicationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
             => ListAsync(count, offset, cancellationToken).OfType<object>();

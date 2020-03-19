@@ -581,7 +581,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException("The client application details cannot be found in the database.");
                     }
 
-                    if (await _applicationManager.IsPublicAsync(application))
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
                     {
                         // Reject introspection requests containing a client_secret when the client is a public application.
                         if (!string.IsNullOrEmpty(context.ClientSecret))
@@ -665,7 +665,7 @@ namespace OpenIddict.Server
                     }
 
                     // If the application is not a public client, validate the client secret.
-                    if (!await _applicationManager.IsPublicAsync(application) &&
+                    if (!await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public) &&
                         !await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
                         context.Logger.LogError("The introspection request was rejected because the confidential or hybrid application " +
@@ -1126,7 +1126,7 @@ namespace OpenIddict.Server
                     }
 
                     // Public clients are not allowed to access sensitive claims as authentication cannot be enforced.
-                    if (await _applicationManager.IsPublicAsync(application))
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
                     {
                         return;
                     }

@@ -279,6 +279,15 @@ namespace OpenIddict.Abstractions
         ValueTask<bool> HasStatusAsync([NotNull] object authorization, [NotNull] string status, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Determines whether a given authorization has the specified type.
+        /// </summary>
+        /// <param name="authorization">The authorization.</param>
+        /// <param name="type">The expected type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the authorization has the specified type, <c>false</c> otherwise.</returns>
+        ValueTask<bool> HasTypeAsync([NotNull] object authorization, [NotNull] string type, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Executes the specified query and returns all the corresponding elements.
         /// </summary>
         /// <param name="count">The number of results to return.</param>
