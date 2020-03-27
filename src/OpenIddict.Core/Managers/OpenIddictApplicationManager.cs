@@ -27,6 +27,10 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 #endif
 
+#if !SUPPORTS_TIME_CONSTANT_COMPARISONS
+using Org.BouncyCastle.Utilities;
+#endif
+
 namespace OpenIddict.Core
 {
     /// <summary>
@@ -1318,9 +1322,15 @@ namespace OpenIddict.Core
                     return false;
                 }
 
-                return FixedTimeEquals(
+#if SUPPORTS_TIME_CONSTANT_COMPARISONS
+                return CryptographicOperations.FixedTimeEquals(
                     left: payload.Slice(13 + salt.Length, keyLength),
                     right: DeriveKey(secret, salt, algorithm, iterations, keyLength));
+#else
+                return Arrays.ConstantTimeAreEqual(
+                    a: payload.Slice(13 + salt.Length, keyLength).ToArray(),
+                    b: DeriveKey(secret, salt, algorithm, iterations, keyLength));
+#endif
             }
 
             static uint ReadNetworkByteOrder(ReadOnlySpan<byte> buffer, int offset) =>
@@ -1330,7 +1340,7 @@ namespace OpenIddict.Core
                 ((uint) buffer[offset + 3]);
         }
 
-        private static ReadOnlySpan<byte> DeriveKey(string secret, ReadOnlySpan<byte> salt,
+        private static byte[] DeriveKey(string secret, ReadOnlySpan<byte> salt,
             HashAlgorithmName algorithm, int iterations, int length)
         {
 #if SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
@@ -1349,33 +1359,6 @@ namespace OpenIddict.Core
 
             var key = (KeyParameter) generator.GenerateDerivedMacParameters(length * 8);
             return key.GetKey();
-#endif
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
-        {
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-            return CryptographicOperations.FixedTimeEquals(left, right);
-#else
-            // Note: these null checks can be theoretically considered as early checks
-            // (which would defeat the purpose of a time-constant comparison method),
-            // but the expected string length is the only information an attacker
-            // could get at this stage, which is not critical where this method is used.
-
-            if (left.Length != right.Length)
-            {
-                return false;
-            }
-
-            var result = true;
-
-            for (var index = 0; index < left.Length; index++)
-            {
-                result &= left[index] == right[index];
-            }
-
-            return result;
 #endif
         }
 

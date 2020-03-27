@@ -21,7 +21,7 @@
     <PackageReference Include="System.Linq.Async" Version="$(LinqAsyncVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Portable.BouncyCastle" Version="$(BouncyCastleVersion)" />
   </ItemGroup>
 

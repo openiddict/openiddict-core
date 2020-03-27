@@ -7,8 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +17,10 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+
+#if !SUPPORTS_TIME_CONSTANT_COMPARISONS
+using Org.BouncyCastle.Utilities;
+#endif
 
 namespace OpenIddict.Server
 {
@@ -1654,7 +1656,7 @@ namespace OpenIddict.Server
 
                     // Note: when using the "plain" code challenge method, no hashing is actually performed.
                     // In this case, the raw ASCII bytes of the verifier are directly compared to the challenge.
-                    ReadOnlySpan<byte> data;
+                    byte[] data;
                     if (string.Equals(method, CodeChallengeMethods.Plain, StringComparison.Ordinal))
                     {
                         data = Encoding.ASCII.GetBytes(context.Request.CodeVerifier);
@@ -1674,7 +1676,11 @@ namespace OpenIddict.Server
 
                     // Compare the verifier and the code challenge: if the two don't match, return an error.
                     // Note: to prevent timing attacks, a time-constant comparer is always used.
-                    if (!FixedTimeEquals(data, Encoding.ASCII.GetBytes(challenge)))
+#if SUPPORTS_TIME_CONSTANT_COMPARISONS
+                    if (!CryptographicOperations.FixedTimeEquals(data, Encoding.ASCII.GetBytes(challenge)))
+#else
+                    if (!Arrays.ConstantTimeAreEqual(data, Encoding.ASCII.GetBytes(challenge)))
+#endif
                     {
                         context.Logger.LogError("The token request was rejected because the 'code_verifier' was invalid.");
 
@@ -1686,33 +1692,6 @@ namespace OpenIddict.Server
                     }
 
                     return default;
-                }
-
-                [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-                private static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
-                {
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                    return CryptographicOperations.FixedTimeEquals(left, right);
-#else
-                    // Note: these null checks can be theoretically considered as early checks
-                    // (which would defeat the purpose of a time-constant comparison method),
-                    // but the expected string length is the only information an attacker
-                    // could get at this stage, which is not critical where this method is used.
-
-                    if (left.Length != right.Length)
-                    {
-                        return false;
-                    }
-
-                    var result = true;
-
-                    for (var index = 0; index < left.Length; index++)
-                    {
-                        result &= left[index] == right[index];
-                    }
-
-                    return result;
-#endif
                 }
             }
 

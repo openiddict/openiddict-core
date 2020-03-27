@@ -19,6 +19,12 @@
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="$(IdentityModelVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' Or
+                         '$(TargetFramework)' == 'net472' Or
+                         '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Portable.BouncyCastle" Version="$(BouncyCastleVersion)" />
+  </ItemGroup>
+
   <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' ">
     <DefineConstants>$(DefineConstants);SUPPORTS_ECDSA</DefineConstants>
   </PropertyGroup>
@@ -29,7 +35,9 @@
     <DefineConstants>$(DefineConstants);SUPPORTS_EPHEMERAL_KEY_SETS</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' Or '$(TargetFramework)' == 'netstandard2.1' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' Or
+                             '$(TargetFramework)' == 'netcoreapp3.0' Or
+                             '$(TargetFramework)' == 'netstandard2.1' ">
     <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_HASHING_WITH_SPECIFIED_ALGORITHM</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TIME_CONSTANT_COMPARISONS</DefineConstants>
