@@ -16,6 +16,20 @@
   </PropertyGroup>
 
   <!--
+    Note: the .NET SDK is impacted by a bug that prevents the resulting builds from being
+    treated as deterministic. To work around this bug, AssemblyInfo.cs is manually added.
+    Visit https://github.com/dotnet/sourcelink/issues/572 for more information.
+  -->
+
+  <PropertyGroup>
+    <TargetFrameworkMonikerAssemblyAttributesPath>$([System.IO.Path]::Combine('$(IntermediateOutputPath)','$(TargetFrameworkMoniker).AssemblyAttributes$(DefaultLanguageSourceExtension)'))</TargetFrameworkMonikerAssemblyAttributesPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)"/>
+  </ItemGroup>
+
+  <!--
     Note: Entity Framework Core 2.x references System.Interactive.Async 3.x, that includes
     its own IAsyncEnumerable. To work around collisions between this type and the new type
     now included in the BCL (System.Runtime), an alias is added to System.Interactive.Async.
