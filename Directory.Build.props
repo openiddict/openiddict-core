@@ -24,7 +24,7 @@
     <Company>$(Authors)</Company>
     <Product>OpenIddict</Product>
     <_ProjectCopyright>© Kévin Chalet. All rights reserved.</_ProjectCopyright>
-    <PackageIconUrl>https://avatars3.githubusercontent.com/u/13908567?s=64</PackageIconUrl>
+    <PackageIconFullPath>$(MSBuildThisFileDirectory)package-icon.png</PackageIconFullPath>
     <PackageProjectUrl>https://github.com/openiddict/openiddict-core</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>authentication;jwt;openidconnect;openiddict;security</PackageTags>
@@ -43,6 +43,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
+    <Serviceable>false</Serviceable>
   </PropertyGroup>
 
   <!--

@@ -9,16 +9,15 @@ Nightly builds can be downloaded from the MyGet repository: https://www.myget.or
 
 ### Compatibility matrix
 
-|                  | OpenIddict 1.0     | OpenIddict 2.0     | OpenIddict 2.0.1   | OpenIddict 3.0 (alpha) |
-|------------------|--------------------|--------------------|--------------------|------------------------|
-| ASP.NET Core 1.x | :heavy_check_mark: | :x:                | :x:                | :x:                    |
-| ASP.NET Core 2.x | :x:                | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:     |
-| ASP.NET Core 3.x | :x:                | :warning:          | :heavy_check_mark: | :heavy_check_mark:     |
-| ASP.NET 4.x/OWIN | :x:                | :x:                | :x:                | :heavy_check_mark:     |
+|                  | OpenIddict 2.0     | OpenIddict 2.0.1   | OpenIddict 3.0 (alpha) |
+|------------------|--------------------|--------------------|------------------------|
+| ASP.NET Core 2.1 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:     |
+| ASP.NET Core 3.1 | :warning:          | :heavy_check_mark: | :heavy_check_mark:     |
+| OWIN/Katana 4.1  | :x:                | :x:                | :heavy_check_mark:     |
 
 ### What's OpenIddict?
 
-OpenIddict aims at providing an **easy-to-use and versatile solution** to implement an **OpenID Connect server in any ASP.NET Core 2.x or 3.x application**,
+OpenIddict aims at providing an **easy-to-use and versatile solution** to implement an **OpenID Connect server in any ASP.NET Core 2.1 or 3.1 application**,
 and **starting in OpenIddict 3.0, any ASP.NET 4.x or OWIN application too**.
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**, the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628). You can also create your own custom grant types.
@@ -34,7 +33,7 @@ with the power to control who can access your API and the information that is ex
 
 ## Documentation
 
-**The documentation for the latest stable release (2.x) can be found in the [dedicated repository](https://openiddict.github.io/openiddict-documentation)**.
+**The documentation for the latest stable release (2.0.1) can be found in the [dedicated repository](https://openiddict.github.io/openiddict-documentation)**.
 
 ## Samples
 
@@ -50,9 +49,9 @@ with the power to control who can access your API and the information that is ex
 
 ## Getting started
 
-To use OpenIddict 3.x, you need to:
+To use OpenIddict 3.0, you need to:
 
-  - **Install the latest [.NET Core 3.x tooling](https://www.microsoft.com/net/download)**.
+  - **Install the latest [.NET Core 3.1 tooling](https://www.microsoft.com/net/download)**.
 
   - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
 
@@ -195,7 +194,7 @@ The **Mvc.Server sample comes with an [`AuthorizationController` that supports b
 
 ## Resources
 
-**Looking for additional resources to help you get started with 3.x?** Don't miss these interesting blog posts:
+**Looking for additional resources to help you get started with 3.0?** Don't miss these interesting blog posts:
 
 - **[Creating an OpenID Connect server proxy with OpenIddict 3.0's degraded mode](https://kevinchalet.com/2020/02/18/creating-an-openid-connect-server-proxy-with-openiddict-3-0-s-degraded-mode/)** by [Kévin Chalet](https://github.com/kevinchalet)
 
