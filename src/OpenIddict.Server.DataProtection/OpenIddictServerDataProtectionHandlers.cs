@@ -139,7 +139,7 @@ namespace OpenIddict.Server.DataProtection
 
                         // Note: since the data format relies on a data protector using different "purposes" strings
                         // per token type, the token processed at this stage is guaranteed to be of the expected type.
-                        return _options.CurrentValue.Formatter.ReadToken(reader)?.SetClaim(Claims.Private.TokenType, type);
+                        return _options.CurrentValue.Formatter.ReadToken(reader)?.SetTokenType(type);
                     }
 
                     catch (Exception exception)

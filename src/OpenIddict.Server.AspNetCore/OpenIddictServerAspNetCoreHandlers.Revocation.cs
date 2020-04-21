@@ -23,6 +23,9 @@ namespace OpenIddict.Server.AspNetCore
                 /*
                  * Revocation response processing:
                  */
+                AttachHttpResponseCode<ApplyRevocationResponseContext>.Descriptor,
+                AttachCacheControlHeader<ApplyRevocationResponseContext>.Descriptor,
+                AttachWwwAuthenticateHeader<ApplyRevocationResponseContext>.Descriptor,
                 ProcessJsonResponse<ApplyRevocationResponseContext>.Descriptor);
         }
     }

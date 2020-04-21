@@ -29,6 +29,8 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Userinfo response processing:
                  */
+                AttachHttpResponseCode<ApplyUserinfoResponseContext>.Descriptor,
+                AttachWwwAuthenticateHeader<ApplyUserinfoResponseContext>.Descriptor,
                 ProcessJsonResponse<ApplyUserinfoResponseContext>.Descriptor);
         }
     }

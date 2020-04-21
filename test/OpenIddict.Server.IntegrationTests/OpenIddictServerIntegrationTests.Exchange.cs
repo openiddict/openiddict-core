@@ -161,7 +161,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
         }
 
@@ -300,6 +300,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1))
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -339,6 +340,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetExpirationDate(DateTimeOffset.UtcNow - TimeSpan.FromDays(1))
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -377,6 +379,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters(Enumerable.Empty<string>())
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -417,6 +420,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Contoso")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -456,6 +460,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetPresenters("Contoso")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -495,6 +500,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.RedirectUri, "http://www.fabrikam.com/callback");
@@ -536,6 +542,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.RedirectUri, "http://www.fabrikam.com/callback");
@@ -563,6 +570,47 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
+        public async Task ValidateTokenRequest_RequestCausesErrorWhenSendingCodeVerifier()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
+                            .SetPresenters("Fabrikam")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                CodeVerifier = "AbCd97394879834759873497549237098273498072304987523948673248972349857982345",
+                GrantType = GrantTypes.AuthorizationCode
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal("The 'code_verifier' parameter is uncalled for in this request.", response.ErrorDescription);
+        }
+
+        [Fact]
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeVerifierIsMissing()
         {
             // Arrange
@@ -578,6 +626,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
@@ -620,6 +669,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
@@ -663,6 +713,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
@@ -708,6 +759,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, challenge)
@@ -752,6 +804,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur")
                             .SetClaim(Claims.Private.CodeChallenge, challenge)
@@ -762,6 +815,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
             });
 
             // Act
@@ -793,6 +855,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetScopes(Enumerable.Empty<string>())
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -834,6 +897,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetScopes("profile", "email")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -875,6 +939,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Enumerable.Empty<string>())
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -914,6 +979,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes("profile", "email")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -1028,8 +1094,16 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-
                 options.RegisterScopes("registered_scope");
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
             });
 
             // Act
@@ -1070,6 +1144,15 @@ namespace OpenIddict.Server.FunctionalTests
                 options.RegisterScopes("scope_registered_in_options");
 
                 options.Services.AddSingleton(manager);
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
             });
 
             // Act
@@ -1130,7 +1213,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(Errors.InvalidRequest, response.Error);
+            Assert.Equal(Errors.InvalidClient, response.Error);
             Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
         }
 
@@ -1166,6 +1249,160 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
+        public async Task ValidateTokenRequest_ClientCredentialsRequestFromPublicClientIsRejected()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = GrantTypes.ClientCredentials
+            });
+
+            // Assert
+            Assert.Equal(Errors.UnauthorizedClient, response.Error);
+            Assert.Equal("The specified 'grant_type' parameter is not valid for this client application.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_ClientSecretCannotBeUsedByPublicClients()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidClient, response.Error);
+            Assert.Equal("The 'client_secret' parameter is not valid for this client application.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_ClientSecretIsRequiredForNonPublicClients()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = null,
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidClient, response.Error);
+            Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsRejectedWhenClientCredentialsAreInvalid()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.Services.AddSingleton(manager);
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.Equal(Errors.InvalidClient, response.Error);
+            Assert.Equal("The specified client credentials are invalid.", response.ErrorDescription);
+
+            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+            Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
         public async Task ValidateTokenRequest_RequestIsRejectedWhenEndpointPermissionIsNotGranted()
         {
             // Arrange
@@ -1175,6 +1412,9 @@ namespace OpenIddict.Server.FunctionalTests
             {
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.HasPermissionAsync(application,
                     Permissions.Endpoints.Token, It.IsAny<CancellationToken>()))
@@ -1217,6 +1457,9 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
                 mock.Setup(manager => manager.HasPermissionAsync(application,
                     Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
@@ -1258,6 +1501,9 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
                 mock.Setup(manager => manager.HasPermissionAsync(application,
                     Permissions.GrantTypes.Password, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
@@ -1293,42 +1539,6 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
-        public async Task ValidateTokenRequest_ClientCredentialsRequestFromPublicClientIsRejected()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Public);
-            });
-
-            var client = CreateClient(options =>
-            {
-                options.Services.AddSingleton(manager);
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                GrantType = GrantTypes.ClientCredentials
-            });
-
-            // Assert
-            Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal("The specified 'grant_type' parameter is not valid for this client application.", response.ErrorDescription);
-
-            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
         public async Task ValidateTokenRequest_RequestIsRejectedWhenScopePermissionIsNotGranted()
         {
             // Arrange
@@ -1339,8 +1549,8 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Public);
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
 
                 mock.Setup(manager => manager.HasPermissionAsync(application,
                     Permissions.Prefixes.Scope + Scopes.Profile, It.IsAny<CancellationToken>()))
@@ -1384,7 +1594,7 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
-        public async Task ValidateTokenRequest_ClientSecretCannotBeUsedByPublicClients()
+        public async Task ValidateTokenRequest_RequestIsRejectedWhenCodeVerifierIsMissingWithPkceFeatureEnforced()
         {
             // Arrange
             var application = new OpenIddictApplication();
@@ -1394,8 +1604,12 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Public);
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
             });
 
             var client = CreateClient(options =>
@@ -1407,22 +1621,22 @@ namespace OpenIddict.Server.FunctionalTests
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
                 ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                CodeVerifier = null,
+                GrantType = GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'client_secret' parameter is not valid for this client application.", response.ErrorDescription);
+            Assert.Equal("The mandatory 'code_verifier' parameter is missing.", response.ErrorDescription);
 
-            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
-        public async Task ValidateTokenRequest_ClientSecretIsRequiredForConfidentialClients()
+        public async Task ValidateTokenRequest_RequestIsValidatedWhenCodeVerifierIsMissingWithPkceFeatureNotEnforced()
         {
             // Arrange
             var application = new OpenIddictApplication();
@@ -1432,111 +1646,123 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(application);
 
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Confidential);
-            });
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
 
-            var client = CreateClient(options =>
-            {
-                options.Services.AddSingleton(manager);
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = null,
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
-
-            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ValidateTokenRequest_ClientSecretIsRequiredForHybridClients()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Hybrid);
-            });
-
-            var client = CreateClient(options =>
-            {
-                options.Services.AddSingleton(manager);
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                ClientSecret = null,
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
-            });
-
-            // Assert
-            Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
-
-            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ValidateTokenRequest_RequestIsRejectedWhenClientCredentialsAreInvalid()
-        {
-            // Arrange
-            var application = new OpenIddictApplication();
-
-            var manager = CreateApplicationManager(mock =>
-            {
-                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(application);
-
-                mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(ClientTypes.Confidential);
-
-                mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
             });
 
             var client = CreateClient(options =>
             {
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
+                            .SetPresenters("Fabrikam")
+                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
                 options.Services.AddSingleton(manager);
+
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableTokenStorage();
+                options.DisableSlidingExpiration();
             });
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
                 ClientId = "Fabrikam",
-                ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
-                GrantType = GrantTypes.Password,
-                Username = "johndoe",
-                Password = "A3ddj3w"
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                CodeVerifier = null,
+                GrantType = GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
             });
 
             // Assert
-            Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal("The specified client credentials are invalid.", response.ErrorDescription);
+            Assert.NotNull(response.AccessToken);
 
-            Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-            Mock.Get(manager).Verify(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task ValidateTokenRequest_RequestIsValidatedWhenCodeVerifierIsPresentWithPkceFeatureEnforced()
+        {
+            // Arrange
+            var application = new OpenIddictApplication();
+
+            var manager = CreateApplicationManager(mock =>
+            {
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.HasRequirementAsync(application,
+                    Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(false);
+            });
+
+            var client = CreateClient(options =>
+            {
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SplxlOBeZQQYbYS6WxSbIA", context.Token);
+                        Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
+                            .SetPresenters("Fabrikam")
+                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetClaim(Claims.Subject, "Bob le Bricoleur")
+                            .SetClaim(Claims.Private.CodeChallenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
+                            .SetClaim(Claims.Private.CodeChallengeMethod, CodeChallengeMethods.Sha256);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+
+                options.Services.AddSingleton(manager);
+
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableTokenStorage();
+                options.DisableSlidingExpiration();
+            });
+
+            // Act
+            var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+            {
+                ClientId = "Fabrikam",
+                Code = "SplxlOBeZQQYbYS6WxSbIA",
+                CodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+                GrantType = GrantTypes.AuthorizationCode,
+                RedirectUri = "http://www.fabrikam.com/path"
+            });
+
+            // Assert
+            Assert.NotNull(response.AccessToken);
+
+            Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.ProofKeyForCodeExchange, It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Theory]
@@ -1654,6 +1880,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -1664,6 +1891,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -1671,8 +1907,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
@@ -1707,6 +1943,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -1715,6 +1952,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableTokenStorage();
@@ -1752,6 +1998,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -1761,6 +2008,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -1768,8 +2024,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(manager);
@@ -1811,6 +2067,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -1820,6 +2077,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(manager);
             });
@@ -1866,6 +2132,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -1876,6 +2143,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -1883,8 +2159,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(manager);
@@ -1935,6 +2211,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
@@ -1943,6 +2220,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(manager);
             });
@@ -1984,6 +2270,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -1995,6 +2282,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -2002,8 +2298,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
@@ -2068,6 +2364,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -2077,6 +2374,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
                 {
@@ -2159,6 +2465,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2170,6 +2477,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -2177,8 +2493,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(manager);
@@ -2247,6 +2563,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2257,6 +2574,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(manager);
             });
@@ -2310,6 +2636,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2321,6 +2648,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -2328,8 +2664,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(manager);
@@ -2384,6 +2720,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2394,6 +2731,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(manager);
             });
@@ -2433,6 +2779,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2444,6 +2791,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -2451,8 +2807,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
@@ -2509,6 +2865,7 @@ namespace OpenIddict.Server.FunctionalTests
                 mock.Setup(manager => manager.FindByIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new OpenIddictAuthorization());
             });
+
             var client = CreateClient(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
@@ -2519,6 +2876,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -2528,6 +2886,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
                 {
@@ -2587,6 +2954,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2598,6 +2966,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -2605,8 +2982,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
@@ -2673,6 +3050,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.AuthorizationCode, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
@@ -2684,6 +3062,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -2691,8 +3078,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Public);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
                 }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
@@ -2755,6 +3142,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -2764,6 +3152,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
                 {
@@ -2827,6 +3224,7 @@ namespace OpenIddict.Server.FunctionalTests
                         Assert.Equal(TokenTypeHints.RefreshToken, context.TokenType);
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -2836,6 +3234,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.Services.AddSingleton(CreateTokenManager(mock =>
                 {
@@ -2911,6 +3318,7 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.UseInlineHandler(context =>
                     {
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(context.TokenType)
                             .SetPresenters("Fabrikam")
                             .SetInternalTokenId("0270F515-C5B1-4FBF-B673-D7CAF7CCDABC")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
@@ -2926,6 +3334,15 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
                     var application = new OpenIddictApplication();
@@ -2933,8 +3350,8 @@ namespace OpenIddict.Server.FunctionalTests
                     mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(application);
 
-                    mock.Setup(manager => manager.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(ClientTypes.Confidential);
+                    mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(true);
 
                     mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
                         .ReturnsAsync(true);
@@ -3072,6 +3489,15 @@ namespace OpenIddict.Server.FunctionalTests
             {
                 options.EnableDegradedMode();
 
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
+
                 options.AddEventHandler<ApplyTokenResponseContext>(builder =>
                     builder.UseInlineHandler(context =>
                     {
@@ -3105,6 +3531,15 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    }));
 
                 options.AddEventHandler<ApplyTokenResponseContext>(builder =>
                     builder.UseInlineHandler(context =>

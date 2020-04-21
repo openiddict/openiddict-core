@@ -393,99 +393,69 @@ namespace OpenIddict.Server
 
                     // Note: while OpenIddict allows specifying multiple endpoint addresses, the OAuth 2.0
                     // and OpenID Connect discovery specifications only allow a single address per endpoint.
-                    context.AuthorizationEndpoint ??= context.Options.AuthorizationEndpointUris.FirstOrDefault();
-                    context.CryptographyEndpoint  ??= context.Options.CryptographyEndpointUris.FirstOrDefault();
-                    context.DeviceEndpoint        ??= context.Options.DeviceEndpointUris.FirstOrDefault();
-                    context.IntrospectionEndpoint ??= context.Options.IntrospectionEndpointUris.FirstOrDefault();
-                    context.LogoutEndpoint        ??= context.Options.LogoutEndpointUris.FirstOrDefault();
-                    context.RevocationEndpoint    ??= context.Options.RevocationEndpointUris.FirstOrDefault();
-                    context.TokenEndpoint         ??= context.Options.TokenEndpointUris.FirstOrDefault();
-                    context.UserinfoEndpoint      ??= context.Options.UserinfoEndpointUris.FirstOrDefault();
 
-                    // Note: this handler doesn't have any access to the request context. As such, it depends
-                    // on another handler to determine the issuer location from the ambient request if it was not
-                    // explicitly set in the server options. If the issuer is not set, an exception is thrown.
-                    if (context.AuthorizationEndpoint != null && !context.AuthorizationEndpoint.IsAbsoluteUri)
-                    {
-                        if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                        {
-                            throw new InvalidOperationException("An absolute URL cannot be built for the authorization endpoint path.");
-                        }
+                    context.AuthorizationEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                        context.Options.AuthorizationEndpointUris.FirstOrDefault());
 
-                        context.AuthorizationEndpoint = new Uri(context.Issuer, context.AuthorizationEndpoint);
-                    }
+                    context.CryptographyEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                        context.Options.CryptographyEndpointUris.FirstOrDefault());
 
-                    if (context.CryptographyEndpoint != null && !context.CryptographyEndpoint.IsAbsoluteUri)
-                    {
-                        if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                        {
-                            throw new InvalidOperationException("An absolute URL cannot be built for the cryptography endpoint path.");
-                        }
+                    context.DeviceEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                        context.Options.DeviceEndpointUris.FirstOrDefault());
 
-                        context.CryptographyEndpoint = new Uri(context.Issuer, context.CryptographyEndpoint);
-                    }
+                    context.IntrospectionEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                        context.Options.IntrospectionEndpointUris.FirstOrDefault());
 
-                    if (context.DeviceEndpoint != null && !context.DeviceEndpoint.IsAbsoluteUri)
-                    {
-                        if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                        {
-                            throw new InvalidOperationException("An absolute URL cannot be built for the device endpoint path.");
-                        }
+                    context.LogoutEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                        context.Options.LogoutEndpointUris.FirstOrDefault());
 
-                        context.DeviceEndpoint = new Uri(context.Issuer, context.DeviceEndpoint);
-                    }
+                    context.RevocationEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                        context.Options.RevocationEndpointUris.FirstOrDefault());
 
-                    if (context.IntrospectionEndpoint != null && !context.IntrospectionEndpoint.IsAbsoluteUri)
-                    {
-                        if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                        {
-                            throw new InvalidOperationException("An absolute URL cannot be built for the introspection endpoint path.");
-                        }
+                    context.TokenEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                        context.Options.TokenEndpointUris.FirstOrDefault());
 
-                        context.IntrospectionEndpoint = new Uri(context.Issuer, context.IntrospectionEndpoint);
-                    }
-
-                    if (context.LogoutEndpoint != null && !context.LogoutEndpoint.IsAbsoluteUri)
-                    {
-                        if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                        {
-                            throw new InvalidOperationException("An absolute URL cannot be built for the logout endpoint path.");
-                        }
-
-                        context.LogoutEndpoint = new Uri(context.Issuer, context.LogoutEndpoint);
-                    }
-
-                    if (context.RevocationEndpoint != null && !context.RevocationEndpoint.IsAbsoluteUri)
-                    {
-                        if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                        {
-                            throw new InvalidOperationException("An absolute URL cannot be built for the revocation endpoint path.");
-                        }
-
-                        context.RevocationEndpoint = new Uri(context.Issuer, context.RevocationEndpoint);
-                    }
-
-                    if (context.TokenEndpoint != null && !context.TokenEndpoint.IsAbsoluteUri)
-                    {
-                        if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                        {
-                            throw new InvalidOperationException("An absolute URL cannot be built for the token endpoint path.");
-                        }
-
-                        context.TokenEndpoint = new Uri(context.Issuer, context.TokenEndpoint);
-                    }
-
-                    if (context.UserinfoEndpoint != null && !context.UserinfoEndpoint.IsAbsoluteUri)
-                    {
-                        if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                        {
-                            throw new InvalidOperationException("An absolute URL cannot be built for the userinfo endpoint path.");
-                        }
-
-                        context.UserinfoEndpoint = new Uri(context.Issuer, context.UserinfoEndpoint);
-                    }
+                    context.UserinfoEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                        context.Options.UserinfoEndpointUris.FirstOrDefault());
 
                     return default;
+
+                    static Uri GetEndpointAbsoluteUrl(Uri issuer, Uri endpoint)
+                    {
+                        // If the endpoint is disabled (i.e a null address is specified), return null.
+                        if (endpoint == null)
+                        {
+                            return null;
+                        }
+
+                        // If the endpoint address is already an absolute URL, return it as-is.
+                        if (endpoint.IsAbsoluteUri)
+                        {
+                            return endpoint;
+                        }
+
+                        // At this stage, throw an exception if the issuer cannot be retrieved.
+                        if (issuer == null || !issuer.IsAbsoluteUri)
+                        {
+                            throw new InvalidOperationException("The issuer must be a non-null, non-empty absolute URL.");
+                        }
+
+                        // Ensure the issuer ends with a trailing slash, as it is necessary
+                        // for Uri's constructor to correctly compute correct absolute URLs.
+                        if (!issuer.OriginalString.EndsWith("/"))
+                        {
+                            issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
+                        }
+
+                        // Ensure the endpoint does not start with a leading slash, as it is necessary
+                        // for Uri's constructor to correctly compute correct absolute URLs.
+                        if (endpoint.OriginalString.StartsWith("/"))
+                        {
+                            endpoint = new Uri(endpoint.OriginalString.Substring(1, endpoint.OriginalString.Length - 1), UriKind.Relative);
+                        }
+
+                        return new Uri(issuer, endpoint);
+                    }
                 }
             }
 

@@ -5,12 +5,14 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
+using Microsoft.Owin.Security;
 using Microsoft.Owin.Testing;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.FunctionalTests;
@@ -24,6 +26,38 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 {
     public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerIntegrationTests
     {
+        [Fact]
+        public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetTokenEndpointUris("/challenge/custom");
+
+                options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+            });
+
+            // Act
+            var response = await client.PostAsync("/challenge/custom", new OpenIddictRequest
+            {
+                GrantType = GrantTypes.Password,
+                Username = "johndoe",
+                Password = "A3ddj3w"
+            });
+
+            // Assert
+            Assert.Equal("custom_error", response.Error);
+            Assert.Equal("custom_error_description", response.ErrorDescription);
+            Assert.Equal("custom_error_uri", response.ErrorUri);
+        }
+
         [Theory]
         [InlineData("/", OpenIddictServerEndpointType.Unknown)]
         [InlineData("/connect", OpenIddictServerEndpointType.Unknown)]
@@ -162,7 +196,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         [InlineData("/connect/revoke")]
         [InlineData("/connect/token")]
         [InlineData("/connect/userinfo")]
-        public async Task HandleRequestAsync_RejectsInsecureHttpRequests(string address)
+        public async Task ProcessRequest_RejectsInsecureHttpRequests(string address)
         {
             // Arrange
             var client = CreateClient(options =>
@@ -326,6 +360,19 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                         return;
                     }
 
+                    else if (context.Request.Path == new PathString("/challenge/custom"))
+                    {
+                        var properties = new AuthenticationProperties(new Dictionary<string, string>
+                        {
+                            [OpenIddictServerOwinConstants.Properties.Error] = "custom_error",
+                            [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "custom_error_description",
+                            [OpenIddictServerOwinConstants.Properties.ErrorUri] = "custom_error_uri"
+                        });
+
+                        context.Authentication.Challenge(properties, OpenIddictServerOwinDefaults.AuthenticationType);
+                        return;
+                    }
+
                     else if (context.Request.Path == new PathString("/authenticate"))
                     {
                         var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
@@ -336,7 +383,9 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 
                         context.Response.ContentType = "application/json";
                         await context.Response.WriteAsync(JsonSerializer.Serialize(
-                            result.Identity.Claims.ToDictionary(claim => claim.Type, claim => claim.Value)));
+                            new OpenIddictResponse(result.Identity.Claims.GroupBy(claim => claim.Type)
+                                .Select(group => new KeyValuePair<string, string[]>(
+                                    group.Key, group.Select(claim => claim.Value).ToArray())))));
                         return;
                     }
 

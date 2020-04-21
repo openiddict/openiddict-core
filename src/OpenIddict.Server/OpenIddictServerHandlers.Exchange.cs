@@ -7,8 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +17,10 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+
+#if !SUPPORTS_TIME_CONSTANT_COMPARISONS
+using Org.BouncyCastle.Utilities;
+#endif
 
 namespace OpenIddict.Server
 {
@@ -54,8 +56,8 @@ namespace OpenIddict.Server
                 ValidateClientSecret.Descriptor,
                 ValidateEndpointPermissions.Descriptor,
                 ValidateGrantTypePermissions.Descriptor,
-                ValidateProofKeyForCodeExchangeRequirement.Descriptor,
                 ValidateScopePermissions.Descriptor,
+                ValidateProofKeyForCodeExchangeRequirement.Descriptor,
                 ValidateToken.Descriptor,
                 ValidatePresenters.Descriptor,
                 ValidateRedirectUri.Descriptor,
@@ -487,7 +489,7 @@ namespace OpenIddict.Server
                         context.Logger.LogError("The token request was rejected because the mandatory 'client_id' was missing.");
 
                         context.Reject(
-                            error: Errors.InvalidRequest,
+                            error: Errors.InvalidClient,
                             description: "The mandatory 'client_id' parameter is missing.");
 
                         return default;
@@ -909,7 +911,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException("The client application details cannot be found in the database.");
                     }
 
-                    if (await _applicationManager.IsPublicAsync(application))
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
                     {
                         // Public applications are not allowed to use the client credentials grant.
                         if (context.Request.IsClientCredentialsGrantType())
@@ -931,7 +933,7 @@ namespace OpenIddict.Server
                                                     "was not allowed to send a client secret.", context.ClientId);
 
                             context.Reject(
-                                error: Errors.InvalidRequest,
+                                error: Errors.InvalidClient,
                                 description: "The 'client_secret' parameter is not valid for this client application.");
 
                             return;
@@ -1006,7 +1008,7 @@ namespace OpenIddict.Server
                     }
 
                     // If the application is not a public client, validate the client secret.
-                    if (!await _applicationManager.IsPublicAsync(application) &&
+                    if (!await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public) &&
                         !await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
                         context.Logger.LogError("The token request was rejected because the confidential or hybrid application " +
@@ -1171,6 +1173,83 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
+            /// Contains the logic responsible of rejecting token requests made by applications
+            /// that haven't been granted the appropriate grant type permission.
+            /// Note: this handler is not used when the degraded mode is enabled.
+            /// </summary>
+            public class ValidateScopePermissions : IOpenIddictServerHandler<ValidateTokenRequestContext>
+            {
+                private readonly IOpenIddictApplicationManager _applicationManager;
+
+                public ValidateScopePermissions() => throw new InvalidOperationException(new StringBuilder()
+                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                    .ToString());
+
+                public ValidateScopePermissions([NotNull] IOpenIddictApplicationManager applicationManager)
+                    => _applicationManager = applicationManager;
+
+                /// <summary>
+                /// Gets the default descriptor definition assigned to this handler.
+                /// </summary>
+                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
+                        .AddFilter<RequireClientIdParameter>()
+                        .AddFilter<RequireDegradedModeDisabled>()
+                        .AddFilter<RequireScopePermissionsEnabled>()
+                        .UseScopedHandler<ValidateScopePermissions>()
+                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .Build();
+
+                /// <summary>
+                /// Processes the event.
+                /// </summary>
+                /// <param name="context">The context associated with the event to process.</param>
+                /// <returns>
+                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+                /// </returns>
+                public async ValueTask HandleAsync([NotNull] ValidateTokenRequestContext context)
+                {
+                    if (context == null)
+                    {
+                        throw new ArgumentNullException(nameof(context));
+                    }
+
+                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                    }
+
+                    foreach (var scope in context.Request.GetScopes())
+                    {
+                        // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
+                        if (string.Equals(scope, Scopes.OfflineAccess, StringComparison.Ordinal) ||
+                            string.Equals(scope, Scopes.OpenId, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+
+                        // Reject the request if the application is not allowed to use the iterated scope.
+                        if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
+                        {
+                            context.Logger.LogError("The token request was rejected because the application '{ClientId}' " +
+                                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
+
+                            context.Reject(
+                                error: Errors.InvalidRequest,
+                                description: "This client application is not allowed to use the specified scope.");
+
+                            return;
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
             /// Contains the logic responsible of rejecting token requests made by
             /// applications for which proof key for code exchange (PKCE) was enforced.
             /// Note: this handler is not used when the degraded mode is enabled.
@@ -1198,7 +1277,7 @@ namespace OpenIddict.Server
                         .AddFilter<RequireClientIdParameter>()
                         .AddFilter<RequireDegradedModeDisabled>()
                         .UseScopedHandler<ValidateProofKeyForCodeExchangeRequirement>()
-                        .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateScopePermissions.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -1248,83 +1327,6 @@ namespace OpenIddict.Server
             }
 
             /// <summary>
-            /// Contains the logic responsible of rejecting token requests made by applications
-            /// that haven't been granted the appropriate grant type permission.
-            /// Note: this handler is not used when the degraded mode is enabled.
-            /// </summary>
-            public class ValidateScopePermissions : IOpenIddictServerHandler<ValidateTokenRequestContext>
-            {
-                private readonly IOpenIddictApplicationManager _applicationManager;
-
-                public ValidateScopePermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
-
-                public ValidateScopePermissions([NotNull] IOpenIddictApplicationManager applicationManager)
-                    => _applicationManager = applicationManager;
-
-                /// <summary>
-                /// Gets the default descriptor definition assigned to this handler.
-                /// </summary>
-                public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                    = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                        .AddFilter<RequireClientIdParameter>()
-                        .AddFilter<RequireDegradedModeDisabled>()
-                        .AddFilter<RequireScopePermissionsEnabled>()
-                        .UseScopedHandler<ValidateScopePermissions>()
-                        .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
-                        .Build();
-
-                /// <summary>
-                /// Processes the event.
-                /// </summary>
-                /// <param name="context">The context associated with the event to process.</param>
-                /// <returns>
-                /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-                /// </returns>
-                public async ValueTask HandleAsync([NotNull] ValidateTokenRequestContext context)
-                {
-                    if (context == null)
-                    {
-                        throw new ArgumentNullException(nameof(context));
-                    }
-
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
-                    if (application == null)
-                    {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
-                    }
-
-                    foreach (var scope in context.Request.GetScopes())
-                    {
-                        // Avoid validating the "openid" and "offline_access" scopes as they represent protocol scopes.
-                        if (string.Equals(scope, Scopes.OfflineAccess, StringComparison.Ordinal) ||
-                            string.Equals(scope, Scopes.OpenId, StringComparison.Ordinal))
-                        {
-                            continue;
-                        }
-
-                        // Reject the request if the application is not allowed to use the iterated scope.
-                        if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope))
-                        {
-                            context.Logger.LogError("The token request was rejected because the application '{ClientId}' " +
-                                                    "was not allowed to use the scope {Scope}.", context.ClientId, scope);
-
-                            context.Reject(
-                                error: Errors.InvalidRequest,
-                                description: "This client application is not allowed to use the specified scope.");
-
-                            return;
-                        }
-                    }
-                }
-            }
-
-            /// <summary>
             /// Contains the logic responsible of rejecting token requests that don't
             /// specify a valid authorization code, device code or refresh token.
             /// </summary>
@@ -1341,7 +1343,7 @@ namespace OpenIddict.Server
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
                         .UseScopedHandler<ValidateToken>()
-                        .SetOrder(ValidateScopePermissions.Descriptor.Order + 1_000)
+                        .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -1611,11 +1613,24 @@ namespace OpenIddict.Server
                     // is active even if the degraded mode is enabled and ensures that a code_verifier is sent if a
                     // code_challenge was stored in the authorization code when the authorization request was handled.
 
-                    // If a code challenge was initially sent in the authorization request and associated with the
-                    // code, validate the code verifier to ensure the token request is sent by a legit caller.
                     var challenge = context.Principal.GetClaim(Claims.Private.CodeChallenge);
                     if (string.IsNullOrEmpty(challenge))
                     {
+                        // Validate that the token request does not include a code_verifier parameter
+                        // when code_challenge private claim was attached to the authorization code.
+                        if (!string.IsNullOrEmpty(context.Request.CodeVerifier))
+                        {
+                            context.Logger.LogError("The token request was rejected because a 'code_verifier' parameter " +
+                                                    "was presented with an authorization code to which no code challenge " +
+                                                    "was attached when processing the initial authorization request.");
+
+                            context.Reject(
+                                error: Errors.InvalidRequest,
+                                description: "The 'code_verifier' parameter is uncalled for in this request.");
+
+                            return default;
+                        }
+
                         return default;
                     }
 
@@ -1641,7 +1656,7 @@ namespace OpenIddict.Server
 
                     // Note: when using the "plain" code challenge method, no hashing is actually performed.
                     // In this case, the raw ASCII bytes of the verifier are directly compared to the challenge.
-                    ReadOnlySpan<byte> data;
+                    byte[] data;
                     if (string.Equals(method, CodeChallengeMethods.Plain, StringComparison.Ordinal))
                     {
                         data = Encoding.ASCII.GetBytes(context.Request.CodeVerifier);
@@ -1661,7 +1676,11 @@ namespace OpenIddict.Server
 
                     // Compare the verifier and the code challenge: if the two don't match, return an error.
                     // Note: to prevent timing attacks, a time-constant comparer is always used.
-                    if (!FixedTimeEquals(data, Encoding.UTF8.GetBytes(challenge)))
+#if SUPPORTS_TIME_CONSTANT_COMPARISONS
+                    if (!CryptographicOperations.FixedTimeEquals(data, Encoding.ASCII.GetBytes(challenge)))
+#else
+                    if (!Arrays.ConstantTimeAreEqual(data, Encoding.ASCII.GetBytes(challenge)))
+#endif
                     {
                         context.Logger.LogError("The token request was rejected because the 'code_verifier' was invalid.");
 
@@ -1673,33 +1692,6 @@ namespace OpenIddict.Server
                     }
 
                     return default;
-                }
-
-                [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-                private static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
-                {
-#if SUPPORTS_TIME_CONSTANT_COMPARISONS
-                    return CryptographicOperations.FixedTimeEquals(left, right);
-#else
-                    // Note: these null checks can be theoretically considered as early checks
-                    // (which would defeat the purpose of a time-constant comparison method),
-                    // but the expected string length is the only information an attacker
-                    // could get at this stage, which is not critical where this method is used.
-
-                    if (left.Length != right.Length)
-                    {
-                        return false;
-                    }
-
-                    var result = true;
-
-                    for (var index = 0; index < left.Length; index++)
-                    {
-                        result &= left[index] == right[index];
-                    }
-
-                    return result;
-#endif
                 }
             }
 

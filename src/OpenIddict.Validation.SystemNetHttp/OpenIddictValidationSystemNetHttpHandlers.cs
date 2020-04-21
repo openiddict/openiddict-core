@@ -169,6 +169,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 {
                     using var request = new HttpRequestMessage(HttpMethod.Get, address);
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
 
                     using var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
                     if (!response.IsSuccessStatusCode)
@@ -181,8 +182,8 @@ namespace OpenIddict.Validation.SystemNetHttp
                             /* Body: */ await response.Content.ReadAsStringAsync()));
                     }
 
-                    var media = response.Content?.Headers.ContentType?.MediaType;
-                    if (!string.Equals(media, "application/json", StringComparison.OrdinalIgnoreCase))
+                    var type = response.Content?.Headers.ContentType?.MediaType;
+                    if (!string.Equals(type, "application/json", StringComparison.OrdinalIgnoreCase))
                     {
                         throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture,
                             "The OAuth 2.0/OpenID Connect discovery failed because an invalid content type was received:" +
@@ -192,8 +193,12 @@ namespace OpenIddict.Validation.SystemNetHttp
                             /* Body: */ await response.Content.ReadAsStringAsync()));
                     }
 
-                    using var stream = await response.Content.ReadAsStreamAsync();
-                    return await JsonSerializer.DeserializeAsync<OpenIddictResponse>(stream);
+                    // Note: ReadAsStreamAsync() is deliberately not used here, as we can't guarantee that
+                    // the validation handler will always be used with OAuth 2.0 servers returning UTF-8
+                    // responses (which is not required by the OAuth 2.0/OpenID Connect discovery specs).
+                    // Unlike ReadAsStreamAsync(), ReadAsStringAsync() will use the response charset
+                    // to determine whether the payload is UTF-8-encoded and transcode it if necessary.
+                    return JsonSerializer.Deserialize<OpenIddictResponse>(await response.Content.ReadAsStringAsync());
                 }
             }
         }

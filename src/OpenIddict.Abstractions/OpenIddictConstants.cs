@@ -90,18 +90,18 @@ namespace OpenIddict.Abstractions
                 public const string AccessTokenLifetime = "oi_act_lft";
                 public const string AuthorizationId = "oi_au_id";
                 public const string AuthorizationCodeLifetime = "oi_auc_lft";
-                public const string ClaimDestinations = "oi_cl_dstn";
+                public const string ClaimDestinationsMap = "oi_cl_dstn";
                 public const string CodeChallenge = "oi_cd_chlg";
                 public const string CodeChallengeMethod = "oi_cd_chlg_meth";
                 public const string DeviceCodeId = "oi_dvc_id";
                 public const string DeviceCodeLifetime = "oi_dvc_lft";
                 public const string IdentityTokenLifetime = "oi_idt_lft";
                 public const string Nonce = "oi_nce";
-                public const string Presenters = "oi_prst";
+                public const string Presenter = "oi_prst";
                 public const string RedirectUri = "oi_reduri";
                 public const string RefreshTokenLifetime = "oi_reft_lft";
-                public const string Resources = "oi_rsrc";
-                public const string Scopes = "oi_scp";
+                public const string Resource = "oi_rsrc";
+                public const string Scope = "oi_scp";
                 public const string TokenId = "oi_tkn_id";
                 public const string TokenType = "oi_tkn_typ";
                 public const string UserCodeLifetime = "oi_usrc_lft";
@@ -132,6 +132,7 @@ namespace OpenIddict.Abstractions
             public const string Explicit = "explicit";
             public const string External = "external";
             public const string Implicit = "implicit";
+            public const string Systematic = "systematic";
         }
 
         public static class Destinations
@@ -147,6 +148,8 @@ namespace OpenIddict.Abstractions
             public const string AuthorizationPending = "authorization_pending";
             public const string ConsentRequired = "consent_required";
             public const string ExpiredToken = "expired_token";
+            public const string InsufficientAccess = "insufficient_access";
+            public const string InsufficientScope = "insufficient_scope";
             public const string InteractionRequired = "interaction_required";
             public const string InvalidClient = "invalid_client";
             public const string InvalidGrant = "invalid_grant";
@@ -156,6 +159,7 @@ namespace OpenIddict.Abstractions
             public const string InvalidScope = "invalid_scope";
             public const string InvalidToken = "invalid_token";
             public const string LoginRequired = "login_required";
+            public const string MissingToken = "missing_token";
             public const string RegistrationNotSupported = "registration_not_supported";
             public const string RequestNotSupported = "request_not_supported";
             public const string RequestUriNotSupported = "request_uri_not_supported";
@@ -181,7 +185,7 @@ namespace OpenIddict.Abstractions
         public static class JsonWebTokenTypes
         {
             public const string AccessToken = "at+jwt";
-            public const string IdentityToken = "jwt";
+            public const string IdentityToken = "JWT";
 
             public static class Private
             {

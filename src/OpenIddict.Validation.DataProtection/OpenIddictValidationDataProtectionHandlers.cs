@@ -8,7 +8,6 @@ using System;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
@@ -79,14 +78,14 @@ namespace OpenIddict.Validation.DataProtection
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
                         Purposes.Handlers.Server, Purposes.Formats.AccessToken, Purposes.Schemes.Server);
 
-                ClaimsPrincipal principal = null;
-
                 try
                 {
                     using var buffer = new MemoryStream(protector.Unprotect(Base64UrlEncoder.DecodeBytes(context.Token)));
                     using var reader = new BinaryReader(buffer);
 
-                    principal = _options.CurrentValue.Formatter.ReadToken(reader);
+                    // Note: since the data format relies on a data protector using different "purposes" strings
+                    // per token type, the token processed at this stage is guaranteed to be of the expected type.
+                    context.Principal = _options.CurrentValue.Formatter.ReadToken(reader)?.SetTokenType(TokenTypeHints.AccessToken);
                 }
 
                 catch (Exception exception)
@@ -95,14 +94,10 @@ namespace OpenIddict.Validation.DataProtection
                 }
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
-                if (principal == null)
+                if (context.Principal == null)
                 {
                     return default;
                 }
-
-                // Note: since the data format relies on a data protector using different "purposes" strings
-                // per token type, the token processed at this stage is guaranteed to be of the expected type.
-                context.Principal = principal.SetClaim(Claims.Private.TokenType, TokenTypeHints.AccessToken);
 
                 context.Logger.LogTrace("The self-contained DP token '{Token}' was successfully validated and the following " +
                                         "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);

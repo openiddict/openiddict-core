@@ -8,7 +8,6 @@ using System;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
 
 namespace OpenIddict.Validation.ServerIntegration
@@ -48,13 +47,10 @@ namespace OpenIddict.Validation.ServerIntegration
                 (from credentials in _options.CurrentValue.SigningCredentials
                  select credentials.Key).ToList();
 
-            // Import the symmetric encryption keys from the server configuration.
+            // Import the encryption keys from the server configuration.
             foreach (var credentials in _options.CurrentValue.EncryptionCredentials)
             {
-                if (credentials.Key is SymmetricSecurityKey)
-                {
-                    options.EncryptionCredentials.Add(credentials);
-                }
+                options.EncryptionCredentials.Add(credentials);
             }
 
             options.UseReferenceAccessTokens = _options.CurrentValue.UseReferenceAccessTokens;

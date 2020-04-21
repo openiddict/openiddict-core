@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace OpenIddict.Validation
 {
@@ -79,16 +79,23 @@ namespace OpenIddict.Validation
         public ISet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets the optional "realm" value returned to
+        /// the caller as part of the WWW-Authenticate header.
+        /// </summary>
+        public string Realm { get; set; }
+
+        /// <summary>
         /// Gets the token validation parameters used by the OpenIddict validation services.
         /// </summary>
         public TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
         {
             ClockSkew = TimeSpan.Zero,
-            NameClaimType = OpenIddictConstants.Claims.Name,
-            RoleClaimType = OpenIddictConstants.Claims.Role,
+            NameClaimType = Claims.Name,
+            RoleClaimType = Claims.Role,
             // Note: audience and lifetime are manually validated by OpenIddict itself.
             ValidateAudience = false,
-            ValidateLifetime = false
+            ValidateLifetime = false,
+            ValidTypes = new[] { JsonWebTokenTypes.AccessToken }
         };
     }
 }

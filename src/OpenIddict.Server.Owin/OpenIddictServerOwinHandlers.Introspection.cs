@@ -23,6 +23,8 @@ namespace OpenIddict.Server.Owin
                 /*
                  * Introspection response processing:
                  */
+                AttachHttpResponseCode<ApplyIntrospectionResponseContext>.Descriptor,
+                AttachWwwAuthenticateHeader<ApplyIntrospectionResponseContext>.Descriptor,
                 ProcessJsonResponse<ApplyIntrospectionResponseContext>.Descriptor);
         }
     }

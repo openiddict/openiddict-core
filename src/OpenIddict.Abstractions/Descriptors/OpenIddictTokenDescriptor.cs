@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Security.Claims;
 
 namespace OpenIddict.Abstractions
@@ -39,13 +38,6 @@ namespace OpenIddict.Abstractions
         /// Note: this property is not stored by the default token stores.
         /// </summary>
         public ClaimsPrincipal Principal { get; set; }
-
-        /// <summary>
-        /// Gets the optional authentication properties associated with the token.
-        /// Note: this property is not stored by the default token stores.
-        /// </summary>
-        public IDictionary<string, string> Properties { get; } =
-            new Dictionary<string, string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the reference identifier associated with the token.

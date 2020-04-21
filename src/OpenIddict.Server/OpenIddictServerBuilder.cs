@@ -1137,11 +1137,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.AuthorizationEndpointUris.Clear();
@@ -1187,11 +1182,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
             }
 
             return Configure(options =>
@@ -1241,11 +1231,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.CryptographyEndpointUris.Clear();
@@ -1291,11 +1276,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
             }
 
             return Configure(options =>
@@ -1345,11 +1325,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.IntrospectionEndpointUris.Clear();
@@ -1395,11 +1370,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
             }
 
             return Configure(options =>
@@ -1449,11 +1419,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.RevocationEndpointUris.Clear();
@@ -1499,11 +1464,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
-            }
-
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
             }
 
             return Configure(options =>
@@ -1553,11 +1513,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.UserinfoEndpointUris.Clear();
@@ -1605,11 +1560,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
             }
 
-            if (addresses.Any(address => !address.IsAbsoluteUri && !address.OriginalString.StartsWith("/", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Relative URLs must start with a '/'.", nameof(addresses));
-            }
-
             return Configure(options =>
             {
                 options.VerificationEndpointUris.Clear();
@@ -1620,6 +1570,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
             });
         }
+
+        /// <summary>
+        /// Disables JWT access token encryption (this option doesn't affect Data Protection tokens).
+        /// Disabling encryption is NOT recommended and SHOULD only be done when issuing tokens
+        /// to third-party resource servers/APIs you don't control and don't fully trust.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        public OpenIddictServerBuilder DisableAccessTokenEncryption()
+            => Configure(options => options.DisableAccessTokenEncryption = true);
 
         /// <summary>
         /// Disables authorization storage so that ad-hoc authorizations are

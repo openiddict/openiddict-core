@@ -254,6 +254,24 @@ namespace OpenIddict.Abstractions
         ValueTask<ImmutableArray<string>> GetRequirementsAsync([NotNull] object application, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Determines whether a given application has the specified client type.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="type">The expected client type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the application has the specified client type, <c>false</c> otherwise.</returns>
+        ValueTask<bool> HasClientTypeAsync([NotNull] object application, [NotNull] string type, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Determines whether a given application has the specified consent type.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="type">The expected consent type.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns><c>true</c> if the application has the specified consent type, <c>false</c> otherwise.</returns>
+        ValueTask<bool> HasConsentTypeAsync([NotNull] object application, [NotNull] string type, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Determines whether the specified permission has been granted to the application.
         /// </summary>
         /// <param name="application">The application.</param>
@@ -270,30 +288,6 @@ namespace OpenIddict.Abstractions
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns><c>true</c> if the requirement has been enforced for the specified application, <c>false</c> otherwise.</returns>
         ValueTask<bool> HasRequirementAsync([NotNull] object application, [NotNull] string requirement, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Determines whether an application is a confidential client.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the application is a confidential client, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsConfidentialAsync([NotNull] object application, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Determines whether an application is a hybrid client.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the application is a hybrid client, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsHybridAsync([NotNull] object application, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Determines whether an application is a public client.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-        /// <returns><c>true</c> if the application is a public client, <c>false</c> otherwise.</returns>
-        ValueTask<bool> IsPublicAsync([NotNull] object application, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Executes the specified query and returns all the corresponding elements.

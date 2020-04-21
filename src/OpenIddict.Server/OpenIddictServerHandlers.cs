@@ -38,6 +38,7 @@ namespace OpenIddict.Server
             NormalizeUserCode.Descriptor,
             ValidateReferenceTokenIdentifier.Descriptor,
             ValidateIdentityModelToken.Descriptor,
+            MapInternalClaims.Descriptor,
             RestoreReferenceTokenProperties.Descriptor,
             ValidatePrincipal.Descriptor,
             ValidateTokenEntry.Descriptor,
@@ -98,7 +99,12 @@ namespace OpenIddict.Server
 
             BeautifyUserCode.Descriptor,
             AttachAccessTokenProperties.Descriptor,
-            AttachDeviceCodeProperties.Descriptor)
+            AttachDeviceCodeProperties.Descriptor,
+
+            /*
+             * Sign-out processing:
+             */
+            ValidateSignOutDemand.Descriptor)
 
             .AddRange(Authentication.DefaultHandlers)
             .AddRange(Device.DefaultHandlers)
@@ -223,17 +229,7 @@ namespace OpenIddict.Server
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: context.EndpointType switch
-                        {
-                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The authorization code is missing.",
-                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is missing.",
-                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is missing.",
-
-                            _ => "The security token is missing."
-                        });
+                        description: "The security token is missing.");
 
                     return default;
                 }
@@ -477,7 +473,7 @@ namespace OpenIddict.Server
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
 
                 // Store the token type as a special private claim.
-                context.Principal.SetClaim(Claims.Private.TokenType, token.Typ switch
+                context.Principal.SetTokenType(token.Typ switch
                 {
                     JsonWebTokenTypes.AccessToken   => TokenTypeHints.AccessToken,
                     JsonWebTokenTypes.IdentityToken => TokenTypeHints.IdToken,
@@ -491,26 +487,79 @@ namespace OpenIddict.Server
                 });
 
                 // Restore the claim destinations from the special oi_cl_dstn claim (represented as a dictionary/JSON object).
-                if (token.TryGetPayloadValue(Claims.Private.ClaimDestinations, out ImmutableDictionary<string, string[]> destinations))
+                if (token.TryGetPayloadValue(Claims.Private.ClaimDestinationsMap, out ImmutableDictionary<string, string[]> destinations))
                 {
                     context.Principal.SetDestinations(destinations);
                 }
 
-                if (context.Principal.IsAccessToken())
-                {
-                    // Map the standardized "azp" and "scope" claims to their "oi_" equivalent so that
-                    // the ClaimsPrincipal extensions exposed by OpenIddict return consistent results.
-                    context.Principal.SetPresenters(context.Principal.GetClaims(Claims.AuthorizedParty));
-
-                    // Note: starting in OpenIddict 3.0, the public "scope" claim is formatted
-                    // as a unique space-separated string containing all the granted scopes.
-                    // Visit https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03 for more information.
-                    context.Principal.SetScopes(context.Principal.GetClaim(Claims.Scope)
-                        ?.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries));
-                }
-
                 context.Logger.LogTrace("The token '{Token}' was successfully validated and the following claims " +
                                         "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of mapping internal claims used by OpenIddict.
+        /// </summary>
+        public class MapInternalClaims : IOpenIddictServerHandler<ProcessAuthenticationContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                    .UseSingletonHandler<MapInternalClaims>()
+                    .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Principal == null)
+                {
+                    return default;
+                }
+
+                if (!context.Principal.HasTokenType(TokenTypeHints.AccessToken))
+                {
+                    return default;
+                }
+
+                // Map the standardized "azp" and "scope" claims to their "oi_" equivalent so that
+                // the ClaimsPrincipal extensions exposed by OpenIddict return consistent results.
+                if (!context.Principal.HasPresenter())
+                {
+                    context.Principal.SetPresenters(context.Principal.GetClaims(Claims.AuthorizedParty));
+                }
+
+                // Note: in previous OpenIddict versions, scopes were represented as a JSON array
+                // and deserialized as multiple claims. In OpenIddict 3.0, the public "scope" claim
+                // is formatted as a unique space-separated string containing all the granted scopes.
+                // To ensure access tokens generated by previous versions are still correctly handled,
+                // both formats (unique space-separated string or multiple scope claims) must be supported.
+                // Visit https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03 for more information.
+                if (!context.Principal.HasScope())
+                {
+                    var scopes = context.Principal.GetClaims(Claims.Scope);
+                    if (scopes.Length == 1)
+                    {
+                        scopes = scopes[0].Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
+                    }
+
+                    context.Principal.SetScopes(scopes);
+                }
 
                 return default;
             }
@@ -543,7 +592,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
                     .UseScopedHandler<RestoreReferenceTokenProperties>()
-                    .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
+                    .SetOrder(MapInternalClaims.Descriptor.Order + 1_000)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -575,7 +624,7 @@ namespace OpenIddict.Server
                     .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
                     .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                     .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                    .SetClaim(Claims.Private.TokenType, await _tokenManager.GetTypeAsync(token));
+                    .SetTokenType(await _tokenManager.GetTypeAsync(token));
             }
         }
 
@@ -632,6 +681,31 @@ namespace OpenIddict.Server
 
 
                     return default;
+                }
+
+                // When using JWT or Data Protection tokens, the correct token type is always enforced by IdentityModel
+                // (using the "typ" header) or by ASP.NET Core Data Protection (using per-token-type purposes strings).
+                // To ensure tokens deserialized using a custom routine are of the expected type, a manual check is used,
+                // which requires that a special claim containing the token type be present in the security principal.
+                if (!string.IsNullOrEmpty(context.TokenType))
+                {
+                    var type = context.Principal.GetTokenType();
+                    if (string.IsNullOrEmpty(type))
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .AppendLine("The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.")
+                            .Append("When implementing custom token deserialization, a 'oi_tkn_typ' claim containing ")
+                            .Append("the type of the token being processed must be added to the security principal.")
+                            .ToString());
+                    }
+
+                    if (!string.Equals(type, context.TokenType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .AppendFormat("The type of token associated with the deserialized principal ({0})", type)
+                            .AppendFormat("doesn't match the expected token type ({0}).", context.TokenType)
+                            .ToString());
+                    }
                 }
 
                 return default;
@@ -813,7 +887,7 @@ namespace OpenIddict.Server
                                  .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
                                  .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                                  .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                                 .SetClaim(Claims.Private.TokenType, await _tokenManager.GetTypeAsync(token));
+                                 .SetTokenType(await _tokenManager.GetTypeAsync(token));
 
                 async ValueTask TryRevokeAuthorizationChainAsync(string identifier)
                 {
@@ -1017,7 +1091,7 @@ namespace OpenIddict.Server
                     case OpenIddictServerEndpointType.Verification:
                         return default;
 
-                    default: throw new InvalidOperationException("No challenge can be triggered from this endpoint.");
+                    default: throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
             }
         }
@@ -1050,31 +1124,35 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Error))
+                // If error details were explicitly set by the application, don't override them.
+                if (!string.IsNullOrEmpty(context.Response.Error) ||
+                    !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
+                    !string.IsNullOrEmpty(context.Response.ErrorUri))
                 {
-                    context.Response.Error = context.EndpointType switch
-                    {
-                        OpenIddictServerEndpointType.Authorization => Errors.AccessDenied,
-                        OpenIddictServerEndpointType.Token         => Errors.InvalidGrant,
-                        OpenIddictServerEndpointType.Userinfo      => Errors.InvalidToken,
-                        OpenIddictServerEndpointType.Verification  => Errors.AccessDenied,
-
-                        _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
-                    };
+                    return default;
                 }
 
-                if (string.IsNullOrEmpty(context.Response.ErrorDescription))
+                context.Response.Error = context.EndpointType switch
                 {
-                    context.Response.ErrorDescription = context.EndpointType switch
-                    {
-                        OpenIddictServerEndpointType.Authorization => "The authorization was denied by the resource owner.",
-                        OpenIddictServerEndpointType.Token         => "The token request was rejected by the authorization server.",
-                        OpenIddictServerEndpointType.Userinfo      => "The access token is not valid or cannot be used to retrieve user information.",
-                        OpenIddictServerEndpointType.Verification  => "The authorization was denied by the resource owner.",
+                    OpenIddictServerEndpointType.Authorization => Errors.AccessDenied,
+                    OpenIddictServerEndpointType.Token         => Errors.InvalidGrant,
+                    OpenIddictServerEndpointType.Userinfo      => Errors.InsufficientAccess,
+                    OpenIddictServerEndpointType.Verification  => Errors.AccessDenied,
 
-                        _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
-                    };
-                }
+                    _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
+                };
+
+                context.Response.ErrorDescription = context.EndpointType switch
+                {
+                    OpenIddictServerEndpointType.Authorization => "The authorization was denied by the resource owner.",
+                    OpenIddictServerEndpointType.Token         => "The token request was rejected by the authorization server.",
+                    OpenIddictServerEndpointType.Userinfo      => "The user information access demand was rejected by the authorization server.",
+                    OpenIddictServerEndpointType.Verification  => "The authorization was denied by the resource owner.",
+
+                    _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
+                };
+
+                context.Response.Realm = context.Options.Realm;
 
                 return default;
             }
@@ -1369,7 +1447,7 @@ namespace OpenIddict.Server
 
                     // When the request is a verification request, don't flow the copy from the user code.
                     if (context.EndpointType == OpenIddictServerEndpointType.Verification &&
-                        string.Equals(claims.Key, Claims.Private.Scopes, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(claims.Key, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -1754,8 +1832,8 @@ namespace OpenIddict.Server
                     }
 
                     // Never exclude the presenters and scope private claims.
-                    if (string.Equals(claim.Type, Claims.Private.Presenters, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(claim.Type, Claims.Private.Scopes, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(claim.Type, Claims.Private.Presenter, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -1812,6 +1890,9 @@ namespace OpenIddict.Server
 
                 // Set the public audiences collection using the private resource claims stored in the principal.
                 principal.SetAudiences(context.Principal.GetResources());
+
+                // Store the client_id as a public client_id claim, if available.
+                principal.SetClaim(Claims.ClientId, context.ClientId);
 
                 // When receiving a grant_type=refresh_token request, determine whether the client application
                 // requests a limited set of scopes and immediately replace the scopes collection if necessary.
@@ -2696,14 +2777,14 @@ namespace OpenIddict.Server
                 // that are manually mapped to public standard azp/scope JWT claims.
                 var principal = context.AccessTokenPrincipal.Clone(claim => claim.Type switch
                 {
-                    Claims.Private.Presenters => false,
-                    Claims.Private.Scopes     => false,
-                    Claims.Private.TokenId    => false,
+                    Claims.Private.Presenter => false,
+                    Claims.Private.Scope     => false,
+                    Claims.Private.TokenId   => false,
 
                     _ => true
                 });
 
-                // Set the authorized party using the first presenters (typically the client identifier), if available.
+                // Set the authorized party using the first presenter (typically the client identifier), if available.
                 principal.SetClaim(Claims.AuthorizedParty, context.AccessTokenPrincipal.GetPresenters().FirstOrDefault());
 
                 // Set the public scope claim using the private scope claims from the principal.
@@ -2724,12 +2805,13 @@ namespace OpenIddict.Server
                     Subject = (ClaimsIdentity) principal.Identity
                 });
 
-                var credentials = context.Options.EncryptionCredentials.FirstOrDefault(
-                    credentials => credentials.Key is SymmetricSecurityKey);
-                if (credentials != null)
+                if (!context.Options.DisableAccessTokenEncryption)
                 {
-                    token = context.Options.JsonWebTokenHandler.EncryptToken(
-                        token, credentials, new Dictionary<string, object>(StringComparer.Ordinal)
+                    token = context.Options.JsonWebTokenHandler.EncryptToken(token,
+                        context.Options.EncryptionCredentials.FirstOrDefault(
+                            credentials => credentials.Key is SymmetricSecurityKey) ??
+                            context.Options.EncryptionCredentials.First(),
+                        new Dictionary<string, object>(StringComparer.Ordinal)
                         {
                             [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AccessToken
                         });
@@ -2900,14 +2982,16 @@ namespace OpenIddict.Server
                 {
                     descriptor.Claims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
-                        [Claims.Private.ClaimDestinations] = destinations
+                        [Claims.Private.ClaimDestinationsMap] = destinations
                     };
                 }
 
                 // Sign and encrypt the authorization code.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    context.Options.EncryptionCredentials.First(),
+                    context.Options.EncryptionCredentials.FirstOrDefault(
+                        credentials => credentials.Key is SymmetricSecurityKey) ??
+                        context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationCode
@@ -3077,14 +3161,16 @@ namespace OpenIddict.Server
                 {
                     descriptor.Claims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
-                        [Claims.Private.ClaimDestinations] = destinations
+                        [Claims.Private.ClaimDestinationsMap] = destinations
                     };
                 }
 
                 // Sign and encrypt the device code.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    context.Options.EncryptionCredentials.First(),
+                    context.Options.EncryptionCredentials.FirstOrDefault(
+                        credentials => credentials.Key is SymmetricSecurityKey) ??
+                        context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.DeviceCode
@@ -3355,14 +3441,16 @@ namespace OpenIddict.Server
                 {
                     descriptor.Claims = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
-                        [Claims.Private.ClaimDestinations] = destinations
+                        [Claims.Private.ClaimDestinationsMap] = destinations
                     };
                 }
 
                 // Sign and encrypt the refresh token.
                 var token = context.Options.JsonWebTokenHandler.CreateToken(descriptor);
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    context.Options.EncryptionCredentials.First(),
+                    context.Options.EncryptionCredentials.FirstOrDefault(
+                        credentials => credentials.Key is SymmetricSecurityKey) ??
+                        context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.RefreshToken
@@ -3568,7 +3656,9 @@ namespace OpenIddict.Server
                 });
 
                 token = context.Options.JsonWebTokenHandler.EncryptToken(token,
-                    context.Options.EncryptionCredentials.First(),
+                    context.Options.EncryptionCredentials.FirstOrDefault(
+                        credentials => credentials.Key is SymmetricSecurityKey) ??
+                        context.Options.EncryptionCredentials.First(),
                     new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.UserCode
@@ -4024,15 +4114,9 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var endpoint = context.Options.VerificationEndpointUris.FirstOrDefault();
-                if (endpoint != null)
+                var address = GetEndpointAbsoluteUrl(context.Issuer, context.Options.VerificationEndpointUris.FirstOrDefault());
+                if (address != null)
                 {
-                    if (context.Issuer == null || !context.Issuer.IsAbsoluteUri)
-                    {
-                        throw new InvalidOperationException("An absolute URL cannot be built for the device endpoint path.");
-                    }
-
-                    var address = new Uri(context.Issuer, endpoint);
                     var builder = new UriBuilder(address)
                     {
                         Query = string.Concat(Parameters.UserCode, "=", context.Response.UserCode)
@@ -4047,6 +4131,81 @@ namespace OpenIddict.Server
                 if (date.HasValue && date.Value > DateTimeOffset.UtcNow)
                 {
                     context.Response.ExpiresIn = (long) ((date.Value - DateTimeOffset.UtcNow).TotalSeconds + .5);
+                }
+
+                return default;
+
+                static Uri GetEndpointAbsoluteUrl(Uri issuer, Uri endpoint)
+                {
+                    // If the endpoint is disabled (i.e a null address is specified), return null.
+                    if (endpoint == null)
+                    {
+                        return null;
+                    }
+
+                    // If the endpoint address is already an absolute URL, return it as-is.
+                    if (endpoint.IsAbsoluteUri)
+                    {
+                        return endpoint;
+                    }
+
+                    // At this stage, throw an exception if the issuer cannot be retrieved.
+                    if (issuer == null || !issuer.IsAbsoluteUri)
+                    {
+                        throw new InvalidOperationException("The issuer must be a non-null, non-empty absolute URL.");
+                    }
+
+                    // Ensure the issuer ends with a trailing slash, as it is necessary
+                    // for Uri's constructor to correctly compute correct absolute URLs.
+                    if (!issuer.OriginalString.EndsWith("/"))
+                    {
+                        issuer = new Uri(issuer.OriginalString + "/", UriKind.Absolute);
+                    }
+
+                    // Ensure the endpoint does not start with a leading slash, as it is necessary
+                    // for Uri's constructor to correctly compute correct absolute URLs.
+                    if (endpoint.OriginalString.StartsWith("/"))
+                    {
+                        endpoint = new Uri(endpoint.OriginalString.Substring(1, endpoint.OriginalString.Length - 1), UriKind.Relative);
+                    }
+
+                    return new Uri(issuer, endpoint);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of ensuring that the sign-out demand
+        /// is compatible with the type of the endpoint that handled the request.
+        /// </summary>
+        public class ValidateSignOutDemand : IOpenIddictServerHandler<ProcessSignOutContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
+                    .UseSingletonHandler<ValidateSignOutDemand>()
+                    .SetOrder(int.MinValue + 100_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessSignOutContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.EndpointType != OpenIddictServerEndpointType.Logout)
+                {
+                    throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
                 }
 
                 return default;

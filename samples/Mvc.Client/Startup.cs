@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -47,6 +46,7 @@ namespace Mvc.Client
                 options.Scope.Add("email");
                 options.Scope.Add("roles");
                 options.Scope.Add("offline_access");
+                options.Scope.Add("demo_api");
 
                 options.SecurityTokenValidator = new JwtSecurityTokenHandler
                 {
@@ -60,9 +60,9 @@ namespace Mvc.Client
                 options.AccessDeniedPath = "/";
             });
 
-            services.AddMvc();
+            services.AddHttpClient();
 
-            services.AddSingleton<HttpClient>();
+            services.AddMvc();
         }
 
         public void Configure(IApplicationBuilder app)

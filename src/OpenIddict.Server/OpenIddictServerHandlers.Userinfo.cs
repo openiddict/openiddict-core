@@ -385,8 +385,8 @@ namespace OpenIddict.Server
                         context.Logger.LogError("The userinfo request was rejected because the access token was missing.");
 
                         context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: "The mandatory 'access_token' parameter is missing.");
+                            error: Errors.MissingToken,
+                            description: "The mandatory access token is missing.");
 
                         return default;
                     }

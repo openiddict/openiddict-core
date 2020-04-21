@@ -29,6 +29,9 @@ namespace OpenIddict.Server.AspNetCore
                 /*
                  * Token response processing:
                  */
+                AttachHttpResponseCode<ApplyTokenResponseContext>.Descriptor,
+                AttachCacheControlHeader<ApplyTokenResponseContext>.Descriptor,
+                AttachWwwAuthenticateHeader<ApplyTokenResponseContext>.Descriptor,
                 ProcessJsonResponse<ApplyTokenResponseContext>.Descriptor);
         }
     }

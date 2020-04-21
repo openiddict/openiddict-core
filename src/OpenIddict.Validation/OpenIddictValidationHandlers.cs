@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
@@ -32,6 +31,7 @@ namespace OpenIddict.Validation
             ValidateAccessTokenParameter.Descriptor,
             ValidateReferenceTokenIdentifier.Descriptor,
             ValidateIdentityModelToken.Descriptor,
+            MapInternalClaims.Descriptor,
             RestoreReferenceTokenProperties.Descriptor,
             ValidatePrincipal.Descriptor,
             ValidateExpirationDate.Descriptor,
@@ -76,7 +76,7 @@ namespace OpenIddict.Validation
                     context.Logger.LogError("The request was rejected because the access token was missing.");
 
                     context.Reject(
-                        error: Errors.InvalidToken,
+                        error: Errors.MissingToken,
                         description: "The access token is missing.");
 
                     return default;
@@ -208,7 +208,6 @@ namespace OpenIddict.Validation
                 parameters = parameters.Clone();
                 parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
                 parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
-                parameters.ValidTypes = new[] { JsonWebTokenTypes.AccessToken };
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
@@ -219,22 +218,74 @@ namespace OpenIddict.Validation
                     return default;
                 }
 
-                // Attach the principal extracted from the token to the parent event context.
-                context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
-                context.Principal.SetClaim(Claims.Private.TokenType, TokenTypeHints.AccessToken);
-
-                // Map the standardized "azp" and "scope" claims to their "oi_" equivalent so that
-                // the ClaimsPrincipal extensions exposed by OpenIddict return consistent results.
-                context.Principal.SetPresenters(context.Principal.GetClaims(Claims.AuthorizedParty));
-
-                // Note: starting in OpenIddict 3.0, the public "scope" claim is formatted
-                // as a unique space-separated string containing all the granted scopes.
-                // Visit https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03 for more information.
-                context.Principal.SetScopes(context.Principal.GetClaim(Claims.Scope)
-                    ?.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries));
+                // Note: tokens that are considered valid at this point are guaranteed to be access tokens,
+                // as a "typ" header validation is performed by the JWT handler, based on the valid values
+                // set in the token validation parameters (by default, only "at+jwt" is considered valid).
+                context.Principal = new ClaimsPrincipal(result.ClaimsIdentity).SetTokenType(TokenTypeHints.AccessToken);
 
                 context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
                                         "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of mapping internal claims used by OpenIddict.
+        /// </summary>
+        public class MapInternalClaims : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                    .UseSingletonHandler<MapInternalClaims>()
+                    .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.Principal == null)
+                {
+                    return default;
+                }
+
+                // Map the standardized "azp" and "scope" claims to their "oi_" equivalent so that
+                // the ClaimsPrincipal extensions exposed by OpenIddict return consistent results.
+                if (!context.Principal.HasPresenter())
+                {
+                    context.Principal.SetPresenters(context.Principal.GetClaims(Claims.AuthorizedParty));
+                }
+
+                // Note: in previous OpenIddict versions, scopes were represented as a JSON array
+                // and deserialized as multiple claims. In OpenIddict 3.0, the public "scope" claim
+                // is formatted as a unique space-separated string containing all the granted scopes.
+                // To ensure access tokens generated by previous versions are still correctly handled,
+                // both formats (unique space-separated string or multiple scope claims) must be supported.
+                // Visit https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-03 for more information.
+                if (!context.Principal.HasScope())
+                {
+                    var scopes = context.Principal.GetClaims(Claims.Scope);
+                    if (scopes.Length == 1)
+                    {
+                        scopes = scopes[0].Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
+                    }
+
+                    context.Principal.SetScopes(scopes);
+                }
 
                 return default;
             }
@@ -264,7 +315,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireReferenceAccessTokensEnabled>()
                     .UseScopedHandler<RestoreReferenceTokenProperties>()
-                    .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
+                    .SetOrder(MapInternalClaims.Descriptor.Order + 1_000)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -296,7 +347,7 @@ namespace OpenIddict.Validation
                     .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
                     .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
                     .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
-                    .SetClaim(Claims.Private.TokenType, await _tokenManager.GetTypeAsync(token));
+                    .SetTokenType(await _tokenManager.GetTypeAsync(token));
             }
         }
 
@@ -335,6 +386,28 @@ namespace OpenIddict.Validation
                         description: "The specified token is not valid.");
 
                     return default;
+                }
+
+                // When using JWT or Data Protection tokens, the correct token type is always enforced by IdentityModel
+                // (using the "typ" header) or by ASP.NET Core Data Protection (using per-token-type purposes strings).
+                // To ensure tokens deserialized using a custom routine are of the expected type, a manual check is used,
+                // which requires that a special claim containing the token type be present in the security principal.
+                var type = context.Principal.GetTokenType();
+                if (string.IsNullOrEmpty(type))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendLine("The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.")
+                        .Append("When implementing custom token deserialization, a 'oi_tkn_typ' claim containing ")
+                        .Append("the type of the token being processed must be added to the security principal.")
+                        .ToString());
+                }
+
+                if (!string.Equals(type, TokenTypeHints.AccessToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(new StringBuilder()
+                        .AppendFormat("The type of token associated with the deserialized principal ({0})", type)
+                        .AppendFormat("doesn't match the expected token type ({0}).", TokenTypeHints.AccessToken)
+                        .ToString());
                 }
 
                 return default;
@@ -533,15 +606,38 @@ namespace OpenIddict.Validation
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (string.IsNullOrEmpty(context.Response.Error))
+                // If an error was explicitly set by the application, don't override it.
+                if (!string.IsNullOrEmpty(context.Response.Error) ||
+                    !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
+                    !string.IsNullOrEmpty(context.Response.ErrorUri))
                 {
-                    context.Response.Error = Errors.InvalidToken;
+                    return default;
                 }
 
-                if (string.IsNullOrEmpty(context.Response.ErrorDescription))
+                // Try to retrieve the authentication context from the validation transaction and use
+                // the error details returned during the authentication processing, if available.
+                // If no error is attached to the authentication context, this likely means that
+                // the request was rejected very early without even checking the access token or was
+                // rejected due to a lack of permission. In this case, return an insufficient_access error
+                // to inform the client that the user is not allowed to perform the requested action.
+
+                var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
+                    typeof(ProcessAuthenticationContext).FullName);
+
+                if (!string.IsNullOrEmpty(notification?.Error))
                 {
-                    context.Response.ErrorDescription = "The access token is not valid.";
+                    context.Response.Error = notification.Error;
+                    context.Response.ErrorDescription = notification.ErrorDescription;
+                    context.Response.ErrorUri = notification.ErrorUri;
                 }
+
+                else
+                {
+                    context.Response.Error = Errors.InsufficientAccess;
+                    context.Response.ErrorDescription = "The user represented by the token is not allowed to perform the requested action.";
+                }
+
+                context.Response.Realm = context.Options.Realm;
 
                 return default;
             }

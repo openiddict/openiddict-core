@@ -408,7 +408,7 @@ namespace OpenIddict.Server
                         context.Logger.LogError("The device request was rejected because the mandatory 'client_id' was missing.");
 
                         context.Reject(
-                            error: Errors.InvalidRequest,
+                            error: Errors.InvalidClient,
                             description: "The mandatory 'client_id' parameter is missing.");
 
                         return default;
@@ -601,7 +601,7 @@ namespace OpenIddict.Server
                         throw new InvalidOperationException("The client application details cannot be found in the database.");
                     }
 
-                    if (await _applicationManager.IsPublicAsync(application))
+                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
                     {
                         // Reject device requests containing a client_secret when the client is a public application.
                         if (!string.IsNullOrEmpty(context.ClientSecret))
@@ -610,7 +610,7 @@ namespace OpenIddict.Server
                                                     "was not allowed to send a client secret.", context.ClientId);
 
                             context.Reject(
-                                error: Errors.InvalidRequest,
+                                error: Errors.InvalidClient,
                                 description: "The 'client_secret' parameter is not valid for this client application.");
 
                             return;
@@ -685,7 +685,7 @@ namespace OpenIddict.Server
                     }
 
                     // If the application is not a public client, validate the client secret.
-                    if (!await _applicationManager.IsPublicAsync(application) &&
+                    if (!await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public) &&
                         !await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret))
                     {
                         context.Logger.LogError("The device request was rejected because the confidential or hybrid application " +

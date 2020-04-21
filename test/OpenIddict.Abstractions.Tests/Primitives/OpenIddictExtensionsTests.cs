@@ -53,6 +53,42 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void GetPrompts_ThrowsAnExceptionForNullRequest()
+        {
+            // Arrange
+            var request = (OpenIddictRequest) null;
+
+            // Act
+            var exception = Assert.Throws<ArgumentNullException>(() => request.GetPrompts());
+
+            // Assert
+            Assert.Equal("request", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null, new string[0])]
+        [InlineData("login", new[] { "login" })]
+        [InlineData("login ", new[] { "login" })]
+        [InlineData(" login ", new[] { "login" })]
+        [InlineData("login consent", new[] { "login", "consent" })]
+        [InlineData("login     consent", new[] { "login", "consent" })]
+        [InlineData("login consent ", new[] { "login", "consent" })]
+        [InlineData(" login consent", new[] { "login", "consent" })]
+        [InlineData("login login consent", new[] { "login", "consent" })]
+        [InlineData("login LOGIN consent", new[] { "login", "LOGIN", "consent" })]
+        public void GetPrompts_ReturnsExpectedPrompts(string value, string[] values)
+        {
+            // Arrange
+            var request = new OpenIddictRequest
+            {
+                Prompt = value
+            };
+
+            // Act and assert
+            Assert.Equal(values, request.GetPrompts());
+        }
+
+        [Fact]
         public void GetResponseTypes_ThrowsAnExceptionForNullRequest()
         {
             // Arrange
@@ -1623,7 +1659,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Presenter, presenter.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(presenters, principal.GetPresenters());
@@ -1653,7 +1689,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Resource, resource.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(resources, principal.GetResources());
@@ -1683,7 +1719,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scope, scope.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(scopes, principal.GetScopes());
@@ -1926,7 +1962,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenType, type);
+            principal.SetTokenType(type);
 
             // Act and assert
             Assert.Equal(type, principal.GetTokenType());
@@ -2032,7 +2068,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Presenter, presenter.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasPresenter());
@@ -2054,7 +2090,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Presenters, presenter.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Presenter, presenter.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasPresenter("fabrikam"));
@@ -2096,7 +2132,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Resource, resource.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasResource());
@@ -2118,7 +2154,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Resources, resource.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Resource, resource.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasResource("fabrikam"));
@@ -2160,7 +2196,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scope, scope.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasScope());
@@ -2182,206 +2218,52 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Private.Scopes, scope.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Scope, scope.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasScope(Scopes.OpenId));
         }
 
         [Fact]
-        public void IsAccessToken_ThrowsAnExceptionForNullPrincipal()
+        public void HasTokenType_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsAccessToken());
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasTokenType(TokenTypeHints.AccessToken));
 
             Assert.Equal("principal", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, true)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.DeviceCode, false)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, false)]
-        public void IsAccessToken_ReturnsExpectedResult(string type, bool result)
+        [InlineData(null)]
+        [InlineData("")]
+        public void HasTokenType_ThrowsAnExceptionForNullOrEmptyTokenType(string type)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenType, type);
-
             // Act and assert
-            Assert.Equal(result, principal.IsAccessToken());
+            var exception = Assert.Throws<ArgumentException>(() => principal.HasTokenType(type));
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The token type cannot be null or empty.", exception.Message);
         }
 
         [Fact]
-        public void IsAuthorizationCode_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsAuthorizationCode());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, true)]
-        [InlineData(TokenTypeHints.DeviceCode, false)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, false)]
-        public void IsAuthorizationCode_ReturnsExpectedResult(string type, bool result)
+        public void HasTokenType_ReturnsExpectedResult()
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaim(Claims.Private.TokenType, type);
+            principal.SetTokenType(TokenTypeHints.AccessToken);
 
             // Act and assert
-            Assert.Equal(result, principal.IsAuthorizationCode());
-        }
-
-        [Fact]
-        public void IsDeviceCode_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsDeviceCode());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.DeviceCode, true)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, false)]
-        public void IsDeviceCode_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenType, type);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsDeviceCode());
-        }
-
-        [Fact]
-        public void IsIdentityToken_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsIdentityToken());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.DeviceCode, false)]
-        [InlineData(TokenTypeHints.IdToken, true)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, false)]
-        public void IsIdentityToken_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenType, type);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsIdentityToken());
-        }
-
-        [Fact]
-        public void IsRefreshToken_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsRefreshToken());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, true)]
-        public void IsRefreshToken_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenType, type);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsRefreshToken());
-        }
-
-        [Fact]
-        public void IsUserCode_ThrowsAnExceptionForNullPrincipal()
-        {
-            // Arrange
-            var principal = (ClaimsPrincipal) null;
-
-            // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.IsUserCode());
-
-            Assert.Equal("principal", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData("unknown", false)]
-        [InlineData(TokenTypeHints.AccessToken, false)]
-        [InlineData(TokenTypeHints.AuthorizationCode, false)]
-        [InlineData(TokenTypeHints.DeviceCode, false)]
-        [InlineData(TokenTypeHints.IdToken, false)]
-        [InlineData(TokenTypeHints.RefreshToken, false)]
-        [InlineData(TokenTypeHints.UserCode, true)]
-        public void IsUserCode_ReturnsExpectedResult(string type, bool result)
-        {
-            // Arrange
-            var identity = new ClaimsIdentity();
-            var principal = new ClaimsPrincipal(identity);
-
-            principal.SetClaim(Claims.Private.TokenType, type);
-
-            // Act and assert
-            Assert.Equal(result, principal.IsUserCode());
+            Assert.True(principal.HasTokenType(TokenTypeHints.AccessToken));
+            Assert.False(principal.HasTokenType(TokenTypeHints.RefreshToken));
         }
 
         [Theory]
@@ -2641,7 +2523,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetPresenters(presenters);
 
             // Assert
-            Assert.Equal(presenter, principal.GetClaims(Claims.Private.Presenters));
+            Assert.Equal(presenter, principal.GetClaims(Claims.Private.Presenter));
         }
 
         [Fact]
@@ -2673,7 +2555,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetResources(resources);
 
             // Assert
-            Assert.Equal(resource, principal.GetClaims(Claims.Private.Resources));
+            Assert.Equal(resource, principal.GetClaims(Claims.Private.Resource));
         }
 
         [Fact]
@@ -2705,7 +2587,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetScopes(scopes);
 
             // Assert
-            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
+            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scope));
         }
 
         [Theory]
@@ -2725,7 +2607,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetScopes((IEnumerable<string>)scopes);
 
             // Assert
-            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
+            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scope));
         }
 
         [Theory]
@@ -2745,7 +2627,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetScopes(ImmutableArray.Create(scopes));
 
             // Assert
-            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scopes));
+            Assert.Equal(scope, principal.GetClaims(Claims.Private.Scope));
         }
 
         [Fact]

@@ -6,7 +6,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Xunit;
@@ -15,6 +16,54 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 {
     public class OpenIddictMessageTests
     {
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Constructor_ThrowsAnExceptionForNullOrEmptyParameterNames(string name)
+        {
+            // Arrange, act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return new OpenIddictMessage(new[]
+                {
+                    new KeyValuePair<string, OpenIddictParameter>(name, "Fabrikam")
+                });
+            });
+
+            Assert.Equal("name", exception.ParamName);
+            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+        }
+
+        [Fact]
+        public void Constructor_ThrowsAnExceptionForInvalidJsonElement()
+        {
+            // Arrange, act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return new OpenIddictMessage(JsonSerializer.Deserialize<JsonElement>("[0,1,2,3]"));
+            });
+
+            Assert.Equal("parameters", exception.ParamName);
+            Assert.StartsWith("The specified JSON element is not an object.", exception.Message);
+        }
+
+        [Fact]
+        public void Constructor_ThrowsAnExceptionForDuplicateParameters()
+        {
+            // Arrange, act and assert
+            var exception = Assert.Throws<ArgumentException>(delegate
+            {
+                return new OpenIddictMessage(new[]
+                {
+                    new KeyValuePair<string, OpenIddictParameter>("parameter", "Fabrikam"),
+                    new KeyValuePair<string, OpenIddictParameter>("parameter", "Contoso")
+                });
+            });
+
+            Assert.Equal("name", exception.ParamName);
+            Assert.StartsWith("A parameter with the same name already exists.", exception.Message);
+        }
+
         [Fact]
         public void Constructor_ImportsParameters()
         {
@@ -29,20 +78,6 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void Constructor_IgnoresNamelessParameters()
-        {
-            // Arrange and act
-            var message = new OpenIddictMessage(new[]
-            {
-                new KeyValuePair<string, OpenIddictParameter>(null, new OpenIddictParameter()),
-                new KeyValuePair<string, OpenIddictParameter>(string.Empty, new OpenIddictParameter())
-            });
-
-            // Assert
-            Assert.Empty(message.GetParameters());
-        }
-
-        [Fact]
         public void Constructor_PreservesEmptyParameters()
         {
             // Arrange and act
@@ -53,22 +88,22 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             // Assert
-            Assert.Equal(2, message.GetParameters().Count());
+            Assert.Equal(2, message.Count);
         }
 
         [Fact]
-        public void Constructor_IgnoresDuplicateParameters()
+        public void Constructor_AllowsDuplicateParameters()
         {
             // Arrange and act
             var message = new OpenIddictMessage(new[]
             {
-                new KeyValuePair<string, OpenIddictParameter>("parameter", "Fabrikam"),
-                new KeyValuePair<string, OpenIddictParameter>("parameter", "Contoso")
+                new KeyValuePair<string, string>("parameter", "Fabrikam"),
+                new KeyValuePair<string, string>("parameter", "Contoso")
             });
 
             // Assert
-            Assert.Single(message.GetParameters());
-            Assert.Equal("Fabrikam", message.GetParameter("parameter"));
+            Assert.Equal(1, message.Count);
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) message.GetParameter("parameter"));
         }
 
         [Fact]
@@ -81,7 +116,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             // Assert
-            Assert.Single(message.GetParameters());
+            Assert.Equal(1, message.Count);
             Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) message.GetParameter("parameter"));
         }
 
@@ -95,7 +130,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             // Assert
-            Assert.Single(message.GetParameters());
+            Assert.Equal(1, message.Count);
             Assert.Equal("Fabrikam", message.GetParameter("parameter")?.Value);
         }
 
@@ -444,7 +479,40 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Act and assert
             var element = JsonSerializer.Deserialize<JsonElement>(message.ToString());
             Assert.DoesNotContain("secret value", message.ToString());
-            Assert.Equal("[removed for security reasons]", element.GetProperty(parameter).GetString());
+            Assert.Equal("[redacted]", element.GetProperty(parameter).GetString());
+        }
+
+        [Fact]
+        public void WriteTo_ThrowsAnExceptionForNullWriter()
+        {
+            // Arrange
+            var message = new OpenIddictMessage();
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => message.WriteTo(writer: null));
+            Assert.Equal("writer", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteTo_WritesUtf8JsonRepresentation()
+        {
+            // Arrange
+            var message = new OpenIddictMessage
+            {
+                ["redirect_uris"] = new[] { "https://abc.org/callback" },
+                ["client_name"] = "My Example Client"
+            };
+
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream);
+
+            // Act
+            message.WriteTo(writer);
+            writer.Flush();
+
+            // Assert
+            Assert.Equal(@"{""redirect_uris"":[""https://abc.org/callback""],""client_name"":""My Example Client""}",
+                Encoding.UTF8.GetString(stream.ToArray()));
         }
     }
 }

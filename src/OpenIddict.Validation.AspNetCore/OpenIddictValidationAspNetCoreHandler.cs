@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -16,7 +17,6 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
-using Properties = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreConstants.Properties;
 
 namespace OpenIddict.Validation.AspNetCore
 {
@@ -111,52 +111,35 @@ namespace OpenIddict.Validation.AspNetCore
                 throw new InvalidOperationException("An identity cannot be extracted from this request.");
             }
 
-            var context = new ProcessAuthenticationContext(transaction);
-            await _provider.DispatchAsync(context);
+            // Note: in many cases, the authentication token was already validated by the time this action is called
+            // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
+            // the authentication context is resolved from the transaction. If it's not available, a new one is created.
+            var context = transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName);
+            if (context == null)
+            {
+                context = new ProcessAuthenticationContext(transaction);
+                await _provider.DispatchAsync(context);
 
-            if (context.Principal == null || context.IsRequestHandled || context.IsRequestSkipped)
+                // Store the context object in the transaction so it can be later retrieved by handlers
+                // that want to access the authentication result without triggering a new authentication flow.
+                transaction.SetProperty(typeof(ProcessAuthenticationContext).FullName, context);
+            }
+
+            if (context.IsRequestHandled || context.IsRequestSkipped)
             {
                 return AuthenticateResult.NoResult();
             }
 
             else if (context.IsRejected)
             {
-                var builder = new StringBuilder();
-
-                if (!string.IsNullOrEmpty(context.Error))
+                var properties = new AuthenticationProperties(new Dictionary<string, string>
                 {
-                    builder.AppendLine("An error occurred while authenticating the current request:");
-                    builder.AppendFormat("Error code: ", context.Error);
-
-                    if (!string.IsNullOrEmpty(context.ErrorDescription))
-                    {
-                        builder.AppendLine();
-                        builder.AppendFormat("Error description: ", context.ErrorDescription);
-                    }
-
-                    if (!string.IsNullOrEmpty(context.ErrorUri))
-                    {
-                        builder.AppendLine();
-                        builder.AppendFormat("Error URI: ", context.ErrorUri);
-                    }
-                }
-
-                else
-                {
-                    builder.Append("An unknown error occurred while authenticating the current request.");
-                }
-
-                return AuthenticateResult.Fail(new Exception(builder.ToString())
-                {
-                    // Note: the error details are stored as additional exception properties,
-                    // which is similar to what other ASP.NET Core security handlers do.
-                    Data =
-                    {
-                        [Parameters.Error] = context.Error,
-                        [Parameters.ErrorDescription] = context.ErrorDescription,
-                        [Parameters.ErrorUri] = context.ErrorUri
-                    }
+                    [OpenIddictValidationAspNetCoreConstants.Properties.Error] = context.Error,
+                    [OpenIddictValidationAspNetCoreConstants.Properties.ErrorDescription] = context.ErrorDescription,
+                    [OpenIddictValidationAspNetCoreConstants.Properties.ErrorUri] = context.ErrorUri
                 });
+
+                return AuthenticateResult.Fail("An error occurred while authenticating the current request.", properties);
             }
 
             return AuthenticateResult.Success(new AuthenticationTicket(
@@ -172,14 +155,11 @@ namespace OpenIddict.Validation.AspNetCore
                 throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
             }
 
+            transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
+
             var context = new ProcessChallengeContext(transaction)
             {
-                Response = new OpenIddictResponse
-                {
-                    Error = GetProperty(properties, Properties.Error),
-                    ErrorDescription = GetProperty(properties, Properties.ErrorDescription),
-                    ErrorUri = GetProperty(properties, Properties.ErrorUri)
-                }
+                Response = new OpenIddictResponse()
             };
 
             await _provider.DispatchAsync(context);
@@ -214,9 +194,6 @@ namespace OpenIddict.Validation.AspNetCore
                     .Append("was not registered or was explicitly removed from the handlers list.")
                     .ToString());
             }
-
-            static string GetProperty(AuthenticationProperties properties, string name)
-                => properties != null && properties.Items.TryGetValue(name, out string value) ? value : null;
         }
 
         protected override Task HandleForbiddenAsync([CanBeNull] AuthenticationProperties properties)
