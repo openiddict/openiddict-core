@@ -32,9 +32,9 @@ namespace OpenIddict.Validation
         }
 
         /// <summary>
-        /// Represents a filter that excludes the associated handlers if reference access tokens are disabled.
+        /// Represents a filter that excludes the associated handlers if authorization validation was not enabled.
         /// </summary>
-        public class RequireReferenceAccessTokensEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
+        public class RequireTokenValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
         {
             public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
             {
@@ -43,7 +43,7 @@ namespace OpenIddict.Validation
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(context.Options.UseReferenceAccessTokens);
+                return new ValueTask<bool>(context.Options.EnableTokenValidation);
             }
         }
     }

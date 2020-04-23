@@ -1163,7 +1163,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             var client = CreateClient(options =>
             {
-                options.UseReferenceAccessTokens();
+                options.UseReferenceTokens();
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -1273,7 +1273,7 @@ namespace OpenIddict.Server.FunctionalTests
                 options.Services.AddSingleton(manager);
 
                 options.DisableAuthorizationStorage();
-                options.UseReferenceAccessTokens();
+                options.UseReferenceTokens();
             });
 
             // Act
@@ -1363,7 +1363,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
 
-                options.UseReferenceAccessTokens();
+                options.UseReferenceTokens();
 
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });
@@ -1461,7 +1461,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
 
-                options.UseReferenceAccessTokens();
+                options.UseReferenceTokens();
 
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });
@@ -1546,7 +1546,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
 
-                options.UseReferenceAccessTokens();
+                options.UseReferenceTokens();
 
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });

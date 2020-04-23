@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -128,6 +127,15 @@ namespace Mvc.Server
 
                     // Register the ASP.NET Core host.
                     options.UseAspNetCore();
+
+                    // For applications that need immediate access token or authorization
+                    // revocation, the database entry of the received tokens and their
+                    // associated authorizations can be validated for each API call.
+                    // Enabling these options may have a negative impact on performance.
+                    //
+                    // options.EnableAuthorizationValidation();
+                    //
+                    // options.EnableTokenValidation();
                 });
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
@@ -145,16 +153,6 @@ namespace Mvc.Server
             app.UseStaticFiles();
 
             app.UseStatusCodePagesWithReExecute("/error");
-
-            // Note: ASP.NET Core is impacted by a bug that prevents the status code pages
-            // from working correctly with endpoint routing. For more information, visit
-            // https://github.com/aspnet/AspNetCore/issues/13715#issuecomment-528929683.
-            app.Use((context, next) =>
-            {
-                context.SetEndpoint(null);
-
-                return next();
-            });
 
             app.UseRouting();
 

@@ -407,11 +407,22 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Enables authorization validation so that a database call is made for each API request
         /// to ensure the authorization associated with the access token is still valid.
-        /// Note: enabling this option may have an impact on performance.
+        /// Note: enabling this option may have an impact on performance and
+        /// can only be used with an OpenIddict-based authorization server.
         /// </summary>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
         public OpenIddictValidationBuilder EnableAuthorizationValidation()
             => Configure(options => options.EnableAuthorizationValidation = true);
+
+        /// <summary>
+        /// Enables token validation so that a database call is made for each API request
+        /// to ensure the token entry associated with the access token is still valid.
+        /// Note: enabling this option may have an impact on performance but is required
+        /// when the OpenIddict server is configured to use reference tokens.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        public OpenIddictValidationBuilder EnableTokenValidation()
+            => Configure(options => options.EnableTokenValidation = true);
 
         /// <summary>
         /// Sets the issuer address, which is used to determine the actual location of the
@@ -443,16 +454,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return Configure(options => configuration(options.TokenValidationParameters));
         }
-
-        /// <summary>
-        /// Configures OpenIddict to use reference tokens, so that access tokens are stored
-        /// as ciphertext in the database (only an identifier is returned to the client application).
-        /// Enabling this option is useful to keep track of all the issued tokens, when storing
-        /// a very large number of claims in the access tokens or when immediate revocation is desired.
-        /// </summary>
-        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder UseReferenceAccessTokens()
-            => Configure(options => options.UseReferenceAccessTokens = true);
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object.

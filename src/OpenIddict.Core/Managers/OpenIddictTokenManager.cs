@@ -1267,15 +1267,6 @@ namespace OpenIddict.Core
                 yield return new ValidationResult("The token type cannot be null or empty.");
             }
 
-            else if (!string.Equals(type, TokenTypeHints.AccessToken, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, TokenTypeHints.AuthorizationCode, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, TokenTypeHints.DeviceCode, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, TokenTypeHints.RefreshToken, StringComparison.OrdinalIgnoreCase) &&
-                     !string.Equals(type, TokenTypeHints.UserCode, StringComparison.OrdinalIgnoreCase))
-            {
-                yield return new ValidationResult("The specified token type is not supported by the default token manager.");
-            }
-
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(token, cancellationToken)))
             {
                 yield return new ValidationResult("The status cannot be null or empty.");

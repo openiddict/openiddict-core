@@ -26,7 +26,7 @@ namespace OpenIddict.Server
         /// Populates the default OpenIddict server options and ensures
         /// that the configuration is in a consistent and valid state.
         /// </summary>
-        /// <param name="name">The authentication scheme associated with the handler instance.</param>
+        /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
         public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictServerOptions options)
         {
@@ -96,7 +96,7 @@ namespace OpenIddict.Server
                     throw new InvalidOperationException("The revocation endpoint cannot be enabled when token storage is disabled.");
                 }
 
-                if (options.UseReferenceAccessTokens)
+                if (options.UseReferenceTokens)
                 {
                     throw new InvalidOperationException("Reference tokens cannot be used when disabling token storage.");
                 }

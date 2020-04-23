@@ -797,18 +797,6 @@ namespace OpenIddict.Server
                         return default;
                     }
 
-                    // If the received token is an access token, return an error if reference tokens are not enabled.
-                    if (!context.Options.UseReferenceAccessTokens && context.Principal.HasTokenType(TokenTypeHints.AccessToken))
-                    {
-                        context.Logger.LogError("The revocation request was rejected because the access token was not revocable.");
-
-                        context.Reject(
-                            error: Errors.UnsupportedTokenType,
-                            description: "The specified token cannot be revoked.");
-
-                        return default;
-                    }
-
                     return default;
                 }
             }

@@ -72,29 +72,33 @@ namespace OpenIddict.Server
             PrepareUserCodePrincipal.Descriptor,
 
             RedeemTokenEntry.Descriptor,
-            RedeemDeviceCodeEntry.Descriptor,
-            RedeemUserCodeEntry.Descriptor,
             RevokeExistingTokenEntries.Descriptor,
             ExtendRefreshTokenEntry.Descriptor,
 
+            CreateAccessTokenEntry.Descriptor,
             GenerateIdentityModelAccessToken.Descriptor,
-            CreateReferenceAccessTokenEntry.Descriptor,
+            ConvertReferenceAccessToken.Descriptor,
 
+            CreateAuthorizationCodeEntry.Descriptor,
             GenerateIdentityModelAuthorizationCode.Descriptor,
-            CreateReferenceAuthorizationCodeEntry.Descriptor,
+            ConvertReferenceAuthorizationCode.Descriptor,
 
+            CreateDeviceCodeEntry.Descriptor,
             GenerateIdentityModelDeviceCode.Descriptor,
-            CreateReferenceDeviceCodeEntry.Descriptor,
+            ConvertReferenceDeviceCode.Descriptor,
             UpdateReferenceDeviceCodeEntry.Descriptor,
 
+            CreateRefreshTokenEntry.Descriptor,
             GenerateIdentityModelRefreshToken.Descriptor,
-            CreateReferenceRefreshTokenEntry.Descriptor,
+            ConvertReferenceRefreshToken.Descriptor,
 
+            CreateUserCodeEntry.Descriptor,
             AttachDeviceCodeIdentifier.Descriptor,
             GenerateIdentityModelUserCode.Descriptor,
-            CreateReferenceUserCodeEntry.Descriptor,
+            ConvertReferenceUserCode.Descriptor,
 
             AttachTokenDigests.Descriptor,
+            CreateIdentityTokenEntry.Descriptor,
             GenerateIdentityModelIdentityToken.Descriptor,
 
             BeautifyUserCode.Descriptor,
@@ -337,7 +341,15 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // If the reference token cannot be found, don't return an error to allow another handle to validate it.
+                // Reference tokens are base64url-encoded payloads of exactly 256 bits,
+                // except reference user codes, whose length is exactly 12 characters.
+                // If the token length differs, the token cannot be a reference token.
+                if (string.IsNullOrEmpty(context.Token) || (context.Token.Length != 12 && context.Token.Length != 43))
+                {
+                    return;
+                }
+
+                // If the reference token cannot be found, don't return an error to allow another handler to validate it.
                 var token = await _tokenManager.FindByReferenceIdAsync(context.Token);
                 if (token == null)
                 {
@@ -607,12 +619,13 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                if (!context.Transaction.Properties.TryGetValue(Properties.ReferenceTokenIdentifier, out var identifier))
+                var identifier = context.Transaction.GetProperty<string>(Properties.ReferenceTokenIdentifier);
+                if (string.IsNullOrEmpty(identifier))
                 {
                     return;
                 }
 
-                var token = await _tokenManager.FindByIdAsync((string) identifier);
+                var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
                     throw new InvalidOperationException("The token entry cannot be found in the database.");
@@ -1211,7 +1224,7 @@ namespace OpenIddict.Server
                     typeof(ProcessAuthenticationContext).FullName) ??
                     throw new InvalidOperationException("The authentication context cannot be found.");
 
-                // Extract the device code identifier from the authentication principal.
+                // Extract the device code identifier from the user code principal.
                 var identifier = notification.Principal.GetClaim(Claims.Private.DeviceCodeId);
                 if (string.IsNullOrEmpty(identifier))
                 {
@@ -1766,7 +1779,7 @@ namespace OpenIddict.Server
                 var authorization = await _authorizationManager.CreateAsync(descriptor);
                 if (authorization == null)
                 {
-                    return;
+                    throw new InvalidOperationException("An unknown error occurred while creating an authorization entry.");
                 }
 
                 var identifier = await _authorizationManager.GetIdAsync(authorization);
@@ -2072,6 +2085,13 @@ namespace OpenIddict.Server
                     principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
                 }
 
+                // Restore the device code internal token identifier from the principal
+                // resolved from the user code used in the user code verification request.
+                if (context.EndpointType == OpenIddictServerEndpointType.Verification)
+                {
+                    principal.SetClaim(Claims.Private.TokenId, context.Principal.GetClaim(Claims.Private.DeviceCodeId));
+                }
+
                 context.DeviceCodePrincipal = principal;
 
                 return default;
@@ -2197,8 +2217,9 @@ namespace OpenIddict.Server
                 // Actors identities are also filtered (delegation scenarios).
                 var principal = context.Principal.Clone(claim =>
                 {
-                    // Never exclude the subject claim.
-                    if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase))
+                    // Never exclude the subject and authorization identifier claims.
+                    if (string.Equals(claim.Type, Claims.Subject, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(claim.Type, Claims.Private.AuthorizationId, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
@@ -2348,8 +2369,8 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Contains the logic responsible of redeeming the token entry
-        /// corresponding to the received authorization code or refresh token.
+        /// Contains the logic responsible of redeeming the token entry corresponding to
+        /// the received authorization code, device code, user code or refresh token.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public class RedeemTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
@@ -2392,21 +2413,25 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.EndpointType != OpenIddictServerEndpointType.Token)
+                if (context.EndpointType != OpenIddictServerEndpointType.Token &&
+                    context.EndpointType != OpenIddictServerEndpointType.Verification)
                 {
                     return;
                 }
 
-                if (!context.Request.IsAuthorizationCodeGrantType() &&
-                    !context.Request.IsDeviceCodeGrantType() &&
-                    !context.Request.IsRefreshTokenGrantType())
+                if (context.EndpointType == OpenIddictServerEndpointType.Token)
                 {
-                    return;
-                }
+                    if (!context.Request.IsAuthorizationCodeGrantType() &&
+                        !context.Request.IsDeviceCodeGrantType() &&
+                        !context.Request.IsRefreshTokenGrantType())
+                    {
+                        return;
+                    }
 
-                if (context.Request.IsRefreshTokenGrantType() && !context.Options.UseRollingTokens)
-                {
-                    return;
+                    if (context.Request.IsRefreshTokenGrantType() && !context.Options.UseRollingTokens)
+                    {
+                        return;
+                    }
                 }
 
                 // Extract the token identifier from the authentication principal.
@@ -2417,167 +2442,28 @@ namespace OpenIddict.Server
                     return;
                 }
 
-                var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null)
-                {
-                    throw new InvalidOperationException("The token details cannot be found in the database.");
-                }
-
-                // If rolling tokens are enabled or if the request is an authorization_code or device_code request,
-                // mark the authorization/device code or the refresh token as redeemed to prevent future reuses.
+                // If rolling tokens are enabled or if the request is a a code or device code token request
+                // or a user code verification request, mark the token as redeemed to prevent future reuses.
                 // If the operation fails, return an error indicating the code/token is no longer valid.
                 // See https://tools.ietf.org/html/rfc6749#section-6 for more information.
-                if (!await _tokenManager.TryRedeemAsync(token))
-                {
-                    context.Reject(
-                        error: Errors.InvalidGrant,
-                        description:
-                            context.Request.IsAuthorizationCodeGrantType() ?
-                                "The specified authorization code is no longer valid." :
-                            context.Request.IsDeviceCodeGrantType() ?
-                                "The specified device code is no longer valid." :
-                                "The specified refresh token is no longer valid.");
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible of redeeming the device code entry associated with the user code.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public class RedeemDeviceCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
-        {
-            private readonly IOpenIddictTokenManager _tokenManager;
-
-            public RedeemDeviceCodeEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
-
-            public RedeemDeviceCodeEntry([NotNull] IOpenIddictTokenManager tokenManager)
-                => _tokenManager = tokenManager;
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .AddFilter<RequireTokenStorageEnabled>()
-                    .UseScopedHandler<RedeemDeviceCodeEntry>()
-                    .SetOrder(RedeemTokenEntry.Descriptor.Order + 1_000)
-                    .Build();
-
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSignInContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.EndpointType != OpenIddictServerEndpointType.Token)
-                {
-                    return;
-                }
-
-                if (!context.Request.IsDeviceCodeGrantType())
-                {
-                    return;
-                }
-
-                // Extract the device code identifier from the authentication principal.
-                var identifier = context.Principal.GetClaim(Claims.Private.DeviceCodeId);
-                if (string.IsNullOrEmpty(identifier))
-                {
-                    throw new InvalidOperationException("The device code identifier cannot be extracted from the principal.");
-                }
-
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null || !await _tokenManager.TryRedeemAsync(token))
                 {
                     context.Reject(
                         error: Errors.InvalidGrant,
-                        description: "The specified device code is no longer valid.");
+                        description: context.EndpointType switch
+                        {
+                            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                                => "The specified authorization code is no longer valid.",
+                            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                                => "The specified device code is no longer valid.",
+                            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                                => "The specified refresh token is no longer valid.",
 
-                    return;
-                }
-            }
-        }
+                            OpenIddictServerEndpointType.Verification => "The specified user code is no longer valid.",
 
-        /// <summary>
-        /// Contains the logic responsible of redeeming the user code entry, if applicable.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public class RedeemUserCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
-        {
-            private readonly IOpenIddictTokenManager _tokenManager;
-
-            public RedeemUserCodeEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
-
-            public RedeemUserCodeEntry([NotNull] IOpenIddictTokenManager tokenManager)
-                => _tokenManager = tokenManager;
-
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .AddFilter<RequireTokenStorageEnabled>()
-                    .UseScopedHandler<RedeemUserCodeEntry>()
-                    .SetOrder(RedeemDeviceCodeEntry.Descriptor.Order + 1_000)
-                    .Build();
-
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public async ValueTask HandleAsync([NotNull] ProcessSignInContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.EndpointType != OpenIddictServerEndpointType.Verification)
-                {
-                    return;
-                }
-
-                // Extract the device code identifier from the authentication principal.
-                var identifier = context.Principal.GetInternalTokenId();
-                if (string.IsNullOrEmpty(identifier))
-                {
-                    return;
-                }
-
-                var token = await _tokenManager.FindByIdAsync(identifier);
-                if (token == null || !await _tokenManager.TryRedeemAsync(token))
-                {
-                    context.Reject(
-                        error: Errors.InvalidGrant,
-                        description: "The specified user code is no longer valid.");
+                            _ => "The specified token is no longer valid."
+                        });
 
                     return;
                 }
@@ -2612,7 +2498,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireTokenStorageEnabled>()
                     .AddFilter<RequireRollingTokensEnabled>()
                     .UseScopedHandler<RevokeExistingTokenEntries>()
-                    .SetOrder(RedeemUserCodeEntry.Descriptor.Order + 1_000)
+                    .SetOrder(RedeemTokenEntry.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -2739,6 +2625,101 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Contains the logic responsible of creating an access token entry.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public class CreateAccessTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictTokenManager _tokenManager;
+
+            public CreateAccessTokenEntry() => throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                .ToString());
+
+            public CreateAccessTokenEntry(
+                [NotNull] IOpenIddictApplicationManager applicationManager,
+                [NotNull] IOpenIddictTokenManager tokenManager)
+            {
+                _applicationManager = applicationManager;
+                _tokenManager = tokenManager;
+            }
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireTokenStorageEnabled>()
+                    .AddFilter<RequireAccessTokenIncluded>()
+                    .UseScopedHandler<CreateAccessTokenEntry>()
+                    .SetOrder(ExtendRefreshTokenEntry.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public async ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var principal = context.AccessTokenPrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
+                var descriptor = new OpenIddictTokenDescriptor
+                {
+                    AuthorizationId = principal.GetInternalAuthorizationId(),
+                    CreationDate = principal.GetCreationDate(),
+                    ExpirationDate = principal.GetExpirationDate(),
+                    Principal = principal,
+                    Status = Statuses.Valid,
+                    Subject = principal.GetClaim(Claims.Subject),
+                    Type = TokenTypeHints.AccessToken
+                };
+
+                // If the client application is known, associate it with the token.
+                if (!string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                    }
+
+                    descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
+                }
+
+                var token = await _tokenManager.CreateAsync(descriptor);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                }
+
+                var identifier = await _tokenManager.GetIdAsync(token);
+
+                // Attach the token identifier to the principal so that it can be stored in the token.
+                principal.SetInternalTokenId(identifier);
+
+                context.Logger.LogTrace("The token entry for access token '{Identifier}' was successfully created.", identifier);
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of generating an access token using IdentityModel.
         /// </summary>
         public class GenerateIdentityModelAccessToken : IOpenIddictServerHandler<ProcessSignInContext>
@@ -2750,7 +2731,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireAccessTokenIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelAccessToken>()
-                    .SetOrder(ExtendRefreshTokenEntry.Descriptor.Order + 1_000)
+                    .SetOrder(CreateAccessTokenEntry.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -2829,15 +2810,14 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Contains the logic responsible of creating a reference access token entry.
+        /// Contains the logic responsible of converting the access token to a reference token.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class CreateReferenceAccessTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        public class ConvertReferenceAccessToken : IOpenIddictServerHandler<ProcessSignInContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateReferenceAccessTokenEntry() => throw new InvalidOperationException(new StringBuilder()
+            public ConvertReferenceAccessToken() => throw new InvalidOperationException(new StringBuilder()
                 .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
                 .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
                 .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
@@ -2845,13 +2825,8 @@ namespace OpenIddict.Server
                 .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
                 .ToString());
 
-            public CreateReferenceAccessTokenEntry(
-                [NotNull] IOpenIddictApplicationManager applicationManager,
-                [NotNull] IOpenIddictTokenManager tokenManager)
-            {
-                _applicationManager = applicationManager;
-                _tokenManager = tokenManager;
-            }
+            public ConvertReferenceAccessToken([NotNull] IOpenIddictTokenManager tokenManager)
+                => _tokenManager = tokenManager;
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -2860,9 +2835,9 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
-                    .AddFilter<RequireReferenceAccessTokensEnabled>()
+                    .AddFilter<RequireReferenceTokensEnabled>()
                     .AddFilter<RequireAccessTokenIncluded>()
-                    .UseScopedHandler<CreateReferenceAccessTokenEntry>()
+                    .UseScopedHandler<ConvertReferenceAccessToken>()
                     .SetOrder(GenerateIdentityModelAccessToken.Descriptor.Order + 1_000)
                     .Build();
 
@@ -2885,6 +2860,24 @@ namespace OpenIddict.Server
                     return;
                 }
 
+                var principal = context.AccessTokenPrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
+                var identifier = principal.GetInternalTokenId();
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                }
+
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                }
+
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
                 var data = new byte[256 / 8];
 #if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
@@ -2893,17 +2886,90 @@ namespace OpenIddict.Server
                 using var generator = RandomNumberGenerator.Create();
                 generator.GetBytes(data);
 #endif
+                var descriptor = new OpenIddictTokenDescriptor();
+                await _tokenManager.PopulateAsync(descriptor, token);
+
+                // Attach the generated token to the token entry, persist the change
+                // and replace the returned token by the reference identifier.
+                descriptor.Payload = context.Response.AccessToken;
+                descriptor.Principal = principal;
+                descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
+
+                await _tokenManager.UpdateAsync(token, descriptor);
+
+                context.Response.AccessToken = descriptor.ReferenceId;
+
+                context.Logger.LogTrace("The token entry for access token '{Identifier}' was successfully converted to a " +
+                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of creating an authorization code entry.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public class CreateAuthorizationCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictTokenManager _tokenManager;
+
+            public CreateAuthorizationCodeEntry() => throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                .ToString());
+
+            public CreateAuthorizationCodeEntry(
+                [NotNull] IOpenIddictApplicationManager applicationManager,
+                [NotNull] IOpenIddictTokenManager tokenManager)
+            {
+                _applicationManager = applicationManager;
+                _tokenManager = tokenManager;
+            }
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireTokenStorageEnabled>()
+                    .AddFilter<RequireAuthorizationCodeIncluded>()
+                    .UseScopedHandler<CreateAuthorizationCodeEntry>()
+                    .SetOrder(ConvertReferenceAccessToken.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public async ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var principal = context.AuthorizationCodePrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
                 var descriptor = new OpenIddictTokenDescriptor
                 {
-                    AuthorizationId = context.AccessTokenPrincipal.GetInternalAuthorizationId(),
-                    CreationDate = context.AccessTokenPrincipal.GetCreationDate(),
-                    ExpirationDate = context.AccessTokenPrincipal.GetExpirationDate(),
-                    Payload = context.Response.AccessToken,
-                    Principal = context.AccessTokenPrincipal,
-                    ReferenceId = Base64UrlEncoder.Encode(data),
+                    AuthorizationId = principal.GetInternalAuthorizationId(),
+                    CreationDate = principal.GetCreationDate(),
+                    ExpirationDate = principal.GetExpirationDate(),
+                    Principal = principal,
                     Status = Statuses.Valid,
-                    Subject = context.AccessTokenPrincipal.GetClaim(Claims.Subject),
-                    Type = TokenTypeHints.AccessToken
+                    Subject = principal.GetClaim(Claims.Subject),
+                    Type = TokenTypeHints.AuthorizationCode
                 };
 
                 // If the client application is known, associate it with the token.
@@ -2919,13 +2985,17 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                }
 
-                context.AccessTokenPrincipal.SetInternalTokenId(await _tokenManager.GetIdAsync(token));
-                context.Response.AccessToken = descriptor.ReferenceId;
+                var identifier = await _tokenManager.GetIdAsync(token);
 
-                context.Logger.LogTrace("The reference token entry for access token '{Identifier}' was successfully " +
-                                        "created with the reference identifier '{ReferenceId}'.",
-                                        await _tokenManager.GetIdAsync(token), descriptor.ReferenceId);
+                // Attach the token identifier to the principal so that it can be stored in the token.
+                principal.SetInternalTokenId(identifier);
+
+                context.Logger.LogTrace("The token entry for authorization code '{Identifier}' was successfully created.", identifier);
             }
         }
 
@@ -2941,7 +3011,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireAuthorizationCodeIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelAuthorizationCode>()
-                    .SetOrder(CreateReferenceAccessTokenEntry.Descriptor.Order + 1_000)
+                    .SetOrder(CreateAuthorizationCodeEntry.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -3009,15 +3079,14 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Contains the logic responsible of creating a reference authorization code entry.
+        /// Contains the logic responsible of converting the authorization code to a reference token.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class CreateReferenceAuthorizationCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        public class ConvertReferenceAuthorizationCode : IOpenIddictServerHandler<ProcessSignInContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateReferenceAuthorizationCodeEntry() => throw new InvalidOperationException(new StringBuilder()
+            public ConvertReferenceAuthorizationCode() => throw new InvalidOperationException(new StringBuilder()
                 .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
                 .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
                 .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
@@ -3025,13 +3094,8 @@ namespace OpenIddict.Server
                 .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
                 .ToString());
 
-            public CreateReferenceAuthorizationCodeEntry(
-                [NotNull] IOpenIddictApplicationManager applicationManager,
-                [NotNull] IOpenIddictTokenManager tokenManager)
-            {
-                _applicationManager = applicationManager;
-                _tokenManager = tokenManager;
-            }
+            public ConvertReferenceAuthorizationCode([NotNull] IOpenIddictTokenManager tokenManager)
+                => _tokenManager = tokenManager;
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -3040,8 +3104,9 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
+                    .AddFilter<RequireReferenceTokensEnabled>()
                     .AddFilter<RequireAuthorizationCodeIncluded>()
-                    .UseScopedHandler<CreateReferenceAuthorizationCodeEntry>()
+                    .UseScopedHandler<ConvertReferenceAuthorizationCode>()
                     .SetOrder(GenerateIdentityModelAuthorizationCode.Descriptor.Order + 1_000)
                     .Build();
 
@@ -3064,6 +3129,24 @@ namespace OpenIddict.Server
                     return;
                 }
 
+                var principal = context.AuthorizationCodePrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
+                var identifier = principal.GetInternalTokenId();
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                }
+
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                }
+
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
                 var data = new byte[256 / 8];
 #if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
@@ -3072,17 +3155,95 @@ namespace OpenIddict.Server
                 using var generator = RandomNumberGenerator.Create();
                 generator.GetBytes(data);
 #endif
+                var descriptor = new OpenIddictTokenDescriptor();
+                await _tokenManager.PopulateAsync(descriptor, token);
+
+                // Attach the generated token to the token entry, persist the change
+                // and replace the returned token by the reference identifier.
+                descriptor.Payload = context.Response.Code;
+                descriptor.Principal = principal;
+                descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
+
+                await _tokenManager.UpdateAsync(token, descriptor);
+
+                context.Response.Code = descriptor.ReferenceId;
+
+                context.Logger.LogTrace("The token entry for authorization code '{Identifier}' was successfully converted to a " +
+                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of creating an access token entry.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public class CreateDeviceCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictTokenManager _tokenManager;
+
+            public CreateDeviceCodeEntry() => throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                .ToString());
+
+            public CreateDeviceCodeEntry(
+                [NotNull] IOpenIddictApplicationManager applicationManager,
+                [NotNull] IOpenIddictTokenManager tokenManager)
+            {
+                _applicationManager = applicationManager;
+                _tokenManager = tokenManager;
+            }
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireTokenStorageEnabled>()
+                    .AddFilter<RequireDeviceCodeIncluded>()
+                    .UseScopedHandler<CreateDeviceCodeEntry>()
+                    .SetOrder(ConvertReferenceAuthorizationCode.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public async ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                if (context.EndpointType == OpenIddictServerEndpointType.Verification)
+                {
+                    return;
+                }
+
+                var principal = context.DeviceCodePrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
                 var descriptor = new OpenIddictTokenDescriptor
                 {
-                    AuthorizationId = context.AuthorizationCodePrincipal.GetInternalAuthorizationId(),
-                    CreationDate = context.AuthorizationCodePrincipal.GetCreationDate(),
-                    ExpirationDate = context.AuthorizationCodePrincipal.GetExpirationDate(),
-                    Payload = context.Response.Code,
-                    Principal = context.AuthorizationCodePrincipal,
-                    ReferenceId = Base64UrlEncoder.Encode(data),
-                    Status = Statuses.Valid,
-                    Subject = context.AuthorizationCodePrincipal.GetClaim(Claims.Subject),
-                    Type = TokenTypeHints.AuthorizationCode
+                    AuthorizationId = principal.GetInternalAuthorizationId(),
+                    CreationDate = principal.GetCreationDate(),
+                    ExpirationDate = principal.GetExpirationDate(),
+                    Principal = principal,
+                    Status = Statuses.Inactive,
+                    Subject = null, // Device codes are not bound to a user, which is not known until the user code is populated.
+                    Type = TokenTypeHints.DeviceCode
                 };
 
                 // If the client application is known, associate it with the token.
@@ -3098,13 +3259,17 @@ namespace OpenIddict.Server
                 }
 
                 var token = await _tokenManager.CreateAsync(descriptor);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                }
 
-                context.AuthorizationCodePrincipal.SetInternalTokenId(await _tokenManager.GetIdAsync(token));
-                context.Response.Code = descriptor.ReferenceId;
+                var identifier = await _tokenManager.GetIdAsync(token);
 
-                context.Logger.LogTrace("The reference token entry for authorization code '{Identifier}' was successfully " +
-                                        "created with the reference identifier '{ReferenceId}'.",
-                                        await _tokenManager.GetIdAsync(token), descriptor.ReferenceId);
+                // Attach the token identifier to the principal so that it can be stored in the token.
+                principal.SetInternalTokenId(identifier);
+
+                context.Logger.LogTrace("The token entry for device code '{Identifier}' was successfully created.", identifier);
             }
         }
 
@@ -3120,7 +3285,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDeviceCodeIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelDeviceCode>()
-                    .SetOrder(CreateReferenceAuthorizationCodeEntry.Descriptor.Order + 1_000)
+                    .SetOrder(CreateDeviceCodeEntry.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -3191,12 +3356,11 @@ namespace OpenIddict.Server
         /// Contains the logic responsible of creating a reference device code entry.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class CreateReferenceDeviceCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        public class ConvertReferenceDeviceCode : IOpenIddictServerHandler<ProcessSignInContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateReferenceDeviceCodeEntry() => throw new InvalidOperationException(new StringBuilder()
+            public ConvertReferenceDeviceCode() => throw new InvalidOperationException(new StringBuilder()
                 .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
                 .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
                 .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
@@ -3204,13 +3368,8 @@ namespace OpenIddict.Server
                 .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
                 .ToString());
 
-            public CreateReferenceDeviceCodeEntry(
-                [NotNull] IOpenIddictApplicationManager applicationManager,
-                [NotNull] IOpenIddictTokenManager tokenManager)
-            {
-                _applicationManager = applicationManager;
-                _tokenManager = tokenManager;
-            }
+            public ConvertReferenceDeviceCode([NotNull] IOpenIddictTokenManager tokenManager)
+                => _tokenManager = tokenManager;
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -3219,8 +3378,9 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
+                    // Note: device codes are always reference tokens.
                     .AddFilter<RequireDeviceCodeIncluded>()
-                    .UseScopedHandler<CreateReferenceDeviceCodeEntry>()
+                    .UseScopedHandler<ConvertReferenceDeviceCode>()
                     .SetOrder(GenerateIdentityModelDeviceCode.Descriptor.Order + 1_000)
                     .Build();
 
@@ -3248,6 +3408,24 @@ namespace OpenIddict.Server
                     return;
                 }
 
+                var principal = context.DeviceCodePrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
+                var identifier = principal.GetInternalTokenId();
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                }
+
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                }
+
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
                 var data = new byte[256 / 8];
 #if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
@@ -3256,39 +3434,21 @@ namespace OpenIddict.Server
                 using var generator = RandomNumberGenerator.Create();
                 generator.GetBytes(data);
 #endif
-                var descriptor = new OpenIddictTokenDescriptor
-                {
-                    AuthorizationId = context.DeviceCodePrincipal.GetInternalAuthorizationId(),
-                    CreationDate = context.DeviceCodePrincipal.GetCreationDate(),
-                    ExpirationDate = context.DeviceCodePrincipal.GetExpirationDate(),
-                    Payload = context.Response.DeviceCode,
-                    Principal = context.DeviceCodePrincipal,
-                    ReferenceId = Base64UrlEncoder.Encode(data),
-                    Status = Statuses.Inactive,
-                    Subject = null, // Device codes are not bound to a user, which is not known until the user code is populated.
-                    Type = TokenTypeHints.DeviceCode
-                };
+                var descriptor = new OpenIddictTokenDescriptor();
+                await _tokenManager.PopulateAsync(descriptor, token);
 
-                // If the client application is known, associate it with the token.
-                if (!string.IsNullOrEmpty(context.Request.ClientId))
-                {
-                    var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
-                    {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
-                    }
+                // Attach the generated token to the token entry, persist the change
+                // and replace the returned token by the reference identifier.
+                descriptor.Payload = context.Response.DeviceCode;
+                descriptor.Principal = principal;
+                descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
 
-                    descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
-                }
+                await _tokenManager.UpdateAsync(token, descriptor);
 
-                var token = await _tokenManager.CreateAsync(descriptor);
-
-                context.DeviceCodePrincipal.SetInternalTokenId(await _tokenManager.GetIdAsync(token));
                 context.Response.DeviceCode = descriptor.ReferenceId;
 
-                context.Logger.LogTrace("The reference token entry for device code '{Identifier}' was successfully " +
-                                        "created with the reference identifier '{ReferenceId}'.",
-                                        await _tokenManager.GetIdAsync(token), descriptor.ReferenceId);
+                context.Logger.LogTrace("The token entry for device code '{Identifier}' was successfully converted to a " +
+                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
             }
         }
 
@@ -3298,7 +3458,6 @@ namespace OpenIddict.Server
         /// </summary>
         public class UpdateReferenceDeviceCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
             public UpdateReferenceDeviceCodeEntry() => throw new InvalidOperationException(new StringBuilder()
@@ -3309,13 +3468,8 @@ namespace OpenIddict.Server
                 .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
                 .ToString());
 
-            public UpdateReferenceDeviceCodeEntry(
-                [NotNull] IOpenIddictApplicationManager applicationManager,
-                [NotNull] IOpenIddictTokenManager tokenManager)
-            {
-                _applicationManager = applicationManager;
-                _tokenManager = tokenManager;
-            }
+            public UpdateReferenceDeviceCodeEntry([NotNull] IOpenIddictTokenManager tokenManager)
+                => _tokenManager = tokenManager;
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -3326,7 +3480,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireTokenStorageEnabled>()
                     .AddFilter<RequireDeviceCodeIncluded>()
                     .UseScopedHandler<UpdateReferenceDeviceCodeEntry>()
-                    .SetOrder(CreateReferenceDeviceCodeEntry.Descriptor.Order + 1_000)
+                    .SetOrder(ConvertReferenceDeviceCode.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -3353,6 +3507,12 @@ namespace OpenIddict.Server
                     return;
                 }
 
+                var principal = context.DeviceCodePrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
                 // Extract the token identifier from the authentication principal.
                 var identifier = context.Principal.GetClaim(Claims.Private.DeviceCodeId);
                 if (string.IsNullOrEmpty(identifier))
@@ -3372,19 +3532,114 @@ namespace OpenIddict.Server
                 await _tokenManager.PopulateAsync(descriptor, token);
 
                 // Note: the lifetime is deliberately extended to give more time to the client to redeem the code.
-                descriptor.ExpirationDate = context.DeviceCodePrincipal.GetExpirationDate();
+                descriptor.ExpirationDate = principal.GetExpirationDate();
                 descriptor.Payload = context.Response.DeviceCode;
+                descriptor.Principal = principal;
                 descriptor.Status = Statuses.Valid;
-                descriptor.Subject = context.DeviceCodePrincipal.GetClaim(Claims.Subject);
+                descriptor.Subject = principal.GetClaim(Claims.Subject);
 
-                await _tokenManager.PopulateAsync(token, descriptor);
-                await _tokenManager.UpdateAsync(token);
+                await _tokenManager.UpdateAsync(token, descriptor);
 
                 // Don't return the prepared device code directly from the verification endpoint.
                 context.Response.DeviceCode = null;
 
                 context.Logger.LogTrace("The reference token entry for device code '{Identifier}' was successfully updated'.",
                                         await _tokenManager.GetIdAsync(token));
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of creating a refresh token entry.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public class CreateRefreshTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictTokenManager _tokenManager;
+
+            public CreateRefreshTokenEntry() => throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                .ToString());
+
+            public CreateRefreshTokenEntry(
+                [NotNull] IOpenIddictApplicationManager applicationManager,
+                [NotNull] IOpenIddictTokenManager tokenManager)
+            {
+                _applicationManager = applicationManager;
+                _tokenManager = tokenManager;
+            }
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireTokenStorageEnabled>()
+                    .AddFilter<RequireRefreshTokenIncluded>()
+                    .UseScopedHandler<CreateRefreshTokenEntry>()
+                    .SetOrder(UpdateReferenceDeviceCodeEntry.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public async ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var principal = context.RefreshTokenPrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
+                var descriptor = new OpenIddictTokenDescriptor
+                {
+                    AuthorizationId = principal.GetInternalAuthorizationId(),
+                    CreationDate = principal.GetCreationDate(),
+                    ExpirationDate = principal.GetExpirationDate(),
+                    Principal = principal,
+                    Status = Statuses.Valid,
+                    Subject = principal.GetClaim(Claims.Subject),
+                    Type = TokenTypeHints.RefreshToken
+                };
+
+                // If the client application is known, associate it with the token.
+                if (!string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                    }
+
+                    descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
+                }
+
+                var token = await _tokenManager.CreateAsync(descriptor);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                }
+
+                var identifier = await _tokenManager.GetIdAsync(token);
+
+                // Attach the token identifier to the principal so that it can be stored in the token.
+                principal.SetInternalTokenId(identifier);
+
+                context.Logger.LogTrace("The token entry for refresh token '{Identifier}' was successfully created.", identifier);
             }
         }
 
@@ -3400,7 +3655,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireRefreshTokenIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelRefreshToken>()
-                    .SetOrder(UpdateReferenceDeviceCodeEntry.Descriptor.Order + 1_000)
+                    .SetOrder(CreateRefreshTokenEntry.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -3468,15 +3723,14 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Contains the logic responsible of creating a reference refresh token entry.
+        /// Contains the logic responsible of converting the refresh token to a reference token.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class CreateReferenceRefreshTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        public class ConvertReferenceRefreshToken : IOpenIddictServerHandler<ProcessSignInContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateReferenceRefreshTokenEntry() => throw new InvalidOperationException(new StringBuilder()
+            public ConvertReferenceRefreshToken() => throw new InvalidOperationException(new StringBuilder()
                 .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
                 .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
                 .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
@@ -3484,13 +3738,8 @@ namespace OpenIddict.Server
                 .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
                 .ToString());
 
-            public CreateReferenceRefreshTokenEntry(
-                [NotNull] IOpenIddictApplicationManager applicationManager,
-                [NotNull] IOpenIddictTokenManager tokenManager)
-            {
-                _applicationManager = applicationManager;
-                _tokenManager = tokenManager;
-            }
+            public ConvertReferenceRefreshToken([NotNull] IOpenIddictTokenManager tokenManager)
+                => _tokenManager = tokenManager;
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -3499,8 +3748,9 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
+                    .AddFilter<RequireReferenceTokensEnabled>()
                     .AddFilter<RequireRefreshTokenIncluded>()
-                    .UseScopedHandler<CreateReferenceRefreshTokenEntry>()
+                    .UseScopedHandler<ConvertReferenceRefreshToken>()
                     .SetOrder(GenerateIdentityModelRefreshToken.Descriptor.Order + 1_000)
                     .Build();
 
@@ -3523,6 +3773,24 @@ namespace OpenIddict.Server
                     return;
                 }
 
+                var principal = context.RefreshTokenPrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
+                var identifier = principal.GetInternalTokenId();
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                }
+
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                }
+
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
                 var data = new byte[256 / 8];
 #if SUPPORTS_STATIC_RANDOM_NUMBER_GENERATOR_METHODS
@@ -3531,39 +3799,21 @@ namespace OpenIddict.Server
                 using var generator = RandomNumberGenerator.Create();
                 generator.GetBytes(data);
 #endif
-                var descriptor = new OpenIddictTokenDescriptor
-                {
-                    AuthorizationId = context.RefreshTokenPrincipal.GetInternalAuthorizationId(),
-                    CreationDate = context.RefreshTokenPrincipal.GetCreationDate(),
-                    ExpirationDate = context.RefreshTokenPrincipal.GetExpirationDate(),
-                    Payload = context.Response.RefreshToken,
-                    Principal = context.RefreshTokenPrincipal,
-                    ReferenceId = Base64UrlEncoder.Encode(data),
-                    Status = Statuses.Valid,
-                    Subject = context.RefreshTokenPrincipal.GetClaim(Claims.Subject),
-                    Type = TokenTypeHints.RefreshToken
-                };
+                var descriptor = new OpenIddictTokenDescriptor();
+                await _tokenManager.PopulateAsync(descriptor, token);
 
-                // If the client application is known, associate it with the token.
-                if (!string.IsNullOrEmpty(context.Request.ClientId))
-                {
-                    var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
-                    {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
-                    }
+                // Attach the generated token to the token entry, persist the change
+                // and replace the returned token by the reference identifier.
+                descriptor.Payload = context.Response.RefreshToken;
+                descriptor.Principal = principal;
+                descriptor.ReferenceId = Base64UrlEncoder.Encode(data);
 
-                    descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
-                }
+                await _tokenManager.UpdateAsync(token, descriptor);
 
-                var token = await _tokenManager.CreateAsync(descriptor);
-
-                context.RefreshTokenPrincipal.SetInternalTokenId(await _tokenManager.GetIdAsync(token));
                 context.Response.RefreshToken = descriptor.ReferenceId;
 
-                context.Logger.LogTrace("The reference token entry for refresh token '{Identifier}' was successfully " +
-                                        "created with the reference identifier '{ReferenceId}'.",
-                                        await _tokenManager.GetIdAsync(token), descriptor.ReferenceId);
+                context.Logger.LogTrace("The token entry for refresh token '{Identifier}' was successfully converted to a " +
+                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
             }
         }
 
@@ -3580,7 +3830,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDeviceCodeIncluded>()
                     .AddFilter<RequireUserCodeIncluded>()
                     .UseSingletonHandler<AttachDeviceCodeIdentifier>()
-                    .SetOrder(CreateReferenceRefreshTokenEntry.Descriptor.Order + 1_000)
+                    .SetOrder(ConvertReferenceRefreshToken.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -3597,13 +3847,114 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
+                var principal = context.UserCodePrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
                 var identifier = context.DeviceCodePrincipal.GetInternalTokenId();
                 if (!string.IsNullOrEmpty(identifier))
                 {
-                    context.UserCodePrincipal.SetClaim(Claims.Private.DeviceCodeId, identifier);
+                    principal.SetClaim(Claims.Private.DeviceCodeId, identifier);
                 }
 
                 return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of creating a user code entry.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public class CreateUserCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictTokenManager _tokenManager;
+
+            public CreateUserCodeEntry() => throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                .ToString());
+
+            public CreateUserCodeEntry(
+                [NotNull] IOpenIddictApplicationManager applicationManager,
+                [NotNull] IOpenIddictTokenManager tokenManager)
+            {
+                _applicationManager = applicationManager;
+                _tokenManager = tokenManager;
+            }
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireTokenStorageEnabled>()
+                    .AddFilter<RequireUserCodeIncluded>()
+                    .UseScopedHandler<CreateUserCodeEntry>()
+                    .SetOrder(AttachDeviceCodeIdentifier.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public async ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var principal = context.UserCodePrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
+                var descriptor = new OpenIddictTokenDescriptor
+                {
+                    AuthorizationId = principal.GetInternalAuthorizationId(),
+                    CreationDate = principal.GetCreationDate(),
+                    ExpirationDate = principal.GetExpirationDate(),
+                    Principal = principal,
+                    Status = Statuses.Valid,
+                    Subject = null, // User codes are not bound to a user until authorization is granted.
+                    Type = TokenTypeHints.UserCode
+                };
+
+                // If the client application is known, associate it with the token.
+                if (!string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                    }
+
+                    descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
+                }
+
+                var token = await _tokenManager.CreateAsync(descriptor);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                }
+
+                var identifier = await _tokenManager.GetIdAsync(token);
+
+                // Attach the token identifier to the principal so that it can be stored in the token.
+                principal.SetInternalTokenId(identifier);
+
+                context.Logger.LogTrace("The token entry for user code '{Identifier}' was successfully created.", identifier);
             }
         }
 
@@ -3619,7 +3970,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireUserCodeIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelUserCode>()
-                    .SetOrder(AttachDeviceCodeIdentifier.Descriptor.Order + 1_000)
+                    .SetOrder(CreateUserCodeEntry.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -3676,15 +4027,14 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
-        /// Contains the logic responsible of creating a reference user code entry.
+        /// Contains the logic responsible of converting the user code to a reference token.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
-        public class CreateReferenceUserCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        public class ConvertReferenceUserCode : IOpenIddictServerHandler<ProcessSignInContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateReferenceUserCodeEntry() => throw new InvalidOperationException(new StringBuilder()
+            public ConvertReferenceUserCode() => throw new InvalidOperationException(new StringBuilder()
                 .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
                 .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
                 .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
@@ -3692,13 +4042,8 @@ namespace OpenIddict.Server
                 .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
                 .ToString());
 
-            public CreateReferenceUserCodeEntry(
-                [NotNull] IOpenIddictApplicationManager applicationManager,
-                [NotNull] IOpenIddictTokenManager tokenManager)
-            {
-                _applicationManager = applicationManager;
-                _tokenManager = tokenManager;
-            }
+            public ConvertReferenceUserCode([NotNull] IOpenIddictTokenManager tokenManager)
+                => _tokenManager = tokenManager;
 
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
@@ -3707,8 +4052,9 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireTokenStorageEnabled>()
+                    // Note: user codes are always reference tokens.
                     .AddFilter<RequireUserCodeIncluded>()
-                    .UseScopedHandler<CreateReferenceUserCodeEntry>()
+                    .UseScopedHandler<ConvertReferenceUserCode>()
                     .SetOrder(GenerateIdentityModelUserCode.Descriptor.Order + 1_000)
                     .Build();
 
@@ -3731,6 +4077,24 @@ namespace OpenIddict.Server
                     return;
                 }
 
+                var principal = context.UserCodePrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
+                var identifier = principal.GetInternalTokenId();
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                }
+
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                }
+
                 // Note: unlike other reference tokens, user codes are meant to be used by humans,
                 // who may have to enter it in a web form. To ensure it remains easy enough to type
                 // even by users with non-Latin keyboards, user codes generated by OpenIddict are
@@ -3751,39 +4115,21 @@ namespace OpenIddict.Server
                     builder.AppendFormat(CultureInfo.InvariantCulture, "{0:D4}", BitConverter.ToUInt32(data, index) % 10000);
                 }
 
-                var descriptor = new OpenIddictTokenDescriptor
-                {
-                    AuthorizationId = context.UserCodePrincipal.GetInternalAuthorizationId(),
-                    CreationDate = context.UserCodePrincipal.GetCreationDate(),
-                    ExpirationDate = context.UserCodePrincipal.GetExpirationDate(),
-                    Payload = context.Response.UserCode,
-                    Principal = context.UserCodePrincipal,
-                    ReferenceId = builder.ToString(),
-                    Status = Statuses.Valid,
-                    Subject = null, // User codes are not bound to a user until authorization is granted.
-                    Type = TokenTypeHints.UserCode
-                };
+                var descriptor = new OpenIddictTokenDescriptor();
+                await _tokenManager.PopulateAsync(descriptor, token);
 
-                // If the client application is known, associate it with the token.
-                if (!string.IsNullOrEmpty(context.Request.ClientId))
-                {
-                    var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
-                    if (application == null)
-                    {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
-                    }
+                // Attach the generated token to the token entry, persist the change
+                // and replace the returned token by the reference identifier.
+                descriptor.Payload = context.Response.UserCode;
+                descriptor.Principal = principal;
+                descriptor.ReferenceId = builder.ToString();
 
-                    descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
-                }
+                await _tokenManager.UpdateAsync(token, descriptor);
 
-                var token = await _tokenManager.CreateAsync(descriptor);
+                context.Response.UserCode = descriptor.ReferenceId;
 
-                context.UserCodePrincipal.SetInternalTokenId(await _tokenManager.GetIdAsync(token));
-                context.Response.UserCode = builder.ToString();
-
-                context.Logger.LogTrace("The reference token entry for user code '{Identifier}' was successfully " +
-                                        "created with the reference identifier '{ReferenceId}'.",
-                                        await _tokenManager.GetIdAsync(token), descriptor.ReferenceId);
+                context.Logger.LogTrace("The token entry for user code '{Identifier}' was successfully converted to a " +
+                                        "reference token with the identifier '{ReferenceId}'.", identifier, descriptor.ReferenceId);
             }
         }
 
@@ -3800,7 +4146,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireIdentityTokenIncluded>()
                     .UseSingletonHandler<AttachTokenDigests>()
-                    .SetOrder(CreateReferenceUserCodeEntry.Descriptor.Order + 1_000)
+                    .SetOrder(ConvertReferenceUserCode.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>
@@ -3920,6 +4266,101 @@ namespace OpenIddict.Server
         }
 
         /// <summary>
+        /// Contains the logic responsible of creating an identity token entry.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public class CreateIdentityTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        {
+            private readonly IOpenIddictApplicationManager _applicationManager;
+            private readonly IOpenIddictTokenManager _tokenManager;
+
+            public CreateIdentityTokenEntry() => throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
+                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
+                .ToString());
+
+            public CreateIdentityTokenEntry(
+                [NotNull] IOpenIddictApplicationManager applicationManager,
+                [NotNull] IOpenIddictTokenManager tokenManager)
+            {
+                _applicationManager = applicationManager;
+                _tokenManager = tokenManager;
+            }
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireTokenStorageEnabled>()
+                    .AddFilter<RequireIdentityTokenIncluded>()
+                    .UseScopedHandler<CreateIdentityTokenEntry>()
+                    .SetOrder(AttachTokenDigests.Descriptor.Order + 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public async ValueTask HandleAsync([NotNull] ProcessSignInContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var principal = context.IdentityTokenPrincipal;
+                if (principal == null)
+                {
+                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                }
+
+                var descriptor = new OpenIddictTokenDescriptor
+                {
+                    AuthorizationId = principal.GetInternalAuthorizationId(),
+                    CreationDate = principal.GetCreationDate(),
+                    ExpirationDate = principal.GetExpirationDate(),
+                    Principal = principal,
+                    Status = Statuses.Valid,
+                    Subject = principal.GetClaim(Claims.Subject),
+                    Type = TokenTypeHints.IdToken
+                };
+
+                // If the client application is known, associate it with the token.
+                if (!string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
+                    if (application == null)
+                    {
+                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                    }
+
+                    descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
+                }
+
+                var token = await _tokenManager.CreateAsync(descriptor);
+                if (token == null)
+                {
+                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                }
+
+                var identifier = await _tokenManager.GetIdAsync(token);
+
+                // Attach the token identifier to the principal so that it can be stored in the token.
+                principal.SetInternalTokenId(identifier);
+
+                context.Logger.LogTrace("The token entry for identity token '{Identifier}' was successfully created.", identifier);
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible of generating an identity token using IdentityModel.
         /// </summary>
         public class GenerateIdentityModelIdentityToken : IOpenIddictServerHandler<ProcessSignInContext>
@@ -3931,7 +4372,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireIdentityTokenIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelIdentityToken>()
-                    .SetOrder(AttachTokenDigests.Descriptor.Order + 1_000)
+                    .SetOrder(CreateIdentityTokenEntry.Descriptor.Order + 1_000)
                     .Build();
 
             /// <summary>

@@ -27,14 +27,16 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets the list of credentials used to encrypt the tokens issued by the
-        /// OpenIddict server services. Note: only symmetric credentials are supported.
+        /// OpenIddict server services. Note: the encryption credentials are not
+        /// used to protect/unprotect tokens issued by ASP.NET Core Data Protection.
         /// </summary>
         public IList<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
 
         /// <summary>
         /// Gets the list of credentials used to sign the tokens issued by the OpenIddict server services.
         /// Both asymmetric and symmetric keys are supported, but only asymmetric keys can be used to sign identity tokens.
-        /// Note that only asymmetric RSA and ECDSA keys can be exposed by the JWKS metadata endpoint.
+        /// Note that only asymmetric RSA and ECDSA keys can be exposed by the JWKS metadata endpoint and that the
+        /// signing credentials are not used to protect/unprotect tokens issued by ASP.NET Core Data Protection.
         /// </summary>
         public IList<SigningCredentials> SigningCredentials { get; } = new List<SigningCredentials>();
 
@@ -222,6 +224,7 @@ namespace OpenIddict.Server
         /// Gets or sets a boolean indicating whether access token encryption should be disabled.
         /// Disabling encryption is NOT recommended and SHOULD only be done when issuing tokens
         /// to third-party resource servers/APIs you don't control and don't fully trust.
+        /// Note: disabling encryption has no effect when using ASP.NET Core Data Protection.
         /// </summary>
         public bool DisableAccessTokenEncryption { get; set; }
 
@@ -234,8 +237,9 @@ namespace OpenIddict.Server
 
         /// <summary>
         /// Gets or sets a boolean indicating whether token storage should be disabled.
-        /// When disabled, authorization code and refresh tokens are not stored
-        /// and cannot be revoked. Using this option is generally not recommended.
+        /// When disabled, no database entry is created for the tokens and codes
+        /// returned by OpenIddict. Using this option is generally NOT recommended
+        /// as it prevents the tokens and codes from being revoked (if needed).
         /// </summary>
         public bool DisableTokenStorage { get; set; }
 
@@ -307,14 +311,15 @@ namespace OpenIddict.Server
         };
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether reference access tokens should be used.
-        /// When set to <c>true</c>, access tokens and are stored as ciphertext in the database
+        /// Gets or sets a boolean indicating whether reference tokens should be used.
+        /// When set to <c>true</c>, token and code payloads are stored in the database
         /// and a crypto-secure random identifier is returned to the client application.
-        /// Enabling this option is useful to keep track of all the issued access tokens,
-        /// when storing a very large number of claims in the access tokens
-        /// or when immediate revocation of reference access tokens is desired.
+        /// Enabling this option is useful when storing a very large number of claims
+        /// in the tokens, but it is RECOMMENDED to enable column encryption
+        /// in the database or use the ASP.NET Core Data Protection integration,
+        /// that provides additional protection against token leakage.
         /// </summary>
-        public bool UseReferenceAccessTokens { get; set; }
+        public bool UseReferenceTokens { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether rolling tokens should be used.
@@ -322,7 +327,7 @@ namespace OpenIddict.Server
         /// dynamically managed by updating the token entry in the database.
         /// When this option is enabled, a new refresh token is issued for each
         /// refresh token request (and the previous one is automatically revoked
-        /// unless token revocation was explicitly disabled in the options).
+        /// unless token storage was explicitly disabled in the options).
         /// </summary>
         public bool UseRollingTokens { get; set; }
     }

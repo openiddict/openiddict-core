@@ -22,7 +22,8 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class OpenIddictServerDataProtectionExtensions
     {
         /// <summary>
-        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container.
+        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container
+        /// and configures OpenIddict to validate and issue ASP.NET Data Protection-based tokens.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <remarks>This extension can be safely called multiple times.</remarks>
@@ -41,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
             // Register the built-in filter used by the default OpenIddict Data Protection event handlers.
-            builder.Services.TryAddSingleton<RequirePreferDataProtectionFormatEnabled>();
+            builder.Services.TryAddSingleton<RequireDataProtectionFormatEnabled>();
 
             // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
             builder.Services.TryAddEnumerable(new[]
@@ -54,7 +55,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container.
+        /// Registers the OpenIddict ASP.NET Core Data Protection server services in the DI container
+        /// and configures OpenIddict to validate and issue ASP.NET Data Protection-based tokens.
         /// </summary>
         /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
         /// <param name="configuration">The configuration delegate used to configure the server services.</param>

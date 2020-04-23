@@ -36,6 +36,7 @@ namespace OpenIddict.Validation
             ValidatePrincipal.Descriptor,
             ValidateExpirationDate.Descriptor,
             ValidateAudience.Descriptor,
+            ValidateTokenEntry.Descriptor,
             ValidateAuthorizationEntry.Descriptor,
 
             /*
@@ -110,7 +111,7 @@ namespace OpenIddict.Validation
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                    .AddFilter<RequireReferenceAccessTokensEnabled>()
+                    .AddFilter<RequireTokenValidationEnabled>()
                     .UseScopedHandler<ValidateReferenceTokenIdentifier>()
                     .SetOrder(ValidateAccessTokenParameter.Descriptor.Order + 1_000)
                     .Build();
@@ -122,7 +123,14 @@ namespace OpenIddict.Validation
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // If the reference token cannot be found, don't return an error to allow another handle to validate it.
+                // Reference tokens are base64url-encoded payloads of exactly 256 bits (generated using a
+                // crypto-secure RNG). If the token length differs, the token cannot be a reference token.
+                if (string.IsNullOrEmpty(context.Token) || context.Token.Length != 43)
+                {
+                    return;
+                }
+
+                // If the reference token cannot be found, don't return an error to allow another handler to validate it.
                 var token = await _tokenManager.FindByReferenceIdAsync(context.Token);
                 if (token == null)
                 {
@@ -313,7 +321,7 @@ namespace OpenIddict.Validation
             /// </summary>
             public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                    .AddFilter<RequireReferenceAccessTokensEnabled>()
+                    .AddFilter<RequireTokenValidationEnabled>()
                     .UseScopedHandler<RestoreReferenceTokenProperties>()
                     .SetOrder(MapInternalClaims.Descriptor.Order + 1_000)
                     .Build();
@@ -525,6 +533,68 @@ namespace OpenIddict.Validation
 
         /// <summary>
         /// Contains the logic responsible of authentication demands a token whose
+        /// associated token entry is no longer valid (e.g was revoked).
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public class ValidateTokenEntry : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+        {
+            private readonly IOpenIddictTokenManager _tokenManager;
+
+            public ValidateTokenEntry() => throw new InvalidOperationException(new StringBuilder()
+                .AppendLine("The core services must be registered when enabling reference tokens support.")
+                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
+                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
+                .ToString());
+
+            public ValidateTokenEntry([NotNull] IOpenIddictTokenManager tokenManager)
+                => _tokenManager = tokenManager;
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                    .AddFilter<RequireTokenValidationEnabled>()
+                    .UseScopedHandler<ValidateTokenEntry>()
+                    .SetOrder(ValidateAudience.Descriptor.Order + 1_000)
+                    .Build();
+
+            public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                var identifier = context.Principal.GetInternalTokenId();
+                if (string.IsNullOrEmpty(identifier))
+                {
+                    return;
+                }
+
+                var token = await _tokenManager.FindByIdAsync(identifier);
+                if (token == null || !await _tokenManager.HasStatusAsync(token, Statuses.Valid))
+                {
+                    context.Logger.LogError("The token '{Identifier}' was no longer valid.", identifier);
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: "The token is no longer valid.");
+
+                    return;
+                }
+
+                // Restore the creation/expiration dates/identifiers from the token entry metadata.
+                context.Principal.SetCreationDate(await _tokenManager.GetCreationDateAsync(token))
+                                 .SetExpirationDate(await _tokenManager.GetExpirationDateAsync(token))
+                                 .SetInternalAuthorizationId(await _tokenManager.GetAuthorizationIdAsync(token))
+                                 .SetInternalTokenId(await _tokenManager.GetIdAsync(token))
+                                 .SetTokenType(await _tokenManager.GetTypeAsync(token));
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of authentication demands a token whose
         /// associated authorization entry is no longer valid (e.g was revoked).
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -548,7 +618,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .AddFilter<RequireAuthorizationValidationEnabled>()
                     .UseScopedHandler<ValidateAuthorizationEntry>()
-                    .SetOrder(ValidateAudience.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateTokenEntry.Descriptor.Order + 1_000)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)

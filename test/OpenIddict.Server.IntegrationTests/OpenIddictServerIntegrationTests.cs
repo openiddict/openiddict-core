@@ -2649,6 +2649,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
@@ -2798,11 +2801,15 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
             {
                 options.UseRollingTokens();
+                options.DisableAuthorizationStorage();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2867,6 +2874,7 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.UseRollingTokens();
+                options.DisableAuthorizationStorage();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2921,6 +2929,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
@@ -3000,6 +3011,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.FindByAuthorizationIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
                     .Returns(tokens.ToAsyncEnumerable());
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
@@ -3089,6 +3103,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.FindByAuthorizationIdAsync("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0", It.IsAny<CancellationToken>()))
                     .Returns(tokens.ToAsyncEnumerable());
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
@@ -3163,6 +3180,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
@@ -3219,6 +3239,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(true);
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
@@ -3280,6 +3303,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(value: null);
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
@@ -3341,6 +3367,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
                     .ReturnsAsync(DateTimeOffset.Now + TimeSpan.FromDays(1));
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
@@ -3404,6 +3433,9 @@ namespace OpenIddict.Server.FunctionalTests
 
                 mock.Setup(manager => manager.TryExtendAsync(token, It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(false);
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictToken());
             });
 
             var client = CreateClient(options =>
@@ -3453,6 +3485,9 @@ namespace OpenIddict.Server.FunctionalTests
             var manager = CreateAuthorizationManager(mock =>
             {
                 mock.Setup(manager => manager.FindByIdAsync("1AF06AB2-A0FC-4E3D-86AF-E04DA8C7BE70", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictAuthorization());
+
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictAuthorizationDescriptor>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new OpenIddictAuthorization());
             });
 

@@ -798,8 +798,11 @@ namespace OpenIddict.Abstractions
                 JsonElement value when value.ValueKind == JsonValueKind.String
                     => string.IsNullOrEmpty(value.GetString()),
 
-                JsonElement value when value.ValueKind == JsonValueKind.Array     => value.GetArrayLength() == 0,
-                JsonElement value when value.ValueKind == JsonValueKind.Object    => IsEmptyNode(value),
+                JsonElement value when value.ValueKind == JsonValueKind.Array
+                    => value.GetArrayLength() == 0,
+
+                JsonElement value when value.ValueKind == JsonValueKind.Object
+                    => IsEmptyNode(value),
 
                 _ => false
             };
