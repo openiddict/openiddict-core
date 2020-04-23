@@ -32,9 +32,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-                IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationServerIntegrationConfiguration>());
+            // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
+            builder.Services.TryAddEnumerable(new[]
+            {
+                ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationServerIntegrationConfiguration>(),
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictValidationOptions>, OpenIddictValidationServerIntegrationConfiguration>()
+            });
 
             return new OpenIddictValidationServerIntegrationBuilder(builder.Services);
         }

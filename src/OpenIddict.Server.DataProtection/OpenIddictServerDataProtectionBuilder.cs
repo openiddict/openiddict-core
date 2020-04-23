@@ -81,12 +81,12 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures OpenIddict to use the Data Protection format when
+        /// Configures OpenIddict to use the default token format (JWT) when
         /// issuing new access tokens, refresh tokens and authorization codes.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerDataProtectionBuilder"/>.</returns>
-        public OpenIddictServerDataProtectionBuilder PreferDataProtectionFormat()
-            => Configure(options => options.PreferDataProtectionFormat = true);
+        public OpenIddictServerDataProtectionBuilder PreferDefaultTokenFormat()
+            => Configure(options => options.PreferDefaultTokenFormat = true);
 
         /// <summary>
         /// Determines whether the specified object is equal to the current object.

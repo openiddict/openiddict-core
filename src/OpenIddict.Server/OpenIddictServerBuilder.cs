@@ -1600,9 +1600,12 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.UseSlidingExpiration = false);
 
         /// <summary>
-        /// Disables token storage, so that authorization code and
-        /// refresh tokens are never stored and cannot be revoked.
-        /// Using this option is generally NOT recommended.
+        /// Disables token storage, so that no database entry is created
+        /// for the tokens and codes returned by the OpenIddict server.
+        /// Using this option is generally NOT recommended as it prevents
+        /// the tokens and codes from being revoked (if needed).
+        /// Note: disabling token storage requires disabling sliding
+        /// expiration or enabling rolling tokens.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder DisableTokenStorage()
@@ -1790,19 +1793,20 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures OpenIddict to use reference tokens, so that access tokens are stored
-        /// as ciphertext in the database (only an identifier is returned to the client application).
-        /// Enabling this option is useful to keep track of all the issued tokens, when storing
-        /// a very large number of claims in the access tokens or when immediate revocation is desired.
+        /// Configures OpenIddict to use reference tokens, so that the token and code payloads
+        /// are stored in the database (only an identifier is returned to the client application).
+        /// Enabling this option is useful when storing a very large number of claims in the tokens,
+        /// but it is RECOMMENDED to enable column encryption in the database or use the ASP.NET Core
+        /// Data Protection integration, that provides additional protection against token leakage.
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder UseReferenceAccessTokens()
-            => Configure(options => options.UseReferenceAccessTokens = true);
+        public OpenIddictServerBuilder UseReferenceTokens()
+            => Configure(options => options.UseReferenceTokens = true);
 
         /// <summary>
         /// Configures OpenIddict to use rolling refresh tokens. When this option is enabled,
         /// a new refresh token is always issued for each refresh token request (and the previous
-        /// one is automatically revoked unless token revocation was explicitly disabled).
+        /// one is automatically revoked unless token storage was explicitly disabled).
         /// </summary>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
         public OpenIddictServerBuilder UseRollingTokens()

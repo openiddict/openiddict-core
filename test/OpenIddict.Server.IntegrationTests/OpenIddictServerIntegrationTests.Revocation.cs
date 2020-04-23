@@ -145,47 +145,6 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
-        public async Task ValidateRevocationRequest_AccessTokenCausesAnUnsupportedTokenTypeErrorWhenReferenceTokensAreDisabled()
-        {
-            // Arrange
-            var client = CreateClient(options =>
-            {
-                options.EnableDegradedMode();
-
-                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
-                {
-                    builder.UseInlineHandler(context =>
-                    {
-                        Assert.Equal("2YotnFZFEjr1zCsicMWpAA", context.Token);
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
-                            .SetTokenType(TokenTypeHints.AccessToken)
-                            .SetAudiences("AdventureWorks")
-                            .SetPresenters("Contoso");
-
-                        return default;
-                    });
-
-                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
-                });
-
-                options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
-            });
-
-            // Act
-            var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
-            {
-                ClientId = "Fabrikam",
-                Token = "2YotnFZFEjr1zCsicMWpAA",
-                TokenTypeHint = TokenTypeHints.AccessToken
-            });
-
-            // Assert
-            Assert.Equal(Errors.UnsupportedTokenType, response.Error);
-            Assert.Equal("The specified token cannot be revoked.", response.ErrorDescription);
-        }
-
-        [Fact]
         public async Task ValidateRevocationRequest_IdentityTokenCausesAnUnsupportedTokenTypeError()
         {
             // Arrange
@@ -272,7 +231,6 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-                options.UseReferenceAccessTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -570,7 +528,6 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-                options.UseReferenceAccessTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -615,7 +572,6 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-                options.UseReferenceAccessTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -663,7 +619,6 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-                options.UseReferenceAccessTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -878,7 +833,6 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-                options.UseReferenceAccessTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -923,7 +877,6 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-                options.UseReferenceAccessTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -971,7 +924,6 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-                options.UseReferenceAccessTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -1014,7 +966,6 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
-                options.UseReferenceAccessTokens();
 
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {

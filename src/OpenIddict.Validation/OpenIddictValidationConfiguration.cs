@@ -22,7 +22,7 @@ namespace OpenIddict.Validation
         /// Populates the default OpenIddict validation options and ensures
         /// that the configuration is in a consistent and valid state.
         /// </summary>
-        /// <param name="name">The authentication scheme associated with the handler instance.</param>
+        /// <param name="name">The name of the options instance to configure, if applicable.</param>
         /// <param name="options">The options instance to initialize.</param>
         public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictValidationOptions options)
         {

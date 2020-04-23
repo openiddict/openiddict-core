@@ -91,7 +91,18 @@ namespace OpenIddict.Abstractions
 
             foreach (var parameter in parameters.GroupBy(parameter => parameter.Key))
             {
-                AddParameter(parameter.Key, parameter.Select(parameter => parameter.Value).ToArray());
+                var values = parameter.Select(parameter => parameter.Value).ToArray();
+
+                // Note: the core OAuth 2.0 specification requires that request parameters
+                // not be present more than once but derived specifications like the
+                // token exchange specification deliberately allow specifying multiple
+                // parameters with the same name to represent a multi-valued parameter.
+                AddParameter(parameter.Key, values.Length switch
+                {
+                    0 => default,
+                    1 => values[0],
+                    _ => values
+                });
             }
         }
 
@@ -110,7 +121,7 @@ namespace OpenIddict.Abstractions
             {
                 // Note: the core OAuth 2.0 specification requires that request parameters
                 // not be present more than once but derived specifications like the
-                // token exchange RFC deliberately allow specifying multiple resource
+                // token exchange specification deliberately allow specifying multiple
                 // parameters with the same name to represent a multi-valued parameter.
                 AddParameter(parameter.Key, parameter.Value?.Length switch
                 {
@@ -137,7 +148,7 @@ namespace OpenIddict.Abstractions
             {
                 // Note: the core OAuth 2.0 specification requires that request parameters
                 // not be present more than once but derived specifications like the
-                // token exchange RFC deliberately allow specifying multiple resource
+                // token exchange specification deliberately allow specifying multiple
                 // parameters with the same name to represent a multi-valued parameter.
                 AddParameter(parameter.Key, parameter.Value.Count switch
                 {

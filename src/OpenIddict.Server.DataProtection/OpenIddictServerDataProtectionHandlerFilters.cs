@@ -22,11 +22,11 @@ namespace OpenIddict.Server.DataProtection
         /// <summary>
         /// Represents a filter that excludes the associated handlers if OpenIddict was not configured to issue Data Protection tokens.
         /// </summary>
-        public class RequirePreferDataProtectionFormatEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+        public class RequireDataProtectionFormatEnabled : IOpenIddictServerHandlerFilter<BaseContext>
         {
             private readonly IOptionsMonitor<OpenIddictServerDataProtectionOptions> _options;
 
-            public RequirePreferDataProtectionFormatEnabled([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
+            public RequireDataProtectionFormatEnabled([NotNull] IOptionsMonitor<OpenIddictServerDataProtectionOptions> options)
                 => _options = options;
 
             public ValueTask<bool> IsActiveAsync([NotNull] BaseContext context)
@@ -36,7 +36,7 @@ namespace OpenIddict.Server.DataProtection
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                return new ValueTask<bool>(_options.CurrentValue.PreferDataProtectionFormat);
+                return new ValueTask<bool>(!_options.CurrentValue.PreferDefaultTokenFormat);
             }
         }
     }

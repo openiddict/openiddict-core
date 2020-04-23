@@ -15,8 +15,8 @@ namespace Mvc.Server
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public Worker(IServiceProvider serviceScopeFactory)
-            => _serviceProvider = serviceScopeFactory;
+        public Worker(IServiceProvider serviceProvider)
+            => _serviceProvider = serviceProvider;
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {

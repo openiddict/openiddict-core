@@ -46,19 +46,19 @@ namespace OpenIddict.Validation
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a database call is made
-        /// to validate the authorization associated with the received tokens.
+        /// to validate the authorization entry associated with the received tokens.
+        /// Note: enabling this option may have an impact on performance and
+        /// can only be used with an OpenIddict-based authorization server.
         /// </summary>
         public bool EnableAuthorizationValidation { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean indicating whether reference access tokens should be used.
-        /// When set to <c>true</c>, access tokens and are stored as ciphertext in the database
-        /// and a crypto-secure random identifier is returned to the client application.
-        /// Enabling this option is useful to keep track of all the issued access tokens,
-        /// when storing a very large number of claims in the access tokens
-        /// or when immediate revocation of reference access tokens is desired.
+        /// Gets or sets a boolean indicating whether a database call is made
+        /// to validate the token entry associated with the received tokens.
+        /// Note: enabling this option may have an impact on performance but
+        /// is required when the OpenIddict server emits reference tokens.
         /// </summary>
-        public bool UseReferenceAccessTokens { get; set; }
+        public bool EnableTokenValidation { get; set; }
 
         /// <summary>
         /// Gets or sets the absolute URL of the OAuth 2.0/OpenID Connect server.

@@ -49,9 +49,9 @@ namespace OpenIddict.Abstractions
 
             using var document = JsonDocument.ParseValue(ref reader);
 
-            return type == typeof(OpenIddictMessage) ? new OpenIddictMessage(document.RootElement.Clone()) :
-                   type == typeof(OpenIddictRequest) ? (OpenIddictMessage) new OpenIddictRequest(document.RootElement.Clone()) :
-                   type == typeof(OpenIddictResponse) ? new OpenIddictResponse(document.RootElement.Clone()) :
+            return type == typeof(OpenIddictMessage)  ? new OpenIddictMessage(document.RootElement.Clone()) :
+                   type == typeof(OpenIddictRequest)  ? new OpenIddictRequest(document.RootElement.Clone()) :
+                   type == typeof(OpenIddictResponse) ? (OpenIddictMessage) new OpenIddictResponse(document.RootElement.Clone()) :
                    throw new ArgumentException("The specified type is not supported.", nameof(type));
         }
 

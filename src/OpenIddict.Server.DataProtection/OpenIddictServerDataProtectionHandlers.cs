@@ -22,6 +22,7 @@ using static OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionHand
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerHandlers;
+using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 using Schemes = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Purposes.Schemes;
 
 namespace OpenIddict.Server.DataProtection
@@ -83,6 +84,14 @@ namespace OpenIddict.Server.DataProtection
                     return default;
                 }
 
+                // Note: ASP.NET Core Data Protection tokens always start with "CfDJ8", that corresponds
+                // to the base64 representation of the magic "09 F0 C9 F0" header identifying DP payloads.
+                // As an optimization, always ignore tokens that don't start with the "CfDJ8" string.
+                if (string.IsNullOrEmpty(context.Token) || !context.Token.StartsWith("CfDJ8", StringComparison.Ordinal))
+                {
+                    return default;
+                }
+
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var principal = !string.IsNullOrEmpty(context.TokenType) ?
                     ValidateToken(context.Token, context.TokenType) :
@@ -108,19 +117,19 @@ namespace OpenIddict.Server.DataProtection
                     // Create a Data Protection protector using the provider registered in the options.
                     var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(type switch
                     {
-                        TokenTypeHints.AccessToken when context.Options.UseReferenceAccessTokens
+                        TokenTypeHints.AccessToken when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server       },
 
-                        TokenTypeHints.AuthorizationCode when !context.Options.DisableTokenStorage
+                        TokenTypeHints.AuthorizationCode when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server },
 
-                        TokenTypeHints.DeviceCode when !context.Options.DisableTokenStorage
+                        TokenTypeHints.DeviceCode when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.DeviceCode, Features.ReferenceTokens, Schemes.Server        },
 
-                        TokenTypeHints.RefreshToken when !context.Options.DisableTokenStorage
+                        TokenTypeHints.RefreshToken when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server      },
 
-                        TokenTypeHints.UserCode when !context.Options.DisableTokenStorage
+                        TokenTypeHints.UserCode when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                             => new[] { Handlers.Server, Formats.UserCode, Features.ReferenceTokens, Schemes.Server          },
 
                         TokenTypeHints.AccessToken       => new[] { Handlers.Server, Formats.AccessToken,       Schemes.Server },
@@ -168,7 +177,7 @@ namespace OpenIddict.Server.DataProtection
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireAccessTokenIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAccessToken>()
                     .SetOrder(GenerateIdentityModelAccessToken.Descriptor.Order - 500)
                     .Build();
@@ -194,7 +203,7 @@ namespace OpenIddict.Server.DataProtection
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = context.Options.UseReferenceAccessTokens ?
+                var protector = context.Options.UseReferenceTokens ?
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
                         Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server) :
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
@@ -232,7 +241,7 @@ namespace OpenIddict.Server.DataProtection
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireAuthorizationCodeIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAuthorizationCode>()
                     .SetOrder(GenerateIdentityModelAuthorizationCode.Descriptor.Order - 500)
                     .Build();
@@ -258,7 +267,7 @@ namespace OpenIddict.Server.DataProtection
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = !context.Options.DisableTokenStorage ?
+                var protector = context.Options.UseReferenceTokens ?
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
                         Handlers.Server, Formats.AuthorizationCode, Features.ReferenceTokens, Schemes.Server) :
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
@@ -296,7 +305,7 @@ namespace OpenIddict.Server.DataProtection
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDeviceCodeIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionDeviceCode>()
                     .SetOrder(GenerateIdentityModelDeviceCode.Descriptor.Order - 500)
                     .Build();
@@ -360,7 +369,7 @@ namespace OpenIddict.Server.DataProtection
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireRefreshTokenIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionRefreshToken>()
                     .SetOrder(GenerateIdentityModelRefreshToken.Descriptor.Order - 500)
                     .Build();
@@ -386,7 +395,7 @@ namespace OpenIddict.Server.DataProtection
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = !context.Options.DisableTokenStorage ?
+                var protector = context.Options.UseReferenceTokens ?
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
                         Handlers.Server, Formats.RefreshToken, Features.ReferenceTokens, Schemes.Server) :
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
@@ -424,7 +433,7 @@ namespace OpenIddict.Server.DataProtection
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireUserCodeIncluded>()
-                    .AddFilter<RequirePreferDataProtectionFormatEnabled>()
+                    .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionUserCode>()
                     .SetOrder(GenerateIdentityModelUserCode.Descriptor.Order - 500)
                     .Build();

@@ -472,23 +472,13 @@ namespace OpenIddict.Server
                         // To be considered valid, a post_logout_redirect_uri must correspond to an existing client application
                         // that was granted the ept:logout permission, unless endpoint permissions checking was explicitly disabled.
 
-                        await using var enumerator = _applicationManager.FindByPostLogoutRedirectUriAsync(address).GetAsyncEnumerator();
-                        if (await enumerator.MoveNextAsync())
+                        await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(address))
                         {
-                            if (context.Options.IgnoreEndpointPermissions)
+                            if (context.Options.IgnoreEndpointPermissions ||
+                                await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Logout))
                             {
                                 return true;
                             }
-
-                            do
-                            {
-                                if (await _applicationManager.HasPermissionAsync(enumerator.Current, Permissions.Endpoints.Logout))
-                                {
-                                    return true;
-                                }
-                            }
-
-                            while (await enumerator.MoveNextAsync());
                         }
 
                         return false;

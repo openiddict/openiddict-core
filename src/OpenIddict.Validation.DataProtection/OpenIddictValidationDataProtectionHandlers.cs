@@ -19,6 +19,7 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.OpenIddictValidationHandlers;
+using Properties = OpenIddict.Validation.OpenIddictValidationConstants.Properties;
 
 namespace OpenIddict.Validation.DataProtection
 {
@@ -70,8 +71,16 @@ namespace OpenIddict.Validation.DataProtection
                     return default;
                 }
 
+                // Note: ASP.NET Core Data Protection tokens always start with "CfDJ8", that corresponds
+                // to the base64 representation of the magic "09 F0 C9 F0" header identifying DP payloads.
+                // As an optimization, always ignore tokens that don't start with the "CfDJ8" string.
+                if (string.IsNullOrEmpty(context.Token) || !context.Token.StartsWith("CfDJ8", StringComparison.Ordinal))
+                {
+                    return default;
+                }
+
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = context.Options.UseReferenceAccessTokens ?
+                var protector = context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier) ?
                     _options.CurrentValue.DataProtectionProvider.CreateProtector(
                         Purposes.Handlers.Server, Purposes.Formats.AccessToken,
                         Purposes.Features.ReferenceTokens, Purposes.Schemes.Server) :

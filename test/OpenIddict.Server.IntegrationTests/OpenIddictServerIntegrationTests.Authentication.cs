@@ -589,6 +589,9 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.RegisterScopes("registered_scope");
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableTokenStorage();
+                options.DisableSlidingExpiration();
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -654,6 +657,9 @@ namespace OpenIddict.Server.FunctionalTests
                 var scope = new OpenIddictScope();
 
                 options.RegisterScopes("scope_registered_in_options");
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableTokenStorage();
+                options.DisableSlidingExpiration();
 
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -1347,6 +1353,11 @@ namespace OpenIddict.Server.FunctionalTests
 
             var client = CreateClient(options =>
             {
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableAuthorizationStorage();
+                options.DisableTokenStorage();
+                options.DisableSlidingExpiration();
+
                 options.Services.AddSingleton(manager);
 
                 options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
@@ -1398,6 +1409,11 @@ namespace OpenIddict.Server.FunctionalTests
 
             var client = CreateClient(options =>
             {
+                options.SetRevocationEndpointUris(Array.Empty<Uri>());
+                options.DisableAuthorizationStorage();
+                options.DisableTokenStorage();
+                options.DisableSlidingExpiration();
+
                 options.Services.AddSingleton(manager);
 
                 options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
