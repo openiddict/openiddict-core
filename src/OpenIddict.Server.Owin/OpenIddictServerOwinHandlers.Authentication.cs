@@ -126,16 +126,12 @@ namespace OpenIddict.Server.Owin
                         return;
                     }
 
-                    // Restore the authorization request parameters from the serialized payload.
-                    var parameters = new TokenValidationParameters
-                    {
-                        IssuerSigningKeys = context.Options.SigningCredentials.Select(credentials => credentials.Key),
-                        TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key),
-                        ValidateLifetime = false,
-                        ValidAudience = context.Issuer.AbsoluteUri,
-                        ValidIssuer = context.Issuer.AbsoluteUri,
-                        ValidTypes = new[] { JsonWebTokenTypes.AuthorizationRequest }
-                    };
+                    var parameters = context.Options.TokenValidationParameters.Clone();
+                    parameters.IssuerSigningKeys = context.Options.SigningCredentials.Select(credentials => credentials.Key);
+                    parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
+                    parameters.ValidAudience = context.Issuer?.AbsoluteUri;
+                    parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
+                    parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.AuthorizationRequest };
 
                     var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
                     if (!result.IsValid)
@@ -157,6 +153,7 @@ namespace OpenIddict.Server.Owin
                         throw new InvalidOperationException("The authorization request payload is malformed.");
                     }
 
+                    // Restore the authorization request parameters from the serialized payload.
                     foreach (var parameter in document.RootElement.EnumerateObject())
                     {
                         // Avoid overriding the current request parameters.
@@ -247,13 +244,13 @@ namespace OpenIddict.Server.Owin
                     {
                         AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
                         {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AuthorizationRequest
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationRequest
                         },
-                        Audience = context.Issuer.AbsoluteUri,
+                        Audience = context.Issuer?.AbsoluteUri,
                         Claims = context.Request.GetParameters().ToDictionary(
                             parameter => parameter.Key,
                             parameter => parameter.Value.Value),
-                        Issuer = context.Issuer.AbsoluteUri,
+                        Issuer = context.Issuer?.AbsoluteUri,
                         SigningCredentials = context.Options.SigningCredentials.First(),
                         Subject = new ClaimsIdentity()
                     });
@@ -262,7 +259,7 @@ namespace OpenIddict.Server.Owin
                         encryptingCredentials: context.Options.EncryptionCredentials.First(),
                         additionalHeaderClaims: new Dictionary<string, object>
                         {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AuthorizationRequest
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationRequest
                         });
 
                     // Note: the cache key is always prefixed with a specific marker

@@ -459,7 +459,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(new StringBuilder()
-                .AppendFormat("The type of token associated with the deserialized principal ({0})", TokenTypeHints.AuthorizationCode)
+                .AppendFormat("The type of token associated with the deserialized principal ({0}) ", TokenTypeHints.AuthorizationCode)
                 .AppendFormat("doesn't match the expected token type ({0}).", TokenTypeHints.AccessToken)
                 .ToString(), exception.Message);
         }

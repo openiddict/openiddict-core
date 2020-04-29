@@ -125,16 +125,12 @@ namespace OpenIddict.Server.AspNetCore
                         return;
                     }
 
-                    // Restore the authorization request parameters from the serialized payload.
-                    var parameters = new TokenValidationParameters
-                    {
-                        IssuerSigningKeys = context.Options.SigningCredentials.Select(credentials => credentials.Key),
-                        TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key),
-                        ValidateLifetime = false,
-                        ValidAudience = context.Issuer.AbsoluteUri,
-                        ValidIssuer = context.Issuer.AbsoluteUri,
-                        ValidTypes = new[] { JsonWebTokenTypes.LogoutRequest }
-                    };
+                    var parameters = context.Options.TokenValidationParameters.Clone();
+                    parameters.IssuerSigningKeys = context.Options.SigningCredentials.Select(credentials => credentials.Key);
+                    parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
+                    parameters.ValidAudience = context.Issuer?.AbsoluteUri;
+                    parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
+                    parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.LogoutRequest };
 
                     var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);
                     if (!result.IsValid)
@@ -156,6 +152,7 @@ namespace OpenIddict.Server.AspNetCore
                         throw new InvalidOperationException("The logout request payload is malformed.");
                     }
 
+                    // Restore the authorization request parameters from the serialized payload.
                     foreach (var parameter in document.RootElement.EnumerateObject())
                     {
                         // Avoid overriding the current request parameters.
@@ -251,13 +248,13 @@ namespace OpenIddict.Server.AspNetCore
                     {
                         AdditionalHeaderClaims = new Dictionary<string, object>(StringComparer.Ordinal)
                         {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.LogoutRequest
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.LogoutRequest
                         },
-                        Audience = context.Issuer.AbsoluteUri,
+                        Audience = context.Issuer?.AbsoluteUri,
                         Claims = context.Request.GetParameters().ToDictionary(
                             parameter => parameter.Key,
                             parameter => parameter.Value.Value),
-                        Issuer = context.Issuer.AbsoluteUri,
+                        Issuer = context.Issuer?.AbsoluteUri,
                         SigningCredentials = context.Options.SigningCredentials.First(),
                         Subject = new ClaimsIdentity()
                     });
@@ -266,7 +263,7 @@ namespace OpenIddict.Server.AspNetCore
                         encryptingCredentials: context.Options.EncryptionCredentials.First(),
                         additionalHeaderClaims: new Dictionary<string, object>
                         {
-                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.AuthorizationRequest
+                            [JwtHeaderParameterNames.Typ] = JsonWebTokenTypes.Private.AuthorizationRequest
                         });
 
                     // Note: the cache key is always prefixed with a specific marker
