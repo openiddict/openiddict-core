@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
@@ -113,6 +114,38 @@ namespace OpenIddict.Server
             ClockSkew = TimeSpan.Zero,
             NameClaimType = OpenIddictConstants.Claims.Name,
             RoleClaimType = OpenIddictConstants.Claims.Role,
+            // In previous versions of OpenIddict (1.x and 2.x), all the JWT tokens (access and identity tokens)
+            // were issued with the generic "typ": "JWT" header. To prevent confused deputy and token substitution
+            // attacks, a special "token_usage" claim was added to the JWT payload to convey the actual token type.
+            // This validator overrides the default logic used by IdentityModel to resolve the type from this claim.
+            TypeValidator = (type, token, parameters) =>
+            {
+                if (string.IsNullOrEmpty(type))
+                {
+                    throw new SecurityTokenInvalidTypeException("The 'typ' header of the JWT token cannot be null or empty.");
+                }
+
+                // If the generic type of the token is "JWT", try to resolve the actual type from the "token_usage" claim.
+                if (string.Equals(type, JwtConstants.HeaderType, StringComparison.OrdinalIgnoreCase) &&
+                   ((JsonWebToken) token).TryGetPayloadValue(OpenIddictConstants.Claims.TokenUsage, out string usage))
+                {
+                    type = usage switch
+                    {
+                        TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
+                        TokenTypeHints.IdToken     => JsonWebTokenTypes.IdentityToken,
+
+                        _ => throw new NotSupportedException("The token usage of the JWT token is not supported.")
+                    };
+                }
+
+                if (parameters.ValidTypes != null && parameters.ValidTypes.Any() &&
+                   !parameters.ValidTypes.Contains(type, StringComparer.Ordinal))
+                {
+                    throw new SecurityTokenInvalidTypeException("The type of the JWT token doesn't match the expected type.");
+                }
+
+                return type;
+            },
             // Note: audience and lifetime are manually validated by OpenIddict itself.
             ValidateAudience = false,
             ValidateLifetime = false,

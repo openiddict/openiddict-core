@@ -445,7 +445,7 @@ namespace OpenIddict.Server
                 parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
 
                 // If a specific token type is expected, override the default valid types to reject
-                // security tokens whose "typ" header doesn't match the expected token type.
+                // security tokens whose actual token type doesn't match the expected token type.
                 if (!string.IsNullOrEmpty(context.TokenType))
                 {
                     parameters.ValidTypes = new[]
@@ -484,8 +484,8 @@ namespace OpenIddict.Server
                 // Attach the principal extracted from the token to the parent event context.
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
 
-                // Store the token type as a special private claim.
-                context.Principal.SetTokenType(token.Typ switch
+                // Store the token type (resolved from "typ" or "token_usage") as a special private claim.
+                context.Principal.SetTokenType(result.TokenType switch
                 {
                     JsonWebTokenTypes.AccessToken   => TokenTypeHints.AccessToken,
                     JsonWebTokenTypes.IdentityToken => TokenTypeHints.IdToken,
@@ -715,7 +715,7 @@ namespace OpenIddict.Server
                     if (!string.Equals(type, context.TokenType, StringComparison.OrdinalIgnoreCase))
                     {
                         throw new InvalidOperationException(new StringBuilder()
-                            .AppendFormat("The type of token associated with the deserialized principal ({0})", type)
+                            .AppendFormat("The type of token associated with the deserialized principal ({0}) ", type)
                             .AppendFormat("doesn't match the expected token type ({0}).", context.TokenType)
                             .ToString());
                     }

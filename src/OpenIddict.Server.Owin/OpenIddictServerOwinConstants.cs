@@ -19,8 +19,11 @@ namespace OpenIddict.Server.Owin
 
         public static class JsonWebTokenTypes
         {
-            public const string AuthorizationRequest = "oi_auth_req";
-            public const string LogoutRequest = "oi_lgt_req";
+            public static class Private
+            {
+                public const string AuthorizationRequest = "oi_authrq+jwt";
+                public const string LogoutRequest = "oi_lgtrq+jwt";
+            }
         }
 
         public static class Properties
