@@ -234,7 +234,8 @@ namespace OpenIddict.EntityFrameworkCore
 
             // Remove all the authorizations associated with the application and
             // the tokens attached to these implicit or explicit authorizations.
-            foreach (var authorization in await ListAuthorizationsAsync())
+            var authorizations = await ListAuthorizationsAsync();
+            foreach (var authorization in authorizations)
             {
                 foreach (var token in authorization.Tokens)
                 {
@@ -245,7 +246,8 @@ namespace OpenIddict.EntityFrameworkCore
             }
 
             // Remove all the tokens associated with the application.
-            foreach (var token in await ListTokensAsync())
+            var tokens = await ListTokensAsync();
+            foreach (var token in tokens)
             {
                 Context.Remove(token);
             }
@@ -260,6 +262,19 @@ namespace OpenIddict.EntityFrameworkCore
 
             catch (DbUpdateConcurrencyException exception)
             {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(application).State = EntityState.Unchanged;
+
+                foreach (var authorization in authorizations)
+                {
+                    Context.Entry(authorization).State = EntityState.Unchanged;
+                }
+
+                foreach (var token in tokens)
+                {
+                    Context.Entry(token).State = EntityState.Unchanged;
+                }
+
                 throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
                     .Append("Reload the application from the database and retry the operation.")
@@ -1035,6 +1050,9 @@ namespace OpenIddict.EntityFrameworkCore
 
             catch (DbUpdateConcurrencyException exception)
             {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(application).State = EntityState.Unchanged;
+
                 throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
                     .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
                     .Append("Reload the application from the database and retry the operation.")
