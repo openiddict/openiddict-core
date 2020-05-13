@@ -397,12 +397,6 @@ namespace OpenIddict.Abstractions
             string value   => value,
             string[] value => string.Join(", ", value),
 
-            JsonElement value when value.ValueKind == JsonValueKind.Undefined => string.Empty,
-            JsonElement value when value.ValueKind == JsonValueKind.Null      => string.Empty,
-
-            JsonElement value when value.ValueKind != JsonValueKind.Array &&
-                                   value.ValueKind != JsonValueKind.Object => value.GetString(),
-
             JsonElement value => value.ToString(),
 
             _ => Value.ToString()
