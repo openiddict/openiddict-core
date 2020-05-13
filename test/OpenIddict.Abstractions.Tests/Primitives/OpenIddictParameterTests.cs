@@ -527,14 +527,29 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void ToString_ReturnsUnderlyingJsonValue()
+        public void ToString_ReturnsEmptyStringForUndefinedJsonValues()
         {
             // Arrange
-            var parameter = new OpenIddictParameter(
-                JsonSerializer.Deserialize<JsonElement>(@"{""field"":""Fabrikam""}").GetProperty("field"));
+            var parameter = new OpenIddictParameter(default(JsonElement));
 
             // Act and assert
-            Assert.Equal("Fabrikam", parameter.ToString());
+            Assert.Empty(parameter.ToString());
+        }
+
+        [Fact]
+        public void ToString_ReturnsUnderlyingJsonValue()
+        {
+            // Arrange, act and assert
+            Assert.Equal(bool.TrueString, new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"{""field"":true}").GetProperty("field")).ToString());
+            Assert.Equal(bool.FalseString, new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"{""field"":false}").GetProperty("field")).ToString());
+            Assert.Equal("Fabrikam", new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"{""field"":""Fabrikam""}").GetProperty("field")).ToString());
+            Assert.Equal(@"[""Fabrikam"",""Contoso""]", new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"{""field"":[""Fabrikam"",""Contoso""]}").GetProperty("field")).ToString());
+            Assert.Equal(@"{""field"":""value""}", new OpenIddictParameter(
+                JsonSerializer.Deserialize<JsonElement>(@"{""field"":""value""}")).ToString());
         }
 
         [Theory]
