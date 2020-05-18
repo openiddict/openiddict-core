@@ -37,13 +37,7 @@ with the power to control who can access your API and the information that is ex
 
 ## Samples
 
-**[Specialized samples for the latest stable release can be found in the samples repository](https://github.com/openiddict/openiddict-samples):**
-
-  - [Authorization code flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/CodeFlow)
-  - [Implicit flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/ImplicitFlow)
-  - [Password flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/PasswordFlow)
-  - [Client credentials flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/ClientCredentialsFlow)
-  - [Refresh flow sample](https://github.com/openiddict/openiddict-samples/tree/dev/samples/RefreshFlow)
+**[Samples for the latest stable release can be found in the samples repository](https://github.com/openiddict/openiddict-samples).**
 
 --------------
 
