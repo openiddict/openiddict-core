@@ -162,7 +162,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -205,7 +205,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -255,7 +255,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -308,7 +308,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -343,7 +343,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -395,7 +395,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);
@@ -657,7 +657,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TResult> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TAuthorization>(Options.CurrentValue.AuthorizationsCollectionName);

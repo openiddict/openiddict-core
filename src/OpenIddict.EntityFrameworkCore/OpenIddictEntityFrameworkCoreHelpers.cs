@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -134,7 +135,7 @@ namespace Microsoft.EntityFrameworkCore
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<T> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<T> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 foreach (var element in await source.ToListAsync(cancellationToken))
                 {
