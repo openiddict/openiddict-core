@@ -528,7 +528,7 @@ namespace OpenIddict.Core
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<string> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<string> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var resources = new HashSet<string>(StringComparer.Ordinal);
 

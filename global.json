@@ -1,8 +1,11 @@
 {
   "tools": {
-    "dotnet": "3.1.201",
+    "dotnet": "5.0.100-preview.4.20258.7",
     "runtimes": {
-      "aspnetcore": [ "2.1.17" ]
+      "aspnetcore": [
+        "2.1.17",
+        "3.1.4"
+      ]
     }
   },
 

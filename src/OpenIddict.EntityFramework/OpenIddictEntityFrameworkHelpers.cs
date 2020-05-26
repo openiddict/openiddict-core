@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using JetBrains.Annotations;
 using OpenIddict.EntityFramework;
@@ -75,7 +76,7 @@ namespace System.Data.Entity
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<T> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<T> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 foreach (var element in await source.ToListAsync(cancellationToken))
                 {

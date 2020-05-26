@@ -158,7 +158,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TToken> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
@@ -201,7 +201,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TToken> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
@@ -251,7 +251,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TToken> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
@@ -283,7 +283,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TToken> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
@@ -312,7 +312,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TToken> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
@@ -385,7 +385,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TToken> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
@@ -718,7 +718,7 @@ namespace OpenIddict.MongoDb
 
             return ExecuteAsync(cancellationToken);
 
-            async IAsyncEnumerable<TResult> ExecuteAsync(CancellationToken cancellationToken)
+            async IAsyncEnumerable<TResult> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 var database = await Context.GetDatabaseAsync(cancellationToken);
                 var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
