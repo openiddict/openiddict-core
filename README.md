@@ -4,20 +4,26 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/46ofo2eusje0hcw2/branch/dev?svg=true)](https://ci.appveyor.com/project/openiddict/openiddict-core/branch/dev)
 [![Build status](https://travis-ci.org/openiddict/openiddict-core.svg?branch=dev)](https://travis-ci.org/openiddict/openiddict-core)
 
-> **Warning: this branch contains the OpenIddict 3.0 source code, which is still a work in progress. The 3.0.0 alpha packages haven't been heavily tested: don't use them in production**.
+> **Warning: this branch contains the OpenIddict 3.0 source code, which is still a work in progress. The 3.0.0 beta packages haven't been heavily tested: don't use them in production**.
 Nightly builds can be downloaded from the MyGet repository: https://www.myget.org/F/openiddict/api/v3/index.json
 
 ### Compatibility matrix
 
-|                  | OpenIddict 2.0     | OpenIddict 2.0.1   | OpenIddict 3.0 (alpha) |
-|------------------|--------------------|--------------------|------------------------|
-| ASP.NET Core 2.1 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:     |
-| ASP.NET Core 3.1 | :warning:          | :heavy_check_mark: | :heavy_check_mark:     |
-| OWIN/Katana 4.1  | :x:                | :x:                | :heavy_check_mark:     |
+| ASP.NET version  | .NET runtime version | OpenIddict 2.0     | OpenIddict 2.0.1   | OpenIddict 3.0 (beta) |
+|------------------|----------------------|--------------------|--------------------|-----------------------|
+| ASP.NET Core 2.1 | .NET Framework 4.6.1 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:    |
+| ASP.NET Core 2.1 | .NET Core 2.1        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:    |
+| ASP.NET Core 3.1 | .NET Core 3.1        | :warning:          | :heavy_check_mark: | :heavy_check_mark:    |
+| ASP.NET Core 5.0 | .NET 5.0             | :warning:          | :heavy_check_mark: | :heavy_check_mark:    |
+
+| OWIN/Katana version | .NET runtime version | OpenIddict 2.0 | OpenIddict 2.0.1 | OpenIddict 3.0 (beta) |
+|---------------------|----------------------|----------------|------------------|-----------------------|
+| OWIN/Katana 4.1     | .NET Framework 4.6.1 | :x:            | :x:              | :heavy_check_mark:    |
+| OWIN/Katana 4.1     | .NET Framework 4.7.2 | :x:            | :x:              | :heavy_check_mark:    |
 
 ### What's OpenIddict?
 
-OpenIddict aims at providing an **easy-to-use and versatile solution** to implement an **OpenID Connect server in any ASP.NET Core 2.1 or 3.1 application**,
+OpenIddict aims at providing an **easy-to-use and versatile solution** to implement an **OpenID Connect server in any ASP.NET Core 2.1, 3.1 and 5.0 application**,
 and **starting in OpenIddict 3.0, any ASP.NET 4.x or OWIN application too**.
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**, the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628). You can also create your own custom grant types.
@@ -190,6 +196,7 @@ The **Mvc.Server sample comes with an [`AuthorizationController` that supports b
 
 **Looking for additional resources to help you get started with 3.0?** Don't miss these interesting blog posts:
 
+- **[Adding OpenIddict 3.0 to an OWIN application](https://kevinchalet.com/2020/03/03/adding-openiddict-3-0-to-an-owin-application/)** by [Kévin Chalet](https://github.com/kevinchalet)
 - **[Creating an OpenID Connect server proxy with OpenIddict 3.0's degraded mode](https://kevinchalet.com/2020/02/18/creating-an-openid-connect-server-proxy-with-openiddict-3-0-s-degraded-mode/)** by [Kévin Chalet](https://github.com/kevinchalet)
 
 *Posts written for previous versions of OpenIddict*: 
