@@ -7,6 +7,15 @@
 > **Warning: this branch contains the OpenIddict 3.0 source code, which is still a work in progress. The 3.0.0 beta packages haven't been heavily tested: don't use them in production**.
 Nightly builds can be downloaded from the MyGet repository: https://www.myget.org/F/openiddict/api/v3/index.json
 
+### What's OpenIddict?
+
+OpenIddict aims at providing an **easy-to-use and versatile solution** to implement an **OpenID Connect server in any ASP.NET Core 2.1, 3.1 and 5.0 application**,
+and **starting in OpenIddict 3.0, any ASP.NET 4.x or OWIN application too**.
+
+OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**, the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628). You can also create your own custom grant types.
+
+OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/packages/OpenIddict.EntityFrameworkCore)**, **[Entity Framework 6](https://www.nuget.org/packages/OpenIddict.EntityFramework)** and **[MongoDB](https://www.nuget.org/packages/OpenIddict.MongoDb)** out-of-the-box, but you can also provide your own stores.
+
 ### Compatibility matrix
 
 | ASP.NET version  | .NET runtime version | OpenIddict 2.0     | OpenIddict 2.0.1   | OpenIddict 3.0 (beta) |
@@ -20,15 +29,7 @@ Nightly builds can be downloaded from the MyGet repository: https://www.myget.or
 |---------------------|----------------------|----------------|------------------|-----------------------|
 | OWIN/Katana 4.1     | .NET Framework 4.6.1 | :x:            | :x:              | :heavy_check_mark:    |
 | OWIN/Katana 4.1     | .NET Framework 4.7.2 | :x:            | :x:              | :heavy_check_mark:    |
-
-### What's OpenIddict?
-
-OpenIddict aims at providing an **easy-to-use and versatile solution** to implement an **OpenID Connect server in any ASP.NET Core 2.1, 3.1 and 5.0 application**,
-and **starting in OpenIddict 3.0, any ASP.NET 4.x or OWIN application too**.
-
-OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**, the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628). You can also create your own custom grant types.
-
-OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/packages/OpenIddict.EntityFrameworkCore)**, **[Entity Framework 6](https://www.nuget.org/packages/OpenIddict.EntityFramework)** and **[MongoDB](https://www.nuget.org/packages/OpenIddict.MongoDb)** out-of-the-box, but you can also provide your own stores.
+| OWIN/Katana 4.1     | .NET Framework 4.8   | :x:            | :x:              | :heavy_check_mark:    |
 
 ### Why an OpenID Connect server?
 
