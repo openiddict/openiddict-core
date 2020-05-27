@@ -74,9 +74,9 @@ namespace System.Data.Entity
                 throw new ArgumentNullException(nameof(source));
             }
 
-            return ExecuteAsync(cancellationToken);
+            return ExecuteAsync(source, cancellationToken);
 
-            async IAsyncEnumerable<T> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            static async IAsyncEnumerable<T> ExecuteAsync(IQueryable<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 foreach (var element in await source.ToListAsync(cancellationToken))
                 {

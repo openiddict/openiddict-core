@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using JetBrains.Annotations;
 
@@ -31,9 +32,9 @@ namespace MongoDB.Driver
                 throw new ArgumentNullException(nameof(source));
             }
 
-            return ExecuteAsync();
+            return ExecuteAsync(source, cancellationToken);
 
-            async IAsyncEnumerable<T> ExecuteAsync()
+            static async IAsyncEnumerable<T> ExecuteAsync(IAsyncCursorSource<T> source, [EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 using var cursor = await source.ToCursorAsync();
 
@@ -61,15 +62,7 @@ namespace MongoDB.Driver
                 throw new ArgumentNullException(nameof(source));
             }
 
-            return ExecuteAsync();
-
-            async IAsyncEnumerable<T> ExecuteAsync()
-            {
-                await foreach (var element in ((IAsyncCursorSource<T>) source).ToAsyncEnumerable(cancellationToken))
-                {
-                    yield return element;
-                }
-            }
+            return ((IAsyncCursorSource<T>) source).ToAsyncEnumerable(cancellationToken);
         }
     }
 }
