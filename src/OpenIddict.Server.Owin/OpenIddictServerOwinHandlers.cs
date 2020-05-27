@@ -15,6 +15,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using OpenIddict.Abstractions;
@@ -320,7 +321,6 @@ namespace OpenIddict.Server.Owin
                     context.Response.Error = GetProperty(properties, Properties.Error);
                     context.Response.ErrorDescription = GetProperty(properties, Properties.ErrorDescription);
                     context.Response.ErrorUri = GetProperty(properties, Properties.ErrorUri);
-                    context.Response.Realm = GetProperty(properties, Properties.Realm);
                     context.Response.Scope = GetProperty(properties, Properties.Scope);
                 }
 
@@ -833,11 +833,6 @@ namespace OpenIddict.Server.Owin
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                if (context.Response == null)
-                {
-                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
-                }
-
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
                 // this may indicate that the request was incorrectly processed by another server stack.
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
@@ -924,6 +919,11 @@ namespace OpenIddict.Server.Owin
         /// </summary>
         public class AttachWwwAuthenticateHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
         {
+            private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
+
+            public AttachWwwAuthenticateHeader([NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options)
+                => _options = options;
+
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -931,7 +931,7 @@ namespace OpenIddict.Server.Owin
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
-                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order - 1_000)
                     .Build();
 
             /// <summary>
@@ -946,11 +946,6 @@ namespace OpenIddict.Server.Owin
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.Response == null)
-                {
-                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
                 }
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
@@ -985,98 +980,107 @@ namespace OpenIddict.Server.Owin
                     return default;
                 }
 
-                // Optimization: avoid allocating a StringBuilder if the
-                // WWW-Authenticate header doesn't contain any parameter.
-                if (string.IsNullOrEmpty(context.Response.Realm) &&
-                    string.IsNullOrEmpty(context.Response.Error) &&
-                    string.IsNullOrEmpty(context.Response.ErrorDescription) &&
-                    string.IsNullOrEmpty(context.Response.ErrorUri) &&
-                    string.IsNullOrEmpty(context.Response.Scope))
-                {
-                    response.Headers.Append("WWW-Authenticate", scheme);
+                var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
 
-                    return default;
+                // If a realm was configured in the options, attach it to the parameters.
+                if (!string.IsNullOrEmpty(_options.CurrentValue.Realm))
+                {
+                    parameters[Parameters.Realm] = _options.CurrentValue.Realm;
+                }
+
+                foreach (var parameter in context.Response.GetParameters())
+                {
+                    // Note: the error details are only included if the error was not caused by a missing token, as recommended
+                    // by the OAuth 2.0 bearer specification: https://tools.ietf.org/html/rfc6750#section-3.1.
+                    if (string.Equals(context.Response.Error, Errors.MissingToken, StringComparison.Ordinal) &&
+                       (string.Equals(parameter.Key, Parameters.Error, StringComparison.Ordinal) ||
+                        string.Equals(parameter.Key, Parameters.ErrorDescription, StringComparison.Ordinal) ||
+                        string.Equals(parameter.Key, Parameters.ErrorUri, StringComparison.Ordinal)))
+                    {
+                        continue;
+                    }
+
+                    // Ignore values that can't be represented as unique strings.
+                    var value = (string) parameter.Value;
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
+                    }
+
+                    parameters[parameter.Key] = value;
                 }
 
                 var builder = new StringBuilder(scheme);
 
-                // Append the realm if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.Realm))
+                foreach (var parameter in parameters)
                 {
                     builder.Append(' ');
-                    builder.Append(Parameters.Realm);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.Realm.Replace("\"", "\\\""));
+                    builder.Append(parameter.Key);
+                    builder.Append('=');
                     builder.Append('"');
+                    builder.Append(parameter.Value.Replace("\"", "\\\""));
+                    builder.Append('"');
+                    builder.Append(',');
                 }
 
-                // Append the error if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.Error))
+                // If the WWW-Authenticate header ends with a comma, remove it.
+                if (builder[builder.Length - 1] == ',')
                 {
-                    if (!string.IsNullOrEmpty(context.Response.Realm))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.Error);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.Error.Replace("\"", "\\\""));
-                    builder.Append('"');
-                }
-
-                // Append the error_description if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.ErrorDescription))
-                {
-                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
-                        !string.IsNullOrEmpty(context.Response.Error))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.ErrorDescription);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.ErrorDescription.Replace("\"", "\\\""));
-                    builder.Append('"');
-                }
-
-                // Append the error_uri if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.ErrorUri))
-                {
-                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
-                        !string.IsNullOrEmpty(context.Response.Error) ||
-                        !string.IsNullOrEmpty(context.Response.ErrorDescription))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.ErrorUri);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.ErrorUri.Replace("\"", "\\\""));
-                    builder.Append('"');
-                }
-
-                // Append the scope if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.Scope))
-                {
-                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
-                        !string.IsNullOrEmpty(context.Response.Error) ||
-                        !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
-                        !string.IsNullOrEmpty(context.Response.ErrorUri))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.Scope);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.Scope.Replace("\"", "\\\""));
-                    builder.Append('"');
+                    builder.Remove(builder.Length - 1, 1);
                 }
 
                 response.Headers.Append("WWW-Authenticate", builder.ToString());
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of processing challenge responses that contain a WWW-Authenticate header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class ProcessChallengeErrorResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
+                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                }
+
+                // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
+                if (!response.Headers.ContainsKey("WWW-Authenticate"))
+                {
+                    return default;
+                }
+
+                context.Logger.LogInformation("The response was successfully returned as an empty challenge response.");
+                context.HandleRequest();
 
                 return default;
             }
@@ -1110,11 +1114,6 @@ namespace OpenIddict.Server.Owin
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.Response == null)
-                {
-                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
                 }
 
                 // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,

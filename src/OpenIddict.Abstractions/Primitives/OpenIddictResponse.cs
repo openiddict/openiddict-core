@@ -151,15 +151,6 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
-        /// Gets or sets the "realm" parameter.
-        /// </summary>
-        public string Realm
-        {
-            get => (string) GetParameter(OpenIddictConstants.Parameters.Realm);
-            set => SetParameter(OpenIddictConstants.Parameters.Realm, value);
-        }
-
-        /// <summary>
         /// Gets or sets the "refresh_token" parameter.
         /// </summary>
         public string RefreshToken

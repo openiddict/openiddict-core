@@ -147,6 +147,21 @@ namespace Microsoft.Extensions.DependencyInjection
             => Configure(options => options.EnableStatusCodePagesIntegration = true);
 
         /// <summary>
+        /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
+        /// </summary>
+        /// <param name="realm">The issuer address.</param>
+        /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
+        public OpenIddictServerAspNetCoreBuilder SetRealm([NotNull] string realm)
+        {
+            if (string.IsNullOrEmpty(realm))
+            {
+                throw new ArgumentException("The realm cannot be null or empty.", nameof(realm));
+            }
+
+            return Configure(options => options.Realm = realm);
+        }
+
+        /// <summary>
         /// Sets the caching policy used by the authorization endpoint.
         /// Note: the specified policy is only used when caching is explicitly enabled.
         /// </summary>

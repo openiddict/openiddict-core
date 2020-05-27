@@ -33,7 +33,7 @@ namespace OpenIddict.Server.Owin
         public OpenIddictServerOwinHandler([NotNull] IOpenIddictServerProvider provider)
             => _provider = provider;
 
-        public override async Task<bool> InvokeAsync()
+        protected override async Task InitializeCoreAsync()
         {
             // Note: the transaction may be already attached when replaying an OWIN request
             // (e.g when using a status code pages middleware re-invoking the OWIN pipeline).
@@ -51,6 +51,18 @@ namespace OpenIddict.Server.Owin
 
             var context = new ProcessRequestContext(transaction);
             await _provider.DispatchAsync(context);
+
+            // Store the context in the transaction so that it can be retrieved from InvokeAsync().
+            transaction.SetProperty(typeof(ProcessRequestContext).FullName, context);
+        }
+
+        public override async Task<bool> InvokeAsync()
+        {
+            var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+
+            var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName) ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
             if (context.IsRequestHandled)
             {
@@ -101,7 +113,7 @@ namespace OpenIddict.Server.Owin
             var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
             if (transaction == null)
             {
-                throw new InvalidOperationException("An identity cannot be extracted from this request.");
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
             }
 
             // Note: in many cases, the authentication token was already validated by the time this action is called
@@ -152,14 +164,14 @@ namespace OpenIddict.Server.Owin
             // OpenIddictServerOwinMiddleware is assumed to be the only middleware allowed to write
             // to the response stream when a response grant (sign-in/out or challenge) was applied.
 
+            // Note: unlike the ASP.NET Core host, the OWIN host MUST check whether the status code
+            // corresponds to a challenge response, as LookupChallenge() will always return a non-null
+            // value when active authentication is used, even if no challenge was actually triggered.
             var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode);
-            if (challenge != null)
+            if (challenge != null && (Response.StatusCode == 401 || Response.StatusCode == 403))
             {
-                var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
-                if (transaction == null)
-                {
-                    throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
-                }
+                var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
+                    throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = challenge.Properties ?? new AuthenticationProperties();
 
@@ -205,11 +217,8 @@ namespace OpenIddict.Server.Owin
             var signin = Helper.LookupSignIn(Options.AuthenticationType);
             if (signin != null)
             {
-                var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
-                if (transaction == null)
-                {
-                    throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
-                }
+                var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
+                    throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = signin.Properties ?? new AuthenticationProperties();
 
@@ -256,11 +265,8 @@ namespace OpenIddict.Server.Owin
             var signout = Helper.LookupSignOut(Options.AuthenticationType, Options.AuthenticationMode);
             if (signout != null)
             {
-                var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
-                if (transaction == null)
-                {
-                    throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
-                }
+                var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
+                    throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = signout.Properties ?? new AuthenticationProperties();
 

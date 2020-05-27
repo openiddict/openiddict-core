@@ -33,7 +33,7 @@ namespace OpenIddict.Validation.Owin
         public OpenIddictValidationOwinHandler([NotNull] IOpenIddictValidationProvider provider)
             => _provider = provider;
 
-        public override async Task<bool> InvokeAsync()
+        protected override async Task InitializeCoreAsync()
         {
             // Note: the transaction may be already attached when replaying an OWIN request
             // (e.g when using a status code pages middleware re-invoking the OWIN pipeline).
@@ -51,6 +51,18 @@ namespace OpenIddict.Validation.Owin
 
             var context = new ProcessRequestContext(transaction);
             await _provider.DispatchAsync(context);
+
+            // Store the context in the transaction so that it can be retrieved from InvokeAsync().
+            transaction.SetProperty(typeof(ProcessRequestContext).FullName, context);
+        }
+
+        public override async Task<bool> InvokeAsync()
+        {
+            var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict validation context.");
+
+            var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName) ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict validation context.");
 
             if (context.IsRequestHandled)
             {
@@ -98,11 +110,8 @@ namespace OpenIddict.Validation.Owin
 
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
         {
-            var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName);
-            if (transaction?.Request == null)
-            {
-                throw new InvalidOperationException("An identity cannot be extracted from this request.");
-            }
+            var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict validation context.");
 
             // Note: in many cases, the authentication token was already validated by the time this action is called
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -152,14 +161,14 @@ namespace OpenIddict.Validation.Owin
             // OpenIddictValidationOwinMiddleware is assumed to be the only middleware allowed to write
             // to the response stream when a response grant (sign-in/out or challenge) was applied.
 
+            // Note: unlike the ASP.NET Core host, the OWIN host MUST check whether the status code
+            // corresponds to a challenge response, as LookupChallenge() will always return a non-null
+            // value when active authentication is used, even if no challenge was actually triggered.
             var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode);
-            if (challenge != null)
+            if (challenge != null && (Response.StatusCode == 401 || Response.StatusCode == 403))
             {
-                var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName);
-                if (transaction == null)
-                {
-                    throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
-                }
+                var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
+                    throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict validation context.");
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = challenge.Properties ?? new AuthenticationProperties();
 

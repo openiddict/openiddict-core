@@ -22,7 +22,6 @@ namespace OpenIddict.Validation.Owin
             public const string Error = ".error";
             public const string ErrorDescription = ".error_description";
             public const string ErrorUri = ".error_uri";
-            public const string Realm = ".realm";
             public const string Scope = ".scope";
         }
     }

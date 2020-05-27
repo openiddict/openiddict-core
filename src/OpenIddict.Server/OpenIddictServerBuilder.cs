@@ -1778,21 +1778,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Sets the realm returned to the caller as part of challenge responses.
-        /// </summary>
-        /// <param name="realm">The issuer address.</param>
-        /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
-        public OpenIddictServerBuilder SetRealm([NotNull] string realm)
-        {
-            if (string.IsNullOrEmpty(realm))
-            {
-                throw new ArgumentException("The realm cannot be null or empty.", nameof(realm));
-            }
-
-            return Configure(options => options.Realm = realm);
-        }
-
-        /// <summary>
         /// Configures OpenIddict to use reference tokens, so that the token and code payloads
         /// are stored in the database (only an identifier is returned to the client application).
         /// Enabling this option is useful when storing a very large number of claims in the tokens,

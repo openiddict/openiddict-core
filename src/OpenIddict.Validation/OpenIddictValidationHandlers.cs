@@ -800,8 +800,6 @@ namespace OpenIddict.Validation
                     context.Response.ErrorDescription = "The user represented by the token is not allowed to perform the requested action.";
                 }
 
-                context.Response.Realm = context.Options.Realm;
-
                 return default;
             }
         }

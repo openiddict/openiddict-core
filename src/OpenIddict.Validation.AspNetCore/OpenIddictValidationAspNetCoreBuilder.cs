@@ -49,6 +49,21 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
+        /// </summary>
+        /// <param name="realm">The issuer address.</param>
+        /// <returns>The <see cref="OpenIddictValidationAspNetCoreBuilder"/>.</returns>
+        public OpenIddictValidationAspNetCoreBuilder SetRealm([NotNull] string realm)
+        {
+            if (string.IsNullOrEmpty(realm))
+            {
+                throw new ArgumentException("The realm cannot be null or empty.", nameof(realm));
+            }
+
+            return Configure(options => options.Realm = realm);
+        }
+
+        /// <summary>
         /// Determines whether the specified object is equal to the current object.
         /// </summary>
         /// <param name="obj">The object to compare with the current object.</param>

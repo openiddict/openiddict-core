@@ -137,8 +137,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(Errors.MissingToken, response.Error);
-            Assert.Equal("The mandatory access token is missing.", response.ErrorDescription);
+            Assert.Empty(response.GetParameters());
         }
 
         [Fact]
@@ -721,7 +720,7 @@ namespace OpenIddict.Server.FunctionalTests
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
-                Token = "SlAV32hkKG"
+                AccessToken = "SlAV32hkKG"
             });
 
             // Assert
@@ -735,6 +734,21 @@ namespace OpenIddict.Server.FunctionalTests
             var client = CreateClient(options =>
             {
                 options.EnableDegradedMode();
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("SlAV32hkKG", context.Token);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken);
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
 
                 options.AddEventHandler<ApplyUserinfoResponseContext>(builder =>
                     builder.UseInlineHandler(context =>
@@ -753,7 +767,7 @@ namespace OpenIddict.Server.FunctionalTests
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
-                Token = "SlAV32hkKG"
+                AccessToken = "SlAV32hkKG"
             });
 
             // Assert
