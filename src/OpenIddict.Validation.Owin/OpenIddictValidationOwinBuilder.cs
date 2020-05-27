@@ -7,6 +7,7 @@
 using System;
 using System.ComponentModel;
 using JetBrains.Annotations;
+using Microsoft.Owin.Security;
 using OpenIddict.Validation.Owin;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -46,6 +47,36 @@ namespace Microsoft.Extensions.DependencyInjection
             Services.Configure(configuration);
 
             return this;
+        }
+
+        /// <summary>
+        /// Configures the OpenIddict validation OWIN integration to use active authentication.
+        /// When using active authentication, the principal resolved from the access token is
+        /// attached to the request context and 401/403 responses are automatically handled without
+        /// requiring an explicit call to <see cref="AuthenticationManager.Challenge(string[])"/>.
+        /// </summary>
+        /// <remarks>
+        /// Using active authentication is strongly discouraged in applications using a cookie
+        /// authentication middleware configured to use active authentication, as both middleware
+        /// will be invoked when handling 401 responses, which will result in invalid responses.
+        /// </remarks>
+        /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
+        public OpenIddictValidationOwinBuilder UseActiveAuthentication()
+            => Configure(options => options.AuthenticationMode = AuthenticationMode.Active);
+
+        /// <summary>
+        /// Sets the realm returned to the caller as part of the WWW-Authenticate header.
+        /// </summary>
+        /// <param name="realm">The issuer address.</param>
+        /// <returns>The <see cref="OpenIddictValidationOwinBuilder"/>.</returns>
+        public OpenIddictValidationOwinBuilder SetRealm([NotNull] string realm)
+        {
+            if (string.IsNullOrEmpty(realm))
+            {
+                throw new ArgumentException("The realm cannot be null or empty.", nameof(realm));
+            }
+
+            return Configure(options => options.Realm = realm);
         }
 
         /// <summary>

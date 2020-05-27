@@ -331,12 +331,6 @@ namespace OpenIddict.Server
         public bool IgnoreScopePermissions { get; set; }
 
         /// <summary>
-        /// Gets or sets the optional "realm" value returned to
-        /// the caller as part of challenge responses.
-        /// </summary>
-        public string Realm { get; set; }
-
-        /// <summary>
         /// Gets the OAuth 2.0/OpenID Connect scopes enabled for this application.
         /// </summary>
         public ISet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal)

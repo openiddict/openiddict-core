@@ -73,13 +73,6 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
                 yield return new object[]
                 {
-                    /* property: */ nameof(OpenIddictResponse.Realm),
-                    /* name: */ OpenIddictConstants.Parameters.Realm,
-                    /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")
-                };
-
-                yield return new object[]
-                {
                     /* property: */ nameof(OpenIddictResponse.RefreshToken),
                     /* name: */ OpenIddictConstants.Parameters.RefreshToken,
                     /* value: */ new OpenIddictParameter("802A3E3E-DCCA-4EFC-89FA-7D82FE8C27E4")

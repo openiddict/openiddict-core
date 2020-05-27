@@ -312,7 +312,45 @@ namespace OpenIddict.Server.FunctionalTests
 
         private async Task<OpenIddictResponse> GetResponseAsync(HttpResponseMessage message)
         {
-            if (message.Headers.Location != null)
+            if (message.Headers.WwwAuthenticate.Count != 0)
+            {
+                var response = new OpenIddictResponse();
+
+                foreach (var header in message.Headers.WwwAuthenticate)
+                {
+                    if (string.IsNullOrEmpty(header.Parameter))
+                    {
+                        continue;
+                    }
+
+                    foreach (var parameter in header.Parameter.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var values = parameter.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (values.Length != 2)
+                        {
+                            continue;
+                        }
+
+                        var name = values[0]?.Trim(' ', '"');
+                        if (string.IsNullOrEmpty(name))
+                        {
+                            continue;
+                        }
+
+                        var value = values[1]?.Trim(' ', '"');
+                        if (string.IsNullOrEmpty(name))
+                        {
+                            continue;
+                        }
+
+                        response.SetParameter(name, value);
+                    }
+                }
+
+                return response;
+            }
+
+            else if (message.Headers.Location != null)
             {
                 var payload = message.Headers.Location.Fragment;
                 if (string.IsNullOrEmpty(payload))
@@ -325,7 +363,7 @@ namespace OpenIddict.Server.FunctionalTests
                     return new OpenIddictResponse();
                 }
 
-                string UnescapeDataString(string value)
+                static string UnescapeDataString(string value)
                 {
                     if (string.IsNullOrEmpty(value))
                     {

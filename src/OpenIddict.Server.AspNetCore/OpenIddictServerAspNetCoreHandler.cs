@@ -43,7 +43,7 @@ namespace OpenIddict.Server.AspNetCore
             : base(options, logger, encoder, clock)
             => _provider = provider;
 
-        public async Task<bool> HandleRequestAsync()
+        protected override async Task InitializeHandlerAsync()
         {
             // Note: the transaction may be already attached when replaying an ASP.NET Core request
             // (e.g when using the built-in status code pages middleware with the re-execute mode).
@@ -61,6 +61,18 @@ namespace OpenIddict.Server.AspNetCore
 
             var context = new ProcessRequestContext(transaction);
             await _provider.DispatchAsync(context);
+
+            // Store the context in the transaction so that it can be retrieved from HandleRequestAsync().
+            transaction.SetProperty(typeof(ProcessRequestContext).FullName, context);
+        }
+
+        public async Task<bool> HandleRequestAsync()
+        {
+            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+
+            var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName) ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
             if (context.IsRequestHandled)
             {
@@ -108,11 +120,8 @@ namespace OpenIddict.Server.AspNetCore
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction;
-            if (transaction == null)
-            {
-                throw new InvalidOperationException("An identity cannot be extracted from this request.");
-            }
+            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
             // Note: in many cases, the authentication token was already validated by the time this action is called
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -152,11 +161,8 @@ namespace OpenIddict.Server.AspNetCore
 
         protected override async Task HandleChallengeAsync([CanBeNull] AuthenticationProperties properties)
         {
-            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction;
-            if (transaction == null)
-            {
-                throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
-            }
+            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
             transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
 
@@ -209,11 +215,8 @@ namespace OpenIddict.Server.AspNetCore
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction;
-            if (transaction == null)
-            {
-                throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
-            }
+            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
             transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
 
@@ -259,11 +262,8 @@ namespace OpenIddict.Server.AspNetCore
 
         public async Task SignOutAsync([CanBeNull] AuthenticationProperties properties)
         {
-            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction;
-            if (transaction == null)
-            {
-                throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
-            }
+            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
+                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
             var context = new ProcessSignOutContext(transaction)
             {

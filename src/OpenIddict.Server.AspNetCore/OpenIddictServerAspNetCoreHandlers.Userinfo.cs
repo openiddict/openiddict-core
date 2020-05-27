@@ -31,6 +31,7 @@ namespace OpenIddict.Server.AspNetCore
                  */
                 AttachHttpResponseCode<ApplyUserinfoResponseContext>.Descriptor,
                 AttachWwwAuthenticateHeader<ApplyUserinfoResponseContext>.Descriptor,
+                ProcessChallengeErrorResponse<ApplyUserinfoResponseContext>.Descriptor,
                 ProcessJsonResponse<ApplyUserinfoResponseContext>.Descriptor);
         }
     }

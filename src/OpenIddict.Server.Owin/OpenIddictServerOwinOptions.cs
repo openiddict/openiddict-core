@@ -94,6 +94,12 @@ namespace OpenIddict.Server.Owin
         public bool EnableLogoutEndpointCaching { get; set; }
 
         /// <summary>
+        /// Gets or sets the optional "realm" value returned to
+        /// the caller as part of the WWW-Authenticate header.
+        /// </summary>
+        public string Realm { get; set; }
+
+        /// <summary>
         /// Gets or sets the caching policy used by the authorization endpoint.
         /// </summary>
         public DistributedCacheEntryOptions AuthorizationEndpointCachingPolicy { get; set; } = new DistributedCacheEntryOptions

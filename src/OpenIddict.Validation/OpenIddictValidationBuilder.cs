@@ -512,21 +512,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Sets the realm returned to the caller as part of challenge responses.
-        /// </summary>
-        /// <param name="realm">The issuer address.</param>
-        /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
-        public OpenIddictValidationBuilder SetRealm([NotNull] string realm)
-        {
-            if (string.IsNullOrEmpty(realm))
-            {
-                throw new ArgumentException("The realm cannot be null or empty.", nameof(realm));
-            }
-
-            return Configure(options => options.Realm = realm);
-        }
-
-        /// <summary>
         /// Configures OpenIddict to use introspection instead of local/direct validation.
         /// </summary>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>

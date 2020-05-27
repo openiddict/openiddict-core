@@ -5,9 +5,11 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -17,6 +19,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -48,11 +51,13 @@ namespace OpenIddict.Validation.AspNetCore
             AttachHttpResponseCode<ProcessChallengeContext>.Descriptor,
             AttachCacheControlHeader<ProcessChallengeContext>.Descriptor,
             AttachWwwAuthenticateHeader<ProcessChallengeContext>.Descriptor,
+            ProcessChallengeErrorResponse<ProcessChallengeContext>.Descriptor,
             ProcessJsonResponse<ProcessChallengeContext>.Descriptor,
 
             AttachHttpResponseCode<ProcessErrorContext>.Descriptor,
             AttachCacheControlHeader<ProcessErrorContext>.Descriptor,
             AttachWwwAuthenticateHeader<ProcessErrorContext>.Descriptor,
+            ProcessChallengeErrorResponse<ProcessChallengeContext>.Descriptor,
             ProcessJsonResponse<ProcessErrorContext>.Descriptor);
 
         /// <summary>
@@ -268,7 +273,6 @@ namespace OpenIddict.Validation.AspNetCore
                     context.Response.Error = properties.GetString(Properties.Error);
                     context.Response.ErrorDescription = properties.GetString(Properties.ErrorDescription);
                     context.Response.ErrorUri = properties.GetString(Properties.ErrorUri);
-                    context.Response.Realm = properties.GetString(Properties.Realm);
                     context.Response.Scope = properties.GetString(Properties.Scope);
                 }
 
@@ -304,11 +308,6 @@ namespace OpenIddict.Validation.AspNetCore
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.Response == null)
-                {
-                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
                 }
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -389,6 +388,11 @@ namespace OpenIddict.Validation.AspNetCore
         /// </summary>
         public class AttachWwwAuthenticateHeader<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext
         {
+            private readonly IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> _options;
+
+            public AttachWwwAuthenticateHeader([NotNull] IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> options)
+                => _options = options;
+
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -396,7 +400,7 @@ namespace OpenIddict.Validation.AspNetCore
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
-                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order - 1_000)
                     .Build();
 
             /// <summary>
@@ -411,11 +415,6 @@ namespace OpenIddict.Validation.AspNetCore
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.Response == null)
-                {
-                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
                 }
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
@@ -441,98 +440,107 @@ namespace OpenIddict.Validation.AspNetCore
                     return default;
                 }
 
-                // Optimization: avoid allocating a StringBuilder if the
-                // WWW-Authenticate header doesn't contain any parameter.
-                if (string.IsNullOrEmpty(context.Response.Realm) &&
-                    string.IsNullOrEmpty(context.Response.Error) &&
-                    string.IsNullOrEmpty(context.Response.ErrorDescription) &&
-                    string.IsNullOrEmpty(context.Response.ErrorUri) &&
-                    string.IsNullOrEmpty(context.Response.Scope))
-                {
-                    response.Headers.Append(HeaderNames.WWWAuthenticate, scheme);
+                var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
 
-                    return default;
+                // If a realm was configured in the options, attach it to the parameters.
+                if (!string.IsNullOrEmpty(_options.CurrentValue.Realm))
+                {
+                    parameters[Parameters.Realm] = _options.CurrentValue.Realm;
+                }
+
+                foreach (var parameter in context.Response.GetParameters())
+                {
+                    // Note: the error details are only included if the error was not caused by a missing token, as recommended
+                    // by the OAuth 2.0 bearer specification: https://tools.ietf.org/html/rfc6750#section-3.1.
+                    if (string.Equals(context.Response.Error, Errors.MissingToken, StringComparison.Ordinal) &&
+                       (string.Equals(parameter.Key, Parameters.Error, StringComparison.Ordinal) ||
+                        string.Equals(parameter.Key, Parameters.ErrorDescription, StringComparison.Ordinal) ||
+                        string.Equals(parameter.Key, Parameters.ErrorUri, StringComparison.Ordinal)))
+                    {
+                        continue;
+                    }
+
+                    // Ignore values that can't be represented as unique strings.
+                    var value = (string) parameter.Value;
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        continue;
+                    }
+
+                    parameters[parameter.Key] = value;
                 }
 
                 var builder = new StringBuilder(scheme);
 
-                // Append the realm if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.Realm))
+                foreach (var parameter in parameters)
                 {
                     builder.Append(' ');
-                    builder.Append(Parameters.Realm);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.Realm.Replace("\"", "\\\""));
+                    builder.Append(parameter.Key);
+                    builder.Append('=');
                     builder.Append('"');
+                    builder.Append(parameter.Value.Replace("\"", "\\\""));
+                    builder.Append('"');
+                    builder.Append(',');
                 }
 
-                // Append the error if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.Error))
+                // If the WWW-Authenticate header ends with a comma, remove it.
+                if (builder[builder.Length - 1] == ',')
                 {
-                    if (!string.IsNullOrEmpty(context.Response.Realm))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.Error);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.Error.Replace("\"", "\\\""));
-                    builder.Append('"');
-                }
-
-                // Append the error_description if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.ErrorDescription))
-                {
-                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
-                        !string.IsNullOrEmpty(context.Response.Error))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.ErrorDescription);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.ErrorDescription.Replace("\"", "\\\""));
-                    builder.Append('"');
-                }
-
-                // Append the error_uri if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.ErrorUri))
-                {
-                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
-                        !string.IsNullOrEmpty(context.Response.Error) ||
-                        !string.IsNullOrEmpty(context.Response.ErrorDescription))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.ErrorUri);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.ErrorUri.Replace("\"", "\\\""));
-                    builder.Append('"');
-                }
-
-                // Append the scope if one was specified.
-                if (!string.IsNullOrEmpty(context.Response.Scope))
-                {
-                    if (!string.IsNullOrEmpty(context.Response.Realm) ||
-                        !string.IsNullOrEmpty(context.Response.Error) ||
-                        !string.IsNullOrEmpty(context.Response.ErrorDescription) ||
-                        !string.IsNullOrEmpty(context.Response.ErrorUri))
-                    {
-                        builder.Append(',');
-                    }
-
-                    builder.Append(' ');
-                    builder.Append(Parameters.Scope);
-                    builder.Append("=\"");
-                    builder.Append(context.Response.Scope.Replace("\"", "\\\""));
-                    builder.Append('"');
+                    builder.Remove(builder.Length - 1, 1);
                 }
 
                 response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of processing challenge responses that contain a WWW-Authenticate header.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+        /// </summary>
+        public class ProcessChallengeErrorResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpRequest>()
+                    .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
+                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                }
+
+                // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
+                if (!response.Headers.ContainsKey(HeaderNames.WWWAuthenticate))
+                {
+                    return default;
+                }
+
+                context.Logger.LogInformation("The response was successfully returned as an empty challenge response.");
+                context.HandleRequest();
 
                 return default;
             }
@@ -566,11 +574,6 @@ namespace OpenIddict.Validation.AspNetCore
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
-                }
-
-                if (context.Response == null)
-                {
-                    throw new InvalidOperationException("This handler cannot be invoked without a response attached.");
                 }
 
                 // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
