@@ -43,6 +43,7 @@ with the power to control who can access your API and the information that is ex
 ## Samples
 
 **[Samples for OpenIddict 3.0 can be found in the samples repository](https://github.com/openiddict/openiddict-samples).**
+
 [Samples for OpenIddict 2.0.1 can be found in the master branch of the samples repository](https://github.com/openiddict/openiddict-samples/tree/master).
 
 --------------
@@ -53,7 +54,7 @@ To use OpenIddict 3.0, you need to:
 
   - **Install the latest [.NET Core 3.1 tooling](https://www.microsoft.com/net/download)**.
 
-  - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` to handle the registration process and the authentication flow.
+  - **Have an existing project or create a new one**: when creating a new project using Visual Studio's default ASP.NET Core template, using **individual user accounts authentication** is strongly recommended. When updating an existing project, you must provide your own `AccountController` or use ASP.NET Core Identity's built-in UI to handle the registration process and the authentication flow.
 
   - **Create a `NuGet.config` file referencing the OpenIddict feed** (at the root of your solution):
 
