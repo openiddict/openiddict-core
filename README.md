@@ -18,18 +18,16 @@ OpenIddict natively supports **[Entity Framework Core](https://www.nuget.org/pac
 
 ### Compatibility matrix
 
-| ASP.NET version  | .NET runtime version | OpenIddict 2.0     | OpenIddict 2.0.1   | OpenIddict 3.0 (beta) |
-|------------------|----------------------|--------------------|--------------------|-----------------------|
-| ASP.NET Core 2.1 | .NET Framework 4.6.1 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:    |
-| ASP.NET Core 2.1 | .NET Core 2.1        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:    |
-| ASP.NET Core 3.1 | .NET Core 3.1        | :warning:          | :heavy_check_mark: | :heavy_check_mark:    |
-| ASP.NET Core 5.0 | .NET 5.0             | :warning:          | :heavy_check_mark: | :heavy_check_mark:    |
-
-| OWIN/Katana version | .NET runtime version | OpenIddict 2.0 | OpenIddict 2.0.1 | OpenIddict 3.0 (beta) |
-|---------------------|----------------------|----------------|------------------|-----------------------|
-| OWIN/Katana 4.1     | .NET Framework 4.6.1 | :x:            | :x:              | :heavy_check_mark:    |
-| OWIN/Katana 4.1     | .NET Framework 4.7.2 | :x:            | :x:              | :heavy_check_mark:    |
-| OWIN/Katana 4.1     | .NET Framework 4.8   | :x:            | :x:              | :heavy_check_mark:    |
+| Web framework version | .NET runtime version | OpenIddict 2.0     | OpenIddict 2.0.1   | OpenIddict 3.0 (beta) |
+|-----------------------|----------------------|--------------------|--------------------|-----------------------|
+| ASP.NET Core 2.1      | .NET Framework 4.6.1 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:    |
+| ASP.NET Core 2.1      | .NET Core 2.1        | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:    |
+| ASP.NET Core 3.1      | .NET Core 3.1        | :warning:          | :heavy_check_mark: | :heavy_check_mark:    |
+| ASP.NET Core 5.0      | .NET 5.0             | :warning:          | :heavy_check_mark: | :heavy_check_mark:    |
+|                       |                      |                    |                    |                       |
+| OWIN/Katana 4.1       | .NET Framework 4.6.1 | :x:                | :x:                | :heavy_check_mark:    |
+| OWIN/Katana 4.1       | .NET Framework 4.7.2 | :x:                | :x:                | :heavy_check_mark:    |
+| OWIN/Katana 4.1       | .NET Framework 4.8   | :x:                | :x:                | :heavy_check_mark:    |
 
 ### Why an OpenID Connect server?
 
@@ -44,7 +42,8 @@ with the power to control who can access your API and the information that is ex
 
 ## Samples
 
-**[Samples for the latest stable release can be found in the samples repository](https://github.com/openiddict/openiddict-samples).**
+**[Samples for OpenIddict 3.0 can be found in the samples repository](https://github.com/openiddict/openiddict-samples).**
+[Samples for OpenIddict 2.0.1 can be found in the master branch of the samples repository](https://github.com/openiddict/openiddict-samples/tree/master).
 
 --------------
 
