@@ -79,8 +79,6 @@ namespace OpenIddict.Validation
 
                 if (string.IsNullOrEmpty(context.Request.AccessToken))
                 {
-                    context.Logger.LogError("The request was rejected because the access token was missing.");
-
                     context.Reject(
                         error: Errors.MissingToken,
                         description: "The access token is missing.");
@@ -89,6 +87,7 @@ namespace OpenIddict.Validation
                 }
 
                 context.Token = context.Request.AccessToken;
+                context.TokenType = TokenTypeHints.AccessToken;
 
                 return default;
             }
@@ -143,7 +142,8 @@ namespace OpenIddict.Validation
                     return;
                 }
 
-                if (!await _tokenManager.HasTypeAsync(token, TokenTypeHints.AccessToken))
+                // If the type associated with the token entry doesn't match the expected type, return an error.
+                if (!string.IsNullOrEmpty(context.TokenType) && !await _tokenManager.HasTypeAsync(token, context.TokenType))
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -220,6 +220,21 @@ namespace OpenIddict.Validation
                 parameters.ValidIssuer = configuration.Issuer ?? context.Issuer?.AbsoluteUri;
                 parameters.IssuerSigningKeys = configuration.SigningKeys;
 
+                // If a specific token type is expected, override the default valid types to reject
+                // security tokens whose actual token type doesn't match the expected token type.
+                if (!string.IsNullOrEmpty(context.TokenType))
+                {
+                    parameters.ValidTypes = new[]
+                    {
+                        context.TokenType switch
+                        {
+                            TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
+
+                            _ => throw new InvalidOperationException("The token type is not supported.")
+                        }
+                    };
+                }
+
                 // Populate the token decryption keys from the encryption credentials set in the options.
                 parameters.TokenDecryptionKeys =
                     from credentials in context.Options.EncryptionCredentials
@@ -241,10 +256,16 @@ namespace OpenIddict.Validation
                     return;
                 }
 
-                // Note: tokens that are considered valid at this point are guaranteed to be access tokens,
-                // as a "typ" header validation is performed by the JWT handler, based on the valid values
-                // set in the token validation parameters (by default, only "at+jwt" is considered valid).
-                context.Principal = new ClaimsPrincipal(result.ClaimsIdentity).SetTokenType(TokenTypeHints.AccessToken);
+                // Attach the principal extracted from the token to the parent event context.
+                context.Principal = new ClaimsPrincipal(result.ClaimsIdentity);
+
+                // Store the token type (resolved from "typ" or "token_usage") as a special private claim.
+                context.Principal.SetTokenType(result.TokenType switch
+                {
+                    JsonWebTokenTypes.AccessToken => TokenTypeHints.AccessToken,
+
+                    _ => throw new InvalidOperationException("The token type is not supported.")
+                });
 
                 context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
                                         "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
@@ -491,22 +512,25 @@ namespace OpenIddict.Validation
                 // (using the "typ" header) or by ASP.NET Core Data Protection (using per-token-type purposes strings).
                 // To ensure tokens deserialized using a custom routine are of the expected type, a manual check is used,
                 // which requires that a special claim containing the token type be present in the security principal.
-                var type = context.Principal.GetTokenType();
-                if (string.IsNullOrEmpty(type))
+                if (!string.IsNullOrEmpty(context.TokenType))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.")
-                        .Append("When implementing custom token deserialization, a 'oi_tkn_typ' claim containing ")
-                        .Append("the type of the token being processed must be added to the security principal.")
-                        .ToString());
-                }
+                    var type = context.Principal.GetTokenType();
+                    if (string.IsNullOrEmpty(type))
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .AppendLine("The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.")
+                            .Append("When implementing custom token deserialization, a 'oi_tkn_typ' claim containing ")
+                            .Append("the type of the token being processed must be added to the security principal.")
+                            .ToString());
+                    }
 
-                if (!string.Equals(type, TokenTypeHints.AccessToken, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendFormat("The type of token associated with the deserialized principal ({0})", type)
-                        .AppendFormat("doesn't match the expected token type ({0}).", TokenTypeHints.AccessToken)
-                        .ToString());
+                    if (!string.Equals(type, context.TokenType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException(new StringBuilder()
+                            .AppendFormat("The type of token associated with the deserialized principal ({0}) ", type)
+                            .AppendFormat("doesn't match the expected token type ({0}).", context.TokenType)
+                            .ToString());
+                    }
                 }
 
                 return default;
@@ -544,7 +568,7 @@ namespace OpenIddict.Validation
                 var date = context.Principal.GetExpirationDate();
                 if (date.HasValue && date.Value < DateTimeOffset.UtcNow)
                 {
-                    context.Logger.LogError("The request was rejected because the access token was expired.");
+                    context.Logger.LogError("The authentication demand was rejected because the token was expired.");
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -597,7 +621,7 @@ namespace OpenIddict.Validation
                 var audiences = context.Principal.GetAudiences();
                 if (audiences.IsDefaultOrEmpty)
                 {
-                    context.Logger.LogError("The request was rejected because the access token had no audience attached.");
+                    context.Logger.LogError("The authentication demand was rejected because the token had no audience attached.");
 
                     context.Reject(
                         error: Errors.InvalidToken,
@@ -609,7 +633,7 @@ namespace OpenIddict.Validation
                 // If the access token doesn't include any registered audience, return an error.
                 if (!audiences.Intersect(context.Options.Audiences, StringComparer.Ordinal).Any())
                 {
-                    context.Logger.LogError("The request was rejected because the access token had no valid audience.");
+                    context.Logger.LogError("The authentication demand was rejected because the token had no valid audience.");
 
                     context.Reject(
                         error: Errors.InvalidToken,

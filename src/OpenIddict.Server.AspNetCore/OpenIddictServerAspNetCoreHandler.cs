@@ -43,7 +43,7 @@ namespace OpenIddict.Server.AspNetCore
             : base(options, logger, encoder, clock)
             => _provider = provider;
 
-        protected override async Task InitializeHandlerAsync()
+        public async Task<bool> HandleRequestAsync()
         {
             // Note: the transaction may be already attached when replaying an ASP.NET Core request
             // (e.g when using the built-in status code pages middleware with the re-execute mode).
@@ -61,18 +61,6 @@ namespace OpenIddict.Server.AspNetCore
 
             var context = new ProcessRequestContext(transaction);
             await _provider.DispatchAsync(context);
-
-            // Store the context in the transaction so that it can be retrieved from HandleRequestAsync().
-            transaction.SetProperty(typeof(ProcessRequestContext).FullName, context);
-        }
-
-        public async Task<bool> HandleRequestAsync()
-        {
-            var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
-
-            var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName) ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
 
             if (context.IsRequestHandled)
             {
@@ -144,6 +132,14 @@ namespace OpenIddict.Server.AspNetCore
 
             else if (context.IsRejected)
             {
+                // Note: the missing_token error is special-cased to indicate to ASP.NET Core
+                // that no authentication result could be produced due to the lack of token.
+                // This also helps reducing the logging noise when no token is specified.
+                if (string.Equals(context.Error, Errors.MissingToken, StringComparison.Ordinal))
+                {
+                    return AuthenticateResult.NoResult();
+                }
+
                 var properties = new AuthenticationProperties(new Dictionary<string, string>
                 {
                     [OpenIddictServerAspNetCoreConstants.Properties.Error] = context.Error,
@@ -154,9 +150,24 @@ namespace OpenIddict.Server.AspNetCore
                 return AuthenticateResult.Fail("An error occurred while authenticating the current request.", properties);
             }
 
-            return AuthenticateResult.Success(new AuthenticationTicket(
-                context.Principal,
-                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
+            else
+            {
+                // Store the token to allow any ASP.NET Core component (e.g a controller)
+                // to retrieve it (e.g to make an API request to another application).
+                var properties = new AuthenticationProperties();
+                properties.StoreTokens(new[]
+                {
+                    new AuthenticationToken
+                    {
+                        Name = context.TokenType,
+                        Value = context.Token
+                    }
+                });
+
+                return AuthenticateResult.Success(new AuthenticationTicket(
+                    context.Principal, properties,
+                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
+            }
         }
 
         protected override async Task HandleChallengeAsync([CanBeNull] AuthenticationProperties properties)

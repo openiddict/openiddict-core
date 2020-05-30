@@ -210,7 +210,7 @@ namespace OpenIddict.Server
                     OpenIddictServerEndpointType.Authorization => (context.Request.IdTokenHint, TokenTypeHints.IdToken),
                     OpenIddictServerEndpointType.Logout        => (context.Request.IdTokenHint, TokenTypeHints.IdToken),
 
-                    // Generic tokens received by the introspection and revocation can be of any type.
+                    // Tokens received by the introspection and revocation endpoints can be of any type.
                     // Additional token type filtering is made by the endpoint themselves, if needed.
                     OpenIddictServerEndpointType.Introspection => (context.Request.Token, null),
                     OpenIddictServerEndpointType.Revocation    => (context.Request.Token, null),

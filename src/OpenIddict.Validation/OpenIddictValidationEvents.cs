@@ -267,6 +267,11 @@ namespace OpenIddict.Validation
             /// Gets or sets the token to validate.
             /// </summary>
             public string Token { get; set; }
+
+            /// <summary>
+            /// Gets or sets the expected type of the token.
+            /// </summary>
+            public string TokenType { get; set; }
         }
 
         /// <summary>
