@@ -58,6 +58,10 @@ namespace OpenIddict.Validation.Owin
 
         public override async Task<bool> InvokeAsync()
         {
+            // Note: due to internal differences between ASP.NET Core and Katana, the request MUST start being processed
+            // in InitializeCoreAsync() to ensure the request context is available from AuthenticateCoreAsync() when
+            // active authentication is used, as AuthenticateCoreAsync() is always called before InvokeAsync() in this case.
+
             var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
                 throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict validation context.");
 
@@ -134,6 +138,14 @@ namespace OpenIddict.Validation.Owin
 
             else if (context.IsRejected)
             {
+                // Note: the missing_token error is special-cased to indicate to Katana
+                // that no authentication result could be produced due to the lack of token.
+                // This also helps reducing the logging noise when no token is specified.
+                if (string.Equals(context.Error, Errors.MissingToken, StringComparison.Ordinal))
+                {
+                    return null;
+                }
+
                 var properties = new AuthenticationProperties(new Dictionary<string, string>
                 {
                     [OpenIddictValidationOwinConstants.Properties.Error] = context.Error,
@@ -144,7 +156,17 @@ namespace OpenIddict.Validation.Owin
                 return new AuthenticationTicket(null, properties);
             }
 
-            return new AuthenticationTicket((ClaimsIdentity) context.Principal.Identity, new AuthenticationProperties());
+            else
+            {
+                // Store the token to allow any OWIN/Katana component (e.g a controller)
+                // to retrieve it (e.g to make an API request to another application).
+                var properties = new AuthenticationProperties(new Dictionary<string, string>
+                {
+                    [context.TokenType] = context.Token
+                });
+
+                return new AuthenticationTicket((ClaimsIdentity) context.Principal.Identity, properties);
+            }
         }
 
         protected override async Task TeardownCoreAsync()

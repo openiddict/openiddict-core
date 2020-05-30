@@ -56,15 +56,24 @@ namespace OpenIddict.Server
                 switch (context)
                 {
                     case BaseRequestContext notification when notification.IsRequestHandled:
-                        _logger.LogDebug("The request was handled in user code.");
+                        if (_logger.IsEnabled(LogLevel.Debug))
+                        {
+                            _logger.LogDebug("The event context was marked as handled by {Name}.", handler.GetType().FullName);
+                        }
                         return;
 
                     case BaseRequestContext notification when notification.IsRequestSkipped:
-                        _logger.LogDebug("The default request handling was skipped from user code.");
+                        if (_logger.IsEnabled(LogLevel.Debug))
+                        {
+                            _logger.LogDebug("The event context was marked as skipped by {Name}.", handler.GetType().FullName);
+                        }
                         return;
 
                     case BaseValidatingContext notification when notification.IsRejected:
-                        _logger.LogDebug("The request was rejected in user code.");
+                        if (_logger.IsEnabled(LogLevel.Debug))
+                        {
+                            _logger.LogDebug("The event context was marked as rejected by {Name}.", handler.GetType().FullName);
+                        }
                         return;
 
                     default: continue;
