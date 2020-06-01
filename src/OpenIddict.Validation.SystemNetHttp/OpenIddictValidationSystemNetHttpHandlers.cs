@@ -40,37 +40,24 @@ namespace OpenIddict.Validation.SystemNetHttp
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<PrepareGetHttpRequest<TContext>>()
-                    .SetOrder(int.MaxValue - 100_000)
+                    .SetOrder(int.MinValue + 100_000)
                     .Build();
 
-            public async ValueTask HandleAsync([NotNull] TContext context)
+            public ValueTask HandleAsync([NotNull] TContext context)
             {
                 if (context == null)
                 {
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                // Note: System.Net.Http doesn't expose convenient methods allowing to create
-                // query strings from existing key/value pairs. To work around this limitation,
-                // a FormUrlEncodedContent is instantiated and used to manually create the URL.
-                using var content = new FormUrlEncodedContent(
-                    from parameter in context.Request.GetParameters()
-                    let values = (string[]) parameter.Value
-                    where values != null
-                    from value in values
-                    select new KeyValuePair<string, string>(parameter.Key, value));
-
-                var builder = new UriBuilder(context.Address)
-                {
-                    Query = await content.ReadAsStringAsync()
-                };
-
-                var request = new HttpRequestMessage(HttpMethod.Get, builder.Uri);
+                var request = new HttpRequestMessage(HttpMethod.Get, context.Address);
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
 
                 // Store the HttpRequestMessage in the transaction properties.
                 context.Transaction.Properties[typeof(HttpRequestMessage).FullName] = request;
+
+                return default;
             }
         }
 
@@ -86,7 +73,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<PreparePostHttpRequest<TContext>>()
-                    .SetOrder(PrepareGetHttpRequest<TContext>.Descriptor.Order - 1_000)
+                    .SetOrder(PrepareGetHttpRequest<TContext>.Descriptor.Order + 1_000)
                     .Build();
 
             public ValueTask HandleAsync([NotNull] TContext context)
@@ -100,15 +87,98 @@ namespace OpenIddict.Validation.SystemNetHttp
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
 
-                request.Content = new FormUrlEncodedContent(
+                // Store the HttpRequestMessage in the transaction properties.
+                context.Transaction.Properties[typeof(HttpRequestMessage).FullName] = request;
+
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching the query string parameters to the HTTP request.
+        /// </summary>
+        public class AttachQueryStringParameters<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpMetadataAddress>()
+                    .UseSingletonHandler<AttachQueryStringParameters<TContext>>()
+                    .SetOrder(AttachFormParameters<TContext>.Descriptor.Order - 100_000)
+                    .Build();
+
+            public async ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage();
+                if (request == null)
+                {
+                    throw new InvalidOperationException("The System.Net.Http request cannot be resolved.");
+                }
+
+                // Note: System.Net.Http doesn't expose convenient methods allowing to create
+                // query strings from existing key/value pairs. To work around this limitation,
+                // a FormUrlEncodedContent is instantiated and used to manually create the URL.
+                using var content = new FormUrlEncodedContent(
                     from parameter in context.Request.GetParameters()
                     let values = (string[]) parameter.Value
                     where values != null
                     from value in values
                     select new KeyValuePair<string, string>(parameter.Key, value));
 
-                // Store the HttpRequestMessage in the transaction properties.
-                context.Transaction.Properties[typeof(HttpRequestMessage).FullName] = request;
+                var builder = new UriBuilder(request.RequestUri)
+                {
+                    Query = await content.ReadAsStringAsync()
+                };
+
+                request.RequestUri = builder.Uri;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of attaching the form parameters to the HTTP request.
+        /// </summary>
+        public class AttachFormParameters<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireHttpMetadataAddress>()
+                    .UseSingletonHandler<AttachFormParameters<TContext>>()
+                    .SetOrder(int.MaxValue - 100_000)
+                    .Build();
+
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another client stack.
+                var request = context.Transaction.GetHttpRequestMessage();
+                if (request == null)
+                {
+                    throw new InvalidOperationException("The System.Net.Http request cannot be resolved.");
+                }
+
+                request.Content = new FormUrlEncodedContent(
+                    from parameter in context.Request.GetParameters()
+                    let values = (string[]) parameter.Value
+                    where values != null
+                    from value in values
+                    select new KeyValuePair<string, string>(parameter.Key, value));
 
                 return default;
             }

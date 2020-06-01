@@ -24,8 +24,8 @@ namespace OpenIddict.Validation
                  */
                 HandleErrorResponse<HandleConfigurationResponseContext>.Descriptor,
                 ValidateIssuer.Descriptor,
-                ExtractCryptographyEndpointUri.Descriptor,
-                ExtractIntrospectionEndpointUri.Descriptor,
+                ExtractCryptographyEndpoint.Descriptor,
+                ExtractIntrospectionEndpoint.Descriptor,
 
                 /*
                  * Cryptography response handling:
@@ -100,14 +100,14 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Contains the logic responsible of extracting the JWKS endpoint address from the discovery document.
             /// </summary>
-            public class ExtractCryptographyEndpointUri : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+            public class ExtractCryptographyEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                        .UseSingletonHandler<ExtractCryptographyEndpointUri>()
+                        .UseSingletonHandler<ExtractCryptographyEndpoint>()
                         .SetOrder(ValidateIssuer.Descriptor.Order + 1_000)
                         .Build();
 
@@ -155,15 +155,15 @@ namespace OpenIddict.Validation
             /// <summary>
             /// Contains the logic responsible of extracting the introspection endpoint address from the discovery document.
             /// </summary>
-            public class ExtractIntrospectionEndpointUri : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
+            public class ExtractIntrospectionEndpoint : IOpenIddictValidationHandler<HandleConfigurationResponseContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
-                        .UseSingletonHandler<ExtractIntrospectionEndpointUri>()
-                        .SetOrder(ExtractCryptographyEndpointUri.Descriptor.Order + 1_000)
+                        .UseSingletonHandler<ExtractIntrospectionEndpoint>()
+                        .SetOrder(ExtractCryptographyEndpoint.Descriptor.Order + 1_000)
                         .Build();
 
                 /// <summary>
@@ -191,6 +191,21 @@ namespace OpenIddict.Validation
                     }
 
                     context.Configuration.IntrospectionEndpoint = address;
+
+                    // Resolve the client authentication methods supported by the introspection endpoint, if available.
+                    if (context.Response.TryGetParameter(Metadata.IntrospectionEndpointAuthMethodsSupported, out var methods))
+                    {
+                        foreach (var method in methods.GetUnnamedParameters())
+                        {
+                            var value = (string) method;
+                            if (string.IsNullOrEmpty(value))
+                            {
+                                continue;
+                            }
+
+                            context.Configuration.IntrospectionEndpointAuthMethodsSupported.Add(value);
+                        }
+                    }
 
                     return default;
                 }

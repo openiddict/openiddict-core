@@ -18,6 +18,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                  * Configuration request processing:
                  */
                 PrepareGetHttpRequest<PrepareConfigurationRequestContext>.Descriptor,
+                AttachQueryStringParameters<PrepareConfigurationRequestContext>.Descriptor,
                 SendHttpRequest<ApplyConfigurationRequestContext>.Descriptor,
 
                 /*
@@ -29,6 +30,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                  * Cryptography request processing:
                  */
                 PrepareGetHttpRequest<PrepareCryptographyRequestContext>.Descriptor,
+                AttachQueryStringParameters<PrepareCryptographyRequestContext>.Descriptor,
                 SendHttpRequest<ApplyCryptographyRequestContext>.Descriptor,
 
                 /*
