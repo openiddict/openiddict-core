@@ -1497,7 +1497,8 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetClaim_ReturnsNullForMissingClaim()
         {
             // Arrange
-            var principal = new ClaimsPrincipal();
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
             // Act and assert
             Assert.Null(principal.GetClaim("type"));
@@ -1531,33 +1532,26 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         public void GetCreationDate_ReturnsNullIfNoClaim()
         {
             // Arrange
-            var principal = new ClaimsPrincipal();
+            var identity = new ClaimsIdentity();
+            var principal = new ClaimsPrincipal(identity);
 
-            // Act
-            var creationDate = principal.GetCreationDate();
-
-            // Assert
-            Assert.Null(creationDate);
+            // Act and assert
+            Assert.Null(principal.GetCreationDate());
         }
 
-        [Theory]
-        [InlineData(null, null)]
-        [InlineData("", null)]
-        [InlineData(" ", null)]
-        [InlineData("62", "62")]
-        [InlineData("bad_data", null)]
-        public void GetCreationDate_ReturnsCreationDate(string issuedAt, string expected)
+        [Fact]
+        public void GetCreationDate_ReturnsCreationDate()
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
-            principal.SetClaim(Claims.IssuedAt, issuedAt);
+            principal.SetClaim(Claims.Private.CreationDate, "Wed, 01 Jan 2020 04:30:30 GMT");
 
             // Act
-            var creationDate = principal.GetCreationDate();
+            var date = principal.GetCreationDate();
 
             // Assert
-            Assert.Equal(ParseDateTimeOffset(expected), creationDate);
+            Assert.Equal(new DateTimeOffset(2020, 01, 01, 05, 30, 30, TimeSpan.FromHours(1)), date);
         }
 
         [Fact]
@@ -1578,31 +1572,23 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             // Arrange
             var principal = new ClaimsPrincipal();
 
-            // Act
-            var expirationDate = principal.GetExpirationDate();
-
-            // Assert
-            Assert.Null(expirationDate);
+            // Act and assert
+            Assert.Null(principal.GetExpirationDate());
         }
 
-        [Theory]
-        [InlineData(null, null)]
-        [InlineData("", null)]
-        [InlineData(" ", null)]
-        [InlineData("62", "62")]
-        [InlineData("bad_data", null)]
-        public void GetExpirationDate_ReturnsExpirationDate(string expiresAt, string expected)
+        [Fact]
+        public void GetExpirationDate_ReturnsExpirationDate()
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
-            principal.SetClaim(Claims.ExpiresAt, expiresAt);
+            principal.SetClaim(Claims.Private.ExpirationDate, "Wed, 01 Jan 2020 04:30:30 GMT");
 
             // Act
-            var expirationDate = principal.GetExpirationDate();
+            var date = principal.GetExpirationDate();
 
             // Assert
-            Assert.Equal(ParseDateTimeOffset(expected), expirationDate);
+            Assert.Equal(new DateTimeOffset(2020, 01, 01, 05, 30, 30, TimeSpan.FromHours(1)), date);
         }
 
         [Fact]
@@ -1629,7 +1615,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Audience, audience.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Audience, audience.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(audiences, principal.GetAudiences());
@@ -1888,13 +1874,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void GetInternalAuthorizationId_ThrowsAnExceptionForNullPrincipal()
+        public void GetAuthorizationId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetInternalAuthorizationId());
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetAuthorizationId());
 
             Assert.Equal("principal", exception.ParamName);
         }
@@ -1902,7 +1888,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("identifier")]
-        public void GetInternalAuthorizationId_ReturnsExpectedResult(string identifier)
+        public void GetAuthorizationId_ReturnsExpectedResult(string identifier)
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1911,17 +1897,17 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetClaim(Claims.Private.AuthorizationId, identifier);
 
             // Act and assert
-            Assert.Equal(identifier, principal.GetInternalAuthorizationId());
+            Assert.Equal(identifier, principal.GetAuthorizationId());
         }
 
         [Fact]
-        public void GetInternalTokenId_ThrowsAnExceptionForNullPrincipal()
+        public void GetTokenId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetInternalTokenId());
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetTokenId());
 
             Assert.Equal("principal", exception.ParamName);
         }
@@ -1929,7 +1915,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("identifier")]
-        public void GetInternalTokenId_ReturnsExpectedResult(string identifier)
+        public void GetTokenId_ReturnsExpectedResult(string identifier)
         {
             // Arrange
             var identity = new ClaimsIdentity();
@@ -1938,7 +1924,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetClaim(Claims.Private.TokenId, identifier);
 
             // Act and assert
-            Assert.Equal(identifier, principal.GetInternalTokenId());
+            Assert.Equal(identifier, principal.GetTokenId());
         }
 
         [Fact]
@@ -2004,7 +1990,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Audience, audience.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Audience, audience.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasAudience());
@@ -2026,7 +2012,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
-            principal.SetClaims(Claims.Audience, audience.ToImmutableArray());
+            principal.SetClaims(Claims.Private.Audience, audience.ToImmutableArray());
 
             // Act and assert
             Assert.Equal(result, principal.HasAudience("fabrikam"));
@@ -2295,6 +2281,92 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
+        public void GetClaims_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.GetClaims("type"));
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void GetClaims_ThrowsAnExceptionForNullOrEmptyClaimType(string type)
+        {
+            // Arrange
+            var principal = new ClaimsPrincipal();
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => principal.GetClaims(type));
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
+        }
+
+        [Fact]
+        public void GetClaims_ReturnsExpectedResult()
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(Claims.Scope, Scopes.OpenId));
+            identity.AddClaim(new Claim(Claims.Scope, Scopes.Profile));
+
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act and assert
+            Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, principal.GetClaims(Claims.Scope));
+        }
+
+        [Fact]
+        public void HasClaim_ThrowsAnExceptionForNullPrincipal()
+        {
+            // Arrange
+            var principal = (ClaimsPrincipal) null;
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.HasClaim("type"));
+
+            Assert.Equal("principal", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void HasClaim_ThrowsAnExceptionForNullOrEmptyClaimType(string type)
+        {
+            // Arrange
+            var principal = new ClaimsPrincipal();
+
+            // Act and assert
+            var exception = Assert.Throws<ArgumentException>(() => principal.HasClaim(type));
+
+            Assert.Equal("type", exception.ParamName);
+            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
+        }
+
+        [Fact]
+        public void HasClaim_ReturnsExpectedResult()
+        {
+            // Arrange
+            var identity = new ClaimsIdentity();
+            identity.AddClaim(new Claim(Claims.Name, "Bob le Bricoleur"));
+            identity.AddClaim(new Claim(Claims.Scope, Scopes.OpenId));
+            identity.AddClaim(new Claim(Claims.Scope, Scopes.Profile));
+
+            var principal = new ClaimsPrincipal(identity);
+
+            // Act and assert
+            Assert.True(principal.HasClaim(Claims.Name));
+            Assert.True(principal.HasClaim(Claims.Scope));
+            Assert.False(principal.HasClaim(Claims.Nickname));
+        }
+
+        [Fact]
         public void RemoveClaims_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
@@ -2413,25 +2485,23 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetCreationDate(default(DateTimeOffset)));
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetCreationDate(date: null));
 
             Assert.Equal("principal", exception.ParamName);
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetCreationDate_AddsIssuedAtClaim(string date)
+        [Fact]
+        public void SetCreationDate_AddsClaim()
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            principal.SetCreationDate(ParseDateTimeOffset(date));
+            principal.SetCreationDate(new DateTimeOffset(2020, 01, 01, 05, 30, 30, TimeSpan.FromHours(1)));
 
             // Assert
-            Assert.Equal(date, principal.GetClaim(Claims.IssuedAt));
+            Assert.Equal("Wed, 01 Jan 2020 04:30:30 GMT", principal.GetClaim(Claims.Private.CreationDate));
         }
 
         [Fact]
@@ -2441,25 +2511,23 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetExpirationDate(default(DateTimeOffset)));
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetExpirationDate(date: null));
 
             Assert.Equal("principal", exception.ParamName);
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("62")]
-        public void SetExpirationDate_AddsExpiresAtClaim(string date)
+        [Fact]
+        public void SetExpirationDate_AddsClaim()
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            principal.SetExpirationDate(ParseDateTimeOffset(date));
+            principal.SetExpirationDate(new DateTimeOffset(2020, 01, 01, 05, 30, 30, TimeSpan.FromHours(1)));
 
             // Assert
-            Assert.Equal(date, principal.GetClaim(Claims.ExpiresAt));
+            Assert.Equal("Wed, 01 Jan 2020 04:30:30 GMT", principal.GetClaim(Claims.Private.ExpirationDate));
         }
 
         [Fact]
@@ -2491,7 +2559,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             principal.SetAudiences(audiences);
 
             // Assert
-            Assert.Equal(audience, principal.GetClaims(Claims.Audience));
+            Assert.Equal(audience, principal.GetClaims(Claims.Private.Audience));
         }
 
         [Fact]
@@ -2799,13 +2867,13 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         }
 
         [Fact]
-        public void SetInternalAuthorizationId_ThrowsAnExceptionForNullPrincipal()
+        public void SetAuthorizationId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetInternalAuthorizationId(null));
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetAuthorizationId(null));
 
             Assert.Equal("principal", exception.ParamName);
         }
@@ -2813,27 +2881,27 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("identifier")]
-        public void SetInternalAuthorizationId_AddsScopes(string identifier)
+        public void SetAuthorizationId_AddsScopes(string identifier)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            principal.SetInternalAuthorizationId(identifier);
+            principal.SetAuthorizationId(identifier);
 
             // Assert
             Assert.Equal(identifier, principal.GetClaim(Claims.Private.AuthorizationId));
         }
 
         [Fact]
-        public void SetInternalTokenId_ThrowsAnExceptionForNullPrincipal()
+        public void SetTokenId_ThrowsAnExceptionForNullPrincipal()
         {
             // Arrange
             var principal = (ClaimsPrincipal) null;
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetInternalTokenId(null));
+            var exception = Assert.Throws<ArgumentNullException>(() => principal.SetTokenId(null));
 
             Assert.Equal("principal", exception.ParamName);
         }
@@ -2841,14 +2909,14 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         [Theory]
         [InlineData(null)]
         [InlineData("identifier")]
-        public void SetInternalTokenId_AddsScopes(string identifier)
+        public void SetTokenId_AddsScopes(string identifier)
         {
             // Arrange
             var identity = new ClaimsIdentity();
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            principal.SetInternalTokenId(identifier);
+            principal.SetTokenId(identifier);
 
             // Assert
             Assert.Equal(identifier, principal.GetClaim(Claims.Private.TokenId));
@@ -2889,15 +2957,6 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 : null;
 
             return lifeT;
-        }
-
-        private DateTimeOffset? ParseDateTimeOffset(string dateTimeOffset)
-        {
-            var dtOffset = string.IsNullOrWhiteSpace(dateTimeOffset)
-                ? null
-                : (DateTimeOffset?)DateTimeOffset.FromUnixTimeSeconds(long.Parse(dateTimeOffset, NumberStyles.Number, CultureInfo.InvariantCulture));
-
-            return dtOffset;
         }
     }
 }

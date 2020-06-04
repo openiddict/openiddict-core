@@ -674,7 +674,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 
                         return default;
                     });
@@ -732,7 +732,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 
                         return default;
                     });
@@ -793,7 +793,7 @@ namespace OpenIddict.Server.FunctionalTests
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
-                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
+                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56");
 
                         return default;
                     });

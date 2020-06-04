@@ -88,13 +88,16 @@ namespace OpenIddict.Abstractions
             public static class Private
             {
                 public const string AccessTokenLifetime = "oi_act_lft";
-                public const string AuthorizationId = "oi_au_id";
+                public const string Audience = "oi_aud";
                 public const string AuthorizationCodeLifetime = "oi_auc_lft";
+                public const string AuthorizationId = "oi_au_id";
                 public const string ClaimDestinationsMap = "oi_cl_dstn";
                 public const string CodeChallenge = "oi_cd_chlg";
                 public const string CodeChallengeMethod = "oi_cd_chlg_meth";
+                public const string CreationDate = "oi_crt_dt";
                 public const string DeviceCodeId = "oi_dvc_id";
                 public const string DeviceCodeLifetime = "oi_dvc_lft";
+                public const string ExpirationDate = "oi_exp_dt";
                 public const string IdentityTokenLifetime = "oi_idt_lft";
                 public const string Nonce = "oi_nce";
                 public const string Presenter = "oi_prst";

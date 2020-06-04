@@ -218,6 +218,106 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
+        public async Task ProcessAuthentication_IssuedAtIsMappedToCreationDate()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        var identity = new ClaimsIdentity("Bearer");
+                        identity.AddClaim(new Claim(Claims.IssuedAt, "1577836800", ClaimValueTypes.Integer64));
+
+                        context.Principal = new ClaimsPrincipal(identity)
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal(1577836800, (long) response[Claims.IssuedAt]);
+            Assert.Equal("Wed, 01 Jan 2020 00:00:00 GMT", (string) response[Claims.Private.CreationDate]);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_ExpiresAtIsMappedToExpirationDate()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        var identity = new ClaimsIdentity("Bearer");
+                        identity.AddClaim(new Claim(Claims.ExpiresAt, "2524608000", ClaimValueTypes.Integer64));
+
+                        context.Principal = new ClaimsPrincipal(identity)
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal(2524608000, (long) response[Claims.ExpiresAt]);
+            Assert.Equal("Sat, 01 Jan 2050 00:00:00 GMT", (string) response[Claims.Private.ExpirationDate]);
+        }
+
+        [Fact]
         public async Task ProcessAuthentication_AuthorizedPartyIsMappedToPresenter()
         {
             // Arrange
@@ -263,6 +363,150 @@ namespace OpenIddict.Server.FunctionalTests
             Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
             Assert.Equal("Fabrikam", (string) response[Claims.AuthorizedParty]);
             Assert.Equal("Fabrikam", (string) response[Claims.Private.Presenter]);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_ClientIdIsMappedToPresenter()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique")
+                            .SetClaim(Claims.ClientId, "Fabrikam");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Fabrikam", (string) response[Claims.ClientId]);
+            Assert.Equal("Fabrikam", (string) response[Claims.Private.Presenter]);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_SinglePublicAudienceIsMappedToPrivateClaims()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique")
+                            .SetClaim(Claims.Audience, "Fabrikam");
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("Fabrikam", (string) response[Claims.Audience]);
+            Assert.Equal("Fabrikam", (string) response[Claims.Private.Audience]);
+        }
+
+        [Fact]
+        public async Task ProcessAuthentication_MultiplePublicAudiencesAreMappedToPrivateClaims()
+        {
+            // Arrange
+            var client = CreateClient(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique")
+                            .SetClaims(Claims.Audience, ImmutableArray.Create("Fabrikam", "Contoso"));
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) response[Claims.Audience]);
+            Assert.Equal(new[] { "Fabrikam", "Contoso" }, (string[]) response[Claims.Private.Audience]);
         }
 
         [Fact]
@@ -2666,7 +2910,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
-                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -2736,7 +2980,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.AuthorizationCode)
                             .SetPresenters("Fabrikam")
-                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -2821,7 +3065,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -2886,7 +3130,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -2946,7 +3190,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -3030,8 +3274,8 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -3120,8 +3364,8 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -3197,7 +3441,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -3258,7 +3502,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -3320,7 +3564,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -3386,7 +3630,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;
@@ -3450,7 +3694,7 @@ namespace OpenIddict.Server.FunctionalTests
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetTokenType(TokenTypeHints.RefreshToken)
                             .SetScopes(Scopes.OpenId, Scopes.OfflineAccess)
-                            .SetInternalTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
+                            .SetTokenId("60FFF7EA-F98E-437B-937E-5073CC313103")
                             .SetClaim(Claims.Subject, "Bob le Bricoleur");
 
                         return default;

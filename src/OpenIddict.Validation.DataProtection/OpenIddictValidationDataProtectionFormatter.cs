@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Globalization;
 using System.IO;
 using System.Security.Claims;
 using System.Text.Json;
@@ -39,8 +38,6 @@ namespace OpenIddict.Validation.DataProtection
 
             return principal
                 .SetAudiences(GetArrayProperty(properties, Properties.Audiences))
-                .SetCreationDate(GetDateProperty(properties, Properties.Issued))
-                .SetExpirationDate(GetDateProperty(properties, Properties.Expires))
                 .SetPresenters(GetArrayProperty(properties, Properties.Presenters))
                 .SetResources(GetArrayProperty(properties, Properties.Resources))
                 .SetScopes(GetArrayProperty(properties, Properties.Scopes))
@@ -50,11 +47,16 @@ namespace OpenIddict.Validation.DataProtection
                 .SetClaim(Claims.Private.AuthorizationId, GetProperty(properties, Properties.InternalAuthorizationId))
                 .SetClaim(Claims.Private.CodeChallenge, GetProperty(properties, Properties.CodeChallenge))
                 .SetClaim(Claims.Private.CodeChallengeMethod, GetProperty(properties, Properties.CodeChallengeMethod))
+                .SetClaim(Claims.Private.CreationDate, GetProperty(properties, Properties.Issued))
+                .SetClaim(Claims.Private.DeviceCodeId, GetProperty(properties, Properties.DeviceCodeId))
+                .SetClaim(Claims.Private.DeviceCodeLifetime, GetProperty(properties, Properties.DeviceCodeLifetime))
                 .SetClaim(Claims.Private.IdentityTokenLifetime, GetProperty(properties, Properties.IdentityTokenLifetime))
+                .SetClaim(Claims.Private.ExpirationDate, GetProperty(properties, Properties.Expires))
                 .SetClaim(Claims.Private.Nonce, GetProperty(properties, Properties.Nonce))
                 .SetClaim(Claims.Private.RedirectUri, GetProperty(properties, Properties.OriginalRedirectUri))
                 .SetClaim(Claims.Private.RefreshTokenLifetime, GetProperty(properties, Properties.RefreshTokenLifetime))
-                .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId));
+                .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
+                .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
 
             static (ClaimsPrincipal principal, ImmutableDictionary<string, string> properties) Read(BinaryReader reader, int version)
             {
@@ -175,10 +177,6 @@ namespace OpenIddict.Validation.DataProtection
             static ImmutableArray<string> GetArrayProperty(IReadOnlyDictionary<string, string> properties, string name)
                 => properties.TryGetValue(name, out var value) ?
                 JsonSerializer.Deserialize<ImmutableArray<string>>(value) : ImmutableArray.Create<string>();
-
-            static DateTimeOffset? GetDateProperty(IReadOnlyDictionary<string, string> properties, string name)
-                => properties.TryGetValue(name, out var value) ? (DateTimeOffset?)
-                DateTimeOffset.ParseExact(value, "r", CultureInfo.InvariantCulture) : null;
         }
     }
 }

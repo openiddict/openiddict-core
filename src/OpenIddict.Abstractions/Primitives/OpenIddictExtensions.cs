@@ -904,6 +904,27 @@ namespace OpenIddict.Abstractions
         }
 
         /// <summary>
+        /// Determines whether the claims identity contains at least one claim of the specified type.
+        /// </summary>
+        /// <param name="identity">The claims identity.</param>
+        /// <param name="type">The claim type.</param>
+        /// <returns><c>true</c> if the identity contains at least one claim of the specified type.</returns>
+        public static bool HasClaim([NotNull] this ClaimsIdentity identity, [NotNull] string type)
+        {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            return identity.FindAll(type).Any();
+        }
+
+        /// <summary>
         /// Gets the claim values corresponding to the given type.
         /// </summary>
         /// <param name="principal">The principal.</param>
@@ -922,6 +943,27 @@ namespace OpenIddict.Abstractions
             }
 
             return principal.FindAll(type).Select(claim => claim.Value).Distinct(StringComparer.Ordinal).ToImmutableArray();
+        }
+
+        /// <summary>
+        /// Determines whether the claims principal contains at least one claim of the specified type.
+        /// </summary>
+        /// <param name="principal">The claims principal.</param>
+        /// <param name="type">The claim type.</param>
+        /// <returns><c>true</c> if the principal contains at least one claim of the specified type.</returns>
+        public static bool HasClaim([NotNull] this ClaimsPrincipal principal, [NotNull] string type)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+            }
+
+            return principal.FindAll(type).Any();
         }
 
         /// <summary>
@@ -1113,18 +1155,18 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            var claim = principal.FindFirst(Claims.IssuedAt);
+            var claim = principal.FindFirst(Claims.Private.CreationDate);
             if (claim == null)
             {
                 return null;
             }
 
-            if (!long.TryParse(claim.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+            if (!DateTimeOffset.TryParseExact(claim.Value, "r", CultureInfo.InvariantCulture, DateTimeStyles.None, out var value))
             {
                 return null;
             }
 
-            return DateTimeOffset.FromUnixTimeSeconds(value);
+            return value;
         }
 
         /// <summary>
@@ -1139,18 +1181,18 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            var claim = principal.FindFirst(Claims.ExpiresAt);
+            var claim = principal.FindFirst(Claims.Private.ExpirationDate);
             if (claim == null)
             {
                 return null;
             }
 
-            if (!long.TryParse(claim.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+            if (!DateTimeOffset.TryParseExact(claim.Value, "r", CultureInfo.InvariantCulture, DateTimeStyles.None, out var value))
             {
                 return null;
             }
 
-            return DateTimeOffset.FromUnixTimeSeconds(value);
+            return value;
         }
 
         /// <summary>
@@ -1159,7 +1201,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns>The audiences list or an empty set if the claims cannot be found.</returns>
         public static ImmutableArray<string> GetAudiences([NotNull] this ClaimsPrincipal principal)
-            => principal.GetClaims(Claims.Audience);
+            => principal.GetClaims(Claims.Private.Audience);
 
         /// <summary>
         /// Gets the presenters list stored in the claims principal.
@@ -1238,7 +1280,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
-        public static string GetInternalAuthorizationId([NotNull] this ClaimsPrincipal principal)
+        public static string GetAuthorizationId([NotNull] this ClaimsPrincipal principal)
             => principal.GetClaim(Claims.Private.AuthorizationId);
 
         /// <summary>
@@ -1246,7 +1288,7 @@ namespace OpenIddict.Abstractions
         /// </summary>
         /// <param name="principal">The claims principal.</param>
         /// <returns>The unique identifier or <c>null</c> if the claim cannot be found.</returns>
-        public static string GetInternalTokenId([NotNull] this ClaimsPrincipal principal)
+        public static string GetTokenId([NotNull] this ClaimsPrincipal principal)
             => principal.GetClaim(Claims.Private.TokenId);
 
         /// <summary>
@@ -1263,14 +1305,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one audience.</returns>
         public static bool HasAudience([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.FindAll(Claims.Audience).Any();
-        }
+            => principal.HasClaim(Claims.Private.Audience);
 
         /// <summary>
         /// Determines whether the claims principal contains the given audience.
@@ -1290,7 +1325,7 @@ namespace OpenIddict.Abstractions
                 throw new ArgumentException("The audience cannot be null or empty.", nameof(audience));
             }
 
-            return principal.HasClaim(Claims.Audience, audience);
+            return principal.HasClaim(Claims.Private.Audience, audience);
         }
 
         /// <summary>
@@ -1299,14 +1334,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one presenter.</returns>
         public static bool HasPresenter([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.FindAll(Claims.Private.Presenter).Any();
-        }
+            => principal.HasClaim(Claims.Private.Presenter);
 
         /// <summary>
         /// Determines whether the claims principal contains the given presenter.
@@ -1335,14 +1363,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one resource.</returns>
         public static bool HasResource([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.FindAll(Claims.Private.Resource).Any();
-        }
+            => principal.HasClaim(Claims.Private.Resource);
 
         /// <summary>
         /// Determines whether the claims principal contains the given resource.
@@ -1371,14 +1392,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <returns><c>true</c> if the principal contains at least one scope.</returns>
         public static bool HasScope([NotNull] this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            return principal.FindAll(Claims.Private.Scope).Any();
-        }
+            => principal.HasClaim(Claims.Private.Scope);
 
         /// <summary>
         /// Determines whether the claims principal contains the given scope.
@@ -1429,7 +1443,7 @@ namespace OpenIddict.Abstractions
         /// <param name="date">The creation date</param>
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetCreationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
-            => SetDateClaim(principal, Claims.IssuedAt, date);
+            => principal.SetClaim(Claims.Private.CreationDate, date?.ToString("r", CultureInfo.InvariantCulture));
 
         /// <summary>
         /// Sets the expiration date in the claims principal.
@@ -1438,7 +1452,7 @@ namespace OpenIddict.Abstractions
         /// <param name="date">The expiration date</param>
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetExpirationDate([NotNull] this ClaimsPrincipal principal, [CanBeNull] DateTimeOffset? date)
-            => SetDateClaim(principal, Claims.ExpiresAt, date);
+            => principal.SetClaim(Claims.Private.ExpirationDate, date?.ToString("r", CultureInfo.InvariantCulture));
 
         /// <summary>
         /// Sets the audiences list in the claims principal.
@@ -1449,7 +1463,7 @@ namespace OpenIddict.Abstractions
         /// <returns>The claims principal.</returns>
         public static ClaimsPrincipal SetAudiences(
             [NotNull] this ClaimsPrincipal principal, [CanBeNull] ImmutableArray<string> audiences)
-            => principal.SetClaims(Claims.Audience, audiences);
+            => principal.SetClaims(Claims.Private.Audience, audiences);
 
         /// <summary>
         /// Sets the audiences list in the claims principal.
@@ -1632,7 +1646,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="identifier">The unique identifier to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetInternalAuthorizationId([NotNull] this ClaimsPrincipal principal, string identifier)
+        public static ClaimsPrincipal SetAuthorizationId([NotNull] this ClaimsPrincipal principal, string identifier)
             => principal.SetClaim(Claims.Private.AuthorizationId, identifier);
 
         /// <summary>
@@ -1641,7 +1655,7 @@ namespace OpenIddict.Abstractions
         /// <param name="principal">The claims principal.</param>
         /// <param name="identifier">The unique identifier to store.</param>
         /// <returns>The claims principal.</returns>
-        public static ClaimsPrincipal SetInternalTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
+        public static ClaimsPrincipal SetTokenId([NotNull] this ClaimsPrincipal principal, string identifier)
             => principal.SetClaim(Claims.Private.TokenId, identifier);
 
         /// <summary>
@@ -1778,25 +1792,6 @@ namespace OpenIddict.Abstractions
             }
 
             return null;
-        }
-
-        private static ClaimsPrincipal SetDateClaim(ClaimsPrincipal principal, string type, DateTimeOffset? date)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            principal.RemoveClaims(type);
-
-            if (date.HasValue)
-            {
-                var value = date?.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
-                var claim = new Claim(type, value, ClaimValueTypes.Integer64);
-                ((ClaimsIdentity)principal.Identity).AddClaim(claim);
-            }
-
-            return principal;
         }
     }
 }
