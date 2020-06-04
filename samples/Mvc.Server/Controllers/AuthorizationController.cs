@@ -191,7 +191,7 @@ namespace Mvc.Server
                             scopes   : principal.GetScopes());
                     }
 
-                    principal.SetInternalAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
+                    principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
 
                     foreach (var claim in principal.Claims)
                     {
@@ -281,7 +281,7 @@ namespace Mvc.Server
                     scopes   : principal.GetScopes());
             }
 
-            principal.SetInternalAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
+            principal.SetAuthorizationId(await _authorizationManager.GetIdAsync(authorization));
 
             foreach (var claim in principal.Claims)
             {

@@ -1219,8 +1219,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetAudiences("Fabrikam")
-                            .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
-                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetTokenType(TokenTypeHints.AccessToken)
                             .SetClaim(Claims.Subject, "Bob le Magnifique");
 
@@ -1310,8 +1310,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetAudiences("Fabrikam")
-                            .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
-                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetTokenType(TokenTypeHints.AccessToken)
                             .SetClaim(Claims.Subject, "Bob le Magnifique");
 
@@ -1408,8 +1408,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetAudiences("Fabrikam")
-                            .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
-                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetTokenType(TokenTypeHints.AccessToken)
                             .SetClaim(Claims.Subject, "Bob le Magnifique");
 
@@ -1519,8 +1519,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                         context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
                             .SetAudiences("Fabrikam")
-                            .SetInternalAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
-                            .SetInternalTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
+                            .SetAuthorizationId("18D15F73-BE2B-6867-DC01-B3C1E8AFDED0")
+                            .SetTokenId("3E228451-1555-46F7-A471-951EFBA23A56")
                             .SetTokenType(TokenTypeHints.AccessToken)
                             .SetClaim(Claims.Subject, "Bob le Magnifique");
 

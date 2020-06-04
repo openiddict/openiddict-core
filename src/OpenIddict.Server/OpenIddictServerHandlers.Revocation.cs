@@ -997,7 +997,7 @@ namespace OpenIddict.Server
                     }
 
                     // Extract the token identifier from the authentication principal.
-                    var identifier = context.Principal.GetInternalTokenId();
+                    var identifier = context.Principal.GetTokenId();
                     if (string.IsNullOrEmpty(identifier))
                     {
                         context.Logger.LogError("The revocation request was rejected because the token had no internal identifier.");
