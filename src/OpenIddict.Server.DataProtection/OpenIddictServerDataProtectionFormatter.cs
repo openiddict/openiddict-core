@@ -28,7 +28,7 @@ namespace OpenIddict.Server.DataProtection
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            var (principal, properties) = Read(reader, version: 5);
+            var (principal, properties) = Read(reader);
             if (principal == null)
             {
                 return null;
@@ -60,9 +60,11 @@ namespace OpenIddict.Server.DataProtection
                 .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
                 .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
 
-            static (ClaimsPrincipal principal, ImmutableDictionary<string, string> properties) Read(BinaryReader reader, int version)
+            static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
             {
-                if (version != reader.ReadInt32())
+                // Read the version of the format used to serialize the ticket.
+                var version = reader.ReadInt32();
+                if (version != 5)
                 {
                     return (null, ImmutableDictionary.Create<string, string>());
                 }
@@ -83,7 +85,7 @@ namespace OpenIddict.Server.DataProtection
                     identities[index] = ReadIdentity(reader);
                 }
 
-                var properties = ReadProperties(reader, version);
+                var properties = ReadProperties(reader);
 
                 return (new ClaimsPrincipal(identities), properties);
             }
@@ -144,21 +146,23 @@ namespace OpenIddict.Server.DataProtection
                 return claim;
             }
 
-            static ImmutableDictionary<string, string> ReadProperties(BinaryReader reader, int version)
+            static IReadOnlyDictionary<string, string> ReadProperties(BinaryReader reader)
             {
-                if (version != reader.ReadInt32())
+                // Read the version of the format used to serialize the properties.
+                var version = reader.ReadInt32();
+                if (version != 5)
                 {
                     return ImmutableDictionary.Create<string, string>();
                 }
 
-                var properties = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
                 var count = reader.ReadInt32();
+                var properties = new Dictionary<string, string>(count, StringComparer.Ordinal);
                 for (var index = 0; index != count; ++index)
                 {
                     properties.Add(reader.ReadString(), reader.ReadString());
                 }
 
-                return properties.ToImmutable();
+                return properties;
             }
 
             static string ReadWithDefault(BinaryReader reader, string defaultValue)
@@ -250,17 +254,17 @@ namespace OpenIddict.Server.DataProtection
                 _ => true
             });
 
-            Write(writer, version: 5, principal.Identity.AuthenticationType, principal, properties);
+            Write(writer, principal.Identity.AuthenticationType, principal, properties);
             writer.Flush();
 
             // Note: the following local methods closely matches the logic used by ASP.NET Core's
             // authentication stack and MUST NOT be modified to ensure tokens encrypted using
             // the OpenID Connect server middleware can be read by OpenIddict (and vice-versa).
 
-            static void Write(BinaryWriter writer, int version, string scheme,
-                ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties)
+            static void Write(BinaryWriter writer, string scheme, ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties)
             {
-                writer.Write(version);
+                // Write the version of the format used to serialize the ticket.
+                writer.Write(/* version: */ 5);
                 writer.Write(scheme ?? string.Empty);
 
                 // Write the number of identities contained in the principal.
@@ -271,7 +275,7 @@ namespace OpenIddict.Server.DataProtection
                     WriteIdentity(writer, identity);
                 }
 
-                WriteProperties(writer, version, properties);
+                WriteProperties(writer, properties);
             }
 
             static void WriteIdentity(BinaryWriter writer, ClaimsIdentity identity)
@@ -340,9 +344,10 @@ namespace OpenIddict.Server.DataProtection
                 }
             }
 
-            static void WriteProperties(BinaryWriter writer, int version, IReadOnlyDictionary<string, string> properties)
+            static void WriteProperties(BinaryWriter writer, IReadOnlyDictionary<string, string> properties)
             {
-                writer.Write(version);
+                // Write the version of the format used to serialize the properties.
+                writer.Write(/* version: */ 5);
                 writer.Write(properties.Count);
 
                 foreach (var property in properties)
