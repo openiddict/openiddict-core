@@ -26,7 +26,7 @@ namespace OpenIddict.Validation.DataProtection
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            var (principal, properties) = Read(reader, version: 5);
+            var (principal, properties) = Read(reader);
             if (principal == null)
             {
                 return null;
@@ -58,9 +58,11 @@ namespace OpenIddict.Validation.DataProtection
                 .SetClaim(Claims.Private.TokenId, GetProperty(properties, Properties.InternalTokenId))
                 .SetClaim(Claims.Private.UserCodeLifetime, GetProperty(properties, Properties.UserCodeLifetime));
 
-            static (ClaimsPrincipal principal, ImmutableDictionary<string, string> properties) Read(BinaryReader reader, int version)
+            static (ClaimsPrincipal principal, IReadOnlyDictionary<string, string> properties) Read(BinaryReader reader)
             {
-                if (version != reader.ReadInt32())
+                // Read the version of the format used to serialize the ticket.
+                var version = reader.ReadInt32();
+                if (version != 5)
                 {
                     return (null, ImmutableDictionary.Create<string, string>());
                 }
@@ -81,7 +83,7 @@ namespace OpenIddict.Validation.DataProtection
                     identities[index] = ReadIdentity(reader);
                 }
 
-                var properties = ReadProperties(reader, version);
+                var properties = ReadProperties(reader);
 
                 return (new ClaimsPrincipal(identities), properties);
             }
@@ -142,21 +144,23 @@ namespace OpenIddict.Validation.DataProtection
                 return claim;
             }
 
-            static ImmutableDictionary<string, string> ReadProperties(BinaryReader reader, int version)
+            static IReadOnlyDictionary<string, string> ReadProperties(BinaryReader reader)
             {
-                if (version != reader.ReadInt32())
+                // Read the version of the format used to serialize the properties.
+                var version = reader.ReadInt32();
+                if (version != 5)
                 {
                     return ImmutableDictionary.Create<string, string>();
                 }
 
-                var properties = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
                 var count = reader.ReadInt32();
+                var properties = new Dictionary<string, string>(count, StringComparer.Ordinal);
                 for (var index = 0; index != count; ++index)
                 {
                     properties.Add(reader.ReadString(), reader.ReadString());
                 }
 
-                return properties.ToImmutable();
+                return properties;
             }
 
             static string ReadWithDefault(BinaryReader reader, string defaultValue)
