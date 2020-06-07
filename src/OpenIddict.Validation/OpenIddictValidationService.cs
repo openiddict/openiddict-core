@@ -90,7 +90,9 @@ namespace OpenIddict.Validation
                         var message = new StringBuilder()
                             .AppendLine("An error occurred while preparing the configuration request.")
                             .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
                             .ToString();
 
@@ -115,7 +117,9 @@ namespace OpenIddict.Validation
                         var message = new StringBuilder()
                             .AppendLine("An error occurred while sending the configuration request.")
                             .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
                             .ToString();
 
@@ -140,7 +144,9 @@ namespace OpenIddict.Validation
                         var message = new StringBuilder()
                             .AppendLine("An error occurred while extracting the configuration response.")
                             .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
                             .ToString();
 
@@ -166,7 +172,9 @@ namespace OpenIddict.Validation
                         var message = new StringBuilder()
                             .AppendLine("An error occurred while handling the configuration response.")
                             .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
                             .ToString();
 
@@ -254,7 +262,9 @@ namespace OpenIddict.Validation
                         var message = new StringBuilder()
                             .AppendLine("An error occurred while preparing the cryptography request.")
                             .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
                             .ToString();
 
@@ -279,7 +289,9 @@ namespace OpenIddict.Validation
                         var message = new StringBuilder()
                             .AppendLine("An error occurred while sending the cryptography request.")
                             .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
                             .ToString();
 
@@ -304,7 +316,9 @@ namespace OpenIddict.Validation
                         var message = new StringBuilder()
                             .AppendLine("An error occurred while extracting the cryptography response.")
                             .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
                             .ToString();
 
@@ -330,7 +344,9 @@ namespace OpenIddict.Validation
                         var message = new StringBuilder()
                             .AppendLine("An error occurred while handling the cryptography response.")
                             .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
                             .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
                             .ToString();
 
@@ -433,6 +449,21 @@ namespace OpenIddict.Validation
 
                     await provider.DispatchAsync(context);
 
+                    if (context.IsRejected)
+                    {
+                        var message = new StringBuilder()
+                            .AppendLine("An error occurred while preparing the introspection request.")
+                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
+                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
+                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
+                            .ToString();
+
+                        throw new OpenIddictExceptions.GenericException(message,
+                            context.Error, context.ErrorDescription, context.ErrorUri);
+                    }
+
                     return context.Request;
                 }
 
@@ -445,6 +476,21 @@ namespace OpenIddict.Validation
 
                     await provider.DispatchAsync(context);
 
+                    if (context.IsRejected)
+                    {
+                        var message = new StringBuilder()
+                            .AppendLine("An error occurred while sending the introspection request.")
+                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
+                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
+                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
+                            .ToString();
+
+                        throw new OpenIddictExceptions.GenericException(message,
+                            context.Error, context.ErrorDescription, context.ErrorUri);
+                    }
+
                     return context.Request;
                 }
 
@@ -456,6 +502,21 @@ namespace OpenIddict.Validation
                     };
 
                     await provider.DispatchAsync(context);
+
+                    if (context.IsRejected)
+                    {
+                        var message = new StringBuilder()
+                            .AppendLine("An error occurred while extracting the introspection response.")
+                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
+                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
+                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
+                            .ToString();
+
+                        throw new OpenIddictExceptions.GenericException(message,
+                            context.Error, context.ErrorDescription, context.ErrorUri);
+                    }
 
                     return context.Response;
                 }
@@ -471,6 +532,21 @@ namespace OpenIddict.Validation
                     };
 
                     await provider.DispatchAsync(context);
+
+                    if (context.IsRejected)
+                    {
+                        var message = new StringBuilder()
+                            .AppendLine("An error occurred while handling the introspection response.")
+                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
+                            .AppendLine()
+                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
+                            .AppendLine()
+                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
+                            .ToString();
+
+                        throw new OpenIddictExceptions.GenericException(message,
+                            context.Error, context.ErrorDescription, context.ErrorUri);
+                    }
 
                     return context.Principal;
                 }
