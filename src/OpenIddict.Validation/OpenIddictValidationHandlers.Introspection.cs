@@ -27,7 +27,7 @@ namespace OpenIddict.Validation
                  * Introspection response handling:
                  */
                 AttachCredentials.Descriptor,
-                AttachAccessToken.Descriptor,
+                AttachToken.Descriptor,
 
                 /*
                  * Introspection response handling:
@@ -75,16 +75,16 @@ namespace OpenIddict.Validation
             }
 
             /// <summary>
-            /// Contains the logic responsible of attaching the access token to the introspection request.
+            /// Contains the logic responsible of attaching the token to the introspection request.
             /// </summary>
-            public class AttachAccessToken : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
+            public class AttachToken : IOpenIddictValidationHandler<PrepareIntrospectionRequestContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
                 /// </summary>
                 public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
                     = OpenIddictValidationHandlerDescriptor.CreateBuilder<PrepareIntrospectionRequestContext>()
-                        .UseSingletonHandler<AttachAccessToken>()
+                        .UseSingletonHandler<AttachToken>()
                         .SetOrder(AttachCredentials.Descriptor.Order + 100_000)
                         .Build();
 
@@ -372,15 +372,19 @@ namespace OpenIddict.Validation
 
                     // OpenIddict-based authorization servers always return the actual token type using
                     // the special "token_usage" claim, that helps resource servers determine whether the
-                    // introspected token is an access token and thus prevent token substitution attacks.
-                    var usage = (string) context.Response[Claims.TokenUsage];
-                    if (!string.IsNullOrEmpty(usage) && !string.Equals(usage, context.TokenType, StringComparison.OrdinalIgnoreCase))
+                    // introspected token is of the expected type and prevent token substitution attacks.
+                    if (!string.IsNullOrEmpty(context.TokenType))
                     {
-                        context.Reject(
-                            error: Errors.InvalidToken,
-                            description: "The introspected token is not an access token.");
+                        var usage = (string) context.Response[Claims.TokenUsage];
+                        if (!string.IsNullOrEmpty(usage) &&
+                            !string.Equals(usage, context.TokenType, StringComparison.OrdinalIgnoreCase))
+                        {
+                            context.Reject(
+                                error: Errors.InvalidToken,
+                                description: "The type of the introspection token doesn't match the expected type.");
 
-                        return default;
+                            return default;
+                        }
                     }
 
                     return default;
