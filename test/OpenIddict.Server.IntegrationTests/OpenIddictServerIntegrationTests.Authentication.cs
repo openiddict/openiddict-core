@@ -32,7 +32,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractAuthorizationRequest_UnexpectedMethodReturnsAnError(string method)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.SendAsync(method, "/connect/authorize", new OpenIddictRequest());
@@ -46,7 +47,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractAuthorizationRequest_UnsupportedRequestParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -69,7 +71,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractAuthorizationRequest_UnsupportedRequestUriParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -97,7 +100,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractAuthorizationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -109,6 +112,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/connect/authorize");
@@ -123,7 +128,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractAuthorizationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -141,6 +146,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/connect/authorize");
 
@@ -152,7 +159,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractAuthorizationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -165,6 +172,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/connect/authorize");
 
@@ -176,7 +185,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingClientIdCausesAnError()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -193,7 +203,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingRedirectUriCausesAnErrorForOpenIdRequests()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -216,7 +227,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_InvalidRedirectUriCausesAnError(string address, string message)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -235,7 +247,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingResponseTypeCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -261,7 +274,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_UnsafeResponseModeCausesAnError(string type, string mode)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -288,7 +302,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingNonceCausesAnErrorForOpenIdRequests(string type)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -312,7 +327,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingOpenIdScopeCausesAnErrorForOpenIdRequests(string type)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -334,7 +350,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_InvalidPromptCausesAnError(string prompt)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -364,7 +381,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_ValidPromptDoesNotCauseAnError(string prompt)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -377,6 +394,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -404,7 +423,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingCodeResponseTypeCausesAnErrorWhenCodeChallengeIsUsed(string type)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -428,7 +448,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingCodeChallengeCausesAnErrorWhenCodeChallengeMethodIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -449,7 +470,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_InvalidCodeChallengeMethodCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -471,7 +493,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_NoneFlowIsRejected()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -490,7 +513,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_UnknownResponseTypeParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -519,10 +543,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCorrespondingFlowIsDisabled(string flow, string type)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.GrantTypes.Remove(flow));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -543,7 +569,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenUnregisteredScopeIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(CreateApplicationManager(mock =>
                 {
@@ -568,6 +594,8 @@ namespace OpenIddict.Server.FunctionalTests
                 }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -586,7 +614,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenScopeRegisteredInOptionsIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.RegisterScopes("registered_scope");
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
@@ -631,6 +659,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -652,7 +682,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenRegisteredScopeIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 var scope = new OpenIddictScope();
 
@@ -696,6 +726,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -717,10 +749,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestWithOfflineAccessScopeIsRejectedWhenRefreshTokenFlowIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Configure(options => options.GrantTypes.Remove(GrantTypes.RefreshToken));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -740,7 +774,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_UnknownResponseModeParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -760,7 +795,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsMissing()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -781,12 +817,14 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenCodeChallengeMethodIsNotEnabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.Services.PostConfigure<OpenIddictServerOptions>(options =>
                     options.CodeChallengeMethods.Clear());
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -807,7 +845,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenPlainCodeChallengeMethodIsNotExplicitlyEnabled()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -831,7 +870,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsValidatedWhenCodeChallengeMethodIsRegistered(string method)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.Configure(options => options.CodeChallengeMethods.Clear());
@@ -846,6 +885,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -870,7 +911,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_PkceRequestWithForbiddenResponseTypeIsRejected(string type)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -893,7 +935,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenRedirectUriIsMissing()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -913,7 +956,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_MissingRedirectUriCausesAnException()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
@@ -934,7 +978,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_InvalidRedirectUriCausesAnException()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -946,6 +990,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
@@ -973,10 +1019,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(value: null);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1012,10 +1060,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1054,12 +1104,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreEndpointPermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1128,12 +1180,14 @@ namespace OpenIddict.Server.FunctionalTests
                 }
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreGrantTypePermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1176,12 +1230,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreGrantTypePermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1215,10 +1271,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1259,12 +1317,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
                 options.RegisterScopes(Scopes.Email, Scopes.Profile);
                 options.Configure(options => options.IgnoreScopePermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1308,10 +1368,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1351,7 +1413,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableAuthorizationStorage();
@@ -1369,6 +1431,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1407,7 +1471,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
                 options.DisableAuthorizationStorage();
@@ -1425,6 +1489,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1455,7 +1521,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1467,6 +1533,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1487,7 +1555,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1504,6 +1572,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1522,7 +1592,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateAuthorizationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1534,6 +1604,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1559,7 +1631,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleAuthorizationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1571,6 +1643,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1591,7 +1665,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleAuthorizationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1608,6 +1682,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1626,7 +1702,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleAuthorizationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1638,6 +1714,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1663,7 +1741,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyAuthorizationResponse_ResponseModeIsAutomaticallyInferred(string type, string mode)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1685,6 +1763,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1703,7 +1783,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyAuthorizationResponse_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1730,6 +1810,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1747,7 +1829,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyAuthorizationResponse_ResponseContainsCustomParameters()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1774,6 +1856,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1796,7 +1880,7 @@ namespace OpenIddict.Server.FunctionalTests
             // To emulate this behavior, the error property is manually set to null.
 
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1808,6 +1892,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
@@ -1826,7 +1912,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyAuthorizationResponse_DoesNotSetStateWhenUserIsNotRedirected()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1848,6 +1934,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
             {
@@ -1864,7 +1952,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyAuthorizationResponse_FlowsStateWhenRedirectUriIsUsed()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1877,6 +1965,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1895,7 +1985,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyAuthorizationResponse_DoesNotOverrideStateSetByApplicationCode()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1916,6 +2006,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
@@ -1939,7 +2031,7 @@ namespace OpenIddict.Server.FunctionalTests
             // as validated and a signin grant is applied to return an authorization response.
 
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1952,6 +2044,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest

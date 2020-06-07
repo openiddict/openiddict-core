@@ -31,7 +31,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractRevocationRequest_UnexpectedMethodReturnsAnError(string method)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.SendAsync(method, "/connect/revoke", new OpenIddictRequest());
@@ -52,7 +53,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractRevocationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -64,6 +65,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest());
@@ -78,7 +81,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractRevocationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -96,6 +99,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest());
 
@@ -107,7 +112,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractRevocationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -120,6 +125,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest());
 
@@ -131,7 +138,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateRevocationRequest_MissingTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -148,7 +156,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateRevocationRequest_IdentityTokenCausesAnUnsupportedTokenTypeError()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -171,6 +179,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -188,7 +198,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateRevocationRequest_AuthorizationCodeCausesAnErrorWhenCallerIsNotAValidPresenter()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -211,6 +221,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -228,7 +240,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateRevocationRequest_AccessTokenCausesAnErrorWhenCallerIsNotAValidAudienceOrPresenter()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -252,6 +264,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -269,7 +283,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateRevocationRequest_RefreshTokenCausesAnErrorWhenCallerIsNotAValidPresenter()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -292,6 +306,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.RemoveEventHandler(NormalizeErrorResponse.Descriptor);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -309,10 +325,12 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateRevocationRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
         {
             // Arrange
-            var client = CreateClient(builder =>
+            await using var server = await CreateServerAsync(builder =>
             {
                 builder.Configure(options => options.AcceptAnonymousClients = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -336,10 +354,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(value: null);
             });
 
-            var client = CreateClient(builder =>
+            await using var server = await CreateServerAsync(builder =>
             {
                 builder.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -375,12 +395,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(builder =>
+            await using var server = await CreateServerAsync(builder =>
             {
                 builder.Services.AddSingleton(manager);
 
                 builder.Configure(options => options.IgnoreEndpointPermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -414,10 +436,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(builder =>
+            await using var server = await CreateServerAsync(builder =>
             {
                 builder.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -451,10 +475,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(builder =>
+            await using var server = await CreateServerAsync(builder =>
             {
                 builder.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -491,10 +517,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(builder =>
+            await using var server = await CreateServerAsync(builder =>
             {
                 builder.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -525,7 +553,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateRevocationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -553,6 +581,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -569,7 +599,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateRevocationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -602,6 +632,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -616,7 +648,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateRevocationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -644,6 +676,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -664,7 +698,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(value: null);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -686,6 +720,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -722,7 +758,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(TokenTypeHints.RefreshToken);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -744,6 +780,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -783,7 +821,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -805,6 +843,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
@@ -830,7 +870,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleRevocationRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -858,6 +898,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -874,7 +916,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleRevocationRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -907,6 +949,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -921,7 +965,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleRevocationRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -949,6 +993,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -963,7 +1009,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyRevocationResponse_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -996,6 +1042,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest
             {
@@ -1010,7 +1058,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyRevocationResponse_ResponseContainsCustomParameters()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1027,6 +1075,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest

@@ -28,7 +28,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractLogoutRequest_UnexpectedMethodReturnsAnError(string method)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.SendAsync(method, "/connect/logout", new OpenIddictRequest());
@@ -49,7 +50,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractLogoutRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -61,6 +62,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
@@ -75,7 +78,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractLogoutRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -93,6 +96,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/connect/logout");
 
@@ -104,7 +109,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractLogoutRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -116,6 +121,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.GetAsync("/connect/logout");
@@ -132,7 +139,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateLogoutRequest_RequestIsRejectedWhenRedirectUriIsInvalid(string address, string message)
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
@@ -155,10 +163,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .Returns(AsyncEnumerable.Empty<OpenIddictApplication>());
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
@@ -195,12 +205,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreEndpointPermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
@@ -243,13 +255,15 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.SetLogoutEndpointUris("/signout");
                 options.Configure(options => options.IgnoreEndpointPermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/signout", new OpenIddictRequest
@@ -278,7 +292,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateLogoutRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -290,6 +304,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
@@ -304,7 +320,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateLogoutRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -322,6 +338,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
@@ -333,7 +351,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateLogoutRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -345,6 +363,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
@@ -364,7 +384,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleLogoutRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -376,6 +396,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
@@ -390,7 +412,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleLogoutRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -408,6 +430,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
@@ -419,7 +443,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleLogoutRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -432,6 +456,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
@@ -443,7 +469,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyLogoutResponse_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -461,6 +487,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
 
@@ -472,7 +500,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyLogoutResponse_ResponseContainsCustomParameters()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -490,6 +518,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
             {
@@ -505,11 +535,13 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyLogoutResponse_DoesNotSetStateWhenUserIsNotRedirected()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.SetLogoutEndpointUris("/signout");
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/signout", new OpenIddictRequest
@@ -525,11 +557,13 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyLogoutResponse_FlowsStateWhenRedirectUriIsUsed()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.SetLogoutEndpointUris("/signout");
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/signout", new OpenIddictRequest
@@ -546,7 +580,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyLogoutResponse_DoesNotOverrideStateSetByApplicationCode()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.SetLogoutEndpointUris("/signout");
@@ -559,6 +593,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/signout", new OpenIddictRequest

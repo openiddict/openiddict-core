@@ -30,7 +30,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ProcessChallenge_ReturnsErrorFromAuthenticationProperties()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.SetTokenEndpointUris("/challenge/custom");
@@ -43,6 +43,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/challenge/custom", new OpenIddictRequest
@@ -128,10 +130,10 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         [InlineData("/.WELL-KNOWN/JWKS/SUBPATH", OpenIddictServerEndpointType.Unknown)]
         [InlineData("/.well-known/jwks/subpath/", OpenIddictServerEndpointType.Unknown)]
         [InlineData("/.WELL-KNOWN/JWKS/SUBPATH/", OpenIddictServerEndpointType.Unknown)]
-        public Task ProcessRequest_MatchesCorrespondingEndpoint(string path, OpenIddictServerEndpointType type)
+        public async Task ProcessRequest_MatchesCorrespondingEndpoint(string path, OpenIddictServerEndpointType type)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -145,8 +147,10 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
-            return client.PostAsync(path, new OpenIddictRequest());
+            await client.PostAsync(path, new OpenIddictRequest());
         }
 
         [Theory]
@@ -159,10 +163,10 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         [InlineData("/custom/connect/userinfo", OpenIddictServerEndpointType.Userinfo)]
         [InlineData("/custom/.well-known/openid-configuration", OpenIddictServerEndpointType.Configuration)]
         [InlineData("/custom/.well-known/jwks", OpenIddictServerEndpointType.Cryptography)]
-        public Task ProcessRequest_AllowsOverridingEndpoint(string address, OpenIddictServerEndpointType type)
+        public async Task ProcessRequest_AllowsOverridingEndpoint(string address, OpenIddictServerEndpointType type)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -183,8 +187,10 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
-            return client.PostAsync(address, new OpenIddictRequest());
+            await client.PostAsync(address, new OpenIddictRequest());
         }
 
         [Theory]
@@ -199,13 +205,15 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ProcessRequest_RejectsInsecureHttpRequests(string address)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
                 options.UseOwin()
                        .Configure(options => options.DisableTransportSecurityRequirement = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync(address, new OpenIddictRequest());
@@ -228,7 +236,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ProcessRequest_AllowsHandlingResponse(string address)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -245,6 +253,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync(address, new OpenIddictRequest());
@@ -266,7 +276,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ProcessRequest_AllowsSkippingHandler(string address)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -279,6 +289,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync(address, new OpenIddictRequest());
 
@@ -286,7 +298,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
             Assert.Equal("Bob le Magnifique", (string) response["name"]);
         }
 
-        protected override OpenIddictServerIntegrationTestClient CreateClient(Action<OpenIddictServerBuilder> configuration = null)
+        protected override ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder> configuration = null)
         {
             var services = new ServiceCollection();
             ConfigureServices(services);
@@ -402,7 +414,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                 });
             });
 
-            return new OpenIddictServerIntegrationTestClient(server.HttpClient);
+            return new ValueTask<OpenIddictServerIntegrationTestServer>(
+                new OpenIddictServerOwinIntegrationTestServer(server));
         }
     }
 }

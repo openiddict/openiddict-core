@@ -21,7 +21,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         public async Task ExtractTokenRequest_MultipleClientCredentialsCauseAnError()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -38,6 +38,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     builder.SetOrder(int.MinValue);
                 });
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
