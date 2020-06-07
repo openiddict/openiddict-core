@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.FunctionalTests;
 using Xunit;
@@ -398,8 +399,11 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
 
         protected override OpenIddictServerIntegrationTestClient CreateClient(Action<OpenIddictServerBuilder> configuration = null)
         {
+#if SUPPORTS_GENERIC_HOST
+            var builder = new HostBuilder();
+#else
             var builder = new WebHostBuilder();
-
+#endif
             builder.UseEnvironment("Testing");
 
             builder.ConfigureServices(ConfigureServices);
@@ -416,7 +420,25 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                     });
             });
 
-            builder.Configure(app =>
+#if SUPPORTS_GENERIC_HOST
+            builder.ConfigureWebHost(options =>
+            {
+                options.UseTestServer();
+                options.Configure(ConfigurePipeline);
+            });
+#else
+            builder.Configure(ConfigurePipeline);
+#endif
+
+#if SUPPORTS_GENERIC_HOST
+            var host = builder.Start();
+            var server = host.GetTestServer();
+#else
+            var server = new TestServer(builder);
+#endif
+            return new OpenIddictServerIntegrationTestClient(server.CreateClient());
+
+            void ConfigurePipeline(IApplicationBuilder app)
             {
                 app.Use(next => async context =>
                 {
@@ -544,10 +566,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
                         name = "Bob le Magnifique"
                     }));
                 });
-            });
-
-            var server = new TestServer(builder);
-            return new OpenIddictServerIntegrationTestClient(server.CreateClient());
+            }
         }
     }
 }
