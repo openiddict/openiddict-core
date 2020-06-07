@@ -19,7 +19,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         public async Task ExtractLogoutRequest_RequestIdParameterIsRejectedWhenRequestCachingIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
@@ -36,13 +37,15 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         public async Task ExtractLogoutRequest_InvalidRequestIdParameterIsRejected()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddDistributedMemoryCache();
 
                 options.UseAspNetCore()
                        .EnableLogoutEndpointCaching();
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/logout", new OpenIddictRequest

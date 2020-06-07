@@ -20,7 +20,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
         public async Task ExtractRevocationRequest_MultipleClientCredentialsCauseAnError()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -37,6 +37,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
                     builder.SetOrder(int.MinValue);
                 });
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/revoke", new OpenIddictRequest

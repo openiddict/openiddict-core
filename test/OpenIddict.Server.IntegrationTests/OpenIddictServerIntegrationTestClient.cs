@@ -23,7 +23,7 @@ namespace OpenIddict.Server.FunctionalTests
     /// Exposes methods that allow sending OpenID Connect
     /// requests and extracting the corresponding responses.
     /// </summary>
-    public class OpenIddictServerIntegrationTestClient
+    public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the OpenID Connect client.
@@ -499,6 +499,13 @@ namespace OpenIddict.Server.FunctionalTests
             }
 
             return new OpenIddictResponse();
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            HttpClient.Dispose();
+
+            return default;
         }
     }
 }

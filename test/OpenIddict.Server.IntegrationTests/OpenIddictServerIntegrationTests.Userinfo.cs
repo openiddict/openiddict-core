@@ -28,7 +28,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractUserinfoRequest_UnexpectedMethodReturnsAnError(string method)
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.SendAsync(method, "/connect/userinfo", new OpenIddictRequest());
@@ -49,7 +50,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractUserinfoRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -61,6 +62,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest());
@@ -75,7 +78,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractUserinfoRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -93,6 +96,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/connect/userinfo");
 
@@ -104,7 +109,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractUserinfoRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -117,6 +122,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.GetAsync("/connect/userinfo");
 
@@ -128,7 +135,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateUserinfoRequest_MissingTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
@@ -144,7 +152,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateUserinfoRequest_InvalidTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient();
+            await using var server = await CreateServerAsync();
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
@@ -161,7 +170,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateUserinfoRequest_ExpiredTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -181,6 +190,8 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
@@ -204,7 +215,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateUserinfoRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -232,6 +243,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -248,7 +261,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateUserinfoRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -281,6 +294,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -295,7 +310,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateUserinfoRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -323,6 +338,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -337,7 +354,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_BasicClaimsAreCorrectlyReturned()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -359,6 +376,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -376,7 +395,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_NonBasicClaimsAreNotReturnedWhenNoScopeWasGranted()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -406,6 +425,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -423,7 +444,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_ProfileClaimsAreCorrectlyReturned()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -452,6 +473,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -468,7 +491,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_EmailClaimIsCorrectlyReturned()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -492,6 +515,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -506,7 +531,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_PhoneClaimIsCorrectlyReturned()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -530,6 +555,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -551,7 +578,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -579,6 +606,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -595,7 +624,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -628,6 +657,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -642,7 +673,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleUserinfoRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -670,6 +701,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -684,7 +717,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyUserinfoResponse_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -717,6 +750,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest
             {
@@ -731,7 +766,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyUserinfoResponse_ResponseContainsCustomParameters()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -763,6 +798,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest

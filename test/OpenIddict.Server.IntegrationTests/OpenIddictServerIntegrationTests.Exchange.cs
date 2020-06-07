@@ -33,7 +33,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractTokenRequest_UnexpectedMethodReturnsAnError(string method)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.SendAsync(method, "/connect/token", new OpenIddictRequest());
@@ -54,7 +55,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractTokenRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -66,6 +67,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest());
@@ -80,7 +83,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractTokenRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -98,6 +101,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest());
 
@@ -109,7 +114,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ExtractTokenRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -122,6 +127,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest());
 
@@ -133,7 +140,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_MissingGrantTypeCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -150,7 +158,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_MissingClientIdCausesAnErrorForCodeFlowRequests()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -169,7 +178,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_MissingCodeCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -188,7 +198,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_MissingRefreshTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -209,7 +220,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_MissingClientCredentialsCauseAnError(string identifier, string secret)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -232,7 +244,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_MissingUserCredentialsCauseAnError(string username, string password)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -251,7 +264,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_InvalidAuthorizationCodeCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -270,7 +284,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_InvalidRefreshTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -288,7 +303,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_ExpiredAuthorizationCodeCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -311,6 +326,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -328,7 +345,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_ExpiredRefreshTokenCausesAnError()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -351,6 +368,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -367,7 +386,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenPresentersAreMissing()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -390,6 +409,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
             {
@@ -408,7 +429,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCallerIsNotAPresenter()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -431,6 +452,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -448,7 +471,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_RefreshTokenCausesAnErrorWhenCallerIsNotAPresenter()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -471,6 +494,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -488,7 +513,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenRedirectUriIsMissing()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -511,6 +536,8 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -530,7 +557,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenRedirectUriIsInvalid()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -553,6 +580,8 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -573,7 +602,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_RequestCausesErrorWhenSendingCodeVerifier()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -596,6 +625,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -614,7 +645,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeVerifierIsMissing()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -639,6 +670,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -657,7 +690,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeChallengeMethodIsMIssing()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -682,6 +715,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
             {
@@ -701,7 +736,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeChallengeMethodIsInvalid()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -726,6 +761,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
             {
@@ -747,7 +784,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenCodeVerifierIsInvalid(string method, string challenge, string verifier)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -772,6 +809,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -792,7 +831,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_TokenRequestSucceedsWhenCodeVerifierIsValid(string method, string challenge, string verifier)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -826,6 +865,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -843,7 +884,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenScopeIsUnexpected()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -866,6 +907,8 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -885,7 +928,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AuthorizationCodeCausesAnErrorWhenScopeIsInvalid()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -909,6 +952,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -927,7 +972,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_RefreshTokenCausesAnErrorWhenScopeIsUnexpected()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -950,6 +995,8 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -967,7 +1014,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_RefreshTokenCausesAnErrorWhenScopeIsInvalid()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -989,6 +1036,8 @@ namespace OpenIddict.Server.FunctionalTests
                     builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
                 });
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1011,12 +1060,14 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_RequestIsRejectedWhenFlowIsNotEnabled(string flow)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
                 options.Configure(options => options.GrantTypes.Remove(flow));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1037,12 +1088,14 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_RequestWithOfflineAccessScopeIsRejectedWhenRefreshTokenFlowIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
                 options.Configure(options => options.GrantTypes.Remove(GrantTypes.RefreshToken));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1062,7 +1115,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_RequestIsRejectedWhenUnregisteredScopeIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(CreateScopeManager(mock =>
                 {
@@ -1072,6 +1125,8 @@ namespace OpenIddict.Server.FunctionalTests
                         .Returns(AsyncEnumerable.Empty<OpenIddictScope>());
                 }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1091,7 +1146,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_RequestIsValidatedWhenScopeRegisteredInOptionsIsSpecified()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.RegisterScopes("registered_scope");
@@ -1105,6 +1160,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1139,7 +1196,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync("scope_registered_in_database");
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.RegisterScopes("scope_registered_in_options");
                 options.SetRevocationEndpointUris(Array.Empty<Uri>());
@@ -1157,6 +1214,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1180,7 +1239,8 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_ClientCredentialsRequestIsRejectedWhenCredentialsAreMissing(string identifier, string secret)
         {
             // Arrange
-            var client = CreateClient(options => options.EnableDegradedMode());
+            await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1200,11 +1260,13 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
                 options.Configure(options => options.AcceptAnonymousClients = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1230,10 +1292,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(value: null);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1266,10 +1330,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1302,10 +1368,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1340,10 +1408,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1381,10 +1451,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1424,12 +1496,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreEndpointPermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1468,12 +1542,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreGrantTypePermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1516,12 +1592,14 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.Configure(options => options.IgnoreGrantTypePermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1564,13 +1642,15 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
 
                 options.RegisterScopes(Scopes.Email, Scopes.Profile);
                 options.Configure(options => options.IgnoreScopePermissions = false);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1615,10 +1695,12 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1657,7 +1739,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -1684,6 +1766,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.DisableTokenStorage();
                 options.DisableSlidingExpiration();
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1721,7 +1805,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -1751,6 +1835,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.DisableSlidingExpiration();
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -1779,7 +1865,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1791,6 +1877,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1810,7 +1898,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1828,6 +1916,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -1844,7 +1934,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ValidateTokenRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -1856,6 +1946,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -1873,7 +1965,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleTokenRequest_AuthorizationCodeRevocationIsIgnoredWhenTokenStorageIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -1919,6 +2011,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.DisableSlidingExpiration();
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -1936,7 +2030,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleTokenRequest_RefreshTokenRevocationIsIgnoredWhenTokenStorageIsDisabled()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -1970,6 +2064,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.DisableSlidingExpiration();
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -1991,7 +2087,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(value: null);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2033,6 +2129,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -2060,7 +2158,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(value: null);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2092,6 +2190,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -2125,7 +2225,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2168,6 +2268,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -2204,7 +2306,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(true);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2236,6 +2338,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.Services.AddSingleton(manager);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -2263,7 +2367,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(authorization);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2328,6 +2432,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.Services.AddSingleton(manager);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -2357,7 +2463,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(authorization);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2410,6 +2516,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.Services.AddSingleton(manager);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -2458,7 +2566,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .Returns(tokens.ToAsyncEnumerable());
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2502,6 +2610,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -2556,7 +2666,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .Returns(tokens.ToAsyncEnumerable());
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2589,6 +2699,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -2629,7 +2741,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2674,6 +2786,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.Services.AddSingleton(manager);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -2713,7 +2827,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2747,6 +2861,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.Services.AddSingleton(manager);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -2772,7 +2888,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(new OpenIddictAuthorization());
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2845,6 +2961,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.DisableAuthorizationStorage();
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -2872,7 +2990,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(new OpenIddictAuthorization());
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -2930,6 +3048,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.DisableAuthorizationStorage();
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -2953,7 +3073,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(value: null);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -3017,6 +3137,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -3049,7 +3171,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -3114,6 +3236,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.Services.AddSingleton(manager);
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -3141,7 +3265,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(value: null);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -3193,6 +3317,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -3223,7 +3349,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(false);
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -3275,6 +3401,8 @@ namespace OpenIddict.Server.FunctionalTests
 
                 options.Services.AddSingleton(manager);
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -3323,7 +3451,7 @@ namespace OpenIddict.Server.FunctionalTests
                     .ReturnsAsync(new OpenIddictToken());
             });
 
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.AddEventHandler<ProcessAuthenticationContext>(builder =>
                 {
@@ -3375,6 +3503,8 @@ namespace OpenIddict.Server.FunctionalTests
                 options.DisableAuthorizationStorage();
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -3403,7 +3533,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleTokenRequest_AllowsRejectingRequest(string error, string description, string uri)
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -3415,6 +3545,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -3434,7 +3566,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleTokenRequest_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -3452,6 +3584,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -3468,7 +3602,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task HandleTokenRequest_AllowsSkippingHandler()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -3480,6 +3614,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
@@ -3497,7 +3633,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyTokenResponse_AllowsHandlingResponse()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -3524,6 +3660,8 @@ namespace OpenIddict.Server.FunctionalTests
                     }));
             });
 
+            await using var client = await server.CreateClientAsync();
+
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
             {
@@ -3540,7 +3678,7 @@ namespace OpenIddict.Server.FunctionalTests
         public async Task ApplyTokenResponse_ResponseContainsCustomParameters()
         {
             // Arrange
-            var client = CreateClient(options =>
+            await using var server = await CreateServerAsync(options =>
             {
                 options.EnableDegradedMode();
 
@@ -3566,6 +3704,8 @@ namespace OpenIddict.Server.FunctionalTests
                         return default;
                     }));
             });
+
+            await using var client = await server.CreateClientAsync();
 
             // Act
             var response = await client.PostAsync("/connect/token", new OpenIddictRequest
