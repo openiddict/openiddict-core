@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
@@ -1206,19 +1207,20 @@ namespace OpenIddict.Core
                 payload[0] = 0x01;
 
                 // Write the hashing algorithm version.
-                WriteNetworkByteOrder(payload, 1, algorithm switch
+                BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(1, 4), algorithm switch
                 {
-                    { Name: nameof(SHA1)   } => (uint) 0,
-                    { Name: nameof(SHA256) } => (uint) 1,
-                    { Name: nameof(SHA512) } => (uint) 2,
+                    { Name: nameof(SHA1)   } => 0,
+                    { Name: nameof(SHA256) } => 1,
+                    { Name: nameof(SHA512) } => 2,
+
                     _ => throw new InvalidOperationException("The specified HMAC algorithm is not valid.")
                 });
 
                 // Write the iteration count of the algorithm.
-                WriteNetworkByteOrder(payload, 5, (uint) iterations);
+                BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(5, 8), (uint) iterations);
 
                 // Write the size of the salt.
-                WriteNetworkByteOrder(payload, 9, (uint) salt.Length);
+                BinaryPrimitives.WriteUInt32BigEndian(payload.Slice(9, 12), (uint) salt.Length);
 
                 // Write the salt.
                 salt.CopyTo(payload.Slice(13));
@@ -1227,14 +1229,6 @@ namespace OpenIddict.Core
                 key.CopyTo(payload.Slice(13 + salt.Length));
 
                 return payload;
-            }
-
-            static void WriteNetworkByteOrder(Span<byte> buffer, int offset, uint value)
-            {
-                buffer[offset + 0] = (byte) (value >> 24);
-                buffer[offset + 1] = (byte) (value >> 16);
-                buffer[offset + 2] = (byte) (value >> 8);
-                buffer[offset + 3] = (byte) (value >> 0);
             }
         }
 
@@ -1294,19 +1288,20 @@ namespace OpenIddict.Core
                 }
 
                 // Read the hashing algorithm version.
-                var algorithm = (int) ReadNetworkByteOrder(payload, 1) switch
+                var algorithm = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(1, 4)) switch
                 {
                     0 => HashAlgorithmName.SHA1,
                     1 => HashAlgorithmName.SHA256,
                     2 => HashAlgorithmName.SHA512,
+
                     _ => throw new InvalidOperationException("The specified hash algorithm is not valid.")
                 };
 
                 // Read the iteration count of the algorithm.
-                var iterations = (int) ReadNetworkByteOrder(payload, 5);
+                var iterations = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(5, 8));
 
                 // Read the size of the salt and ensure it's more than 128 bits.
-                var saltLength = (int) ReadNetworkByteOrder(payload, 9);
+                var saltLength = (int) BinaryPrimitives.ReadUInt32BigEndian(payload.Slice(9, 12));
                 if (saltLength < 128 / 8)
                 {
                     return false;
@@ -1332,12 +1327,6 @@ namespace OpenIddict.Core
                     b: DeriveKey(secret, salt, algorithm, iterations, keyLength));
 #endif
             }
-
-            static uint ReadNetworkByteOrder(ReadOnlySpan<byte> buffer, int offset) =>
-                ((uint) buffer[offset + 0] << 24) |
-                ((uint) buffer[offset + 1] << 16) |
-                ((uint) buffer[offset + 2] << 8)  |
-                ((uint) buffer[offset + 3]);
         }
 
         private static byte[] DeriveKey(string secret, ReadOnlySpan<byte> salt,
