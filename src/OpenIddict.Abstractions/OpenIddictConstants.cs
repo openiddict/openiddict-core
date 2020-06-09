@@ -8,12 +8,6 @@ namespace OpenIddict.Abstractions
 {
     public static class OpenIddictConstants
     {
-        public static class AuthorizationTypes
-        {
-            public const string AdHoc = "ad-hoc";
-            public const string Permanent = "permanent";
-        }
-
         public static class Algorithms
         {
             public const string EcdsaSha256 = "ES256";
@@ -28,6 +22,36 @@ namespace OpenIddict.Abstractions
             public const string RsaSsaPssSha256 = "PS256";
             public const string RsaSsaPssSha384 = "PS384";
             public const string RsaSsaPssSha512 = "PS512";
+        }
+
+        public static class AuthenticationMethodReferences
+        {
+            public const string Face = "face";
+            public const string Fingerprint = "fpt";
+            public const string Geolocation = "geo";
+            public const string HardwareKey = "hwk";
+            public const string Iris = "iris";
+            public const string KnowledgeBased = "kba";
+            public const string MultiChannel = "mca";
+            public const string MultiFactor = "mfa";
+            public const string OneTimePassword = "otp";
+            public const string Password = "pwd";
+            public const string PersonalIdentificationNumber = "pin";
+            public const string Retina = "retina";
+            public const string RiskBased = "rba";
+            public const string ShortMessageService = "sms";
+            public const string SmartCard = "sc";
+            public const string SoftwareKey = "swk";
+            public const string Telephone = "tel";
+            public const string UserPresence = "user";
+            public const string Voiceprint = "vbm";
+            public const string WindowsIntegratedAuthentication = "wia";
+        }
+
+        public static class AuthorizationTypes
+        {
+            public const string AdHoc = "ad-hoc";
+            public const string Permanent = "permanent";
         }
 
         public static class Claims
