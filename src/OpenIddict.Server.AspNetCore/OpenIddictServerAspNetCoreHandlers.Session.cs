@@ -126,10 +126,8 @@ namespace OpenIddict.Server.AspNetCore
                     }
 
                     var parameters = context.Options.TokenValidationParameters.Clone();
-                    parameters.IssuerSigningKeys = context.Options.SigningCredentials.Select(credentials => credentials.Key);
-                    parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
+                    parameters.ValidIssuer ??= context.Issuer?.AbsoluteUri;
                     parameters.ValidAudience = context.Issuer?.AbsoluteUri;
-                    parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
                     parameters.ValidTypes = new[] { JsonWebTokenTypes.Private.LogoutRequest };
 
                     var result = context.Options.JsonWebTokenHandler.ValidateToken(token, parameters);

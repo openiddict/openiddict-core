@@ -215,11 +215,15 @@ namespace OpenIddict.Validation
                 var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
                     throw new InvalidOperationException("An unknown error occurred while retrieving the server configuration.");
 
-                // Clone the token validation parameters and set the issuer and the signing keys using the
+                // Clone the token validation parameters and set the issuer using the value found in the
                 // OpenID Connect server configuration (that can be static or retrieved using discovery).
                 var parameters = context.Options.TokenValidationParameters.Clone();
-                parameters.ValidIssuer = configuration.Issuer ?? context.Issuer?.AbsoluteUri;
-                parameters.IssuerSigningKeys = configuration.SigningKeys;
+                parameters.ValidIssuer ??= configuration.Issuer ?? context.Issuer?.AbsoluteUri;
+
+                // Combine the signing keys registered statically in the token validation parameters
+                // with the signing keys resolved from the OpenID Connect server configuration.
+                parameters.IssuerSigningKeys =
+                    parameters.IssuerSigningKeys?.Concat(configuration.SigningKeys) ?? configuration.SigningKeys;
 
                 // If a specific token type is expected, override the default valid types to reject
                 // security tokens whose actual token type doesn't match the expected token type.
@@ -235,11 +239,6 @@ namespace OpenIddict.Validation
                         }
                     };
                 }
-
-                // Populate the token decryption keys from the encryption credentials set in the options.
-                parameters.TokenDecryptionKeys =
-                    from credentials in context.Options.EncryptionCredentials
-                    select credentials.Key;
 
                 // If the token cannot be validated, don't return an error to allow another handle to validate it.
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);

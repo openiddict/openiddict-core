@@ -439,9 +439,7 @@ namespace OpenIddict.Server
                 }
 
                 var parameters = context.Options.TokenValidationParameters.Clone();
-                parameters.ValidIssuer = context.Issuer?.AbsoluteUri;
-                parameters.IssuerSigningKeys = context.Options.SigningCredentials.Select(credentials => credentials.Key);
-                parameters.TokenDecryptionKeys = context.Options.EncryptionCredentials.Select(credentials => credentials.Key);
+                parameters.ValidIssuer ??= context.Issuer?.AbsoluteUri;
 
                 // If a specific token type is expected, override the default valid types to reject
                 // security tokens whose actual token type doesn't match the expected token type.

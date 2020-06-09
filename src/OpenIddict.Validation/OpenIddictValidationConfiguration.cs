@@ -158,6 +158,11 @@ namespace OpenIddict.Validation
                     };
                 }
             }
+
+            // Attach the encryption credentials to the token validation parameters.
+            options.TokenValidationParameters.TokenDecryptionKeys =
+                from credentials in options.EncryptionCredentials
+                select credentials.Key;
         }
     }
 }
