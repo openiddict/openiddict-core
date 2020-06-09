@@ -290,6 +290,16 @@ namespace OpenIddict.Server
                 key.KeyId = GetKeyIdentifier(key);
             }
 
+            // Attach the signing credentials to the token validation parameters.
+            options.TokenValidationParameters.IssuerSigningKeys =
+                from credentials in options.SigningCredentials
+                select credentials.Key;
+
+            // Attach the encryption credentials to the token validation parameters.
+            options.TokenValidationParameters.TokenDecryptionKeys =
+                from credentials in options.EncryptionCredentials
+                select credentials.Key;
+
             static string GetKeyIdentifier(SecurityKey key)
             {
                 // When no key identifier can be retrieved from the security keys, a value is automatically
