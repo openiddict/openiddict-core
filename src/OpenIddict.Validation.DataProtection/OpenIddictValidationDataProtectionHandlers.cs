@@ -16,10 +16,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using static OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants;
+using static OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Purposes;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.OpenIddictValidationHandlers;
 using Properties = OpenIddict.Validation.OpenIddictValidationConstants.Properties;
+using Schemes = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Purposes.Schemes;
 
 namespace OpenIddict.Validation.DataProtection
 {
@@ -80,12 +81,17 @@ namespace OpenIddict.Validation.DataProtection
                 }
 
                 // Create a Data Protection protector using the provider registered in the options.
-                var protector = context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier) ?
-                    _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                        Purposes.Handlers.Server, Purposes.Formats.AccessToken,
-                        Purposes.Features.ReferenceTokens, Purposes.Schemes.Server) :
-                    _options.CurrentValue.DataProtectionProvider.CreateProtector(
-                        Purposes.Handlers.Server, Purposes.Formats.AccessToken, Purposes.Schemes.Server);
+                var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(context.TokenType switch
+                {
+                    null => throw new InvalidOperationException("Generic token validation is not supported by the validation handler."),
+
+                    TokenTypeHints.AccessToken when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
+                        => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
+
+                    TokenTypeHints.AccessToken => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
+
+                    _ => throw new InvalidOperationException("The specified token type is not supported.")
+                });
 
                 try
                 {
@@ -94,7 +100,7 @@ namespace OpenIddict.Validation.DataProtection
 
                     // Note: since the data format relies on a data protector using different "purposes" strings
                     // per token type, the token processed at this stage is guaranteed to be of the expected type.
-                    context.Principal = _options.CurrentValue.Formatter.ReadToken(reader)?.SetTokenType(TokenTypeHints.AccessToken);
+                    context.Principal = _options.CurrentValue.Formatter.ReadToken(reader)?.SetTokenType(context.TokenType);
                 }
 
                 catch (Exception exception)
@@ -108,8 +114,8 @@ namespace OpenIddict.Validation.DataProtection
                     return default;
                 }
 
-                context.Logger.LogTrace("The self-contained DP token '{Token}' was successfully validated and the following " +
-                                        "claims could be extracted: {Claims}.", context.Token, context.Principal.Claims);
+                context.Logger.LogTrace("The DP token '{Token}' was successfully validated and the following claims " +
+                                        "could be extracted: {Claims}.", context.Token, context.Principal.Claims);
 
                 return default;
             }
