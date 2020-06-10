@@ -533,6 +533,55 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
+        public async Task ProcessAuthentication_MultiplePublicScopesAreNormalizedToSingleClaim()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+                options.SetUserinfoEndpointUris("/authenticate");
+
+                options.AddEventHandler<HandleUserinfoRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.SkipRequest();
+
+                        return default;
+                    }));
+
+                options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+                {
+                    builder.UseInlineHandler(context =>
+                    {
+                        Assert.Equal("access_token", context.Token);
+                        Assert.Equal(TokenTypeHints.AccessToken, context.TokenType);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeHints.AccessToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique")
+                            .SetClaims(Claims.Scope, ImmutableArray.Create(Scopes.OpenId, Scopes.Profile));
+
+                        return default;
+                    });
+
+                    builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+                });
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.GetAsync("/authenticate", new OpenIddictRequest
+            {
+                AccessToken = "access_token"
+            });
+
+            // Assert
+            Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
+            Assert.Equal("openid profile", (string) response[Claims.Scope]);
+        }
+
+        [Fact]
         public async Task ProcessAuthentication_SinglePublicScopeIsMappedToPrivateClaims()
         {
             // Arrange
@@ -578,7 +627,6 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal("openid profile", (string) response[Claims.Scope]);
             Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]) response[Claims.Private.Scope]);
         }
 
@@ -628,7 +676,6 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal("Bob le Magnifique", (string) response[Claims.Subject]);
-            Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]) response[Claims.Scope]);
             Assert.Equal(new[] { Scopes.OpenId, Scopes.Profile }, (string[]) response[Claims.Private.Scope]);
         }
 
