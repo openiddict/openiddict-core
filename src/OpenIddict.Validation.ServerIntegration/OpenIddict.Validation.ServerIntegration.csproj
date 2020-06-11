@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>OpenID Connect validation/server integration for OpenIddict.</Description>
+    <Description>Local server integration package for the OpenIddict validation services.</Description>
     <PackageTags>$(PackageTags);server;validation</PackageTags>
   </PropertyGroup>
 

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Document-oriented entities for the MongoDB stores.</Description>
+    <Description>Document-oriented entities for the OpenIddict MongoDB stores.</Description>
     <PackageTags>$(PackageTags);mongodb;models</PackageTags>
   </PropertyGroup>
 

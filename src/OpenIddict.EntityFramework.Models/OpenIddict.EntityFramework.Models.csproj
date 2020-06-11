@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Relational entities for the Entity Framework 6.x stores.</Description>
+    <Description>Relational entities for the OpenIddict Entity Framework 6.x stores.</Description>
     <PackageTags>$(PackageTags);entityframework;models</PackageTags>
   </PropertyGroup>
 
