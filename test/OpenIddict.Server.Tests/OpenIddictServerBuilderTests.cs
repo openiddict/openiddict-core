@@ -146,7 +146,7 @@ namespace OpenIddict.Server.Tests
         }
 
 #if SUPPORTS_CERTIFICATE_GENERATION
-        [Fact(Skip = "WIP")]
+        [Fact]
         public void AddDevelopmentSigningCertificate_CanGenerateCertificate()
         {
             // Arrange
@@ -164,18 +164,17 @@ namespace OpenIddict.Server.Tests
             Assert.NotNull(options.SigningCredentials[0].Kid);
         }
 #else
-        [Fact(Skip = "WIP")]
+        [Fact]
         public void AddDevelopmentSigningCertificate_ThrowsAnExceptionOnUnsupportedPlatforms()
         {
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
 
-            builder.AddDevelopmentSigningCertificate();
-
             // Act and assert
             var exception = Assert.Throws<PlatformNotSupportedException>(delegate
             {
+                builder.AddDevelopmentSigningCertificate();
                 return GetOptions(services);
             });
 
@@ -273,7 +272,7 @@ namespace OpenIddict.Server.Tests
             Assert.Same(key, options.SigningCredentials[0].Key);
         }
 
-        [Fact(Skip = "WIP")]
+        [Fact]
         public void AddSigningCertificate_SigningKeyIsCorrectlyAdded()
         {
             // Arrange
