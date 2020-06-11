@@ -1306,7 +1306,7 @@ namespace OpenIddict.Server.FunctionalTests
                 }
             };
 
-            var algorithm = ECDsa.Create(parameters);
+            using var algorithm = ECDsa.Create(parameters);
 
             await using var server = await CreateServerAsync(options =>
             {

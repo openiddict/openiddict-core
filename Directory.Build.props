@@ -7,11 +7,12 @@
     <NoWarn>$(NoWarn);CS1591;NU5128</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugSymbols>true</DebugSymbols>
+    <CodeAnalysisRuleset>$(MSBuildThisFileDirectory)eng\CodeAnalysis.ruleset</CodeAnalysisRuleset>
   </PropertyGroup>
 
   <PropertyGroup>
     <StrongNameKeyId>OpenIddict</StrongNameKeyId>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\eng\key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
     <PublicSign>false</PublicSign>
@@ -64,8 +65,10 @@
     <OfficialBuildId>$([System.DateTime]::Now.ToString(yyyyMMdd)).$(_AppVeyorBuildRevision)</OfficialBuildId>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(OS)' != 'Windows_NT' ">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" Version="$(FxCopVersion)" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Condition=" '$(OS)' != 'Windows_NT' "
+                      PrivateAssets="All" Version="$(ReferenceAssembliesVersion)" />
   </ItemGroup>
 
   <ItemGroup>

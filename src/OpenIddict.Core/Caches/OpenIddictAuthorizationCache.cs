@@ -609,6 +609,7 @@ namespace OpenIddict.Core
             if (_signals.TryRemove(identifier, out CancellationTokenSource signal))
             {
                 signal.Cancel();
+                signal.Dispose();
             }
         }
 

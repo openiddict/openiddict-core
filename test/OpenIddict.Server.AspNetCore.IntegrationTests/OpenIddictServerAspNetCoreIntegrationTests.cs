@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -415,6 +416,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
             Assert.Equal("Bob l'Eponge", (string) response["string_parameter"]);
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The caller is responsible of disposing the test server.")]
         protected override
 #if SUPPORTS_GENERIC_HOST
             async

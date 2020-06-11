@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
 #if !SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
 using Org.BouncyCastle.Crypto;
@@ -1329,6 +1330,8 @@ namespace OpenIddict.Core
             }
         }
 
+        [SuppressMessage("Security", "CA5379:Do not use weak key derivation function algorithm",
+            Justification = "The SHA-1 digest algorithm is still supported for backward compatibility.")]
         private static byte[] DeriveKey(string secret, ReadOnlySpan<byte> salt,
             HashAlgorithmName algorithm, int iterations, int length)
         {

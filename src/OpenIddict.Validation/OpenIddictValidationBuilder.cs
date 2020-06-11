@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Validation;
+using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -303,6 +304,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// to store the private key of the certificate.
         /// </param>
         /// <returns>The <see cref="OpenIddictValidationBuilder"/>.</returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictValidationBuilder AddEncryptionCertificate(
             [NotNull] Stream stream, [NotNull] string password, X509KeyStorageFlags flags)
         {

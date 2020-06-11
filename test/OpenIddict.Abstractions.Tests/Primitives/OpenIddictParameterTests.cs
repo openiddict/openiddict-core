@@ -499,7 +499,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         {
             // Arrange, act and assert
             Assert.True(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter(string.Empty)));
-            Assert.True(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter(new string[0])));
+            Assert.True(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter(Array.Empty<string>())));
 
             Assert.True(OpenIddictParameter.IsNullOrEmpty(new OpenIddictParameter(
                 JsonSerializer.Deserialize<JsonElement>("[]"))));
