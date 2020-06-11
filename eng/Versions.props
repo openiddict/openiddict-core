@@ -30,7 +30,7 @@
 
   <PropertyGroup>
     <AngleSharpVersion>0.14.0</AngleSharpVersion>
-    <BclAsyncInterfacesVersion>1.1.0</BclAsyncInterfacesVersion>
+    <BclAsyncInterfacesVersion>1.1.1</BclAsyncInterfacesVersion>
     <BclHashCodeVersion>1.1.0</BclHashCodeVersion>
     <BouncyCastleVersion>1.8.6.7</BouncyCastleVersion>
     <DataAnnotationsVersion>4.7.0</DataAnnotationsVersion>
@@ -44,8 +44,8 @@
     <MoqVersion>4.13.1</MoqVersion>
     <OwinVersion>4.1.0</OwinVersion>
     <ReferenceAssembliesVersion>1.0.0</ReferenceAssembliesVersion>
-    <SystemNetHttpJsonVersion>3.2.0</SystemNetHttpJsonVersion>
-    <SystemTextJsonVersion>4.7.1</SystemTextJsonVersion>
+    <SystemNetHttpJsonVersion>3.2.1</SystemNetHttpJsonVersion>
+    <SystemTextJsonVersion>4.7.2</SystemTextJsonVersion>
     <TasksExtensionsVersion>4.5.4</TasksExtensionsVersion>
   </PropertyGroup>
 
