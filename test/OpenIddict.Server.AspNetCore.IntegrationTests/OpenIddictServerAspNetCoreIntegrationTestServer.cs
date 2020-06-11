@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
@@ -39,6 +40,8 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
         public IHost Host { get; }
 #endif
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The caller is responsible of disposing the test client.")]
         public override ValueTask<OpenIddictServerIntegrationTestClient> CreateClientAsync()
             => new ValueTask<OpenIddictServerIntegrationTestClient>(
                 new OpenIddictServerIntegrationTestClient(Server.CreateClient()));

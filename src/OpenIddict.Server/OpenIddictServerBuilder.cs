@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -213,6 +214,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="subject">The subject name associated with the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictServerBuilder AddDevelopmentEncryptionCertificate([NotNull] X500DistinguishedName subject)
         {
             if (subject == null)
@@ -341,6 +344,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 return new SymmetricSecurityKey(data);
             }
 
+            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+                Justification = "The generated RSA key is attached to the server options.")]
             static RsaSecurityKey CreateRsaSecurityKey(int size)
             {
 #if SUPPORTS_DIRECT_KEY_CREATION_WITH_SPECIFIED_SIZE
@@ -486,6 +491,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// to store the private key of the certificate.
         /// </param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictServerBuilder AddEncryptionCertificate(
             [NotNull] Stream stream, [NotNull] string password, X509KeyStorageFlags flags)
         {
@@ -662,6 +669,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="subject">The subject name associated with the certificate.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictServerBuilder AddDevelopmentSigningCertificate([NotNull] X500DistinguishedName subject)
         {
             if (subject == null)
@@ -755,6 +764,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="algorithm">The algorithm associated with the signing key.</param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictServerBuilder AddEphemeralSigningKey([NotNull] string algorithm)
         {
             if (string.IsNullOrEmpty(algorithm))
@@ -807,6 +818,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 default: throw new InvalidOperationException("The specified algorithm is not supported.");
             }
 
+            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+                Justification = "The generated RSA key is attached to the server options.")]
             static RsaSecurityKey CreateRsaSecurityKey(int size)
             {
 #if SUPPORTS_DIRECT_KEY_CREATION_WITH_SPECIFIED_SIZE
@@ -952,6 +965,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// to store the private key of the certificate.
         /// </param>
         /// <returns>The <see cref="OpenIddictServerBuilder"/>.</returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The X.509 certificate is attached to the server options.")]
         public OpenIddictServerBuilder AddSigningCertificate(
             [NotNull] Stream stream, [NotNull] string password, X509KeyStorageFlags flags)
         {

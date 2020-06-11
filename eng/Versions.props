@@ -35,6 +35,7 @@
     <BouncyCastleVersion>1.8.6.7</BouncyCastleVersion>
     <DataAnnotationsVersion>4.7.0</DataAnnotationsVersion>
     <EntityFrameworkVersion>6.4.0</EntityFrameworkVersion>
+    <FxCopVersion>3.0.0</FxCopVersion>
     <JetBrainsVersion>2019.1.3</JetBrainsVersion>
     <IdentityModelVersion>6.6.0</IdentityModelVersion>
     <ImmutableCollectionsVersion>1.7.0</ImmutableCollectionsVersion>
@@ -42,6 +43,7 @@
     <MongoDbVersion>2.9.0</MongoDbVersion>
     <MoqVersion>4.13.1</MoqVersion>
     <OwinVersion>4.1.0</OwinVersion>
+    <ReferenceAssembliesVersion>1.0.0</ReferenceAssembliesVersion>
     <SystemNetHttpJsonVersion>3.2.0</SystemNetHttpJsonVersion>
     <SystemTextJsonVersion>4.7.1</SystemTextJsonVersion>
     <TasksExtensionsVersion>4.5.4</TasksExtensionsVersion>

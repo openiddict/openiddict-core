@@ -30,7 +30,7 @@ namespace OpenIddict.MongoDb.Tests
             var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>();
             var token = new CancellationToken(canceled: true);
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+            using var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<TaskCanceledException>(async delegate
@@ -51,7 +51,7 @@ namespace OpenIddict.MongoDb.Tests
             var database = GetDatabase();
             var options = Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>();
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+            using var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async delegate
@@ -92,7 +92,7 @@ namespace OpenIddict.MongoDb.Tests
                     InitializationTimeout = TimeSpan.FromMilliseconds(50)
                 });
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+            using var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
@@ -127,7 +127,7 @@ namespace OpenIddict.MongoDb.Tests
                     Database = database.Object
                 });
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+            using var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act and assert
             Assert.Same(database.Object, await context.GetDatabaseAsync(CancellationToken.None));
@@ -147,7 +147,7 @@ namespace OpenIddict.MongoDb.Tests
                     Database = null
                 });
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+            using var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act and assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async delegate
@@ -181,7 +181,7 @@ namespace OpenIddict.MongoDb.Tests
                     Database = null
                 });
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+            using var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act and assert
             Assert.Same(database.Object, await context.GetDatabaseAsync(CancellationToken.None));
@@ -202,7 +202,7 @@ namespace OpenIddict.MongoDb.Tests
                     DisableInitialization = true
                 });
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+            using var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act
             await context.GetDatabaseAsync(CancellationToken.None);
@@ -228,7 +228,7 @@ namespace OpenIddict.MongoDb.Tests
                     Database = database.Object
                 });
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+            using var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act and assert
             Assert.Same(database.Object, await context.GetDatabaseAsync(CancellationToken.None));
@@ -272,7 +272,7 @@ namespace OpenIddict.MongoDb.Tests
                     Database = database.Object
                 });
 
-            var context = new OpenIddictMongoDbContext(options, provider);
+            using var context = new OpenIddictMongoDbContext(options, provider);
 
             // Act and assert
             await Assert.ThrowsAsync<Exception>(async () => await context.GetDatabaseAsync(CancellationToken.None));

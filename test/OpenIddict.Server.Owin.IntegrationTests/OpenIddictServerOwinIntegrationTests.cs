@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -298,6 +299,8 @@ namespace OpenIddict.Server.Owin.FunctionalTests
             Assert.Equal("Bob le Magnifique", (string) response["name"]);
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+            Justification = "The caller is responsible of disposing the test server.")]
         protected override ValueTask<OpenIddictServerIntegrationTestServer> CreateServerAsync(Action<OpenIddictServerBuilder> configuration = null)
         {
             var services = new ServiceCollection();

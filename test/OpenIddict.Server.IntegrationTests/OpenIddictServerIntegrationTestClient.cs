@@ -244,7 +244,10 @@ namespace OpenIddict.Server.FunctionalTests
                                             "is associated with the HTTP client.", nameof(uri));
             }
 
-            return await GetResponseAsync(await HttpClient.SendAsync(CreateRequestMessage(request, method, uri)));
+            using var message = CreateRequestMessage(request, method, uri);
+            using var response = await HttpClient.SendAsync(message);
+
+            return await GetResponseAsync(response);
         }
 
         private HttpRequestMessage CreateRequestMessage(OpenIddictRequest request, HttpMethod method, Uri uri)
