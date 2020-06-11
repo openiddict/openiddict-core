@@ -25,93 +25,103 @@ namespace OpenIddict.Server.Tests
             Assert.Equal("services", exception.ParamName);
         }
 
-        //[Fact]
-        //public void AddEventHandler_HandlerIsAttached()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+        private class CustomContext : BaseContext
+        {
+            /// <summary>
+            /// Creates a new instance of the <see cref="BaseContext"/> class.
+            /// </summary>
+            public CustomContext(OpenIddictServerTransaction transaction) : base(transaction) { }
+        }
 
-        //    // Act
-        //    builder.AddEventHandler<OpenIddictServerHandlers.Authentication.ApplyAuthorizationResponse<>>(notification => Task.FromResult(OpenIddictServerEventState.Handled));
+        private class CustomHandler : IOpenIddictServerHandler<CustomContext>
+        {
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync(CustomContext context)
+            {
+                return new ValueTask();
+            }
+        }
 
-        //    // Assert
-        //    Assert.Contains(services, service =>
-        //        service.ServiceType == typeof(IOpenIddictServerEventHandler<OpenIddictServerHandlers.Authentication.ApplyAuthorizationResponse<>>) &&
-        //        service.ImplementationInstance.GetType() == typeof(OpenIddictServerEventHandler<OpenIddictServerHandlers.Authentication.ApplyAuthorizationResponse<>>));
-        //}
+        [Fact]
+        public void AddEventHandler_HandlerIsAttached()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
 
-        //[Fact]
-        //public void AddEventHandler_ThrowsAnExceptionForUnsupportedLifetime()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+            // Act
+            builder.AddEventHandler<CustomContext>(x =>
+            {
+                x.UseSingletonHandler<CustomHandler>();
+            });
 
-        //    // Act and assert
-        //    var exception = Assert.Throws<ArgumentException>(delegate
-        //    {
-        //        return builder.AddEventHandler<CustomHandler>(ServiceLifetime.Transient);
-        //    });
+            // Assert
+            Assert.Contains(services, service => service.ServiceType == typeof(CustomHandler));
+        }
 
-        //    Assert.Equal("lifetime", exception.ParamName);
-        //    Assert.StartsWith("Handlers cannot be registered as transient services.", exception.Message);
-        //}
+        [Fact]
+        public void AddEventHandler_HandlerInstanceIsRegistered()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
 
-        //[Fact]
-        //public void AddEventHandler_ThrowsAnExceptionForOpenGenericHandlerType()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+            // Act
+            builder.AddEventHandler<CustomContext>(x =>
+            {
+                x.UseSingletonHandler(new CustomHandler());
+            });
 
-        //    // Act and assert
-        //    var exception = Assert.Throws<ArgumentException>(delegate
-        //    {
-        //        return builder.AddEventHandler(typeof(OpenIddictServerEventHandler<>));
-        //    });
+            // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(CustomHandler) &&
+                service.ImplementationInstance?.GetType() == typeof(CustomHandler) &&
+                service.Lifetime == ServiceLifetime.Singleton);
+        }
 
-        //    Assert.Equal("type", exception.ParamName);
-        //    Assert.StartsWith("The specified type is invalid.", exception.Message);
-        //}
+        [Fact]
+        public void AddEventHandler_SingletonHandlerIsRegisteredAsASingleton()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
 
-        //[Fact]
-        //public void AddEventHandler_ThrowsAnExceptionForNonHandlerType()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+            // Act
+            builder.AddEventHandler<CustomContext>(x =>
+            {
+                x.UseSingletonHandler<CustomHandler>();
+            });
 
-        //    // Act and assert
-        //    var exception = Assert.Throws<ArgumentException>(delegate
-        //    {
-        //        return builder.AddEventHandler(typeof(object));
-        //    });
+            // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(CustomHandler) &&
+                service.Lifetime == ServiceLifetime.Singleton);
+        }
 
-        //    Assert.Equal("type", exception.ParamName);
-        //    Assert.StartsWith("The specified type is invalid.", exception.Message);
-        //}
+        [Fact]
+        public void AddEventHandler_ScopedHandlerIsRegisteredAsScoped()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
 
-        //[Fact]
-        //public void AddEventHandler_HandlerIsRegistered()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+            // Act
+            builder.AddEventHandler<CustomContext>(x =>
+            {
+                x.UseScopedHandler<CustomHandler>();
+            });
 
-        //    // Act
-        //    builder.AddEventHandler<CustomHandler>(ServiceLifetime.Singleton);
-
-        //    // Assert
-        //    Assert.Contains(services, service =>
-        //        service.ServiceType == typeof(IOpenIddictServerEventHandler<OpenIddictServerHandlers.Authentication.ApplyAuthorizationResponse<>>) &&
-        //        service.ImplementationType == typeof(CustomHandler) &&
-        //        service.Lifetime == ServiceLifetime.Singleton);
-        //    Assert.Contains(services, service =>
-        //        service.ServiceType == typeof(IOpenIddictServerEventHandler<OpenIddictServerHandlers.Authentication.HandleAuthorizationRequest>) &&
-        //        service.ImplementationType == typeof(CustomHandler) &&
-        //        service.Lifetime == ServiceLifetime.Singleton);
-        //}
+            // Assert
+            Assert.Contains(services, service =>
+                service.ServiceType == typeof(CustomHandler) &&
+                service.Lifetime == ServiceLifetime.Scoped);
+        }
 
         [Fact]
         public void Configure_OptionsAreCorrectlyAmended()
