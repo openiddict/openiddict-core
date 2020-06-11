@@ -5,7 +5,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>OpenID Connect server components for OpenIddict.</Description>
+    <Description>OpenIddict authorization server services.
+
+Note: this package only contains the generic/host-agnostic server components.
+To use the server feature on ASP.NET Core or OWIN/Katana, reference the OpenIddict.Server.AspNetCore or OpenIddict.Server.Owin package.</Description>
     <PackageTags>$(PackageTags);server</PackageTags>
   </PropertyGroup>
 

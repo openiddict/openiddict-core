@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>OWIN/ASP.NET 4.x integration package for the OpenIddict validation services.</Description>
+    <Description>OWIN/Katana integration package for the OpenIddict validation services (compatible with ASP.NET 4.6.1 and newer).</Description>
     <PackageTags>$(PackageTags);validation;aspnet;katana;owin</PackageTags>
   </PropertyGroup>
 

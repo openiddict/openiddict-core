@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Easy-to-use OpenID Connect server for ASP.NET 4.x/OWIN and ASP.NET Core.</Description>
+    <Description>Versatile OpenID Connect stack for .NET.
+
+Note: this metapackage only references the generic core, server and validation packages.
+To use these features on ASP.NET Core or OWIN/Katana/ASP.NET 4.x, reference the OpenIddict.AspNetCore or OpenIddict.Owin package.</Description>
   </PropertyGroup>
 
   <ItemGroup>

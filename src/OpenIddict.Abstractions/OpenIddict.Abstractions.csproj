@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>OpenIddict's abstractions.</Description>
+    <Description>Abstractions and primitives used by the OpenIddict components.</Description>
   </PropertyGroup>
 
   <ItemGroup>

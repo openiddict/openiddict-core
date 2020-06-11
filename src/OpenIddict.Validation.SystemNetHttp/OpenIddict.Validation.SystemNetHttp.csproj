@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>OpenID Connect validation/System.Net.Http integration for OpenIddict.</Description>
+    <Description>System.Net.Http integration package for the OpenIddict validation services.</Description>
     <PackageTags>$(PackageTags);http;httpclient;validation</PackageTags>
   </PropertyGroup>
 

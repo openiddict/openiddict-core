@@ -5,7 +5,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>OpenID Connect validation components for OpenIddict.</Description>
+    <Description>OpenIddict token validation services.
+
+Note: this package only contains the generic/host-agnostic validation components.
+To use the validation feature on ASP.NET Core or OWIN/Katana, reference the OpenIddict.Validation.AspNetCore or OpenIddict.Validation.Owin package.</Description>
     <PackageTags>$(PackageTags);validation</PackageTags>
   </PropertyGroup>
 

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Easy-to-use OpenID Connect stack for ASP.NET 4.x/OWIN.</Description>
+    <Description>Versatile OpenID Connect stack for OWIN/Katana 4.1 (compatible with ASP.NET 4.6.1 and newer).</Description>
     <PackageTags>$(PackageTags);aspnet;katana;owin;server;validation</PackageTags>
   </PropertyGroup>
 
