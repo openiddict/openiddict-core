@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>3.0.0</VersionPrefix>
-    <PreReleaseVersionLabel>beta1</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>beta2</PreReleaseVersionLabel>
   </PropertyGroup>
 
   <PropertyGroup>
