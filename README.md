@@ -1,16 +1,13 @@
 ﻿# OpenIddict
-### The OpenID Connect server you'll be addicted to.
+### The OpenID Connect stack you'll be addicted to.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/46ofo2eusje0hcw2/branch/dev?svg=true)](https://ci.appveyor.com/project/openiddict/openiddict-core/branch/dev)
 [![Build status](https://travis-ci.org/openiddict/openiddict-core.svg?branch=dev)](https://travis-ci.org/openiddict/openiddict-core)
 
-> **Warning: this branch contains the OpenIddict 3.0 source code, which is still a work in progress. The 3.0.0 beta packages haven't been heavily tested: don't use them in production**.
-Nightly builds can be downloaded from the MyGet repository: https://www.myget.org/F/openiddict/api/v3/index.json
-
 ### What's OpenIddict?
 
-OpenIddict aims at providing an **easy-to-use and versatile solution** to implement an **OpenID Connect server in any ASP.NET Core 2.1, 3.1 and 5.0 application**,
-and **starting in OpenIddict 3.0, any ASP.NET 4.x or OWIN application too**.
+OpenIddict aims at providing an **easy-to-use and versatile solution** to implement an **OpenID Connect server and token validation in any ASP.NET Core 2.1, 3.1 and 5.0 application**,
+and starting in OpenIddict 3.0, **any ASP.NET 4.x or OWIN application too**.
 
 OpenIddict fully supports the **[code/implicit/hybrid flows](http://openid.net/specs/openid-connect-core-1_0.html)**, the **[client credentials/resource owner password grants](https://tools.ietf.org/html/rfc6749)** and the [device authorization flow](https://tools.ietf.org/html/rfc8628). You can also create your own custom grant types.
 
