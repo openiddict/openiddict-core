@@ -413,37 +413,267 @@ namespace OpenIddict.Server.Tests
             Assert.True(options.DisableAuthorizationStorage);
         }
 
-        //[Fact]
-        //public void DisableConfigurationEndpoint_ConfigurationEndpointIsDisabled()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+        [Fact]
+        public void SetConfigurationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
 
-        //    // Act
-        //    builder.DisableConfigurationEndpoint();
+            // Act
+            Action action = () => builder.SetConfigurationEndpointUris(addresses);
 
-        //    var options = GetOptions(services);
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
 
-        //    // Assert
-        //    Assert.Equal(PathString.Empty, options.ConfigurationEndpointPath);
-        //}
+        [Fact]
+        public void SetConfigurationEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
 
-        //[Fact]
-        //public void DisableCryptographyEndpoint_CryptographyEndpointIsDisabled()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+            // Act
+            Action action = () => builder.SetConfigurationEndpointUris(addresses);
 
-        //    // Act
-        //    builder.DisableCryptographyEndpoint();
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
 
-        //    var options = GetOptions(services);
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetConfigurationEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri), };
 
-        //    // Assert
-        //    Assert.Equal(PathString.Empty, options.CryptographyEndpointPath);
-        //}
+            // Act
+            Action action = () => builder.SetConfigurationEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetConfigurationEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetConfigurationEndpointUris(new Uri[0]);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.ConfigurationEndpointUris);
+        }
+
+        [Fact]
+        public void SetConfigurationEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetConfigurationEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.ConfigurationEndpointUris);
+        }
+
+        [Fact]
+        public void SetDeviceEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetDeviceEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Fact]
+        public void SetDeviceEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetDeviceEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetDeviceEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri), };
+
+            // Act
+            Action action = () => builder.SetDeviceEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetDeviceEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetDeviceEndpointUris(new Uri[0]);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.DeviceEndpointUris);
+        }
+
+        [Fact]
+        public void SetDeviceEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetDeviceEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.DeviceEndpointUris);
+        }
+
+        [Fact]
+        public void AddDeviceCodeFlow_AddsDeviceCodeGrantType()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.AllowDeviceCodeFlow();
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(OpenIddictConstants.GrantTypes.DeviceCode, options.GrantTypes);
+        }
+
+        [Fact]
+        public void SetCryptographyEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetCryptographyEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Fact]
+        public void SetCryptographyEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetCryptographyEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetCryptographyEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri), };
+
+            // Act
+            Action action = () => builder.SetCryptographyEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetCryptographyEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetCryptographyEndpointUris(new Uri[0]);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.CryptographyEndpointUris);
+        }
+
+        [Fact]
+        public void SetCryptographyEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetCryptographyEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.CryptographyEndpointUris);
+        }
 
         [Fact]
         public void DisableSlidingExpiration_SlidingExpirationIsDisabled()
@@ -477,53 +707,267 @@ namespace OpenIddict.Server.Tests
             Assert.True(options.DisableTokenStorage);
         }
 
-        //[Fact]
-        //public void EnableAuthorizationEndpoint_AuthorizationEndpointIsEnabled()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+        [Fact]
+        public void DisableAccessTokenEncryption_AccessTokenEncryptionIsDisabled()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
 
-        //    // Act
-        //    builder.EnableAuthorizationEndpoint("/endpoint-path");
+            // Act
+            builder.DisableAccessTokenEncryption();
 
-        //    var options = GetOptions(services);
+            var options = GetOptions(services);
 
-        //    // Assert
-        //    Assert.Equal("/endpoint-path", options.AuthorizationEndpointPath);
-        //}
+            // Assert
+            Assert.True(options.DisableAccessTokenEncryption);
+        }
+        
+        [Fact]
+        public void SetAuthorizationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
 
-        //[Fact]
-        //public void EnableIntrospectionEndpoint_IntrospectionEndpointIsEnabled()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+            // Act
+            Action action = () => builder.SetAuthorizationEndpointUris(addresses);
 
-        //    // Act
-        //    builder.EnableIntrospectionEndpoint("/endpoint-path");
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
 
-        //    var options = GetOptions(services);
+        [Fact]
+        public void SetAuthorizationEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
 
-        //    // Assert
-        //    Assert.Equal("/endpoint-path", options.IntrospectionEndpointPath);
-        //}
+            // Act
+            Action action = () => builder.SetAuthorizationEndpointUris(addresses);
 
-        //[Fact]
-        //public void EnableLogoutEndpoint_LogoutEndpointIsEnabled()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
 
-        //    // Act
-        //    builder.EnableLogoutEndpoint("/endpoint-path");
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetAuthorizationEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri), };
 
-        //    var options = GetOptions(services);
+            // Act
+            Action action = () => builder.SetAuthorizationEndpointUris(addresses);
 
-        //    // Assert
-        //    Assert.Equal("/endpoint-path", options.LogoutEndpointPath);
-        //}
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetAuthorizationEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetAuthorizationEndpointUris(new Uri[0]);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.AuthorizationEndpointUris);
+        }
+
+        [Fact]
+        public void SetAuthorizationEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetAuthorizationEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.AuthorizationEndpointUris);
+        }
+        
+        [Fact]
+        public void SetIntrospectionEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetIntrospectionEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Fact]
+        public void SetIntrospectionEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetIntrospectionEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetIntrospectionEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri), };
+
+            // Act
+            Action action = () => builder.SetIntrospectionEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetIntrospectionEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetIntrospectionEndpointUris(new Uri[0]);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.IntrospectionEndpointUris);
+        }
+
+        [Fact]
+        public void SetIntrospectionEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetIntrospectionEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.IntrospectionEndpointUris);
+        }
+
+        [Fact]
+        public void SetLogoutEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetLogoutEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Fact]
+        public void SetLogoutEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetLogoutEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetLogoutEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri), };
+
+            // Act
+            Action action = () => builder.SetLogoutEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetLogoutEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetLogoutEndpointUris(new Uri[0]);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.LogoutEndpointUris);
+        }
+
+        [Fact]
+        public void SetLogoutEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetLogoutEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.LogoutEndpointUris);
+        }
 
         //[Fact]
         //public void EnableRequestCaching_RequestCachingIsEnabled()
@@ -541,21 +985,87 @@ namespace OpenIddict.Server.Tests
         //    Assert.True(options.EnableRequestCaching);
         //}
 
-        //[Fact]
-        //public void EnableRevocationEndpoint_RevocationEndpointIsEnabled()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+        [Fact]
+        public void SetRevocationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
 
-        //    // Act
-        //    builder.EnableRevocationEndpoint("/endpoint-path");
+            // Act
+            Action action = () => builder.SetRevocationEndpointUris(addresses);
 
-        //    var options = GetOptions(services);
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
 
-        //    // Assert
-        //    Assert.Equal("/endpoint-path", options.RevocationEndpointPath);
-        //}
+        [Fact]
+        public void SetRevocationEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetRevocationEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetRevocationEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri), };
+
+            // Act
+            Action action = () => builder.SetRevocationEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetRevocationEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetRevocationEndpointUris(new Uri[0]);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.RevocationEndpointUris);
+        }
+
+        [Fact]
+        public void SetRevocationEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetRevocationEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.RevocationEndpointUris);
+        }
 
         [Fact]
         public void DisableScopeValidation_ScopeValidationIsDisabled()
@@ -573,37 +1083,169 @@ namespace OpenIddict.Server.Tests
             Assert.True(options.DisableScopeValidation);
         }
 
-        //[Fact]
-        //public void EnableTokenEndpoint_TokenEndpointIsEnabled()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+        [Fact]
+        public void SetTokenEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
 
-        //    // Act
-        //    builder.EnableTokenEndpoint("/endpoint-path");
+            // Act
+            Action action = () => builder.SetTokenEndpointUris(addresses);
 
-        //    var options = GetOptions(services);
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
 
-        //    // Assert
-        //    Assert.Equal("/endpoint-path", options.TokenEndpointPath);
-        //}
+        [Fact]
+        public void SetTokenEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
 
-        //[Fact]
-        //public void EnableUserinfoEndpoint_UserinfoEndpointIsEnabled()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
+            // Act
+            Action action = () => builder.SetTokenEndpointUris(addresses);
 
-        //    // Act
-        //    builder.EnableUserinfoEndpoint("/endpoint-path");
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
 
-        //    var options = GetOptions(services);
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetTokenEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri), };
 
-        //    // Assert
-        //    Assert.Equal("/endpoint-path", options.UserinfoEndpointPath);
-        //}
+            // Act
+            Action action = () => builder.SetTokenEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetTokenEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetTokenEndpointUris(new Uri[0]);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.TokenEndpointUris);
+        }
+
+        [Fact]
+        public void SetTokenEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetTokenEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.TokenEndpointUris);
+        }
+
+        [Fact]
+        public void SetUserinfoEndpointUris_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetUserinfoEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Fact]
+        public void SetUserinfoEndpointUris_Strings_ThrowsExceptionWhenAddressesIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetUserinfoEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetUserinfoEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = {new Uri(uri), };
+
+            // Act
+            Action action = () => builder.SetUserinfoEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetUserinfoEndpointUris_ClearsUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetUserinfoEndpointUris(new Uri[0]);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.UserinfoEndpointUris);
+        }
+
+        [Fact]
+        public void SetUserinfoEndpointUris_AddsUri()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetUserinfoEndpointUris("http://localhost/endpoint-path");
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(new Uri("http://localhost/endpoint-path"), options.UserinfoEndpointUris);
+        }
 
         [Fact]
         public void AcceptAnonymousClients_ClientIdentificationIsOptional()
@@ -715,6 +1357,38 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.Null(options.IdentityTokenLifetime);
+        }
+
+        [Fact]
+        public void SetDeviceCodeLifetimeLifetime_DefaultDeviceCodeLifetimeIsReplaced()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetDeviceCodeLifetime(TimeSpan.FromMinutes(42));
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Equal(TimeSpan.FromMinutes(42), options.DeviceCodeLifetime);
+        }
+
+        [Fact]
+        public void SetDeviceCodeLifetimeLifetime_DeviceCodeLifetimeCanBeSetToNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetDeviceCodeLifetime(null);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Null(options.DeviceCodeLifetime);
         }
 
         [Fact]
@@ -831,6 +1505,43 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void RegisterClaims_ThrowsAnExceptionForNullClaims()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] claims = null;
+
+            // Act
+            Action action = () => builder.RegisterClaims(claims);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+
+            Assert.Equal(nameof(claims), exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void RegisterClaims_ThrowsAnExceptionForClaim(string claim)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] claims = { claim };
+
+            // Act
+            Action action = () => builder.RegisterClaims(claims);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+
+            Assert.Equal(nameof(claims), exception.ParamName);
+            Assert.Contains("Claims cannot be null or empty.", exception.Message);
+        }
+
+        [Fact]
         public void RegisterScopes_ScopesAreAdded()
         {
             // Arrange
@@ -845,6 +1556,43 @@ namespace OpenIddict.Server.Tests
             // Assert
             Assert.Contains("custom_scope_1", options.Scopes);
             Assert.Contains("custom_scope_2", options.Scopes);
+        }
+
+        [Fact]
+        public void RegisterScopes_ThrowsAnExceptionForNullScopes()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] scopes = null;
+
+            // Act
+            Action action = () => builder.RegisterScopes(scopes);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+
+            Assert.Equal(nameof(scopes), exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void RegisterScopes_ThrowsAnExceptionForScope(string scope)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] scopes = { scope };
+
+            // Act
+            Action action = () => builder.RegisterScopes(scopes);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+
+            Assert.Equal(nameof(scopes), exception.ParamName);
+            Assert.Contains("Scopes cannot be null or empty.", exception.Message);
         }
 
         //[Fact]
@@ -893,6 +1641,114 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.True(options.UseReferenceTokens);
+        }
+
+        [Fact]
+        public void SetVerificationEndpointUris_ThrowsExceptionWhenNullAddresses()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetVerificationEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Fact]
+        public void SetVerificationEndpointUris_Strings_ThrowsExceptionWhenNullAddresses()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = null;
+
+            // Act
+            Action action = () => builder.SetVerificationEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+
+            Assert.Equal(nameof(addresses), exception.ParamName);
+        }
+
+        [Fact]
+        public void SetVerificationEndpointUris_Strings_AddedUriIsRelativeOrAbsoluteUriKind()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            string[] addresses = {"http://localhost/verify"};
+
+            // Act
+            builder.SetVerificationEndpointUris(addresses);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.True(options.VerificationEndpointUris[0].IsAbsoluteUri);
+        }
+
+        [Theory]
+        [InlineData(@"C:\")]
+        public void SetVerificationEndpointUris_ThrowsExceptionForUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri)};
+
+            // Act
+            Action action = () => builder.SetVerificationEndpointUris(addresses);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+
+            Assert.Equal(nameof(addresses), exception.ParamName);
+            Assert.Contains("One of the specified addresses is not valid.", exception.Message);
+        }
+
+        [Fact]
+        public void SetVerificationEndpointUris_ClearsExistingUris()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { };
+
+            // Act
+            builder.SetVerificationEndpointUris(addresses);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Empty(options.VerificationEndpointUris);
+        }
+
+        [Theory]
+        [InlineData("http://localhost/verify")]
+        [InlineData("http://localhost/verify-1")]
+        [InlineData("http://localhost/verification")]
+        [InlineData("http://localhost/verification-1")]
+        public void SetVerificationEndpointUris_AddsUri(string uri)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Uri[] addresses = { new Uri(uri), };
+
+            // Act
+            builder.SetVerificationEndpointUris(addresses);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Contains(addresses[0], options.VerificationEndpointUris);
         }
 
         private static IServiceCollection CreateServices()
