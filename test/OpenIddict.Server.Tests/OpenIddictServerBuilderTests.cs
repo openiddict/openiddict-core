@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -46,6 +48,38 @@ namespace OpenIddict.Server.Tests
             {
                 return new ValueTask();
             }
+        }
+
+        [Fact]
+        public void AddEventHandler_ThrowsAnExceptionWhenConfigurationIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Action<OpenIddictServerHandlerDescriptor.Builder<CustomContext>> configuration = null;
+
+            // Act
+            Action action = () => builder.AddEventHandler<CustomContext>(configuration);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(configuration), exception.ParamName);
+        }
+
+        [Fact]
+        public void AddEventHandler_ThrowsAnExceptionWhenDescriptorIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            OpenIddictServerHandlerDescriptor descriptor = null;
+
+            // Act
+            Action action = () => builder.AddEventHandler(descriptor);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(descriptor), exception.ParamName);
         }
 
         [Fact]
@@ -124,6 +158,116 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void AddEncryptionCredentials_ThrowsExceptionWhenCredentialsAreNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            EncryptingCredentials credentials = null;
+
+            // Act
+            Action action = () => builder.AddEncryptionCredentials(credentials);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(credentials), exception.ParamName);
+        }
+
+        [Fact]
+        public void AddEncryptionKey_ThrowsExceptionWhenKeyIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            SecurityKey key = null;
+
+            // Act
+            Action action = () => builder.AddEncryptionKey(key);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(key), exception.ParamName);
+        }
+
+        private class FakeAsymmetricSecurityKey : AsymmetricSecurityKey
+        {
+            /// <summary>
+            /// This must be overridden to get the size of this <see cref="T:Microsoft.IdentityModel.Tokens.SecurityKey" />.
+            /// </summary>
+            public override int KeySize { get; }
+
+            /// <summary>
+            /// This must be overridden to get a bool indicating if a private key exists.
+            /// </summary>
+            /// <return>true if it has a private key; otherwise, false.</return>
+            [Obsolete("HasPrivateKey method is deprecated, please use PrivateKeyStatus instead.")]
+            public override bool HasPrivateKey { get; }
+
+            /// <summary>Gets the status of the private key.</summary>
+            /// <return>'Exists' if private key exists for sure; 'DoesNotExist' if private key doesn't exist for sure; 'Unknown' if we cannot determine.</return>
+            public override PrivateKeyStatus PrivateKeyStatus { get; }
+
+            /// <summary>Default constructor</summary>
+            public FakeAsymmetricSecurityKey(int keySize, PrivateKeyStatus privateKeyStatus)
+            {
+                KeySize = keySize;
+                PrivateKeyStatus = privateKeyStatus;
+            }
+        }
+
+        [Fact]
+        public void AddEncryptionKey_ThrowsExceptionWhenAsymmetricKeyPrivateKeyIsMissing()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            AsymmetricSecurityKey key = new FakeAsymmetricSecurityKey(1, PrivateKeyStatus.DoesNotExist);
+
+            // Act
+            Action action = () => builder.AddEncryptionKey(key);
+
+            // Assert
+            var exception = Assert.Throws<InvalidOperationException>(action);
+            Assert.Equal("The asymmetric encryption key doesn't contain the required private key.", exception.Message);
+        }
+
+        [Fact]
+        public void RemoveEventHandler_ThrowsAnExceptionWhenDescriptorIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            OpenIddictServerHandlerDescriptor descriptor = null;
+
+            // Act
+            Action action = () => builder.RemoveEventHandler(descriptor);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(descriptor), exception.ParamName);
+        }
+
+        [Fact]
+        public void RemoveEventHandler_RemovesService()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            OpenIddictServerHandlerDescriptor descriptor = OpenIddictServerHandlerDescriptor.CreateBuilder<CustomContext>().UseSingletonHandler<CustomHandler>().Build();
+            builder.AddEventHandler(descriptor);
+
+            // Act
+            builder.RemoveEventHandler(descriptor);
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.DoesNotContain(services, x => x.ServiceType == descriptor.ServiceDescriptor.ServiceType);
+            Assert.DoesNotContain(options.CustomHandlers, x => x.ServiceDescriptor.ServiceType == descriptor.ServiceDescriptor.ServiceType);
+            Assert.DoesNotContain(options.DefaultHandlers, x => x.ServiceDescriptor.ServiceType == descriptor.ServiceDescriptor.ServiceType);
+        }
+
+        [Fact]
         public void Configure_OptionsAreCorrectlyAmended()
         {
             // Arrange
@@ -140,6 +284,22 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void Configure_ThrowsAnExceptionWhenConfigurationIsNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            Action<OpenIddictServerOptions> configuration = null;
+
+            // Act
+            Action action = () => builder.Configure(configuration);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal(nameof(configuration), exception.ParamName);
+        }
+
+        [Fact]
         public void AddDevelopmentSigningCertificate_ThrowsAnExceptionForNullSubject()
         {
             // Arrange
@@ -153,6 +313,23 @@ namespace OpenIddict.Server.Tests
             });
 
             Assert.Equal("subject", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddDevelopmentEncryptionCertificate_ThrowsAnExceptionForNullSubject()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+            X500DistinguishedName subject = null;
+
+            // Act
+            Action action = () => builder.AddDevelopmentEncryptionCertificate(subject);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentNullException>(action);
+
+            Assert.Equal(nameof(subject), exception.ParamName);
         }
 
 #if SUPPORTS_CERTIFICATE_GENERATION
@@ -349,6 +526,24 @@ namespace OpenIddict.Server.Tests
             Assert.Contains("urn:ietf:params:oauth:grant-type:custom_grant", options.GrantTypes);
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void AllowCustomFlow_ThrowsAnExceptionForType(string type)
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            Action action = () => builder.AllowCustomFlow(type);
+
+            // Assert
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(nameof(type), exception.ParamName);
+            Assert.Contains("The grant type cannot be null or empty.", exception.Message);
+        }
+
         [Fact]
         public void AllowImplicitFlow_ImplicitFlowIsAddedToGrantTypes()
         {
@@ -445,8 +640,10 @@ namespace OpenIddict.Server.Tests
             Assert.Equal(nameof(addresses), exception.ParamName);
         }
 
+        public const string InvalidUriString = @"C:\";
+
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetConfigurationEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -528,7 +725,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetDeviceEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -626,7 +823,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetCryptographyEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -756,7 +953,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetAuthorizationEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -838,7 +1035,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetIntrospectionEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -920,7 +1117,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetLogoutEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -1018,7 +1215,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetRevocationEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -1116,7 +1313,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetTokenEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -1198,7 +1395,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetUserinfoEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -1392,6 +1589,38 @@ namespace OpenIddict.Server.Tests
         }
 
         [Fact]
+        public void SetUserCodeLifetime_DefaultUserCodeLifetimeIsReplaced()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetUserCodeLifetime(TimeSpan.FromMinutes(42));
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Equal(TimeSpan.FromMinutes(42), options.UserCodeLifetime);
+        }
+
+        [Fact]
+        public void SetUserCodeLifetime_UserLifetimeCanBeSetToNull()
+        {
+            // Arrange
+            var services = CreateServices();
+            var builder = CreateBuilder(services);
+
+            // Act
+            builder.SetUserCodeLifetime(null);
+
+            var options = GetOptions(services);
+
+            // Assert
+            Assert.Null(options.UserCodeLifetime);
+        }
+
+        [Fact]
         public void SetRefreshTokenLifetime_DefaultRefreshTokenLifetimeIsReplaced()
         {
             // Arrange
@@ -1456,6 +1685,38 @@ namespace OpenIddict.Server.Tests
 
         //    // Assert
         //    Assert.Same(policy, options.RequestCachingPolicy);
+        //}
+
+        //[Fact]
+        //public void UseDataProtectionProvider_DefaultProviderIsReplaced()
+        //{
+        //    // Arrange
+        //    var services = CreateServices();
+        //    var builder = CreateBuilder(services);
+
+        //    // Act
+        //    builder.UseDataProtectionProvider(new EphemeralDataProtectionProvider());
+
+        //    var options = GetOptions(services);
+
+        //    // Assert
+        //    Assert.IsType<EphemeralDataProtectionProvider>(options.DataProtectionProvider);
+        //}
+
+        //[Fact]
+        //public void UseJsonWebTokens_AccessTokenHandlerIsCorrectlySet()
+        //{
+        //    // Arrange
+        //    var services = CreateServices();
+        //    var builder = CreateBuilder(services);
+
+        //    // Act
+        //    builder.UseJsonWebTokens();
+
+        //    var options = GetOptions(services);
+
+        //    // Assert
+        //    Assert.IsType<JwtSecurityTokenHandler>(options.AccessTokenHandler);
         //}
 
         [Fact]
@@ -1595,38 +1856,6 @@ namespace OpenIddict.Server.Tests
             Assert.Contains("Scopes cannot be null or empty.", exception.Message);
         }
 
-        //[Fact]
-        //public void UseDataProtectionProvider_DefaultProviderIsReplaced()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
-
-        //    // Act
-        //    builder.UseDataProtectionProvider(new EphemeralDataProtectionProvider());
-
-        //    var options = GetOptions(services);
-
-        //    // Assert
-        //    Assert.IsType<EphemeralDataProtectionProvider>(options.DataProtectionProvider);
-        //}
-
-        //[Fact]
-        //public void UseJsonWebTokens_AccessTokenHandlerIsCorrectlySet()
-        //{
-        //    // Arrange
-        //    var services = CreateServices();
-        //    var builder = CreateBuilder(services);
-
-        //    // Act
-        //    builder.UseJsonWebTokens();
-
-        //    var options = GetOptions(services);
-
-        //    // Assert
-        //    Assert.IsType<JwtSecurityTokenHandler>(options.AccessTokenHandler);
-        //}
-
         [Fact]
         public void UseReferenceTokens_ReferenceTokensAreEnabled()
         {
@@ -1695,7 +1924,7 @@ namespace OpenIddict.Server.Tests
         }
 
         [Theory]
-        [InlineData(@"C:\")]
+        [InlineData(InvalidUriString)]
         public void SetVerificationEndpointUris_ThrowsExceptionForUri(string uri)
         {
             // Arrange
@@ -1767,19 +1996,5 @@ namespace OpenIddict.Server.Tests
             //return options.Get(OpenIddictServerDefaults.AuthenticationScheme);
             return options.Value;
         }
-
-        //public class CustomHandler : IOpenIddictServerEventHandler<OpenIddictServerHandlers.Authentication.ApplyAuthorizationResponse<>>,
-        //                             IOpenIddictServerEventHandler<OpenIddictServerHandlers.Authentication.HandleAuthorizationRequest>
-        //{
-        //    public Task<OpenIddictServerEventState> HandleAsync(OpenIddictServerHandlers.Authentication.ApplyAuthorizationResponse<> notification)
-        //    {
-        //        throw new NotImplementedException();
-        //    }
-
-        //    public Task<OpenIddictServerEventState> HandleAsync(OpenIddictServerHandlers.Authentication.HandleAuthorizationRequest notification)
-        //    {
-        //        throw new NotImplementedException();
-        //    }
-        //}
     }
 }
