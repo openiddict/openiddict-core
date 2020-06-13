@@ -471,7 +471,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.SetConfigurationEndpointUris(new Uri[0]);
+            builder.SetConfigurationEndpointUris(Array.Empty<Uri>());
 
             var options = GetOptions(services);
 
@@ -553,7 +553,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.SetDeviceEndpointUris(new Uri[0]);
+            builder.SetDeviceEndpointUris(Array.Empty<Uri>());
 
             var options = GetOptions(services);
 
@@ -651,7 +651,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.SetCryptographyEndpointUris(new Uri[0]);
+            builder.SetCryptographyEndpointUris(Array.Empty<Uri>());
 
             var options = GetOptions(services);
 
@@ -781,7 +781,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.SetAuthorizationEndpointUris(new Uri[0]);
+            builder.SetAuthorizationEndpointUris(Array.Empty<Uri>());
 
             var options = GetOptions(services);
 
@@ -863,7 +863,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.SetIntrospectionEndpointUris(new Uri[0]);
+            builder.SetIntrospectionEndpointUris(Array.Empty<Uri>());
 
             var options = GetOptions(services);
 
@@ -945,7 +945,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.SetLogoutEndpointUris(new Uri[0]);
+            builder.SetLogoutEndpointUris(Array.Empty<Uri>());
 
             var options = GetOptions(services);
 
@@ -1043,7 +1043,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.SetRevocationEndpointUris(new Uri[0]);
+            builder.SetRevocationEndpointUris(Array.Empty<Uri>());
 
             var options = GetOptions(services);
 
@@ -1141,7 +1141,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.SetTokenEndpointUris(new Uri[0]);
+            builder.SetTokenEndpointUris(Array.Empty<Uri>());
 
             var options = GetOptions(services);
 
@@ -1223,7 +1223,7 @@ namespace OpenIddict.Server.Tests
             var builder = CreateBuilder(services);
 
             // Act
-            builder.SetUserinfoEndpointUris(new Uri[0]);
+            builder.SetUserinfoEndpointUris(Array.Empty<Uri>());
 
             var options = GetOptions(services);
 
@@ -1719,7 +1719,7 @@ namespace OpenIddict.Server.Tests
             // Arrange
             var services = CreateServices();
             var builder = CreateBuilder(services);
-            Uri[] addresses = { };
+            Uri[] addresses = Array.Empty<Uri>();
 
             // Act
             builder.SetVerificationEndpointUris(addresses);
