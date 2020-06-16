@@ -43,10 +43,10 @@ namespace OpenIddict.Server.AspNetCore
                  */
                 AttachHttpResponseCode<ApplyVerificationResponseContext>.Descriptor,
                 AttachCacheControlHeader<ApplyVerificationResponseContext>.Descriptor,
-                ProcessHostRedirectionResponse<ApplyVerificationResponseContext>.Descriptor,
-                ProcessStatusCodePagesErrorResponse<ApplyVerificationResponseContext>.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyVerificationResponseContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor,
+                ProcessStatusCodePagesErrorResponse<ApplyVerificationResponseContext>.Descriptor,
                 ProcessLocalErrorResponse<ApplyVerificationResponseContext>.Descriptor,
+                ProcessHostRedirectionResponse<ApplyVerificationResponseContext>.Descriptor,
                 ProcessEmptyResponse<ApplyVerificationResponseContext>.Descriptor);
         }
     }

@@ -752,58 +752,6 @@ namespace OpenIddict.Server.Owin
         }
 
         /// <summary>
-        /// Contains the logic responsible of processing empty OpenID Connect responses that should trigger a host redirection.
-        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
-        /// </summary>
-        public class ProcessHostRedirectionResponse<TContext> : IOpenIddictServerHandler<TContext>
-            where TContext : BaseRequestContext
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
-                    .AddFilter<RequireOwinRequest>()
-                    .UseSingletonHandler<ProcessHostRedirectionResponse<TContext>>()
-                    .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
-                    .Build();
-
-            /// <summary>
-            /// Processes the event.
-            /// </summary>
-            /// <param name="context">The context associated with the event to process.</param>
-            /// <returns>
-            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
-            /// </returns>
-            public ValueTask HandleAsync([NotNull] TContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
-                // this may indicate that the request was incorrectly processed by another server stack.
-                var response = context.Transaction.GetOwinRequest()?.Context.Response;
-                if (response == null)
-                {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
-                }
-
-                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
-                if (properties != null && !string.IsNullOrEmpty(properties.RedirectUri))
-                {
-                    response.Redirect(properties.RedirectUri);
-
-                    context.Logger.LogInformation("The response was successfully returned as a 302 response.");
-                    context.HandleRequest();
-                }
-
-                return default;
-            }
-        }
-
-        /// <summary>
         /// Contains the logic responsible of attaching an appropriate HTTP status code.
         /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
         /// </summary>
@@ -1278,6 +1226,58 @@ namespace OpenIddict.Server.Owin
                 await stream.CopyToAsync(response.Body, 4096, response.Context.Request.CallCancelled);
 
                 context.HandleRequest();
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible of processing empty OpenID Connect responses that should trigger a host redirection.
+        /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+        /// </summary>
+        public class ProcessHostRedirectionResponse<TContext> : IOpenIddictServerHandler<TContext>
+            where TContext : BaseRequestContext
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                    .AddFilter<RequireOwinRequest>()
+                    .UseSingletonHandler<ProcessHostRedirectionResponse<TContext>>()
+                    .SetOrder(ProcessEmptyResponse<TContext>.Descriptor.Order - 1_000)
+                    .Build();
+
+            /// <summary>
+            /// Processes the event.
+            /// </summary>
+            /// <param name="context">The context associated with the event to process.</param>
+            /// <returns>
+            /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
+            /// </returns>
+            public ValueTask HandleAsync([NotNull] TContext context)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+                // this may indicate that the request was incorrectly processed by another server stack.
+                var response = context.Transaction.GetOwinRequest()?.Context.Response;
+                if (response == null)
+                {
+                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                }
+
+                var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);
+                if (properties != null && !string.IsNullOrEmpty(properties.RedirectUri))
+                {
+                    response.Redirect(properties.RedirectUri);
+
+                    context.Logger.LogInformation("The response was successfully returned as a 302 response.");
+                    context.HandleRequest();
+                }
+
+                return default;
             }
         }
 

@@ -52,10 +52,10 @@ namespace OpenIddict.Server.Owin
                 RemoveCachedRequest.Descriptor,
                 AttachHttpResponseCode<ApplyLogoutResponseContext>.Descriptor,
                 AttachCacheControlHeader<ApplyLogoutResponseContext>.Descriptor,
-                ProcessQueryResponse.Descriptor,
-                ProcessHostRedirectionResponse<ApplyLogoutResponseContext>.Descriptor,
+                ProcessRedirectionResponse.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, RequireLogoutEndpointPassthroughEnabled>.Descriptor,
                 ProcessLocalErrorResponse<ApplyLogoutResponseContext>.Descriptor,
+                ProcessHostRedirectionResponse<ApplyLogoutResponseContext>.Descriptor,
                 ProcessEmptyResponse<ApplyLogoutResponseContext>.Descriptor);
 
             /// <summary>
@@ -302,7 +302,7 @@ namespace OpenIddict.Server.Owin
                         .AddFilter<RequireOwinRequest>()
                         .AddFilter<RequireLogoutEndpointCachingEnabled>()
                         .UseSingletonHandler<RemoveCachedRequest>()
-                        .SetOrder(ProcessQueryResponse.Descriptor.Order - 1_000)
+                        .SetOrder(ProcessRedirectionResponse.Descriptor.Order - 1_000)
                         .Build();
 
                 /// <summary>
@@ -338,7 +338,7 @@ namespace OpenIddict.Server.Owin
             /// Contains the logic responsible of processing logout responses.
             /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
             /// </summary>
-            public class ProcessQueryResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
+            public class ProcessRedirectionResponse : IOpenIddictServerHandler<ApplyLogoutResponseContext>
             {
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -346,7 +346,7 @@ namespace OpenIddict.Server.Owin
                 public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                     = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyLogoutResponseContext>()
                         .AddFilter<RequireOwinRequest>()
-                        .UseSingletonHandler<ProcessQueryResponse>()
+                        .UseSingletonHandler<ProcessRedirectionResponse>()
                         .SetOrder(ProcessPassthroughErrorResponse<ApplyLogoutResponseContext, IOpenIddictServerHandlerFilter<ApplyLogoutResponseContext>>.Descriptor.Order - 1_000)
                         .Build();
 

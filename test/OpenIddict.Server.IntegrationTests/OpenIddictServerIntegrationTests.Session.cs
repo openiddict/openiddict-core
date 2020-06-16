@@ -532,6 +532,61 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Fact]
+        public async Task ApplyLogoutResponse_UsesPostLogoutRedirectUriWhenProvided()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ApplyLogoutResponseContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Response["target_uri"] = context.PostLogoutRedirectUri;
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/logout", new OpenIddictRequest
+            {
+                PostLogoutRedirectUri = "http://www.fabrikam.com/path"
+            });
+
+            // Assert
+            Assert.Equal("http://www.fabrikam.com/path", (string) response["target_uri"]);
+        }
+
+        [Fact]
+        public async Task ApplyLogoutResponse_ReturnsEmptyResponseWhenNoPostLogoutRedirectUriIsProvided()
+        {
+            // Arrange
+            await using var server = await CreateServerAsync(options =>
+            {
+                options.EnableDegradedMode();
+
+                options.AddEventHandler<ApplyLogoutResponseContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        context.Response["target_uri"] = context.PostLogoutRedirectUri;
+
+                        return default;
+                    }));
+            });
+
+            await using var client = await server.CreateClientAsync();
+
+            // Act
+            var response = await client.PostAsync("/connect/logout", new OpenIddictRequest());
+
+            // Assert
+            Assert.Empty(response.GetParameters());
+        }
+
+        [Fact]
         public async Task ApplyLogoutResponse_DoesNotSetStateWhenUserIsNotRedirected()
         {
             // Arrange

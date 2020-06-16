@@ -57,8 +57,8 @@ namespace OpenIddict.Server.AspNetCore
                 ProcessFormPostResponse.Descriptor,
                 ProcessQueryResponse.Descriptor,
                 ProcessFragmentResponse.Descriptor,
-                ProcessStatusCodePagesErrorResponse<ApplyAuthorizationResponseContext>.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyAuthorizationResponseContext, RequireAuthorizationEndpointPassthroughEnabled>.Descriptor,
+                ProcessStatusCodePagesErrorResponse<ApplyAuthorizationResponseContext>.Descriptor,
                 ProcessLocalErrorResponse<ApplyAuthorizationResponseContext>.Descriptor);
 
             /// <summary>

@@ -18,7 +18,8 @@ namespace OpenIddict.Server.AspNetCore
     /// </summary>
     public class OpenIddictServerAspNetCoreConfiguration : IConfigureOptions<AuthenticationOptions>,
                                                            IConfigureOptions<OpenIddictServerOptions>,
-                                                           IPostConfigureOptions<AuthenticationOptions>
+                                                           IPostConfigureOptions<AuthenticationOptions>,
+                                                           IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>
     {
         /// <summary>
         /// Registers the OpenIddict server handler in the global authentication options.
@@ -94,6 +95,27 @@ namespace OpenIddict.Server.AspNetCore
                     .Append("Make sure that neither DefaultAuthenticateScheme, DefaultChallengeScheme, ")
                     .Append("DefaultForbidScheme, DefaultSignInScheme, DefaultSignOutScheme nor DefaultScheme ")
                     .Append("point to an instance of the OpenIddict ASP.NET Core server handler.")
+                    .ToString());
+            }
+        }
+
+        /// <summary>
+        /// Populates the default OpenIddict server ASP.NET Core options and
+        /// ensures that the configuration is in a consistent and valid state.
+        /// </summary>
+        /// <param name="name">The name of the options instance to configure, if applicable.</param>
+        /// <param name="options">The options instance to initialize.</param>
+        public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictServerAspNetCoreOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (options.EnableErrorPassthrough && options.EnableStatusCodePagesIntegration)
+            {
+                throw new InvalidOperationException(new StringBuilder()
+                    .Append("The error pass-through mode cannot be used when the status code pages integration is enabled.")
                     .ToString());
             }
         }

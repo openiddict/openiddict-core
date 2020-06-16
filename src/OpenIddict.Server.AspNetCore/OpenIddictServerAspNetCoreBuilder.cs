@@ -72,8 +72,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Enables error pass-through support, so that the rest of the request processing pipeline is
         /// automatically invoked when returning an error from the interactive authorization and logout endpoints.
         /// When this option is enabled, special logic must be added to these actions to handle errors, that can be
-        /// retrieved using <see cref="OpenIddictServerAspNetCoreHelpers.GetOpenIddictServerResponse(HttpContext)"/>
+        /// retrieved using <see cref="OpenIddictServerAspNetCoreHelpers.GetOpenIddictServerResponse(HttpContext)"/>.
         /// </summary>
+        /// <remarks>
+        /// Important: the error pass-through mode cannot be used when the status code pages integration is enabled.
+        /// </remarks>
         /// <returns>The <see cref="OpenIddictServerAspNetCoreBuilder"/>.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public OpenIddictServerAspNetCoreBuilder EnableErrorPassthrough()

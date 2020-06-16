@@ -43,9 +43,9 @@ namespace OpenIddict.Server.Owin
                  */
                 AttachHttpResponseCode<ApplyVerificationResponseContext>.Descriptor,
                 AttachCacheControlHeader<ApplyVerificationResponseContext>.Descriptor,
-                ProcessHostRedirectionResponse<ApplyVerificationResponseContext>.Descriptor,
                 ProcessPassthroughErrorResponse<ApplyVerificationResponseContext, RequireVerificationEndpointPassthroughEnabled>.Descriptor,
                 ProcessLocalErrorResponse<ApplyVerificationResponseContext>.Descriptor,
+                ProcessHostRedirectionResponse<ApplyVerificationResponseContext>.Descriptor,
                 ProcessEmptyResponse<ApplyVerificationResponseContext>.Descriptor);
         }
     }
