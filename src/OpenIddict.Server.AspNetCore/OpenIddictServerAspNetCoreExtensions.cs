@@ -63,7 +63,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIddictServerAspNetCoreConfiguration>(),
                 ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationOptions>, OpenIddictServerAspNetCoreConfiguration>(),
 
-                ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerAspNetCoreConfiguration>()
+                ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerAspNetCoreConfiguration>(),
+
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIddictServerAspNetCoreOptions>, OpenIddictServerAspNetCoreConfiguration>()
             });
 
             return new OpenIddictServerAspNetCoreBuilder(builder.Services);

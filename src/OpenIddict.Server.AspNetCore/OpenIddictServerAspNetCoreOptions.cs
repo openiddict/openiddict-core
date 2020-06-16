@@ -35,8 +35,11 @@ namespace OpenIddict.Server.AspNetCore
         /// Gets or sets a boolean indicating whether OpenIddict should allow the rest of the request processing pipeline
         /// to be invoked when returning an error from the interactive authorization and logout endpoints.
         /// When this option is enabled, special logic must be added to these actions to handle errors, that can be
-        /// retrieved using <see cref="OpenIddictServerAspNetCoreHelpers.GetOpenIddictServerResponse(HttpContext)"/>
+        /// retrieved using <see cref="OpenIddictServerAspNetCoreHelpers.GetOpenIddictServerResponse(HttpContext)"/>.
         /// </summary>
+        /// <remarks>
+        /// Important: the error pass-through mode cannot be used when the status code pages integration is enabled.
+        /// </remarks>
         public bool EnableErrorPassthrough { get; set; }
 
         /// <summary>
