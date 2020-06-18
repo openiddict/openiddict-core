@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -247,9 +248,24 @@ namespace OpenIddict.EntityFramework
             // are retrieved, a second pass is made to ensure only valid elements are returned.
             // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            return Scopes.Where(scope => scope.Resources.Contains(resource))
-                .AsAsyncEnumerable(cancellationToken)
-                .WhereAwait(async scope => (await GetResourcesAsync(scope, cancellationToken)).Contains(resource, StringComparer.Ordinal));
+
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                var scopes = (from scope in Scopes
+                              where scope.Resources.Contains(resource)
+                              select scope).AsAsyncEnumerable(cancellationToken);
+
+                await foreach (var scope in scopes)
+                {
+                    var resources = await GetResourcesAsync(scope, cancellationToken);
+                    if (resources.Contains(resource, StringComparer.Ordinal))
+                    {
+                        yield return scope;
+                    }
+                }
+            }
         }
 
         /// <summary>

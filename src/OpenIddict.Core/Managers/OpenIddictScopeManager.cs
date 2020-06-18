@@ -106,7 +106,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            var results = await ValidateAsync(scope, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(scope, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -118,7 +118,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.CreateAsync(scope, cancellationToken);
@@ -126,6 +126,19 @@ namespace OpenIddict.Core
             if (!Options.CurrentValue.DisableEntityCaching)
             {
                 await Cache.AddAsync(scope, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TScope scope, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(scope, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -264,11 +277,6 @@ namespace OpenIddict.Core
         public virtual IAsyncEnumerable<TScope> FindByNamesAsync(
             ImmutableArray<string> names, CancellationToken cancellationToken = default)
         {
-            if (names.IsDefaultOrEmpty)
-            {
-                return AsyncEnumerable.Empty<TScope>();
-            }
-
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
                 throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
@@ -287,7 +295,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return scopes.WhereAwait(async scope => names.Contains(await Store.GetNameAsync(scope, cancellationToken), StringComparer.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var scope in scopes)
+                {
+                    if (names.Contains(await Store.GetNameAsync(scope, cancellationToken), StringComparer.Ordinal))
+                    {
+                        yield return scope;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -317,8 +336,19 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return scopes.WhereAwait(async scope =>
-                (await Store.GetResourcesAsync(scope, cancellationToken)).Contains(resource, StringComparer.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var scope in scopes)
+                {
+                    var resources = await Store.GetResourcesAsync(scope, cancellationToken);
+                    if (resources.Contains(resource, StringComparer.Ordinal))
+                    {
+                        yield return scope;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -518,29 +548,19 @@ namespace OpenIddict.Core
         /// <param name="scopes">The scopes.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
         /// <returns>All the resources associated with the specified scopes.</returns>
-        public virtual IAsyncEnumerable<string> ListResourcesAsync(
-            ImmutableArray<string> scopes, CancellationToken cancellationToken = default)
+        public virtual async IAsyncEnumerable<string> ListResourcesAsync(
+            ImmutableArray<string> scopes, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            if (scopes.IsDefaultOrEmpty)
+            var resources = new HashSet<string>(StringComparer.Ordinal);
+
+            await foreach (var scope in FindByNamesAsync(scopes, cancellationToken))
             {
-                return AsyncEnumerable.Empty<string>();
+                resources.UnionWith(await GetResourcesAsync(scope, cancellationToken));
             }
 
-            return ExecuteAsync(cancellationToken);
-
-            async IAsyncEnumerable<string> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            foreach (var resource in resources)
             {
-                var resources = new HashSet<string>(StringComparer.Ordinal);
-
-                await foreach (var scope in FindByNamesAsync(scopes, cancellationToken))
-                {
-                    resources.UnionWith(await GetResourcesAsync(scope, cancellationToken));
-                }
-
-                foreach (var resource in resources)
-                {
-                    yield return resource;
-                }
+                yield return resource;
             }
         }
 
@@ -617,7 +637,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            var results = await ValidateAsync(scope, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(scope, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -629,7 +649,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.UpdateAsync(scope, cancellationToken);
@@ -638,6 +658,19 @@ namespace OpenIddict.Core
             {
                 await Cache.RemoveAsync(scope, cancellationToken);
                 await Cache.AddAsync(scope, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TScope scope, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(scope, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -732,10 +765,10 @@ namespace OpenIddict.Core
             => await FindByNameAsync(name, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictScopeManager.FindByNamesAsync(ImmutableArray<string> names, CancellationToken cancellationToken)
-            => FindByNamesAsync(names, cancellationToken).OfType<object>();
+            => FindByNamesAsync(names, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictScopeManager.FindByResourceAsync(string resource, CancellationToken cancellationToken)
-            => FindByResourceAsync(resource, cancellationToken).OfType<object>();
+            => FindByResourceAsync(resource, cancellationToken);
 
         ValueTask<TResult> IOpenIddictScopeManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => GetAsync(query, cancellationToken);
@@ -759,7 +792,7 @@ namespace OpenIddict.Core
             => GetResourcesAsync((TScope) scope, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictScopeManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
-            => ListAsync(count, offset, cancellationToken).OfType<object>();
+            => ListAsync(count, offset, cancellationToken);
 
         IAsyncEnumerable<TResult> IOpenIddictScopeManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => ListAsync(query, cancellationToken);

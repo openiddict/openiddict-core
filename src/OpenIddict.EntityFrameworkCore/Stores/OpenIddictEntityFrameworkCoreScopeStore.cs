@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -258,12 +259,29 @@ namespace OpenIddict.EntityFrameworkCore
                 throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
             }
 
-            var scopes = (from scope in Scopes.AsTracking()
-                          where scope.Resources.Contains(resource)
-                          select scope).AsAsyncEnumerable();
+            // To optimize the efficiency of the query a bit, only scopes whose stringified
+            // Resources column contains the specified resource are returned. Once the scopes
+            // are retrieved, a second pass is made to ensure only valid elements are returned.
+            // Implementers that use this method in a hot path may want to override this method
+            // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
 
-            return scopes.WhereAwait(async scope =>
-                (await GetResourcesAsync(scope, cancellationToken)).Contains(resource, StringComparer.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TScope> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                var scopes = (from scope in Scopes.AsTracking()
+                              where scope.Resources.Contains(resource)
+                              select scope).AsAsyncEnumerable();
+
+                await foreach (var scope in scopes)
+                {
+                    var resources = await GetResourcesAsync(scope, cancellationToken);
+                    if (resources.Contains(resource, StringComparer.Ordinal))
+                    {
+                        yield return scope;
+                    }
+                }
+            }
         }
 
         /// <summary>

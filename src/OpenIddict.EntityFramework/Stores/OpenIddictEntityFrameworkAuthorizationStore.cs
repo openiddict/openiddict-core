@@ -12,6 +12,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -342,9 +343,50 @@ namespace OpenIddict.EntityFramework
             [NotNull] string subject, [NotNull] string client,
             [NotNull] string status, [NotNull] string type,
             ImmutableArray<string> scopes, CancellationToken cancellationToken)
-            => FindAsync(subject, client, status, type, cancellationToken)
-                .WhereAwait(async authorization => new HashSet<string>(
-                    await GetScopesAsync(authorization, cancellationToken), StringComparer.Ordinal).IsSupersetOf(scopes));
+        {
+            if (string.IsNullOrEmpty(subject))
+            {
+                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+            }
+
+            if (string.IsNullOrEmpty(client))
+            {
+                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+            }
+
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+            }
+
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                var key = ConvertIdentifierFromString(client);
+
+                var authorizations = (from authorization in Authorizations.Include(authorization => authorization.Application)
+                                      where authorization.Application != null &&
+                                            authorization.Application.Id.Equals(key) &&
+                                            authorization.Subject == subject &&
+                                            authorization.Status == status &&
+                                            authorization.Type == type
+                                      select authorization).AsAsyncEnumerable(cancellationToken);
+
+                await foreach (var authorization in authorizations)
+                {
+                    if (new HashSet<string>(await GetScopesAsync(authorization, cancellationToken), StringComparer.Ordinal).IsSupersetOf(scopes))
+                    {
+                        yield return authorization;
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Retrieves the list of authorizations corresponding to the specified application identifier.

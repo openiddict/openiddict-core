@@ -114,7 +114,7 @@ namespace OpenIddict.Core
                 await Store.SetStatusAsync(authorization, Statuses.Valid, cancellationToken);
             }
 
-            var results = await ValidateAsync(authorization, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(authorization, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -126,7 +126,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.CreateAsync(authorization, cancellationToken);
@@ -134,6 +134,19 @@ namespace OpenIddict.Core
             if (!Options.CurrentValue.DisableEntityCaching)
             {
                 await Cache.AddAsync(authorization, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TAuthorization authorization, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(authorization, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -272,8 +285,22 @@ namespace OpenIddict.Core
                 return authorizations;
             }
 
-            return authorizations.WhereAwait(async authorization => string.Equals(
-                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal));
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var authorization in authorizations)
+                {
+                    if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
+                    {
+                        yield return authorization;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -316,8 +343,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return authorizations.WhereAwait(async authorization => string.Equals(
-                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var authorization in authorizations)
+                {
+                    if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
+                    {
+                        yield return authorization;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -362,8 +399,22 @@ namespace OpenIddict.Core
                 return authorizations;
             }
 
-            return authorizations.WhereAwait(async authorization => string.Equals(
-                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal));
+            // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+            // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+            // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var authorization in authorizations)
+                {
+                    if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
+                    {
+                        yield return authorization;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -414,9 +465,25 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return authorizations.WhereAwait(async authorization => string.Equals(
-                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal) &&
-                await HasScopesAsync(authorization, scopes, cancellationToken));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var authorization in authorizations)
+                {
+                    if (!string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    if (!await HasScopesAsync(authorization, scopes, cancellationToken))
+                    {
+                        continue;
+                    }
+
+                    yield return authorization;
+                }
+            }
         }
 
         /// <summary>
@@ -446,8 +513,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return authorizations.WhereAwait(async authorization => string.Equals(
-                await Store.GetApplicationIdAsync(authorization, cancellationToken), identifier, StringComparison.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var authorization in authorizations)
+                {
+                    if (string.Equals(await Store.GetApplicationIdAsync(authorization, cancellationToken), identifier, StringComparison.Ordinal))
+                    {
+                        yield return authorization;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -514,8 +591,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return authorizations.WhereAwait(async authorization => string.Equals(
-                await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var authorization in authorizations)
+                {
+                    if (string.Equals(await Store.GetSubjectAsync(authorization, cancellationToken), subject, StringComparison.Ordinal))
+                    {
+                        yield return authorization;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -951,7 +1038,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(authorization));
             }
 
-            var results = await ValidateAsync(authorization, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(authorization, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -963,7 +1050,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.UpdateAsync(authorization, cancellationToken);
@@ -972,6 +1059,19 @@ namespace OpenIddict.Core
             {
                 await Cache.RemoveAsync(authorization, cancellationToken);
                 await Cache.AddAsync(authorization, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TAuthorization authorization, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(authorization, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -1070,25 +1170,25 @@ namespace OpenIddict.Core
             => DeleteAsync((TAuthorization) authorization, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, CancellationToken cancellationToken)
-            => FindAsync(subject, client, cancellationToken).OfType<object>();
+            => FindAsync(subject, client, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, CancellationToken cancellationToken)
-            => FindAsync(subject, client, status, cancellationToken).OfType<object>();
+            => FindAsync(subject, client, status, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
-            => FindAsync(subject, client, status, type, cancellationToken).OfType<object>();
+            => FindAsync(subject, client, status, type, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindAsync(string subject, string client, string status, string type, ImmutableArray<string> scopes, CancellationToken cancellationToken)
-            => FindAsync(subject, client, status, type, scopes, cancellationToken).OfType<object>();
+            => FindAsync(subject, client, status, type, scopes, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
-            => FindByApplicationIdAsync(identifier, cancellationToken).OfType<object>();
+            => FindByApplicationIdAsync(identifier, cancellationToken);
 
         async ValueTask<object> IOpenIddictAuthorizationManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
             => await FindByIdAsync(identifier, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictAuthorizationManager.FindBySubjectAsync(string subject, CancellationToken cancellationToken)
-            => FindBySubjectAsync(subject, cancellationToken).OfType<object>();
+            => FindBySubjectAsync(subject, cancellationToken);
 
         ValueTask<string> IOpenIddictAuthorizationManager.GetApplicationIdAsync(object authorization, CancellationToken cancellationToken)
             => GetApplicationIdAsync((TAuthorization) authorization, cancellationToken);
@@ -1124,7 +1224,7 @@ namespace OpenIddict.Core
             => HasTypeAsync((TAuthorization) authorization, type, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictAuthorizationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
-            => ListAsync(count, offset, cancellationToken).OfType<object>();
+            => ListAsync(count, offset, cancellationToken);
 
         IAsyncEnumerable<TResult> IOpenIddictAuthorizationManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => ListAsync(query, cancellationToken);

@@ -156,7 +156,7 @@ namespace OpenIddict.Core
                 await Store.SetClientSecretAsync(application, secret, cancellationToken);
             }
 
-            var results = await ValidateAsync(application, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(application, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -168,7 +168,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.CreateAsync(application, cancellationToken);
@@ -176,6 +176,19 @@ namespace OpenIddict.Core
             if (!Options.CurrentValue.DisableEntityCaching)
             {
                 await Cache.AddAsync(application, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TApplication application, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(application, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -341,12 +354,23 @@ namespace OpenIddict.Core
                 return applications;
             }
 
+            return ExecuteAsync(cancellationToken);
+
             // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return applications.WhereAwait(async application =>
-                (await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken)).Contains(address, StringComparer.Ordinal));
+            async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var application in applications)
+                {
+                    var addresses = await Store.GetPostLogoutRedirectUrisAsync(application, cancellationToken);
+                    if (addresses.Contains(address, StringComparer.Ordinal))
+                    {
+                        yield return application;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -376,8 +400,19 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return applications.WhereAwait(async application =>
-                (await Store.GetRedirectUrisAsync(application, cancellationToken)).Contains(address, StringComparer.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var application in applications)
+                {
+                    var addresses = await Store.GetRedirectUrisAsync(application, cancellationToken);
+                    if (addresses.Contains(address, StringComparer.Ordinal))
+                    {
+                        yield return application;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -872,7 +907,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var results = await ValidateAsync(application, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(application, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -884,7 +919,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.UpdateAsync(application, cancellationToken);
@@ -893,6 +928,19 @@ namespace OpenIddict.Core
             {
                 await Cache.RemoveAsync(application, cancellationToken);
                 await Cache.AddAsync(application, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TApplication application, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(application, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -1379,10 +1427,10 @@ namespace OpenIddict.Core
             => await FindByIdAsync(identifier, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByPostLogoutRedirectUriAsync(string address, CancellationToken cancellationToken)
-            => FindByPostLogoutRedirectUriAsync(address, cancellationToken).OfType<object>();
+            => FindByPostLogoutRedirectUriAsync(address, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictApplicationManager.FindByRedirectUriAsync(string address, CancellationToken cancellationToken)
-            => FindByRedirectUriAsync(address, cancellationToken).OfType<object>();
+            => FindByRedirectUriAsync(address, cancellationToken);
 
         ValueTask<TResult> IOpenIddictApplicationManager.GetAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => GetAsync(query, cancellationToken);
@@ -1430,7 +1478,7 @@ namespace OpenIddict.Core
             => HasRequirementAsync((TApplication) application, requirement, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictApplicationManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
-            => ListAsync(count, offset, cancellationToken).OfType<object>();
+            => ListAsync(count, offset, cancellationToken);
 
         IAsyncEnumerable<TResult> IOpenIddictApplicationManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => ListAsync(query, cancellationToken);
