@@ -8,7 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -99,22 +99,11 @@ namespace OpenIddict.Core
                 Subject = await _store.GetSubjectAsync(authorization, cancellationToken)
             });
 
-            var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
-            if (signal == null)
-            {
-                throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-            }
-
-            using (var entry = _cache.CreateEntry(new
+            await CreateEntryAsync(new
             {
                 Method = nameof(FindByIdAsync),
                 Identifier = await _store.GetIdAsync(authorization, cancellationToken)
-            }))
-            {
-                entry.AddExpirationToken(signal)
-                     .SetSize(1L)
-                     .SetValue(authorization);
-            }
+            }, authorization, cancellationToken);
         }
 
         /// <summary>
@@ -151,43 +140,31 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return authorizations.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync()
-            {
-                var authorizations = ImmutableArray.CreateRange(await _store.FindAsync(
-                    subject, client, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var authorization in authorizations)
+                var parameters = new
                 {
-                    await AddAsync(authorization, cancellationToken);
-                }
+                    Method = nameof(FindAsync),
+                    Subject = subject,
+                    Client = client
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
                 {
-                    foreach (var authorization in authorizations)
+                    var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+                    await foreach (var authorization in _store.FindAsync(subject, client, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(authorization);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(authorization, cancellationToken);
                     }
 
-                    entry.SetSize(authorizations.Length);
-                    entry.SetValue(authorizations);
+                    authorizations = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, authorizations, cancellationToken);
                 }
 
                 foreach (var authorization in authorizations)
@@ -195,8 +172,6 @@ namespace OpenIddict.Core
                     yield return authorization;
                 }
             }
-
-            return ExecuteAsync();
         }
 
         /// <summary>
@@ -226,44 +201,32 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The status cannot be null or empty.", nameof(status));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client,
-                Status = status
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return authorizations.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync()
-            {
-                var authorizations = ImmutableArray.CreateRange(await _store.FindAsync(
-                    subject, client, status, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var authorization in authorizations)
+                var parameters = new
                 {
-                    await AddAsync(authorization, cancellationToken);
-                }
+                    Method = nameof(FindAsync),
+                    Subject = subject,
+                    Client = client,
+                    Status = status
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
                 {
-                    foreach (var authorization in authorizations)
+                    var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+                    await foreach (var authorization in _store.FindAsync(subject, client, status, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(authorization);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(authorization, cancellationToken);
                     }
 
-                    entry.SetSize(authorizations.Length);
-                    entry.SetValue(authorizations);
+                    authorizations = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, authorizations, cancellationToken);
                 }
 
                 foreach (var authorization in authorizations)
@@ -271,8 +234,6 @@ namespace OpenIddict.Core
                     yield return authorization;
                 }
             }
-
-            return ExecuteAsync();
         }
 
         /// <summary>
@@ -308,45 +269,33 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The type cannot be null or empty.", nameof(type));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindAsync),
-                Subject = subject,
-                Client = client,
-                Status = status,
-                Type = type
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return authorizations.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync()
-            {
-                var authorizations = ImmutableArray.CreateRange(await _store.FindAsync(
-                    subject, client, status, type, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var authorization in authorizations)
+                var parameters = new
                 {
-                    await AddAsync(authorization, cancellationToken);
-                }
+                    Method = nameof(FindAsync),
+                    Subject = subject,
+                    Client = client,
+                    Status = status,
+                    Type = type
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
                 {
-                    foreach (var authorization in authorizations)
+                    var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+                    await foreach (var authorization in _store.FindAsync(subject, client, status, type, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(authorization);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(authorization, cancellationToken);
                     }
 
-                    entry.SetSize(authorizations.Length);
-                    entry.SetValue(authorizations);
+                    authorizations = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, authorizations, cancellationToken);
                 }
 
                 foreach (var authorization in authorizations)
@@ -354,8 +303,6 @@ namespace OpenIddict.Core
                     yield return authorization;
                 }
             }
-
-            return ExecuteAsync();
         }
 
         /// <summary>
@@ -395,7 +342,9 @@ namespace OpenIddict.Core
 
             // Note: this method is only partially cached.
 
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync()
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
                 await foreach (var authorization in _store.FindAsync(subject, client, status, type, scopes, cancellationToken))
                 {
@@ -404,8 +353,6 @@ namespace OpenIddict.Core
                     yield return authorization;
                 }
             }
-
-            return ExecuteAsync();
         }
 
         /// <summary>
@@ -422,42 +369,30 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindByApplicationIdAsync),
-                Identifier = identifier
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return authorizations.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync()
-            {
-                var authorizations = ImmutableArray.CreateRange(await _store.FindByApplicationIdAsync(
-                    identifier, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var authorization in authorizations)
+                var parameters = new
                 {
-                    await AddAsync(authorization, cancellationToken);
-                }
+                    Method = nameof(FindByApplicationIdAsync),
+                    Identifier = identifier
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
                 {
-                    foreach (var authorization in authorizations)
+                    var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+                    await foreach (var authorization in _store.FindByApplicationIdAsync(identifier, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(authorization);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(authorization, cancellationToken);
                     }
 
-                    entry.SetSize(authorizations.Length);
-                    entry.SetValue(authorizations);
+                    authorizations = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, authorizations, cancellationToken);
                 }
 
                 foreach (var authorization in authorizations)
@@ -465,8 +400,6 @@ namespace OpenIddict.Core
                     yield return authorization;
                 }
             }
-
-            return ExecuteAsync();
         }
 
         /// <summary>
@@ -496,6 +429,8 @@ namespace OpenIddict.Core
                 return new ValueTask<TAuthorization>(authorization);
             }
 
+            return new ValueTask<TAuthorization>(ExecuteAsync());
+
             async Task<TAuthorization> ExecuteAsync()
             {
                 if ((authorization = await _store.FindByIdAsync(identifier, cancellationToken)) != null)
@@ -503,27 +438,10 @@ namespace OpenIddict.Core
                     await AddAsync(authorization, cancellationToken);
                 }
 
-                using (var entry = _cache.CreateEntry(parameters))
-                {
-                    if (authorization != null)
-                    {
-                        var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
-
-                        entry.AddExpirationToken(signal);
-                    }
-
-                    entry.SetSize(1L);
-                    entry.SetValue(authorization);
-                }
+                await CreateEntryAsync(parameters, authorization, cancellationToken);
 
                 return authorization;
             }
-
-            return new ValueTask<TAuthorization>(ExecuteAsync());
         }
 
         /// <summary>
@@ -540,42 +458,30 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindBySubjectAsync),
-                Subject = subject
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
+            async IAsyncEnumerable<TAuthorization> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return authorizations.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TAuthorization> ExecuteAsync()
-            {
-                var authorizations = ImmutableArray.CreateRange(await _store.FindBySubjectAsync(
-                    subject, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var authorization in authorizations)
+                var parameters = new
                 {
-                    await AddAsync(authorization, cancellationToken);
-                }
+                    Method = nameof(FindBySubjectAsync),
+                    Subject = subject
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TAuthorization> authorizations))
                 {
-                    foreach (var authorization in authorizations)
+                    var builder = ImmutableArray.CreateBuilder<TAuthorization>();
+
+                    await foreach (var authorization in _store.FindBySubjectAsync(subject, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(authorization);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(authorization, cancellationToken);
                     }
 
-                    entry.SetSize(authorizations.Length);
-                    entry.SetValue(authorizations);
+                    authorizations = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, authorizations, cancellationToken);
                 }
 
                 foreach (var authorization in authorizations)
@@ -583,8 +489,6 @@ namespace OpenIddict.Core
                     yield return authorization;
                 }
             }
-
-            return ExecuteAsync();
         }
 
         /// <summary>
@@ -611,6 +515,70 @@ namespace OpenIddict.Core
                 signal.Cancel();
                 signal.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Creates a cache entry for the specified key.
+        /// </summary>
+        /// <param name="key">The cache key.</param>
+        /// <param name="authorization">The authorization to store in the cache entry, if applicable.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        protected virtual async ValueTask CreateEntryAsync(
+            [NotNull] object key, [CanBeNull] TAuthorization authorization, CancellationToken cancellationToken)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            using var entry = _cache.CreateEntry(key);
+
+            if (authorization != null)
+            {
+                var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
+                if (signal == null)
+                {
+                    throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                }
+
+                entry.AddExpirationToken(signal);
+            }
+
+            entry.SetSize(1L);
+            entry.SetValue(authorization);
+        }
+
+        /// <summary>
+        /// Creates a cache entry for the specified key.
+        /// </summary>
+        /// <param name="key">The cache key.</param>
+        /// <param name="authorizations">The authorizations to store in the cache entry.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        protected virtual async ValueTask CreateEntryAsync(
+            [NotNull] object key, [CanBeNull] ImmutableArray<TAuthorization> authorizations, CancellationToken cancellationToken)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            using var entry = _cache.CreateEntry(key);
+
+            foreach (var authorization in authorizations)
+            {
+                var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
+                if (signal == null)
+                {
+                    throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                }
+
+                entry.AddExpirationToken(signal);
+            }
+
+            entry.SetSize(authorizations.Length);
+            entry.SetValue(authorizations);
         }
 
         /// <summary>

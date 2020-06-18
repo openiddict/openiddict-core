@@ -8,7 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -85,33 +85,17 @@ namespace OpenIddict.Core
                 });
             }
 
-            var signal = await CreateExpirationSignalAsync(application, cancellationToken);
-            if (signal == null)
-            {
-                throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-            }
-
-            using (var entry = _cache.CreateEntry(new
+            await CreateEntryAsync(new
             {
                 Method = nameof(FindByIdAsync),
                 Identifier = await _store.GetIdAsync(application, cancellationToken)
-            }))
-            {
-                entry.AddExpirationToken(signal)
-                     .SetSize(1L)
-                     .SetValue(application);
-            }
+            }, application, cancellationToken);
 
-            using (var entry = _cache.CreateEntry(new
+            await CreateEntryAsync(new
             {
                 Method = nameof(FindByClientIdAsync),
                 Identifier = await _store.GetClientIdAsync(application, cancellationToken)
-            }))
-            {
-                entry.AddExpirationToken(signal)
-                     .SetSize(1L)
-                     .SetValue(application);
-            }
+            }, application, cancellationToken);
         }
 
         /// <summary>
@@ -154,6 +138,8 @@ namespace OpenIddict.Core
                 return new ValueTask<TApplication>(application);
             }
 
+            return new ValueTask<TApplication>(ExecuteAsync());
+
             async Task<TApplication> ExecuteAsync()
             {
                 if ((application = await _store.FindByClientIdAsync(identifier, cancellationToken)) != null)
@@ -161,27 +147,10 @@ namespace OpenIddict.Core
                     await AddAsync(application, cancellationToken);
                 }
 
-                using (var entry = _cache.CreateEntry(parameters))
-                {
-                    if (application != null)
-                    {
-                        var signal = await CreateExpirationSignalAsync(application, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
-
-                        entry.AddExpirationToken(signal);
-                    }
-
-                    entry.SetSize(1L);
-                    entry.SetValue(application);
-                }
+                await CreateEntryAsync(parameters, application, cancellationToken);
 
                 return application;
             }
-
-            return new ValueTask<TApplication>(ExecuteAsync());
         }
 
         /// <summary>
@@ -211,6 +180,8 @@ namespace OpenIddict.Core
                 return new ValueTask<TApplication>(application);
             }
 
+            return new ValueTask<TApplication>(ExecuteAsync());
+
             async Task<TApplication> ExecuteAsync()
             {
                 if ((application = await _store.FindByIdAsync(identifier, cancellationToken)) != null)
@@ -218,27 +189,10 @@ namespace OpenIddict.Core
                     await AddAsync(application, cancellationToken);
                 }
 
-                using (var entry = _cache.CreateEntry(parameters))
-                {
-                    if (application != null)
-                    {
-                        var signal = await CreateExpirationSignalAsync(application, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
-
-                        entry.AddExpirationToken(signal);
-                    }
-
-                    entry.SetSize(1L);
-                    entry.SetValue(application);
-                }
+                await CreateEntryAsync(parameters, application, cancellationToken);
 
                 return application;
             }
-
-            return new ValueTask<TApplication>(ExecuteAsync());
         }
 
         /// <summary>
@@ -255,42 +209,30 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindByPostLogoutRedirectUriAsync),
-                Address = address
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TApplication> applications))
+            async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return applications.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TApplication> ExecuteAsync()
-            {
-                var applications = ImmutableArray.CreateRange(await _store.FindByPostLogoutRedirectUriAsync(
-                    address, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var application in applications)
+                var parameters = new
                 {
-                    await AddAsync(application, cancellationToken);
-                }
+                    Method = nameof(FindByPostLogoutRedirectUriAsync),
+                    Address = address
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TApplication> applications))
                 {
-                    foreach (var application in applications)
+                    var builder = ImmutableArray.CreateBuilder<TApplication>();
+
+                    await foreach (var application in _store.FindByPostLogoutRedirectUriAsync(address, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(application, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(application);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(application, cancellationToken);
                     }
 
-                    entry.SetSize(applications.Length);
-                    entry.SetValue(applications);
+                    applications = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, applications, cancellationToken);
                 }
 
                 foreach (var application in applications)
@@ -298,8 +240,6 @@ namespace OpenIddict.Core
                     yield return application;
                 }
             }
-
-            return ExecuteAsync();
         }
 
         /// <summary>
@@ -316,42 +256,30 @@ namespace OpenIddict.Core
                 throw new ArgumentException("The address cannot be null or empty.", nameof(address));
             }
 
-            var parameters = new
-            {
-                Method = nameof(FindByRedirectUriAsync),
-                Address = address
-            };
+            return ExecuteAsync(cancellationToken);
 
-            if (_cache.TryGetValue(parameters, out ImmutableArray<TApplication> applications))
+            async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                return applications.ToAsyncEnumerable();
-            }
-
-            async IAsyncEnumerable<TApplication> ExecuteAsync()
-            {
-                var applications = ImmutableArray.CreateRange(await _store.FindByRedirectUriAsync(
-                    address, cancellationToken).ToListAsync(cancellationToken));
-
-                foreach (var application in applications)
+                var parameters = new
                 {
-                    await AddAsync(application, cancellationToken);
-                }
+                    Method = nameof(FindByRedirectUriAsync),
+                    Address = address
+                };
 
-                using (var entry = _cache.CreateEntry(parameters))
+                if (!_cache.TryGetValue(parameters, out ImmutableArray<TApplication> applications))
                 {
-                    foreach (var application in applications)
+                    var builder = ImmutableArray.CreateBuilder<TApplication>();
+
+                    await foreach (var application in _store.FindByRedirectUriAsync(address, cancellationToken))
                     {
-                        var signal = await CreateExpirationSignalAsync(application, cancellationToken);
-                        if (signal == null)
-                        {
-                            throw new InvalidOperationException("An error occurred while creating an expiration signal.");
-                        }
+                        builder.Add(application);
 
-                        entry.AddExpirationToken(signal);
+                        await AddAsync(application, cancellationToken);
                     }
 
-                    entry.SetSize(applications.Length);
-                    entry.SetValue(applications);
+                    applications = builder.ToImmutable();
+
+                    await CreateEntryAsync(parameters, applications, cancellationToken);
                 }
 
                 foreach (var application in applications)
@@ -359,8 +287,6 @@ namespace OpenIddict.Core
                     yield return application;
                 }
             }
-
-            return ExecuteAsync();
         }
 
         /// <summary>
@@ -387,6 +313,70 @@ namespace OpenIddict.Core
                 signal.Cancel();
                 signal.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Creates a cache entry for the specified key.
+        /// </summary>
+        /// <param name="key">The cache key.</param>
+        /// <param name="application">The application to store in the cache entry, if applicable.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        protected virtual async ValueTask CreateEntryAsync(
+            [NotNull] object key, [CanBeNull] TApplication application, CancellationToken cancellationToken)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            using var entry = _cache.CreateEntry(key);
+
+            if (application != null)
+            {
+                var signal = await CreateExpirationSignalAsync(application, cancellationToken);
+                if (signal == null)
+                {
+                    throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                }
+
+                entry.AddExpirationToken(signal);
+            }
+
+            entry.SetSize(1L);
+            entry.SetValue(application);
+        }
+
+        /// <summary>
+        /// Creates a cache entry for the specified key.
+        /// </summary>
+        /// <param name="key">The cache key.</param>
+        /// <param name="applications">The applications to store in the cache entry.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+        /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+        protected virtual async ValueTask CreateEntryAsync(
+            [NotNull] object key, [CanBeNull] ImmutableArray<TApplication> applications, CancellationToken cancellationToken)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            using var entry = _cache.CreateEntry(key);
+
+            foreach (var application in applications)
+            {
+                var signal = await CreateExpirationSignalAsync(application, cancellationToken);
+                if (signal == null)
+                {
+                    throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                }
+
+                entry.AddExpirationToken(signal);
+            }
+
+            entry.SetSize(applications.Length);
+            entry.SetValue(applications);
         }
 
         /// <summary>

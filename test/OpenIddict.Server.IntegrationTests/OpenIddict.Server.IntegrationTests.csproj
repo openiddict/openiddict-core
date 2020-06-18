@@ -18,6 +18,7 @@
     <PackageReference Include="AngleSharp" Version="$(AngleSharpVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(ExtensionsVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
+    <PackageReference Include="System.Linq.Async" Version="$(LinqAsyncVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">

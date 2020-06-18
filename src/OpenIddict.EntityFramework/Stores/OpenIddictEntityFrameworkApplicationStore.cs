@@ -12,6 +12,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -303,10 +304,24 @@ namespace OpenIddict.EntityFramework
             // are retrieved, a second pass is made to ensure only valid elements are returned.
             // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            return Applications.Where(application => application.PostLogoutRedirectUris.Contains(address))
-                .AsAsyncEnumerable(cancellationToken)
-                .WhereAwait(async application => (await GetPostLogoutRedirectUrisAsync(application, cancellationToken))
-                    .Contains(address, StringComparer.Ordinal));
+
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                var applications = (from application in Applications
+                                    where application.PostLogoutRedirectUris.Contains(address)
+                                    select application).AsAsyncEnumerable(cancellationToken);
+
+                await foreach (var application in applications)
+                {
+                    var addresses = await GetPostLogoutRedirectUrisAsync(application, cancellationToken);
+                    if (addresses.Contains(address, StringComparer.Ordinal))
+                    {
+                        yield return application;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -328,10 +343,24 @@ namespace OpenIddict.EntityFramework
             // are retrieved, a second pass is made to ensure only valid elements are returned.
             // Implementers that use this method in a hot path may want to override this method
             // to use SQL Server 2016 functions like JSON_VALUE to make the query more efficient.
-            return Applications.Where(application => application.RedirectUris.Contains(address))
-                .AsAsyncEnumerable(cancellationToken)
-                .WhereAwait(async application => (await GetRedirectUrisAsync(application, cancellationToken))
-                    .Contains(address, StringComparer.Ordinal));
+
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TApplication> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                var applications = (from application in Applications
+                                    where application.RedirectUris.Contains(address)
+                                    select application).AsAsyncEnumerable(cancellationToken);
+
+                await foreach (var application in applications)
+                {
+                    var addresses = await GetRedirectUrisAsync(application, cancellationToken);
+                    if (addresses.Contains(address, StringComparer.Ordinal))
+                    {
+                        yield return application;
+                    }
+                }
+            }
         }
 
         /// <summary>

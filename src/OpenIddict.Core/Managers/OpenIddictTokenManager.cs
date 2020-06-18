@@ -122,7 +122,7 @@ namespace OpenIddict.Core
                 await Store.SetReferenceIdAsync(token, identifier, cancellationToken);
             }
 
-            var results = await ValidateAsync(token, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(token, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -134,7 +134,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.CreateAsync(token, cancellationToken);
@@ -142,6 +142,19 @@ namespace OpenIddict.Core
             if (!Options.CurrentValue.DisableEntityCaching)
             {
                 await Cache.AddAsync(token, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TToken token, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(token, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -230,8 +243,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return tokens.WhereAwait(async token => string.Equals(await Store.GetSubjectAsync(
-                token, cancellationToken), subject, StringComparison.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var token in tokens)
+                {
+                    if (string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
+                    {
+                        yield return token;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -274,8 +297,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return tokens.WhereAwait(async token => string.Equals(await Store.GetSubjectAsync(
-                token, cancellationToken), subject, StringComparison.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var token in tokens)
+                {
+                    if (string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
+                    {
+                        yield return token;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -324,8 +357,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return tokens.WhereAwait(async token => string.Equals(await Store.GetSubjectAsync(
-                token, cancellationToken), subject, StringComparison.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var token in tokens)
+                {
+                    if (string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
+                    {
+                        yield return token;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -355,8 +398,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return tokens.WhereAwait(async token => string.Equals(await Store.GetApplicationIdAsync(
-                token, cancellationToken), identifier, StringComparison.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var token in tokens)
+                {
+                    if (string.Equals(await Store.GetApplicationIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
+                    {
+                        yield return token;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -386,8 +439,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return tokens.WhereAwait(async token => string.Equals(await Store.GetAuthorizationIdAsync(
-                token, cancellationToken), identifier, StringComparison.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var token in tokens)
+                {
+                    if (string.Equals(await Store.GetAuthorizationIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
+                    {
+                        yield return token;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -495,8 +558,18 @@ namespace OpenIddict.Core
             // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
             // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
 
-            return tokens.WhereAwait(async token => string.Equals(await Store.GetSubjectAsync(
-                token, cancellationToken), subject, StringComparison.Ordinal));
+            return ExecuteAsync(cancellationToken);
+
+            async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                await foreach (var token in tokens)
+                {
+                    if (string.Equals(await Store.GetSubjectAsync(token, cancellationToken), subject, StringComparison.Ordinal))
+                    {
+                        yield return token;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -1168,7 +1241,7 @@ namespace OpenIddict.Core
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var results = await ValidateAsync(token, cancellationToken).ToListAsync(cancellationToken);
+            var results = await GetValidationResultsAsync(token, cancellationToken);
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
@@ -1180,7 +1253,7 @@ namespace OpenIddict.Core
                     builder.AppendLine(result.ErrorMessage);
                 }
 
-                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results.ToImmutableArray());
+                throw new OpenIddictExceptions.ValidationException(builder.ToString(), results);
             }
 
             await Store.UpdateAsync(token, cancellationToken);
@@ -1189,6 +1262,19 @@ namespace OpenIddict.Core
             {
                 await Cache.RemoveAsync(token, cancellationToken);
                 await Cache.AddAsync(token, cancellationToken);
+            }
+
+            async Task<ImmutableArray<ValidationResult>> GetValidationResultsAsync(
+                TToken token, CancellationToken cancellationToken)
+            {
+                var builder = ImmutableArray.CreateBuilder<ValidationResult>();
+
+                await foreach (var result in ValidateAsync(token, cancellationToken))
+                {
+                    builder.Add(result);
+                }
+
+                return builder.ToImmutable();
             }
         }
 
@@ -1318,19 +1404,19 @@ namespace OpenIddict.Core
             => DeleteAsync((TToken) token, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync(string subject, string client, CancellationToken cancellationToken)
-            => FindAsync(subject, client, cancellationToken).OfType<object>();
+            => FindAsync(subject, client, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync(string subject, string client, string status, CancellationToken cancellationToken)
-            => FindAsync(subject, client, status, cancellationToken).OfType<object>();
+            => FindAsync(subject, client, status, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictTokenManager.FindAsync(string subject, string client, string status, string type, CancellationToken cancellationToken)
-            => FindAsync(subject, client, status, type, cancellationToken).OfType<object>();
+            => FindAsync(subject, client, status, type, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictTokenManager.FindByApplicationIdAsync(string identifier, CancellationToken cancellationToken)
-            => FindByApplicationIdAsync(identifier, cancellationToken).OfType<object>();
+            => FindByApplicationIdAsync(identifier, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictTokenManager.FindByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
-            => FindByAuthorizationIdAsync(identifier, cancellationToken).OfType<object>();
+            => FindByAuthorizationIdAsync(identifier, cancellationToken);
 
         async ValueTask<object> IOpenIddictTokenManager.FindByIdAsync(string identifier, CancellationToken cancellationToken)
             => await FindByIdAsync(identifier, cancellationToken);
@@ -1339,7 +1425,7 @@ namespace OpenIddict.Core
             => await FindByReferenceIdAsync(identifier, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictTokenManager.FindBySubjectAsync(string subject, CancellationToken cancellationToken)
-            => FindBySubjectAsync(subject, cancellationToken).OfType<object>();
+            => FindBySubjectAsync(subject, cancellationToken);
 
         ValueTask<string> IOpenIddictTokenManager.GetApplicationIdAsync(object token, CancellationToken cancellationToken)
             => GetApplicationIdAsync((TToken) token, cancellationToken);
@@ -1384,7 +1470,7 @@ namespace OpenIddict.Core
             => HasTypeAsync((TToken) token, type, cancellationToken);
 
         IAsyncEnumerable<object> IOpenIddictTokenManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
-            => ListAsync(count, offset, cancellationToken).OfType<object>();
+            => ListAsync(count, offset, cancellationToken);
 
         IAsyncEnumerable<TResult> IOpenIddictTokenManager.ListAsync<TResult>(Func<IQueryable<object>, IQueryable<TResult>> query, CancellationToken cancellationToken)
             => ListAsync(query, cancellationToken);
