@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;net472;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Certificate.pfx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" Version="$(MoqVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(ExtensionsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenIddict.Server\OpenIddict.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' Or 
+                         '$(TargetFramework)' == 'net461' ">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_ECDSA</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_GENERATION</DefineConstants>
+  </PropertyGroup>
+
+</Project>

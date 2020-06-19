@@ -101,6 +101,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.AspNetCor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIddict.Server.Owin.IntegrationTests", "test\OpenIddict.Server.Owin.IntegrationTests\OpenIddict.Server.Owin.IntegrationTests.csproj", "{E62124D4-3660-4590-B4D1-787168BBBEDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIddict.Server.Tests", "test\OpenIddict.Server.Tests\OpenIddict.Server.Tests.csproj", "{D94B10D3-3DD3-4829-B305-17C48833AB33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -235,6 +237,10 @@ Global
 		{E62124D4-3660-4590-B4D1-787168BBBEDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E62124D4-3660-4590-B4D1-787168BBBEDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E62124D4-3660-4590-B4D1-787168BBBEDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D94B10D3-3DD3-4829-B305-17C48833AB33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D94B10D3-3DD3-4829-B305-17C48833AB33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D94B10D3-3DD3-4829-B305-17C48833AB33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D94B10D3-3DD3-4829-B305-17C48833AB33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -272,6 +278,7 @@ Global
 		{0947C388-31DD-45C0-8DD2-61582C648F07} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 		{FBFDB9E2-4A44-4B90-B896-E094BFC05C03} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 		{E62124D4-3660-4590-B4D1-787168BBBEDD} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
+		{D94B10D3-3DD3-4829-B305-17C48833AB33} = {5FC71D6A-A994-4F62-977F-88A7D25379D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A710059F-0466-4D48-9B3A-0EF4F840B616}
