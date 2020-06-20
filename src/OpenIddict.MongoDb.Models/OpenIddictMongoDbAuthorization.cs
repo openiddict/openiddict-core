@@ -58,7 +58,7 @@ namespace OpenIddict.MongoDb.Models
         /// <summary>
         /// Gets or sets the subject associated with the current authorization.
         /// </summary>
-        [BsonElement("subject"), BsonRequired]
+        [BsonElement("subject"), BsonIgnoreIfDefault]
         public virtual string Subject { get; set; }
 
         /// <summary>
