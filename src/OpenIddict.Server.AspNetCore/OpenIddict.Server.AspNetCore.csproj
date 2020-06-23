@@ -18,13 +18,13 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(ExtensionsVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
+    <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">

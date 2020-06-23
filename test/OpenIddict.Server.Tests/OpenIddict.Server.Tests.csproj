@@ -10,16 +10,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Moq" Version="$(MoqVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(ExtensionsVersion)" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.Server\OpenIddict.Server.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' Or 
-                         '$(TargetFramework)' == 'net461' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'net461' ">
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 

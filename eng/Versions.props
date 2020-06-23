@@ -5,48 +5,4 @@
     <PreReleaseVersionLabel>beta2</PreReleaseVersionLabel>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <AspNetCoreVersion Condition=" '$(TargetFramework)' == 'net461' Or
-                                   '$(TargetFramework)' == 'net472' Or
-                                   '$(TargetFramework)' == 'netstandard2.0' Or
-                                   '$(TargetFramework)' == 'netcoreapp2.1' ">2.1.0</AspNetCoreVersion>
-    <AspNetCoreVersion Condition=" '$(TargetFramework)' == 'netstandard2.1' Or
-                                   '$(TargetFramework)' == 'netcoreapp3.1' ">3.1.0</AspNetCoreVersion>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <ExtensionsVersion Condition=" '$(TargetFramework)' == 'net461' Or
-                                   '$(TargetFramework)' == 'net472' Or
-                                   '$(TargetFramework)' == 'netcoreapp2.1' Or
-                                   '$(TargetFramework)' == 'netstandard2.0' ">2.1.0</ExtensionsVersion>
-    <ExtensionsVersion Condition=" '$(TargetFramework)' == 'netstandard2.1' Or
-                                   '$(TargetFramework)' == 'netcoreapp3.1' ">3.1.0</ExtensionsVersion>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <EntityFrameworkCoreVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">2.1.0</EntityFrameworkCoreVersion>
-    <EntityFrameworkCoreVersion Condition=" '$(TargetFramework)' == 'netstandard2.1' ">3.1.0</EntityFrameworkCoreVersion>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <AngleSharpVersion>0.14.0</AngleSharpVersion>
-    <BclAsyncInterfacesVersion>1.1.1</BclAsyncInterfacesVersion>
-    <BclHashCodeVersion>1.1.0</BclHashCodeVersion>
-    <BouncyCastleVersion>1.8.6.7</BouncyCastleVersion>
-    <DataAnnotationsVersion>4.7.0</DataAnnotationsVersion>
-    <EntityFrameworkVersion>6.4.0</EntityFrameworkVersion>
-    <FxCopVersion>3.0.0</FxCopVersion>
-    <JetBrainsVersion>2019.1.3</JetBrainsVersion>
-    <IdentityModelVersion>6.6.0</IdentityModelVersion>
-    <ImmutableCollectionsVersion>1.7.0</ImmutableCollectionsVersion>
-    <LinqAsyncVersion>4.1.1</LinqAsyncVersion>
-    <MongoDbVersion>2.9.0</MongoDbVersion>
-    <MoqVersion>4.13.1</MoqVersion>
-    <OwinVersion>4.1.0</OwinVersion>
-    <ReferenceAssembliesVersion>1.0.0</ReferenceAssembliesVersion>
-    <SystemNetHttpJsonVersion>3.2.1</SystemNetHttpJsonVersion>
-    <SystemTextJsonVersion>4.7.2</SystemTextJsonVersion>
-    <TasksExtensionsVersion>4.5.4</TasksExtensionsVersion>
-  </PropertyGroup>
-
 </Project>

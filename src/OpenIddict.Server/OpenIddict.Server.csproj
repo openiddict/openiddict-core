@@ -17,15 +17,15 @@ To use the server feature on ASP.NET Core or OWIN/Katana, reference the OpenIddi
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="$(IdentityModelVersion)" />
+    <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' Or
                          '$(TargetFramework)' == 'net472' Or
                          '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Portable.BouncyCastle" Version="$(BouncyCastleVersion)" />
+    <PackageReference Include="Portable.BouncyCastle" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' ">

@@ -9,18 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="System.Collections.Immutable" Version="$(ImmutableCollectionsVersion)" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="$(DataAnnotationsVersion)" />
-    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
+    <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" />
+    <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="System.ComponentModel.Annotations" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(BclAsyncInterfacesVersion)" />
-    <PackageReference Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(TasksExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" />
   </ItemGroup>
 
 </Project>

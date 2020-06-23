@@ -14,10 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="$(JetBrainsVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(ExtensionsVersion)" />
-    <PackageReference Include="Microsoft.Owin.Security" Version="$(OwinVersion)" />
+    <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.WebEncoders" />
+    <PackageReference Include="Microsoft.Owin.Security" />
   </ItemGroup>
 
 </Project>
