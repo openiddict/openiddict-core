@@ -52,6 +52,7 @@ namespace Mvc.Server
                 .AddCore(options =>
                 {
                     // Configure OpenIddict to use the Entity Framework Core stores and models.
+                    // Note: call ReplaceDefaultEntities() to replace the default OpenIddict entities.
                     options.UseEntityFrameworkCore()
                            .UseDbContext<ApplicationDbContext>();
                 })

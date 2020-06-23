@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
 
@@ -34,9 +35,11 @@ namespace System.Data.Entity
         /// <summary>
         /// Registers the OpenIddict entity sets in the Entity Framework 6.x
         /// context using the specified entities and the specified key type.
-        /// Note: using this method requires creating non-generic derived classes
-        /// for all the OpenIddict entities (application, authorization, scope, token).
         /// </summary>
+        /// <remarks>
+        /// Note: when using custom entities, the new entities MUST be registered by calling
+        /// <see cref="OpenIddictEntityFrameworkBuilder.ReplaceDefaultEntities{TApplication, TAuthorization, TScope, TToken, TKey}"/>.
+        /// </remarks>
         /// <param name="builder">The builder used to configure the Entity Framework context.</param>
         /// <returns>The Entity Framework context builder.</returns>
         public static DbModelBuilder UseOpenIddict<TApplication, TAuthorization, TScope, TToken, TKey>([NotNull] this DbModelBuilder builder)
