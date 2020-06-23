@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Bson" Version="$(MongoDbVersion)" />
+    <PackageReference Include="MongoDB.Bson" />
   </ItemGroup>
 
 </Project>
