@@ -11,6 +11,7 @@ using JetBrains.Annotations;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -69,7 +70,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: "No issuer could be found in the discovery document.");
+                            description: context.Localizer[SR.ID3096]);
 
                         return default;
                     }
@@ -78,7 +79,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: "A discovery response containing an invalid issuer was returned.");
+                            description: context.Localizer[SR.ID3097]);
 
                         return default;
                     }
@@ -87,7 +88,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: "The issuer returned by the discovery endpoint is not valid.");
+                            description: context.Localizer[SR.ID3098]);
 
                         return default;
                     }
@@ -134,7 +135,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: "No JWKS endpoint could be found in the discovery document.");
+                            description: context.Localizer[SR.ID3099]);
 
                         return default;
                     }
@@ -143,7 +144,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: "A discovery response containing an invalid JWKS endpoint URL was returned.");
+                            description: context.Localizer[SR.ID3100]);
 
                         return default;
                     }
@@ -188,7 +189,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: "A discovery response containing an invalid introspection endpoint URL was returned.");
+                            description: context.Localizer[SR.ID3101]);
 
                         return default;
                     }
@@ -248,7 +249,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: "The JWKS document didn't contain a valid 'jwks' node with at least one key.");
+                            description: context.Localizer[SR.ID3102, JsonWebKeySetParameterNames.Keys]);
 
                         return default;
                     }
@@ -294,7 +295,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: "A JWKS response containing an unsupported key was returned.");
+                                description: context.Localizer[SR.ID3103]);
 
                             return default;
                         }
@@ -312,7 +313,7 @@ namespace OpenIddict.Validation
                                 {
                                     context.Reject(
                                         error: Errors.ServerError,
-                                        description: "A JWKS response containing an invalid key was returned.");
+                                        description: context.Localizer[SR.ID3104]);
 
                                     return default;
                                 }

@@ -1,7 +1,5 @@
 using System;
-using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -19,7 +17,7 @@ namespace OpenIddict.Server.Tests
         public void Constructor_ThrowsAnExceptionForNullServices()
         {
             // Arrange
-            var services = (IServiceCollection)null;
+            var services = (IServiceCollection) null;
 
             // Act and assert
             var exception = Assert.Throws<ArgumentNullException>(() => new OpenIddictServerBuilder(services));
@@ -831,7 +829,7 @@ namespace OpenIddict.Server.Tests
             // Assert
             Assert.True(options.DisableAccessTokenEncryption);
         }
-        
+
         [Fact]
         public void SetAuthorizationEndpointUris_ThrowsExceptionWhenAddressesIsNull()
         {
@@ -901,7 +899,7 @@ namespace OpenIddict.Server.Tests
             // Assert
             Assert.Contains(new Uri("http://localhost/endpoint-path"), options.AuthorizationEndpointUris);
         }
-        
+
         [Fact]
         public void SetIntrospectionEndpointUris_ThrowsExceptionWhenAddressesIsNull()
         {

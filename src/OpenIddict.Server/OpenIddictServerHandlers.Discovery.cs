@@ -21,6 +21,7 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -128,11 +129,7 @@ namespace OpenIddict.Server
 
                     if (notification.Request == null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The configuration request was not correctly extracted. To extract configuration requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractConfigurationRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1036));
                     }
 
                     context.Logger.LogInformation("The configuration request was successfully extracted: {Request}.", notification.Request);
@@ -427,7 +424,7 @@ namespace OpenIddict.Server
                         // At this stage, throw an exception if the issuer cannot be retrieved.
                         if (issuer == null || !issuer.IsAbsoluteUri)
                         {
-                            throw new InvalidOperationException("The issuer must be a non-null, non-empty absolute URL.");
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID1022));
                         }
 
                         // Ensure the issuer ends with a trailing slash, as it is necessary
@@ -919,11 +916,7 @@ namespace OpenIddict.Server
 
                     if (notification.Request == null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The cryptography request was not correctly extracted. To extract configuration requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractCryptographyRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1037));
                     }
 
                     context.Logger.LogInformation("The cryptography request was successfully extracted: {Request}.", notification.Request);
@@ -1178,11 +1171,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The cryptography response was not correctly applied. To apply cryptography responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyCryptographyResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1038));
                 }
             }
 
@@ -1399,7 +1388,7 @@ namespace OpenIddict.Server
                         using var hash = CryptoConfig.CreateFromName(algorithm.Name) as HashAlgorithm;
                         if (hash == null || hash is KeyedHashAlgorithm)
                         {
-                            throw new InvalidOperationException("The specified hash algorithm is not valid.");
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID1216));
                         }
 
                         return hash.ComputeHash(certificate.RawData);

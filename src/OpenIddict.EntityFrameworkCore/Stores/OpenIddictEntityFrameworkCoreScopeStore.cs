@@ -23,6 +23,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore.Models;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.EntityFrameworkCore
 {
@@ -175,10 +176,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 Context.Entry(scope).State = EntityState.Unchanged;
 
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The scope was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the scope from the database and retry the operation.")
-                    .ToString(), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1244), exception);
             }
         }
 
@@ -195,7 +193,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var key = ConvertIdentifierFromString(identifier);
@@ -218,7 +216,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1201), nameof(name));
             }
 
             return await (from scope in Scopes.AsTracking()
@@ -237,7 +235,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
-                throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1202), nameof(names));
             }
 
             // Note: Enumerable.Contains() is deliberately used without the extension method syntax to ensure
@@ -258,7 +256,7 @@ namespace OpenIddict.EntityFrameworkCore
         {
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
             }
 
             // To optimize the efficiency of the query a bit, only scopes whose stringified
@@ -546,11 +544,7 @@ namespace OpenIddict.EntityFrameworkCore
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TScope>(Task.FromException<TScope>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new scope instance.")
-                        .Append("Make sure that the scope entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom scope store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID1245), exception)));
             }
         }
 
@@ -839,10 +833,7 @@ namespace OpenIddict.EntityFrameworkCore
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 Context.Entry(scope).State = EntityState.Unchanged;
 
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The scope was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the scope from the database and retry the operation.")
-                    .ToString(), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1244), exception);
             }
         }
 

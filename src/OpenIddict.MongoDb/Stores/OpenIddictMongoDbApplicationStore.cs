@@ -10,7 +10,6 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -22,6 +21,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.MongoDb
 {
@@ -129,10 +129,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == application.Id &&
                 entity.ConcurrencyToken == application.ConcurrencyToken)).DeletedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the application from the database and retry the operation.")
-                    .ToString());
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1238));
             }
 
             // Delete the authorizations associated with the application.
@@ -157,7 +154,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -179,7 +176,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -200,7 +197,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -229,7 +226,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -556,11 +553,7 @@ namespace OpenIddict.MongoDb
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TApplication>(Task.FromException<TApplication>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new application instance.")
-                        .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID1239), exception)));
             }
         }
 
@@ -912,10 +905,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == application.Id &&
                 entity.ConcurrencyToken == timestamp, application, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the application from the database and retry the operation.")
-                    .ToString());
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1238));
             }
         }
     }

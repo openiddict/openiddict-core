@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Abstractions;
 
@@ -25,6 +26,11 @@ namespace OpenIddict.Server
         /// Gets or sets the issuer address associated with the current transaction, if available.
         /// </summary>
         public Uri Issuer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the localizer associated with the current request.
+        /// </summary>
+        public IStringLocalizer Localizer { get; set; }
 
         /// <summary>
         /// Gets or sets the logger associated with the current request.

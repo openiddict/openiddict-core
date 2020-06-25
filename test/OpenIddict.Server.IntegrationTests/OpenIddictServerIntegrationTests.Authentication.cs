@@ -9,7 +9,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +17,7 @@ using OpenIddict.Abstractions;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.FunctionalTests
 {
@@ -40,7 +40,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3084), response.ErrorDescription);
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.RequestNotSupported, response.Error);
-            Assert.Equal("The 'request' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3028(Parameters.Request), response.ErrorDescription);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.RequestUriNotSupported, response.Error);
-            Assert.Equal("The 'request_uri' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3028(Parameters.RequestUri), response.ErrorDescription);
         }
 
         [Theory]
@@ -196,7 +196,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3029(Parameters.ClientId), response.ErrorDescription);
         }
 
         [Fact]
@@ -216,14 +216,14 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'redirect_uri' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3029(Parameters.RedirectUri), response.ErrorDescription);
         }
 
         [Theory]
-        [InlineData("/path", "The 'redirect_uri' parameter must be a valid absolute URL.")]
-        [InlineData("/tmp/file.xml", "The 'redirect_uri' parameter must be a valid absolute URL.")]
-        [InlineData("C:\\tmp\\file.xml", "The 'redirect_uri' parameter must be a valid absolute URL.")]
-        [InlineData("http://www.fabrikam.com/path#param=value", "The 'redirect_uri' parameter must not include a fragment.")]
+        [InlineData("/path", SR.ID3030)]
+        [InlineData("/tmp/file.xml", SR.ID3030)]
+        [InlineData("C:\\tmp\\file.xml", SR.ID3030)]
+        [InlineData("http://www.fabrikam.com/path#param=value", SR.ID3031)]
         public async Task ValidateAuthorizationRequest_InvalidRedirectUriCausesAnError(string address, string message)
         {
             // Arrange
@@ -240,7 +240,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(message, response.ErrorDescription);
+            Assert.Equal(string.Format(SR.GetResourceString(message), Parameters.RedirectUri), response.ErrorDescription);
         }
 
         [Fact]
@@ -261,7 +261,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'response_type' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3029(Parameters.ResponseType), response.ErrorDescription);
         }
 
         [Theory]
@@ -289,7 +289,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'response_type'/'response_mode' combination is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3033(Parameters.ResponseType, Parameters.ResponseMode), response.ErrorDescription);
         }
 
         [Theory]
@@ -316,7 +316,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'nonce' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3029(Parameters.Nonce), response.ErrorDescription);
         }
 
         [Theory]
@@ -340,7 +340,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'openid' scope is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3034(Scopes.OpenId), response.ErrorDescription);
         }
 
         [Theory]
@@ -366,7 +366,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'prompt' parameter is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3052(Parameters.Prompt), response.ErrorDescription);
         }
 
         [Theory]
@@ -440,8 +440,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'code_challenge' and 'code_challenge_method' parameters " +
-                         "can only be used with a response type containing 'code'.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3040(Parameters.CodeChallenge, Parameters.CodeChallengeMethod, ResponseTypes.Code), response.ErrorDescription);
         }
 
         [Fact]
@@ -463,7 +462,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'code_challenge_method' parameter cannot be used without 'code_challenge'.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3037(Parameters.CodeChallengeMethod, Parameters.CodeChallenge), response.ErrorDescription);
         }
 
         [Fact]
@@ -486,7 +485,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'code_challenge_method' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3032(Parameters.CodeChallengeMethod), response.ErrorDescription);
         }
 
         [Fact]
@@ -506,7 +505,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnsupportedResponseType, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not allowed.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3032(Parameters.ResponseType), response.ErrorDescription);
         }
 
         [Fact]
@@ -526,7 +525,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnsupportedResponseType, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not allowed.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3032(Parameters.ResponseType), response.ErrorDescription);
         }
 
         [Theory]
@@ -562,7 +561,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnsupportedResponseType, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not allowed.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3032(Parameters.ResponseType), response.ErrorDescription);
         }
 
         [Fact]
@@ -607,7 +606,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidScope, response.Error);
-            Assert.Equal("The specified 'scope' parameter is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3052(Parameters.Scope), response.ErrorDescription);
         }
 
         [Fact]
@@ -767,7 +766,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'offline_access' scope is not allowed.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3035(Scopes.OfflineAccess), response.ErrorDescription);
         }
 
         [Fact]
@@ -788,7 +787,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'response_mode' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3032(Parameters.ResponseMode), response.ErrorDescription);
         }
 
         [Fact]
@@ -810,7 +809,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'code_challenge_method' parameter must be specified.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3029(Parameters.CodeChallengeMethod), response.ErrorDescription);
         }
 
         [Fact]
@@ -838,7 +837,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'code_challenge_method' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3032(Parameters.CodeChallengeMethod), response.ErrorDescription);
         }
 
         [Fact]
@@ -860,7 +859,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'code_challenge_method' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3032(Parameters.CodeChallengeMethod), response.ErrorDescription);
         }
 
         [Theory]
@@ -928,7 +927,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not allowed when using PKCE.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3041(Parameters.ResponseType), response.ErrorDescription);
         }
 
         [Fact]
@@ -949,7 +948,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'redirect_uri' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3029(Parameters.RedirectUri), response.ErrorDescription);
         }
 
         [Fact]
@@ -971,7 +970,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("The request cannot be validated because no redirect_uri was specified.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1027), exception.Message);
         }
 
         [Fact]
@@ -1005,8 +1004,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal("The authorization request cannot be validated because a different " +
-                         "redirect_uri was specified by the client application.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1100), exception.Message);
         }
 
         [Fact]
@@ -1036,7 +1034,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'client_id' parameter is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3052(Parameters.ClientId), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
@@ -1079,7 +1077,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal("The specified 'response_type' parameter is not valid for this client application.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3043(Parameters.ResponseType), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()), Times.Once());
@@ -1123,7 +1121,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal("This client application is not allowed to use the authorization endpoint.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3046), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
@@ -1134,31 +1132,31 @@ namespace OpenIddict.Server.FunctionalTests
         [InlineData(
             "code",
             new[] { Permissions.GrantTypes.AuthorizationCode },
-            "The client application is not allowed to use the authorization code flow.")]
+            SR.ID3047)]
         [InlineData(
             "code id_token",
             new[] { Permissions.GrantTypes.AuthorizationCode, Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the hybrid flow.")]
+            SR.ID3049)]
         [InlineData(
             "code id_token token",
             new[] { Permissions.GrantTypes.AuthorizationCode, Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the hybrid flow.")]
+            SR.ID3049)]
         [InlineData(
             "code token",
             new[] { Permissions.GrantTypes.AuthorizationCode, Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the hybrid flow.")]
+            SR.ID3049)]
         [InlineData(
             "id_token",
             new[] { Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the implicit flow.")]
+            SR.ID3048)]
         [InlineData(
             "id_token token",
             new[] { Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the implicit flow.")]
+            SR.ID3048)]
         [InlineData(
             "token",
             new[] { Permissions.GrantTypes.Implicit },
-            "The client application is not allowed to use the implicit flow.")]
+            SR.ID3048)]
         public async Task ValidateAuthorizationRequest_RequestIsRejectedWhenGrantTypePermissionIsNotGranted(
             string type, string[] permissions, string description)
         {
@@ -1201,7 +1199,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal(description, response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(description), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application, permissions[0], It.IsAny<CancellationToken>()), Times.Once());
@@ -1250,7 +1248,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The client application is not allowed to use the 'offline_access' scope.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3050), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.GrantTypes.RefreshToken, It.IsAny<CancellationToken>()), Times.Once());
@@ -1288,7 +1286,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'redirect_uri' parameter is not valid for this client application.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3043(Parameters.RedirectUri), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
@@ -1337,7 +1335,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("This client application is not allowed to use the specified scope.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3051), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
                 Permissions.Prefixes.Scope + Scopes.OpenId, It.IsAny<CancellationToken>()), Times.Never());
@@ -1387,7 +1385,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'code_challenge' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3029(Parameters.CodeChallenge), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
@@ -1901,11 +1899,7 @@ namespace OpenIddict.Server.FunctionalTests
                 return client.SendAsync(HttpMethod.Put, "/connect/authorize", new OpenIddictRequest());
             });
 
-            Assert.Equal(new StringBuilder()
-                .Append("The authorization response was not correctly applied. To apply authorization responses, ")
-                .Append("create a class implementing 'IOpenIddictServerHandler<ApplyAuthorizationResponseContext>' ")
-                .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1029), exception.Message);
         }
 
         [Fact]
@@ -2059,7 +2053,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'response_mode' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3032(Parameters.ResponseMode), response.ErrorDescription);
         }
     }
 }

@@ -5,11 +5,11 @@
  */
 
 using System;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OpenIddict.Abstractions;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Core.Tests
 {
@@ -26,13 +26,7 @@ namespace OpenIddict.Core.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictToken>());
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("No token store has been registered in the dependency injection container.")
-                .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
-                .AppendLine("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
-                .Append("To register a custom store, create an implementation of 'IOpenIddictTokenStore' and ")
-                .Append("use 'services.AddOpenIddict().AddCore().AddTokenStore()' to add it to the DI container.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1230), exception.Message);
         }
 
         [Fact]

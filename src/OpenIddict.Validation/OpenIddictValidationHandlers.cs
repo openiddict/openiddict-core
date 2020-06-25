@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -20,6 +19,7 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.OpenIddictValidationHandlerFilters;
 using Properties = OpenIddict.Validation.OpenIddictValidationConstants.Properties;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -91,7 +91,7 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.MissingToken,
-                        description: "The security token is missing.");
+                        description: context.Localizer[SR.ID3000]);
 
                     return default;
                 }
@@ -108,11 +108,7 @@ namespace OpenIddict.Validation
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ValidateReferenceTokenIdentifier() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling token entry validation.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .ToString());
+            public ValidateReferenceTokenIdentifier() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1138));
 
             public ValidateReferenceTokenIdentifier([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -155,7 +151,7 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: "The specified token is not valid.");
+                        description: context.Localizer[SR.ID3027]);
 
                     return;
                 }
@@ -163,10 +159,7 @@ namespace OpenIddict.Validation
                 var payload = await _tokenManager.GetPayloadAsync(token);
                 if (string.IsNullOrEmpty(payload))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The payload associated with a reference token cannot be retrieved.")
-                        .Append("This may indicate that the token entry was corrupted.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1025));
                 }
 
                 // Replace the token parameter by the payload resolved from the token entry.
@@ -221,7 +214,7 @@ namespace OpenIddict.Validation
                 }
 
                 var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
-                    throw new InvalidOperationException("An unknown error occurred while retrieving the server configuration.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1139));
 
                 // Clone the token validation parameters and set the issuer using the value found in the
                 // OpenID Connect server configuration (that can be static or retrieved using discovery).
@@ -247,7 +240,7 @@ namespace OpenIddict.Validation
                         JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
                     },
 
-                    _ => throw new InvalidOperationException("The token type is not supported.")
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
                 };
 
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
@@ -266,16 +259,12 @@ namespace OpenIddict.Validation
                         error: Errors.InvalidToken,
                         description: result.Exception switch
                         {
-                            SecurityTokenInvalidIssuerException _
-                                => "The issuer associated to the specified token is not valid.",
-                            SecurityTokenInvalidTypeException _
-                                => "The specified token is not of the expected type.",
-                            SecurityTokenSignatureKeyNotFoundException _
-                                => "The signing key associated to the specified token was not found.",
-                            SecurityTokenInvalidSignatureException _
-                                => "The signature associated to the specified token is not valid.",
+                            SecurityTokenInvalidIssuerException        _ => context.Localizer[SR.ID3088],
+                            SecurityTokenInvalidTypeException          _ => context.Localizer[SR.ID3089],
+                            SecurityTokenSignatureKeyNotFoundException _ => context.Localizer[SR.ID3090],
+                            SecurityTokenInvalidSignatureException     _ => context.Localizer[SR.ID3091],
 
-                            _ => "The specified token is not valid."
+                            _ => context.Localizer[SR.ID3027]
                         });
 
                     return;
@@ -287,12 +276,12 @@ namespace OpenIddict.Validation
                 // Store the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal.SetTokenType(result.TokenType switch
                 {
-                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException("The token type cannot be resolved"),
+                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException(SR.GetResourceString(SR.ID1024)),
 
                     JsonWebTokenTypes.AccessToken                                          => TokenTypeHints.AccessToken,
                     JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken => TokenTypeHints.AccessToken,
 
-                    _ => throw new InvalidOperationException("The token type is not supported.")
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
                 });
 
                 context.Logger.LogTrace("The self-contained JWT token '{Token}' was successfully validated and the following " +
@@ -342,7 +331,7 @@ namespace OpenIddict.Validation
                 }
 
                 var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
-                    throw new InvalidOperationException("An unknown error occurred while retrieving the server configuration.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1139));
 
                 if (string.IsNullOrEmpty(configuration.IntrospectionEndpoint) ||
                     !Uri.TryCreate(configuration.IntrospectionEndpoint, UriKind.Absolute, out Uri address) ||
@@ -350,7 +339,7 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.ServerError,
-                        description: "This resource server is currently unavailable. Try again later.");
+                        description: context.Localizer[SR.ID3092]);
 
                     return;
                 }
@@ -358,7 +347,7 @@ namespace OpenIddict.Validation
                 try
                 {
                     var principal = await _service.IntrospectTokenAsync(address, context.Token, context.TokenType) ??
-                        throw new InvalidOperationException("An unknown error occurred while introspecting the access token.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1140));
 
                     // Note: tokens that are considered valid at this point are assumed to be of the given type,
                     // as the introspection handlers ensure the introspected token type matches the expected
@@ -376,7 +365,7 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: "The specified token is not valid.");
+                        description: context.Localizer[SR.ID3027]);
 
                     return;
                 }
@@ -551,11 +540,7 @@ namespace OpenIddict.Validation
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RestoreReferenceTokenProperties() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling token entry validation.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .ToString());
+            public RestoreReferenceTokenProperties() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1138));
 
             public RestoreReferenceTokenProperties([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -592,7 +577,7 @@ namespace OpenIddict.Validation
                 var token = await _tokenManager.FindByIdAsync((string) identifier);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
 
                 // Restore the creation/expiration dates/identifiers from the token entry metadata.
@@ -638,7 +623,7 @@ namespace OpenIddict.Validation
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: "The specified token is not valid.");
+                        description: context.Localizer[SR.ID3027]);
 
                     return default;
                 }
@@ -652,19 +637,12 @@ namespace OpenIddict.Validation
                     var type = context.Principal.GetTokenType();
                     if (string.IsNullOrEmpty(type))
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .AppendLine("The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.")
-                            .Append("When implementing custom token deserialization, a 'oi_tkn_typ' claim containing ")
-                            .Append("the type of the token being processed must be added to the security principal.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1003));
                     }
 
                     if (!string.Equals(type, context.TokenType, StringComparison.OrdinalIgnoreCase))
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .AppendFormat("The type of token associated with the deserialized principal ({0}) ", type)
-                            .AppendFormat("doesn't match the expected token type ({0}).", context.TokenType)
-                            .ToString());
+                        throw new InvalidOperationException(SR.FormatID1004(type, context.TokenType));
                     }
                 }
 
@@ -708,7 +686,7 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: "The specified access token is no longer valid.");
+                        description: context.Localizer[SR.ID3019]);
 
                     return default;
                 }
@@ -762,7 +740,7 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: "The specified access token doesn't contain any audience.");
+                        description: context.Localizer[SR.ID3093]);
 
                     return default;
                 }
@@ -774,7 +752,7 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: "The specified access token cannot be used with this resource server.");
+                        description: context.Localizer[SR.ID3094]);
 
                     return default;
                 }
@@ -792,11 +770,7 @@ namespace OpenIddict.Validation
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ValidateTokenEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling token entry validation.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .ToString());
+            public ValidateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1138));
 
             public ValidateTokenEntry([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -833,7 +807,7 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: "The token is no longer valid.");
+                        description: context.Localizer[SR.ID3019]);
 
                     return;
                 }
@@ -856,11 +830,7 @@ namespace OpenIddict.Validation
         {
             private readonly IOpenIddictAuthorizationManager _authorizationManager;
 
-            public ValidateAuthorizationEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling authorization entry validation.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .ToString());
+            public ValidateAuthorizationEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1141));
 
             public ValidateAuthorizationEntry([NotNull] IOpenIddictAuthorizationManager authorizationManager)
                 => _authorizationManager = authorizationManager;
@@ -897,7 +867,7 @@ namespace OpenIddict.Validation
 
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: "The authorization associated with the token is no longer valid.");
+                        description: context.Localizer[SR.ID3023]);
 
                     return;
                 }
@@ -961,7 +931,7 @@ namespace OpenIddict.Validation
                 else
                 {
                     context.Response.Error = Errors.InsufficientAccess;
-                    context.Response.ErrorDescription = "The user represented by the token is not allowed to perform the requested action.";
+                    context.Response.ErrorDescription = context.Localizer[SR.ID3095];
                 }
 
                 return default;

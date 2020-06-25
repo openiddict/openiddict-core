@@ -14,6 +14,7 @@ using OpenIddict.Abstractions;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.FunctionalTests
 {
@@ -36,7 +37,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3084), response.ErrorDescription);
         }
 
         [Theory]
@@ -132,11 +133,11 @@ namespace OpenIddict.Server.FunctionalTests
         }
 
         [Theory]
-        [InlineData("/path", "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.")]
-        [InlineData("/tmp/file.xml", "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.")]
-        [InlineData("C:\\tmp\\file.xml", "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.")]
-        [InlineData("http://www.fabrikam.com/path#param=value", "The 'post_logout_redirect_uri' parameter must not include a fragment.")]
-        public async Task ValidateLogoutRequest_RequestIsRejectedWhenRedirectUriIsInvalid(string address, string message)
+        [InlineData("/path", SR.ID3030)]
+        [InlineData("/tmp/file.xml", SR.ID3030)]
+        [InlineData("C:\\tmp\\file.xml", SR.ID3030)]
+        [InlineData("http://www.fabrikam.com/path#param=value", SR.ID3031)]
+        public async Task ValidateLogoutRequest_InvalidRedirectUriCausesAnError(string address, string message)
         {
             // Arrange
             await using var server = await CreateServerAsync();
@@ -150,7 +151,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal(message, response.ErrorDescription);
+            Assert.Equal(string.Format(SR.GetResourceString(message), Parameters.PostLogoutRedirectUri), response.ErrorDescription);
         }
 
         [Fact]
@@ -178,7 +179,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'post_logout_redirect_uri' parameter is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
         }
@@ -222,7 +223,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'post_logout_redirect_uri' parameter is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3052(Parameters.PostLogoutRedirectUri), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByPostLogoutRedirectUriAsync("http://www.fabrikam.com/path", It.IsAny<CancellationToken>()), Times.Once());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(applications[0], Permissions.Endpoints.Logout, It.IsAny<CancellationToken>()), Times.Once());

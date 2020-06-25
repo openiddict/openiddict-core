@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Owin;
@@ -16,6 +15,7 @@ using Microsoft.Owin.Security.Infrastructure;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin
 {
@@ -70,10 +70,10 @@ namespace OpenIddict.Server.Owin
             // active authentication is used, as AuthenticateCoreAsync() is always called before InvokeAsync() in this case.
 
             var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
             var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName) ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
             if (context.IsRequestHandled)
             {
@@ -108,12 +108,8 @@ namespace OpenIddict.Server.Owin
                 {
                     return false;
                 }
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
 
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                    .Append("that the event handler responsible of processing OpenID Connect responses ")
-                    .Append("was not registered or was explicitly removed from the handlers list.")
-                    .ToString());
             }
 
             return false;
@@ -124,7 +120,7 @@ namespace OpenIddict.Server.Owin
             var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName);
             if (transaction == null)
             {
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
             }
 
             // Note: in many cases, the authentication token was already validated by the time this action is called
@@ -200,7 +196,7 @@ namespace OpenIddict.Server.Owin
             if (challenge != null && (Response.StatusCode == 401 || Response.StatusCode == 403))
             {
                 var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                    throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = challenge.Properties ?? new AuthenticationProperties();
 
@@ -235,11 +231,7 @@ namespace OpenIddict.Server.Owin
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                        .Append("that the event handler responsible of processing OpenID Connect responses ")
-                        .Append("was not registered or was explicitly removed from the handlers list.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
                 }
             }
 
@@ -247,7 +239,7 @@ namespace OpenIddict.Server.Owin
             if (signin != null)
             {
                 var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                    throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = signin.Properties ?? new AuthenticationProperties();
 
@@ -283,11 +275,7 @@ namespace OpenIddict.Server.Owin
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                        .Append("that the event handler responsible of processing OpenID Connect responses ")
-                        .Append("was not registered or was explicitly removed from the handlers list.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
                 }
             }
 
@@ -295,7 +283,7 @@ namespace OpenIddict.Server.Owin
             if (signout != null)
             {
                 var transaction = Context.Get<OpenIddictServerTransaction>(typeof(OpenIddictServerTransaction).FullName) ??
-                    throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = signout.Properties ?? new AuthenticationProperties();
 
@@ -330,11 +318,7 @@ namespace OpenIddict.Server.Owin
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                        .Append("that the event handler responsible of processing OpenID Connect responses ")
-                        .Append("was not registered or was explicitly removed from the handlers list.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
                 }
             }
         }

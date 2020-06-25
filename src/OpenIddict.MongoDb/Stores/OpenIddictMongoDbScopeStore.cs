@@ -10,7 +10,6 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -22,6 +21,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.MongoDb
 {
@@ -129,10 +129,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == scope.Id &&
                 entity.ConcurrencyToken == scope.ConcurrencyToken)).DeletedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The scope was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the scope from the database and retry the operation.")
-                    .ToString());
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1244));
             }
         }
 
@@ -149,7 +146,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -171,7 +168,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1201), nameof(name));
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -191,7 +188,7 @@ namespace OpenIddict.MongoDb
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
-                throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1202), nameof(names));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -221,7 +218,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -456,11 +453,7 @@ namespace OpenIddict.MongoDb
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TScope>(Task.FromException<TScope>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new scope instance.")
-                        .Append("Make sure that the scope entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom scope store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID1245), exception)));
             }
         }
 
@@ -706,10 +699,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == scope.Id &&
                 entity.ConcurrencyToken == timestamp, scope, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The scope was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the scope from the database and retry the operation.")
-                    .ToString());
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1244));
             }
         }
     }

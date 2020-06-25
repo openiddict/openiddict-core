@@ -10,6 +10,7 @@ using OpenIddict.Abstractions;
 using OpenIddict.Server.FunctionalTests;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin.FunctionalTests
 {
@@ -30,7 +31,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The 'request_id' parameter is not supported.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3028(Parameters.RequestId), response.ErrorDescription);
         }
 
         [Fact]
@@ -55,7 +56,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified 'request_id' parameter is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3052(Parameters.RequestId), response.ErrorDescription);
         }
     }
 }

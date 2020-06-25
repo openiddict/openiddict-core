@@ -5,11 +5,11 @@
  */
 
 using System;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using OpenIddict.Server;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation.ServerIntegration
 {
@@ -75,7 +75,7 @@ namespace OpenIddict.Validation.ServerIntegration
 
             if (options.ValidationType != OpenIddictValidationType.Direct)
             {
-                throw new InvalidOperationException("The local server integration can only be used with direct validation.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1169));
             }
 
             // Note: authorization validation requires that authorizations have an entry
@@ -83,10 +83,7 @@ namespace OpenIddict.Validation.ServerIntegration
             // not created if the authorization storage is disabled in the server options.
             if (options.EnableAuthorizationEntryValidation && _options.CurrentValue.DisableAuthorizationStorage)
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("Authorization entry validation cannot be enabled when authorization ")
-                    .Append("storage is disabled in the OpenIddict server options.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1170));
             }
 
             // Note: token validation requires that tokens have an entry in the database
@@ -94,10 +91,7 @@ namespace OpenIddict.Validation.ServerIntegration
             // token storage is disabled in the OpenIddict server options.
             if (options.EnableTokenEntryValidation && _options.CurrentValue.DisableTokenStorage)
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("Token entry validation cannot be enabled when token storage ")
-                    .Append("is disabled in the OpenIddict server options.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1171));
             }
         }
     }

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using OpenIddict.Server.AspNetCore;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -158,7 +159,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(realm))
             {
-                throw new ArgumentException("The realm cannot be null or empty.", nameof(realm));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1106), nameof(realm));
             }
 
             return Configure(options => options.Realm = realm);

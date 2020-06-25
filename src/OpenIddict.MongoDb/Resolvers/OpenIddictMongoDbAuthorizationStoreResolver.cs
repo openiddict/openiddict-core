@@ -6,11 +6,11 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.MongoDb
 {
@@ -43,12 +43,7 @@ namespace OpenIddict.MongoDb
             {
                 if (!typeof(OpenIddictMongoDbAuthorization).IsAssignableFrom(key))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The specified authorization type is not compatible with the MongoDB stores.")
-                        .Append("When enabling the MongoDB stores, make sure you use the built-in ")
-                        .Append("'OpenIddictMongoDbAuthorization' entity or a custom entity that inherits ")
-                        .Append("from the 'OpenIddictMongoDbAuthorization' entity.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1257));
                 }
 
                 return typeof(OpenIddictMongoDbAuthorizationStore<>).MakeGenericType(key);

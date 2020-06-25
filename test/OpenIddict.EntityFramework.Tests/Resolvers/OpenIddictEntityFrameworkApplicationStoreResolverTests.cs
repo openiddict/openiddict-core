@@ -6,7 +6,6 @@
 
 using System;
 using System.Data.Entity;
-using System.Text;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -15,6 +14,7 @@ using OpenIddict.Abstractions;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
 using static OpenIddict.EntityFramework.OpenIddictEntityFrameworkApplicationStoreResolver;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework.Tests
 {
@@ -48,12 +48,7 @@ namespace OpenIddict.EntityFramework.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomApplication>());
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The specified application type is not compatible with the Entity Framework 6.x stores.")
-                .Append("When enabling the Entity Framework 6.x stores, make sure you use the built-in ")
-                .Append("'OpenIddictEntityFrameworkApplication' entity or a custom entity that inherits ")
-                .Append("from the generic 'OpenIddictEntityFrameworkApplication' entity.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1233), exception.Message);
         }
 
         [Fact]
@@ -74,11 +69,7 @@ namespace OpenIddict.EntityFramework.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictEntityFrameworkApplication>());
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("No Entity Framework 6.x context was specified in the OpenIddict options.")
-                .Append("To configure the OpenIddict Entity Framework 6.x stores to use a specific 'DbContext', ")
-                .Append("use 'options.UseEntityFramework().UseDbContext<TContext>()'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1234), exception.Message);
         }
 
         [Fact]
@@ -102,7 +93,7 @@ namespace OpenIddict.EntityFramework.Tests
             Assert.NotNull(resolver.Get<MyApplication>());
         }
 
-        private static OpenIddictEntityFrameworkApplicationStore<MyApplication, MyAuthorization, MyToken, DbContext, long> CreateStore() 
+        private static OpenIddictEntityFrameworkApplicationStore<MyApplication, MyAuthorization, MyToken, DbContext, long> CreateStore()
             => new Mock<OpenIddictEntityFrameworkApplicationStore<MyApplication, MyAuthorization, MyToken, DbContext, long>>(
                 Mock.Of<IMemoryCache>(),
                 Mock.Of<DbContext>(),

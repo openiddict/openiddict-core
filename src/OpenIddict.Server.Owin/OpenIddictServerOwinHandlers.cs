@@ -25,6 +25,7 @@ using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 using Properties = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.Properties;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin
 {
@@ -38,7 +39,7 @@ namespace OpenIddict.Server.Owin
             InferEndpointType.Descriptor,
             InferIssuerFromHost.Descriptor,
             ValidateTransportSecurityRequirement.Descriptor,
-            
+
             /*
              * Challenge processing:
              */
@@ -90,7 +91,7 @@ namespace OpenIddict.Server.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 context.EndpointType =
@@ -193,7 +194,7 @@ namespace OpenIddict.Server.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 // Don't require that the request host be present if the request is not handled
@@ -207,7 +208,7 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The mandatory 'Host' header is missing.");
+                        description: context.Localizer[SR.ID3081]);
 
                     return default;
                 }
@@ -217,7 +218,7 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified 'Host' header is invalid.");
+                        description: context.Localizer[SR.ID3082]);
 
                     return default;
                 }
@@ -265,7 +266,7 @@ namespace OpenIddict.Server.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 // Don't require that the host be present if the request is not handled by OpenIddict.
@@ -279,7 +280,7 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "This server only accepts HTTPS requests.");
+                        description: context.Localizer[SR.ID3083]);
 
                     return default;
                 }
@@ -371,7 +372,7 @@ namespace OpenIddict.Server.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase))
@@ -386,7 +387,7 @@ namespace OpenIddict.Server.Owin
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified HTTP method is not valid.");
+                        description: context.Localizer[SR.ID3084]);
 
                     return default;
                 }
@@ -431,7 +432,7 @@ namespace OpenIddict.Server.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase))
@@ -448,7 +449,7 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'Content-Type' header must be specified.");
+                            description: context.Localizer[SR.ID3081, "Content-Type"]);
 
                         return;
                     }
@@ -461,7 +462,7 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'Content-Type' header is not valid.");
+                            description: context.Localizer[SR.ID3082, "Content-Type"]);
 
                         return;
                     }
@@ -476,7 +477,7 @@ namespace OpenIddict.Server.Owin
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified HTTP method is not valid.");
+                        description: context.Localizer[SR.ID3084]);
 
                     return;
                 }
@@ -519,7 +520,7 @@ namespace OpenIddict.Server.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 if (string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
@@ -531,7 +532,7 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'Content-Type' header must be specified.");
+                            description: context.Localizer[SR.ID3081, "Content-Type"]);
 
                         return;
                     }
@@ -544,7 +545,7 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'Content-Type' header is not valid.");
+                            description: context.Localizer[SR.ID3082, "Content-Type"]);
 
                         return;
                     }
@@ -559,7 +560,7 @@ namespace OpenIddict.Server.Owin
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified HTTP method is not valid.");
+                        description: context.Localizer[SR.ID3084]);
 
                     return;
                 }
@@ -603,7 +604,7 @@ namespace OpenIddict.Server.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 var header = request.Headers["Authorization"];
@@ -620,7 +621,7 @@ namespace OpenIddict.Server.Owin
 
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "Multiple client credentials cannot be specified.");
+                        description: context.Localizer[SR.ID3087]);
 
                     return default;
                 }
@@ -635,7 +636,7 @@ namespace OpenIddict.Server.Owin
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified client credentials are invalid.");
+                            description: context.Localizer[SR.ID3055]);
 
                         return default;
                     }
@@ -651,7 +652,7 @@ namespace OpenIddict.Server.Owin
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified client credentials are invalid.");
+                        description: context.Localizer[SR.ID3055]);
 
                     return default;
                 }
@@ -705,7 +706,7 @@ namespace OpenIddict.Server.Owin
                 var request = context.Transaction.GetOwinRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 var header = request.Headers["Authorization"];
@@ -797,7 +798,7 @@ namespace OpenIddict.Server.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 // When client authentication is made using basic authentication, the authorization server MUST return
@@ -861,7 +862,7 @@ namespace OpenIddict.Server.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 // Prevent the response from being cached.
@@ -914,7 +915,7 @@ namespace OpenIddict.Server.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 // When client authentication is made using basic authentication, the authorization server MUST return
@@ -1032,7 +1033,7 @@ namespace OpenIddict.Server.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
@@ -1084,7 +1085,7 @@ namespace OpenIddict.Server.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 context.Logger.LogInformation("The response was successfully returned as a JSON document: {Response}.", context.Response);
@@ -1147,7 +1148,7 @@ namespace OpenIddict.Server.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 if (string.IsNullOrEmpty(context.Response.Error))
@@ -1201,7 +1202,7 @@ namespace OpenIddict.Server.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 if (string.IsNullOrEmpty(context.Response.Error))
@@ -1283,7 +1284,7 @@ namespace OpenIddict.Server.Owin
                 var response = context.Transaction.GetOwinRequest()?.Context.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                 }
 
                 var properties = context.Transaction.GetProperty<AuthenticationProperties>(typeof(AuthenticationProperties).FullName);

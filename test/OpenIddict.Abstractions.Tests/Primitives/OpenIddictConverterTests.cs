@@ -9,6 +9,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
 {
@@ -86,7 +87,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
                 return converter.Read(ref reader, type, options: null);
             });
 
-            Assert.StartsWith("The specified type is not supported.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1175), exception.Message);
             Assert.Equal("typeToConvert", exception.ParamName);
         }
 

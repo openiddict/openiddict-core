@@ -12,12 +12,12 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Server;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -171,7 +171,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
                 asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
             {
-                throw new InvalidOperationException("The asymmetric encryption key doesn't contain the required private key.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1054));
             }
 
             if (key.IsSupportedAlgorithm(SecurityAlgorithms.Aes256KW))
@@ -186,10 +186,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512));
             }
 
-            throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("An encryption algorithm cannot be automatically inferred from the encrypting key.")
-                .Append("Consider using 'options.AddEncryptionCredentials(EncryptingCredentials)' instead.")
-                .ToString());
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID1055));
         }
 
         /// <summary>
@@ -277,7 +274,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return AddEncryptionCertificate(certificate);
 #else
-            throw new PlatformNotSupportedException("X.509 certificate generation is not supported on this platform.");
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID1263));
 #endif
         }
 
@@ -303,7 +300,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(algorithm))
             {
-                throw new ArgumentException("The algorithm cannot be null or empty.", nameof(algorithm));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1056), nameof(algorithm));
             }
 
             switch (algorithm)
@@ -317,7 +314,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     return AddEncryptionCredentials(new EncryptingCredentials(CreateRsaSecurityKey(2048),
                         algorithm, SecurityAlgorithms.Aes256CbcHmacSha512));
 
-                default: throw new InvalidOperationException("The specified algorithm is not supported.");
+                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1057));
             }
 
             static SymmetricSecurityKey CreateSymmetricSecurityKey(int size)
@@ -359,7 +356,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 if (algorithm.KeySize < size)
                 {
-                    throw new InvalidOperationException("RSA key generation failed.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1058));
                 }
 
                 return new RsaSecurityKey(algorithm);
@@ -386,13 +383,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
                 if (extensions.Count != 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.KeyEncipherment)))
                 {
-                    throw new InvalidOperationException("The specified certificate is not a key encryption certificate.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1059));
                 }
             }
 
             if (!certificate.HasPrivateKey)
             {
-                throw new InvalidOperationException("The specified certificate doesn't contain the required private key.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1060));
             }
 
             return AddEncryptionKey(new X509SecurityKey(certificate));
@@ -435,18 +432,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
             }
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentException("The password cannot be null or empty.", nameof(password));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1062), nameof(password));
             }
 
             using var stream = assembly.GetManifestResourceStream(resource);
             if (stream == null)
             {
-                throw new InvalidOperationException("The certificate was not found in the specified assembly.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1063));
             }
 
             return AddEncryptionCertificate(stream, password, flags);
@@ -490,7 +487,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentException("The password cannot be null or empty.", nameof(password));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1062), nameof(password));
             }
 
             using var buffer = new MemoryStream();
@@ -508,13 +505,13 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
-                throw new ArgumentException("The thumbprint cannot be null or empty.", nameof(thumbprint));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1064), nameof(thumbprint));
             }
 
             var certificate = GetCertificate(StoreLocation.CurrentUser, thumbprint) ?? GetCertificate(StoreLocation.LocalMachine, thumbprint);
             if (certificate == null)
             {
-                throw new InvalidOperationException("The certificate corresponding to the specified thumbprint was not found.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
 
             return AddEncryptionCertificate(certificate);
@@ -542,7 +539,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
-                throw new ArgumentException("The thumbprint cannot be null or empty.", nameof(thumbprint));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1064), nameof(thumbprint));
             }
 
             using var store = new X509Store(name, location);
@@ -554,7 +551,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (certificate == null)
             {
-                throw new InvalidOperationException("The certificate corresponding to the specified thumbprint was not found.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
 
             return AddEncryptionCertificate(certificate);
@@ -591,7 +588,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (key is AsymmetricSecurityKey asymmetricSecurityKey &&
                 asymmetricSecurityKey.PrivateKeyStatus == PrivateKeyStatus.DoesNotExist)
             {
-                throw new InvalidOperationException("The asymmetric signing key doesn't contain the required private key.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1066));
             }
 
             if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
@@ -625,14 +622,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) ||
                 key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
             {
-                throw new PlatformNotSupportedException("ECDSA signing keys are not supported on this platform.");
+                throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID1068));
             }
 #endif
 
-            throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("A signature algorithm cannot be automatically inferred from the signing key.")
-                .Append("Consider using 'options.AddSigningCredentials(SigningCredentials)' instead.")
-                .ToString());
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID1067));
         }
 
         /// <summary>
@@ -720,7 +714,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return AddSigningCertificate(certificate);
 #else
-            throw new PlatformNotSupportedException("X.509 certificate generation is not supported on this platform.");
+            throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID1263));
 #endif
         }
 
@@ -748,7 +742,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(algorithm))
             {
-                throw new ArgumentException("The algorithm cannot be null or empty.", nameof(algorithm));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1056), nameof(algorithm));
             }
 
             switch (algorithm)
@@ -790,10 +784,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 case SecurityAlgorithms.EcdsaSha256Signature:
                 case SecurityAlgorithms.EcdsaSha384Signature:
                 case SecurityAlgorithms.EcdsaSha512Signature:
-                    throw new PlatformNotSupportedException("ECDSA signing keys are not supported on this platform.");
+                    throw new PlatformNotSupportedException(SR.GetResourceString(SR.ID1068));
 #endif
 
-                default: throw new InvalidOperationException("The specified algorithm is not supported.");
+                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1057));
             }
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
@@ -821,7 +815,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 if (algorithm.KeySize < size)
                 {
-                    throw new InvalidOperationException("RSA key generation failed.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1058));
                 }
 
                 return new RsaSecurityKey(algorithm);
@@ -848,13 +842,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 var extensions = certificate.Extensions.OfType<X509KeyUsageExtension>().ToList();
                 if (extensions.Count != 0 && !extensions.Any(extension => extension.KeyUsages.HasFlag(X509KeyUsageFlags.DigitalSignature)))
                 {
-                    throw new InvalidOperationException("The specified certificate is not a signing certificate.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1069));
                 }
             }
 
             if (!certificate.HasPrivateKey)
             {
-                throw new InvalidOperationException("The specified certificate doesn't contain the required private key.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1060));
             }
 
             return AddSigningKey(new X509SecurityKey(certificate));
@@ -897,18 +891,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
             }
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentException("The password cannot be null or empty.", nameof(password));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1062), nameof(password));
             }
 
             using var stream = assembly.GetManifestResourceStream(resource);
             if (stream == null)
             {
-                throw new InvalidOperationException("The certificate was not found in the specified assembly.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1063));
             }
 
             return AddSigningCertificate(stream, password, flags);
@@ -952,7 +946,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (string.IsNullOrEmpty(password))
             {
-                throw new ArgumentException("The password cannot be null or empty.", nameof(password));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1062), nameof(password));
             }
 
             using var buffer = new MemoryStream();
@@ -970,13 +964,13 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
-                throw new ArgumentException("The thumbprint cannot be null or empty.", nameof(thumbprint));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1064), nameof(thumbprint));
             }
 
             var certificate = GetCertificate(StoreLocation.CurrentUser, thumbprint) ?? GetCertificate(StoreLocation.LocalMachine, thumbprint);
             if (certificate == null)
             {
-                throw new InvalidOperationException("The certificate corresponding to the specified thumbprint was not found.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
 
             return AddSigningCertificate(certificate);
@@ -1004,7 +998,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
-                throw new ArgumentException("The thumbprint cannot be null or empty.", nameof(thumbprint));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1064), nameof(thumbprint));
             }
 
             using var store = new X509Store(name, location);
@@ -1016,7 +1010,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (certificate == null)
             {
-                throw new InvalidOperationException("The certificate corresponding to the specified thumbprint was not found.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1065));
             }
 
             return AddSigningCertificate(certificate);
@@ -1049,7 +1043,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The grant type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1070), nameof(type));
             }
 
             return Configure(options => options.GrantTypes.Add(type));
@@ -1122,7 +1116,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1165,7 +1159,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1208,7 +1202,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1251,7 +1245,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1294,7 +1288,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1337,7 +1331,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1380,7 +1374,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1423,7 +1417,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1466,7 +1460,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1509,7 +1503,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (addresses.Any(address => !address.IsWellFormedOriginalString()))
             {
-                throw new ArgumentException("One of the specified addresses is not valid.", nameof(addresses));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1071), nameof(addresses));
             }
 
             return Configure(options =>
@@ -1616,7 +1610,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (claims.Any(claim => string.IsNullOrEmpty(claim)))
             {
-                throw new ArgumentException("Claims cannot be null or empty.", nameof(claims));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1072), nameof(claims));
             }
 
             return Configure(options => options.Claims.UnionWith(claims));
@@ -1637,7 +1631,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (scopes.Any(scope => string.IsNullOrEmpty(scope)))
             {
-                throw new ArgumentException("Scopes cannot be null or empty.", nameof(scopes));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1073), nameof(scopes));
             }
 
             return Configure(options => options.Scopes.UnionWith(scopes));

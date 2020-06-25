@@ -5,13 +5,13 @@
  */
 
 using System;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.MongoDb.Tests
 {
@@ -43,12 +43,7 @@ namespace OpenIddict.MongoDb.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomApplication>());
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The specified application type is not compatible with the MongoDB stores.")
-                .Append("When enabling the MongoDB stores, make sure you use the built-in ")
-                .Append("'OpenIddictMongoDbApplication' entity or a custom entity that inherits ")
-                .Append("from the 'OpenIddictMongoDbApplication' entity.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1256), exception.Message);
         }
 
         [Fact]
@@ -66,7 +61,7 @@ namespace OpenIddict.MongoDb.Tests
             Assert.NotNull(resolver.Get<MyApplication>());
         }
 
-        private static OpenIddictMongoDbApplicationStore<MyApplication> CreateStore() 
+        private static OpenIddictMongoDbApplicationStore<MyApplication> CreateStore()
             => new Mock<OpenIddictMongoDbApplicationStore<MyApplication>>(
                 Mock.Of<IOpenIddictMongoDbContext>(),
                 Mock.Of<IOptionsMonitor<OpenIddictMongoDbOptions>>()).Object;

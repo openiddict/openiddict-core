@@ -21,6 +21,7 @@ using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.OpenIddictValidationHandlers;
 using Properties = OpenIddict.Validation.OpenIddictValidationConstants.Properties;
 using Schemes = OpenIddict.Validation.DataProtection.OpenIddictValidationDataProtectionConstants.Purposes.Schemes;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation.DataProtection
 {
@@ -83,14 +84,14 @@ namespace OpenIddict.Validation.DataProtection
                 // Create a Data Protection protector using the provider registered in the options.
                 var protector = _options.CurrentValue.DataProtectionProvider.CreateProtector(context.TokenType switch
                 {
-                    null => throw new InvalidOperationException("Generic token validation is not supported by the validation handler."),
+                    null => throw new InvalidOperationException(SR.GetResourceString(SR.ID1166)),
 
                     TokenTypeHints.AccessToken when context.Transaction.Properties.ContainsKey(Properties.ReferenceTokenIdentifier)
                         => new[] { Handlers.Server, Formats.AccessToken, Features.ReferenceTokens, Schemes.Server },
 
                     TokenTypeHints.AccessToken => new[] { Handlers.Server, Formats.AccessToken, Schemes.Server },
 
-                    _ => throw new InvalidOperationException("The specified token type is not supported.")
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
                 });
 
                 try
@@ -112,7 +113,7 @@ namespace OpenIddict.Validation.DataProtection
                 {
                     context.Reject(
                         error: Errors.InvalidToken,
-                        description: "The specified token is not valid.");
+                        description: context.Localizer[SR.ID3027]);
 
                     return default;
                 }

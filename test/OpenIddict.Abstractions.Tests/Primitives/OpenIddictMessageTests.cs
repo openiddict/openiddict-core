@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
 {
@@ -31,7 +32,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
         }
 
         [Fact]
@@ -44,7 +45,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("parameters", exception.ParamName);
-            Assert.StartsWith("The specified JSON element is not an object.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1188), exception.Message);
         }
 
         [Fact]
@@ -61,7 +62,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("A parameter with the same name already exists.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1190), exception.Message);
         }
 
         [Fact]
@@ -149,7 +150,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             });
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
         }
 
         [Fact]
@@ -210,7 +211,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.GetParameter(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
         }
 
         [Fact]
@@ -276,7 +277,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.HasParameter(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
         }
 
         [Theory]
@@ -306,7 +307,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.RemoveParameter(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
         }
 
         [Fact]
@@ -335,7 +336,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => message.SetParameter(name, null));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
         }
 
         [Fact]
@@ -407,7 +408,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
         }
 
         [Fact]

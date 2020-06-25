@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -14,6 +13,7 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -105,11 +105,7 @@ namespace OpenIddict.Server
 
                     if (notification.Request == null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The logout request was not correctly extracted. To extract logout requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractLogoutRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1049));
                     }
 
                     context.Logger.LogInformation("The logout request was successfully extracted: {Request}.", notification.Request);
@@ -273,14 +269,7 @@ namespace OpenIddict.Server
                         }
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The logout request was not handled. To handle logout requests in a controller, ")
-                        .Append("create a custom controller action with the same route as the logout endpoint ")
-                        .Append("and enable the pass-through mode in the server ASP.NET Core or OWIN options using ")
-                        .AppendLine("'services.AddOpenIddict().AddServer().UseAspNetCore().EnableLogoutEndpointPassthrough()'.")
-                        .Append("Alternatively, create a class implementing 'IOpenIddictServerHandler<HandleLogoutRequestContext>' ")
-                        .Append("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1050));
                 }
             }
 
@@ -334,11 +323,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The revocation response was not correctly applied. To apply revocation responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyRevocationResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1051));
                 }
             }
 
@@ -384,7 +369,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'post_logout_redirect_uri' parameter must be a valid absolute URL.");
+                            description: context.Localizer[SR.ID3030, Parameters.PostLogoutRedirectUri]);
 
                         return default;
                     }
@@ -396,7 +381,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'post_logout_redirect_uri' parameter must not include a fragment.");
+                            description: context.Localizer[SR.ID3031, Parameters.PostLogoutRedirectUri]);
 
                         return default;
                     }
@@ -413,13 +398,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientPostLogoutRedirectUri() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientPostLogoutRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateClientPostLogoutRedirectUri([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -457,7 +436,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'post_logout_redirect_uri' parameter is not valid.");
+                            description: context.Localizer[SR.ID3052, Parameters.PostLogoutRedirectUri]);
 
                         return;
                     }

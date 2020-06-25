@@ -16,6 +16,7 @@ using System.Text.Json;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Primitives;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Abstractions
 {
@@ -115,7 +116,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException("The value cannot be null or empty.", nameof(value));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1176), nameof(value));
             }
 
             return HasValue(request.AcrValues, value, Separators.Space);
@@ -135,7 +136,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(prompt))
             {
-                throw new ArgumentException("The prompt cannot be null or empty.", nameof(prompt));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1177), nameof(prompt));
             }
 
             return HasValue(request.Prompt, prompt, Separators.Space);
@@ -155,7 +156,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The response type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1178), nameof(type));
             }
 
             return HasValue(request.ResponseType, type, Separators.Space);
@@ -175,7 +176,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(scope))
             {
-                throw new ArgumentException("The scope cannot be null or empty.", nameof(scope));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1179), nameof(scope));
             }
 
             return HasValue(request.Scope, scope, Separators.Space);
@@ -556,7 +557,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(destination))
             {
-                throw new ArgumentException("The destination cannot be null or empty.", nameof(destination));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1180), nameof(destination));
             }
 
             claim.Properties.TryGetValue(Properties.Destinations, out string destinations);
@@ -591,7 +592,7 @@ namespace OpenIddict.Abstractions
 
             if (destinations.Any(destination => string.IsNullOrEmpty(destination)))
             {
-                throw new ArgumentException("Destinations cannot be null or empty.", nameof(destinations));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1181), nameof(destinations));
             }
 
             claim.Properties[Properties.Destinations] =
@@ -646,7 +647,7 @@ namespace OpenIddict.Abstractions
                     {
                         if (!destinations.SetEquals(claims[index].GetDestinations()))
                         {
-                            throw new InvalidOperationException($"Conflicting destinations for the claim '{group.Key}' were specified.");
+                            throw new InvalidOperationException(SR.FormatID1182(group.Key));
                         }
                     }
 
@@ -779,12 +780,12 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException("The claim value cannot be null or empty.", nameof(value));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1184), nameof(value));
             }
 
             identity.AddClaim(new Claim(type, value));
@@ -810,12 +811,12 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentException("The claim value cannot be null or empty.", nameof(value));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1184), nameof(value));
             }
 
             if (destinations == null)
@@ -855,7 +856,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             return identity.FindFirst(type)?.Value;
@@ -876,7 +877,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             return principal.FindFirst(type)?.Value;
@@ -897,7 +898,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             return identity.FindAll(type).Select(claim => claim.Value).Distinct(StringComparer.Ordinal).ToImmutableArray();
@@ -918,7 +919,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             return identity.FindAll(type).Any();
@@ -939,7 +940,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             return principal.FindAll(type).Select(claim => claim.Value).Distinct(StringComparer.Ordinal).ToImmutableArray();
@@ -960,7 +961,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             return principal.FindAll(type).Any();
@@ -981,7 +982,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             foreach (var claim in identity.FindAll(type).ToList())
@@ -1007,7 +1008,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             foreach (var identity in principal.Identities)
@@ -1039,7 +1040,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             identity.RemoveClaims(type);
@@ -1070,7 +1071,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             principal.RemoveClaims(type);
@@ -1100,7 +1101,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             identity.RemoveClaims(type);
@@ -1130,7 +1131,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The claim type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1183), nameof(type));
             }
 
             principal.RemoveClaims(type);
@@ -1322,7 +1323,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(audience))
             {
-                throw new ArgumentException("The audience cannot be null or empty.", nameof(audience));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1185), nameof(audience));
             }
 
             return principal.HasClaim(Claims.Private.Audience, audience);
@@ -1351,7 +1352,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(presenter))
             {
-                throw new ArgumentException("The presenter cannot be null or empty.", nameof(presenter));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1186), nameof(presenter));
             }
 
             return principal.HasClaim(Claims.Private.Presenter, presenter);
@@ -1380,7 +1381,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
             }
 
             return principal.HasClaim(Claims.Private.Resource, resource);
@@ -1409,7 +1410,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(scope))
             {
-                throw new ArgumentException("The scope cannot be null or empty.", nameof(scope));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1179), nameof(scope));
             }
 
             return principal.HasClaim(Claims.Private.Scope, scope);
@@ -1430,7 +1431,7 @@ namespace OpenIddict.Abstractions
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The token type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1187), nameof(type));
             }
 
             return string.Equals(principal.GetTokenType(), type, StringComparison.OrdinalIgnoreCase);

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework.Tests
 {
@@ -78,7 +79,7 @@ namespace OpenIddict.EntityFramework.Tests
             });
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The specified type is invalid.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1231), exception.Message);
         }
 
         [Fact]

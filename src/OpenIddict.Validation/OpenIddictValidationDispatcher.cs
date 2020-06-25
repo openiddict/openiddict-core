@@ -6,12 +6,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -115,11 +115,7 @@ namespace OpenIddict.Validation
 
                     if (handler == null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .AppendLine($"The event handler of type '{descriptor.ServiceDescriptor.ServiceType}' couldn't be resolved.")
-                            .AppendLine("This may indicate that it was not properly registered in the dependency injection container.")
-                            .Append("To register an event handler, use 'services.AddOpenIddict().AddValidation().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.FormatID1137(descriptor.ServiceDescriptor.ServiceType));
                     }
 
                     yield return handler;
@@ -132,10 +128,7 @@ namespace OpenIddict.Validation
                 {
                     if (!(_provider.GetService(descriptor.FilterTypes[index]) is IOpenIddictValidationHandlerFilter<TContext> filter))
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .AppendLine($"The event handler filter of type '{descriptor.FilterTypes[index]}' couldn't be resolved.")
-                            .AppendLine("This may indicate that it was not properly registered in the dependency injection container.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.FormatID1098(descriptor.FilterTypes[index]));
                     }
 
                     if (!await filter.IsActiveAsync(context))

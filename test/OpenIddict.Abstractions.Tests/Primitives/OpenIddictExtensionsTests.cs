@@ -12,6 +12,7 @@ using System.Linq;
 using System.Security.Claims;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
 {
@@ -183,7 +184,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => request.HasAcrValue(value));
 
             Assert.Equal("value", exception.ParamName);
-            Assert.StartsWith("The value cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1176), exception.Message);
         }
 
         [Theory]
@@ -247,7 +248,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => request.HasPrompt(prompt));
 
             Assert.Equal("prompt", exception.ParamName);
-            Assert.StartsWith("The prompt cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1177), exception.Message);
         }
 
         [Theory]
@@ -311,7 +312,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => request.HasResponseType(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The response type cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1178), exception.Message);
         }
 
         [Theory]
@@ -375,7 +376,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => request.HasScope(scope));
 
             Assert.Equal("scope", exception.ParamName);
-            Assert.StartsWith("The scope cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1179), exception.Message);
         }
 
         [Theory]
@@ -985,7 +986,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => claim.HasDestination(null));
 
             Assert.Equal("destination", exception.ParamName);
-            Assert.StartsWith("The destination cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1180), exception.Message);
         }
 
         [Fact]
@@ -1055,7 +1056,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => claim.SetDestinations(destination));
 
             Assert.Equal("destinations", exception.ParamName);
-            Assert.StartsWith("Destinations cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1181), exception.Message);
         }
 
         [Theory]
@@ -1184,7 +1185,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var claim = new Claim(Claims.Name, "Bob le Bricoleur");
 
             // Act
-            claim.SetDestinations((IEnumerable<string>)destinations);
+            claim.SetDestinations((IEnumerable<string>) destinations);
 
             // Assert
             Assert.Equal(destination, claim.Properties[Properties.Destinations]);
@@ -1978,7 +1979,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasAudience(audience));
 
             Assert.Equal("audience", exception.ParamName);
-            Assert.StartsWith("The audience cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1185), exception.Message);
         }
 
         [Theory]
@@ -2042,7 +2043,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasPresenter(presenter));
 
             Assert.Equal("presenter", exception.ParamName);
-            Assert.StartsWith("The presenter cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1186), exception.Message);
         }
 
         [Theory]
@@ -2106,7 +2107,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasResource(resource));
 
             Assert.Equal("resource", exception.ParamName);
-            Assert.StartsWith("The resource cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1061), exception.Message);
         }
 
         [Theory]
@@ -2170,7 +2171,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasScope(scope));
 
             Assert.Equal("scope", exception.ParamName);
-            Assert.StartsWith("The scope cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1179), exception.Message);
         }
 
         [Theory]
@@ -2235,7 +2236,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasTokenType(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The token type cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1187), exception.Message);
         }
 
         [Fact]
@@ -2264,7 +2265,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => identity.AddClaim(type, "value"));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
         }
 
         [Fact]
@@ -2304,7 +2305,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.GetClaims(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
         }
 
         [Fact]
@@ -2346,7 +2347,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.HasClaim(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
         }
 
         [Fact]
@@ -2390,7 +2391,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.RemoveClaims(type));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
         }
 
         [Fact]
@@ -2433,7 +2434,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var exception = Assert.Throws<ArgumentException>(() => principal.SetClaim(type, "value"));
 
             Assert.Equal("type", exception.ParamName);
-            Assert.StartsWith("The claim type cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1183), exception.Message);
         }
 
         [Fact]
@@ -2672,7 +2673,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
             var principal = new ClaimsPrincipal(identity);
 
             // Act
-            principal.SetScopes((IEnumerable<string>)scopes);
+            principal.SetScopes((IEnumerable<string>) scopes);
 
             // Assert
             Assert.Equal(scope, principal.GetClaims(Claims.Private.Scope));
@@ -2953,7 +2954,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
         private TimeSpan? ParseLifeTime(string lifetime)
         {
             var lifeT = lifetime != null
-                ? (TimeSpan?)TimeSpan.FromSeconds(double.Parse(lifetime, NumberStyles.Number, CultureInfo.InvariantCulture))
+                ? (TimeSpan?) TimeSpan.FromSeconds(double.Parse(lifetime, NumberStyles.Number, CultureInfo.InvariantCulture))
                 : null;
 
             return lifeT;

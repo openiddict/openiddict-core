@@ -8,13 +8,17 @@ using System;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
+using OpenIddict.Abstractions.Resources;
 using OpenIddict.Server;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    using Microsoft.Extensions.Options;
+
     /// <summary>
     /// Exposes extensions allowing to register the OpenIddict server services.
     /// </summary>
@@ -33,6 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            builder.Services.AddLocalization();
             builder.Services.AddLogging();
             builder.Services.AddOptions();
 
@@ -74,6 +79,18 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireUserCodeIncluded>();
             builder.Services.TryAddSingleton<RequireUserinfoRequest>();
             builder.Services.TryAddSingleton<RequireVerificationRequest>();
+
+            builder.Services.TryAddSingleton<IStringLocalizer<OpenIddictResources>>(provider =>
+            {
+                // Note: the string localizer factory is deliberately not resolved from
+                // the DI container to ensure the built-in .resx files are always used
+                // even if the factory was replaced by a different implementation in DI.
+                var factory = new ResourceManagerStringLocalizerFactory(
+                    localizationOptions: Options.Create(new LocalizationOptions()),
+                    loggerFactory: NullLoggerFactory.Instance);
+
+                return new StringLocalizer<OpenIddictResources>(factory);
+            });
 
             // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

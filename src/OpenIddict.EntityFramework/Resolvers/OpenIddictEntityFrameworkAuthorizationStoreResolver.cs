@@ -6,13 +6,13 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFramework.Models;
 using OpenIddict.Extensions;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework
 {
@@ -54,22 +54,13 @@ namespace OpenIddict.EntityFramework
                 var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictEntityFrameworkAuthorization<,,>));
                 if (root == null)
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The specified authorization type is not compatible with the Entity Framework 6.x stores.")
-                        .Append("When enabling the Entity Framework 6.x stores, make sure you use the built-in ")
-                        .Append("'OpenIddictEntityFrameworkAuthorization' entity or a custom entity that inherits ")
-                        .Append("from the generic 'OpenIddictEntityFrameworkAuthorization' entity.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1235));
                 }
 
                 var context = _options.CurrentValue.DbContextType;
                 if (context == null)
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("No Entity Framework 6.x context was specified in the OpenIddict options.")
-                        .Append("To configure the OpenIddict Entity Framework 6.x stores to use a specific 'DbContext', ")
-                        .Append("use 'options.UseEntityFramework().UseDbContext<TContext>()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1234));
                 }
 
                 return typeof(OpenIddictEntityFrameworkAuthorizationStore<,,,,>).MakeGenericType(

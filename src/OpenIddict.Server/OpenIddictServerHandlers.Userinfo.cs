@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -15,6 +14,7 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -107,11 +107,7 @@ namespace OpenIddict.Server
 
                     if (notification.Request == null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The userinfo request was not correctly extracted. To extract userinfo requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractUserinfoRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1052));
                     }
 
                     context.Logger.LogInformation("The userinfo request was successfully extracted: {Request}.", notification.Request);
@@ -333,11 +329,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The userinfo response was not correctly applied. To apply userinfo responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyUserinfoResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1053));
                 }
             }
 
@@ -376,7 +368,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.MissingToken,
-                            description: "The mandatory access token is missing.");
+                            description: context.Localizer[SR.ID3029, Parameters.AccessToken]);
 
                         return default;
                     }
@@ -480,7 +472,7 @@ namespace OpenIddict.Server
 
                     var notification = context.Transaction.GetProperty<ValidateUserinfoRequestContext>(
                         typeof(ValidateUserinfoRequestContext).FullName) ??
-                        throw new InvalidOperationException("The authentication context cannot be found.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
                     context.Principal ??= notification.Principal;
 

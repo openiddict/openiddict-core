@@ -11,6 +11,7 @@ using Owin;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin.FunctionalTests
 {
@@ -50,7 +51,7 @@ namespace OpenIddict.Server.Owin.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("Multiple client credentials cannot be specified.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3087), response.ErrorDescription);
         }
     }
 }

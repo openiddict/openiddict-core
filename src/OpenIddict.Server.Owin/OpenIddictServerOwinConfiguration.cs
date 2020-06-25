@@ -5,10 +5,10 @@
  */
 
 using System;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.Owin.Security;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin
 {
@@ -38,10 +38,7 @@ namespace OpenIddict.Server.Owin
 
             if (options.AuthenticationMode == AuthenticationMode.Active)
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The OpenIddict OWIN server handler cannot be used as an active authentication handler.")
-                    .Append("Make sure that 'OpenIddictServerOwinOptions.AuthenticationMode' is not set to 'Active'.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1118));
             }
         }
     }

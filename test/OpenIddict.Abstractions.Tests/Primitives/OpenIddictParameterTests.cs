@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Abstractions.Tests.Primitives
 {
@@ -266,7 +267,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The item name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1191), exception.Message);
         }
 
         [Fact]
@@ -336,7 +337,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("index", exception.ParamName);
-            Assert.StartsWith("The item index cannot be negative.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1192), exception.Message);
         }
 
         [Fact]
@@ -698,7 +699,7 @@ namespace OpenIddict.Abstractions.Tests.Primitives
 
             // Assert
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The parameter name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1189), exception.Message);
         }
 
         [Fact]

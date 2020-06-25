@@ -15,10 +15,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using OpenIddict.Abstractions.Resources;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Core
 {
@@ -35,20 +38,27 @@ namespace OpenIddict.Core
     {
         public OpenIddictScopeManager(
             [NotNull] IOpenIddictScopeCache<TScope> cache,
-            [NotNull] IOpenIddictScopeStoreResolver resolver,
+            [NotNull] IStringLocalizer<OpenIddictResources> localizer,
             [NotNull] ILogger<OpenIddictScopeManager<TScope>> logger,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options,
+            [NotNull] IOpenIddictScopeStoreResolver resolver)
         {
             Cache = cache;
-            Store = resolver.Get<TScope>();
+            Localizer = localizer;
             Logger = logger;
             Options = options;
+            Store = resolver.Get<TScope>();
         }
 
         /// <summary>
         /// Gets the cache associated with the current manager.
         /// </summary>
         protected IOpenIddictScopeCache<TScope> Cache { get; }
+
+        /// <summary>
+        /// Gets the string localizer associated with the current manager.
+        /// </summary>
+        protected IStringLocalizer Localizer { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -116,7 +126,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine("One or more validation error(s) occurred while trying to create a new scope:");
+                builder.AppendLine(SR.GetResourceString(SR.ID1221));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -167,7 +177,7 @@ namespace OpenIddict.Core
             var scope = await Store.InstantiateAsync(cancellationToken);
             if (scope == null)
             {
-                throw new InvalidOperationException("An error occurred while trying to create a new scope.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1222));
             }
 
             await PopulateAsync(scope, descriptor, cancellationToken);
@@ -212,7 +222,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var scope = Options.CurrentValue.DisableEntityCaching ?
@@ -249,7 +259,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1201), nameof(name));
             }
 
             var scope = Options.CurrentValue.DisableEntityCaching ?
@@ -285,7 +295,7 @@ namespace OpenIddict.Core
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
-                throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1202), nameof(names));
             }
 
             var scopes = Options.CurrentValue.DisableEntityCaching ?
@@ -326,7 +336,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
             }
 
             var scopes = Options.CurrentValue.DisableEntityCaching ?
@@ -833,7 +843,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine("One or more validation error(s) occurred while trying to update an existing scope:");
+                builder.AppendLine(SR.GetResourceString(SR.ID1223));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -911,12 +921,12 @@ namespace OpenIddict.Core
             var name = await Store.GetNameAsync(scope, cancellationToken);
             if (string.IsNullOrEmpty(name))
             {
-                yield return new ValidationResult("The scope name cannot be null or empty.");
+                yield return new ValidationResult(Localizer[SR.ID3044]);
             }
 
             else if (name.Contains(Separators.Space[0]))
             {
-                yield return new ValidationResult("The scope name cannot contain spaces.");
+                yield return new ValidationResult(Localizer[SR.ID3045]);
             }
 
             else
@@ -930,7 +940,7 @@ namespace OpenIddict.Core
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(scope, cancellationToken), StringComparison.Ordinal))
                 {
-                    yield return new ValidationResult("A scope with the same name already exists.");
+                    yield return new ValidationResult(Localizer[SR.ID3060]);
                 }
             }
         }

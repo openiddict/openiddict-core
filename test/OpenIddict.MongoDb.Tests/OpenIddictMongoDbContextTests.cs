@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Moq;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.MongoDb.Tests
 {
@@ -82,12 +82,7 @@ namespace OpenIddict.MongoDb.Tests
                 await context.GetDatabaseAsync(CancellationToken.None);
             });
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("No suitable MongoDB database service can be found.")
-                .Append("To configure the OpenIddict MongoDB stores to use a specific database, use ")
-                .Append("'services.AddOpenIddict().AddCore().UseMongoDb().UseDatabase()' or register an ")
-                .Append("'IMongoDatabase' in the dependency injection container in 'ConfigureServices()'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1261), exception.Message);
         }
 
         [Fact]

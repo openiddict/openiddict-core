@@ -6,7 +6,6 @@
 
 using System;
 using System.Data.Entity;
-using System.Text;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -15,6 +14,7 @@ using OpenIddict.Abstractions;
 using OpenIddict.EntityFramework.Models;
 using Xunit;
 using static OpenIddict.EntityFramework.OpenIddictEntityFrameworkTokenStoreResolver;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework.Tests
 {
@@ -48,12 +48,7 @@ namespace OpenIddict.EntityFramework.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomToken>());
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The specified token type is not compatible with the Entity Framework 6.x stores.")
-                .Append("When enabling the Entity Framework 6.x stores, make sure you use the built-in ")
-                .Append("'OpenIddictEntityFrameworkToken' entity or a custom entity that inherits ")
-                .Append("from the generic 'OpenIddictEntityFrameworkToken' entity.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1237), exception.Message);
         }
 
         [Fact]
@@ -74,11 +69,7 @@ namespace OpenIddict.EntityFramework.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<OpenIddictEntityFrameworkToken>());
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("No Entity Framework 6.x context was specified in the OpenIddict options.")
-                .Append("To configure the OpenIddict Entity Framework 6.x stores to use a specific 'DbContext', ")
-                .Append("use 'options.UseEntityFramework().UseDbContext<TContext>()'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1234), exception.Message);
         }
 
         [Fact]

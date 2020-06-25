@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -14,6 +13,7 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -116,11 +116,7 @@ namespace OpenIddict.Server
 
                     if (notification.Request == null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The revocation request was not correctly extracted. To extract revocation requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractRevocationRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1047));
                     }
 
                     context.Logger.LogInformation("The revocation request was successfully extracted: {Request}.", notification.Request);
@@ -307,11 +303,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The revocation response was not correctly applied. To apply revocation responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyRevocationResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1048));
                 }
             }
 
@@ -351,7 +343,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'token' parameter is missing.");
+                            description: context.Localizer[SR.ID3029, Parameters.Token]);
 
                         return default;
                     }
@@ -396,7 +388,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: "The mandatory 'client_id' parameter is missing.");
+                            description: context.Localizer[SR.ID3029, Parameters.ClientId]);
 
                         return default;
                     }
@@ -413,13 +405,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientId() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateClientId([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -460,7 +446,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: "The specified 'client_id' parameter is invalid.");
+                            description: context.Localizer[SR.ID3052, Parameters.ClientId]);
 
                         return;
                     }
@@ -476,13 +462,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientType() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateClientType([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -516,7 +496,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
                     if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public))
@@ -529,7 +509,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidClient,
-                                description: "The 'client_secret' parameter is not valid for this client application.");
+                                description: context.Localizer[SR.ID3061, Parameters.ClientSecret]);
 
                             return;
                         }
@@ -545,7 +525,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: "The 'client_secret' parameter required for this client application is missing.");
+                            description: context.Localizer[SR.ID3062, Parameters.ClientSecret]);
 
                         return;
                     }
@@ -560,13 +540,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientSecret() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateClientSecret([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -600,7 +574,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
                     // If the application is not a public client, validate the client secret.
@@ -612,7 +586,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidClient,
-                            description: "The specified client credentials are invalid.");
+                            description: context.Localizer[SR.ID3055]);
 
                         return;
                     }
@@ -628,13 +602,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateEndpointPermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateEndpointPermissions([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -669,7 +637,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
                     // Reject the request if the application is not allowed to use the revocation endpoint.
@@ -680,7 +648,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "This client application is not allowed to use the revocation endpoint.");
+                            description: context.Localizer[SR.ID3078]);
 
                         return;
                     }
@@ -788,7 +756,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: "This token cannot be revoked.");
+                            description: context.Localizer[SR.ID3079]);
 
                         return default;
                     }
@@ -837,7 +805,7 @@ namespace OpenIddict.Server
                     {
                         if (!context.Principal.HasPresenter())
                         {
-                            throw new InvalidOperationException("The presenters list cannot be extracted from the authorization code.");
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID1042));
                         }
 
                         if (!context.Principal.HasPresenter(context.ClientId))
@@ -847,7 +815,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidToken,
-                                description: "The client application is not allowed to revoke the specified token.");
+                                description: context.Localizer[SR.ID3080]);
 
                             return default;
                         }
@@ -868,7 +836,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: "The client application is not allowed to revoke the specified token.");
+                            description: context.Localizer[SR.ID3080]);
 
                         return default;
                     }
@@ -885,7 +853,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: "The client application is not allowed to revoke the specified token.");
+                            description: context.Localizer[SR.ID3080]);
 
                         return default;
                     }
@@ -902,7 +870,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: "The client application is not allowed to revoke the specified token.");
+                            description: context.Localizer[SR.ID3080]);
 
                         return default;
                     }
@@ -943,7 +911,7 @@ namespace OpenIddict.Server
 
                     var notification = context.Transaction.GetProperty<ValidateRevocationRequestContext>(
                         typeof(ValidateRevocationRequestContext).FullName) ??
-                        throw new InvalidOperationException("The authentication context cannot be found.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
                     context.Principal ??= notification.Principal;
 
@@ -959,13 +927,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictTokenManager _tokenManager;
 
-                public RevokeToken() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public RevokeToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public RevokeToken([NotNull] IOpenIddictTokenManager tokenManager)
                     => _tokenManager = tokenManager;
@@ -1003,7 +965,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: "The specified token cannot be revoked.");
+                            description: context.Localizer[SR.ID3079]);
 
                         return;
                     }
@@ -1015,7 +977,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: "The specified token is invalid.");
+                            description: context.Localizer[SR.ID3004]);
 
                         return;
                     }
@@ -1025,7 +987,7 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.UnsupportedTokenType,
-                            description: "The specified token cannot be revoked.");
+                            description: context.Localizer[SR.ID3079]);
 
                         return;
                     }

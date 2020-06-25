@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Owin;
@@ -16,6 +15,7 @@ using Microsoft.Owin.Security.Infrastructure;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation.Owin
 {
@@ -70,10 +70,10 @@ namespace OpenIddict.Validation.Owin
             // active authentication is used, as AuthenticateCoreAsync() is always called before InvokeAsync() in this case.
 
             var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict validation context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
 
             var context = transaction.GetProperty<ProcessRequestContext>(typeof(ProcessRequestContext).FullName) ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict validation context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
 
             if (context.IsRequestHandled)
             {
@@ -109,11 +109,7 @@ namespace OpenIddict.Validation.Owin
                     return false;
                 }
 
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                    .Append("that the event handler responsible of processing OpenID Connect responses ")
-                    .Append("was not registered or was explicitly removed from the handlers list.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
             }
 
             return false;
@@ -122,7 +118,7 @@ namespace OpenIddict.Validation.Owin
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
         {
             var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict validation context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
 
             // Note: in many cases, the authentication token was already validated by the time this action is called
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -197,7 +193,7 @@ namespace OpenIddict.Validation.Owin
             if (challenge != null && (Response.StatusCode == 401 || Response.StatusCode == 403))
             {
                 var transaction = Context.Get<OpenIddictValidationTransaction>(typeof(OpenIddictValidationTransaction).FullName) ??
-                    throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict validation context.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1165));
 
                 transaction.Properties[typeof(AuthenticationProperties).FullName] = challenge.Properties ?? new AuthenticationProperties();
 
@@ -232,11 +228,7 @@ namespace OpenIddict.Validation.Owin
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                        .Append("that the event handler responsible of processing OpenID Connect responses ")
-                        .Append("was not registered or was explicitly removed from the handlers list.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
                 }
             }
         }

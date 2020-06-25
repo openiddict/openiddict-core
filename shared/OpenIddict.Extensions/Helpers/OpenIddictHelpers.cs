@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Extensions
 {
@@ -38,7 +39,7 @@ namespace OpenIddict.Extensions
 
             if (!definition.IsGenericTypeDefinition)
             {
-                throw new ArgumentException("The second parameter must be a generic type definition.", nameof(definition));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1262), nameof(definition));
             }
 
             if (definition.IsInterface)

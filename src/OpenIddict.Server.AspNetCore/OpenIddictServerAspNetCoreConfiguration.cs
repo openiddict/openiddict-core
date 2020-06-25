@@ -6,10 +6,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.AspNetCore
 {
@@ -36,10 +36,7 @@ namespace OpenIddict.Server.AspNetCore
             if (options.SchemeMap.TryGetValue(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
                 builder.HandlerType != typeof(OpenIddictServerAspNetCoreHandler))
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The OpenIddict ASP.NET Core server handler cannot be registered as an authentication scheme.")
-                    .Append("This may indicate that an instance of another handler was registered with the same scheme.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1107));
             }
 
             options.AddScheme<OpenIddictServerAspNetCoreHandler>(
@@ -87,12 +84,7 @@ namespace OpenIddict.Server.AspNetCore
                 !TryValidate(options.SchemeMap, options.DefaultSignInScheme) ||
                 !TryValidate(options.SchemeMap, options.DefaultSignOutScheme))
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The OpenIddict ASP.NET Core server cannot be used as the default scheme handler.")
-                    .Append("Make sure that neither DefaultAuthenticateScheme, DefaultChallengeScheme, ")
-                    .Append("DefaultForbidScheme, DefaultSignInScheme, DefaultSignOutScheme nor DefaultScheme ")
-                    .Append("point to an instance of the OpenIddict ASP.NET Core server handler.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1108));
             }
         }
 
@@ -111,9 +103,7 @@ namespace OpenIddict.Server.AspNetCore
 
             if (options.EnableErrorPassthrough && options.EnableStatusCodePagesIntegration)
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("The error pass-through mode cannot be used when the status code pages integration is enabled.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1109));
             }
         }
     }

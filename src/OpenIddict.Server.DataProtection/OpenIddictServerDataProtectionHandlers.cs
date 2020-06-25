@@ -24,6 +24,7 @@ using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerHandlers;
 using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
 using Schemes = OpenIddict.Server.DataProtection.OpenIddictServerDataProtectionConstants.Purposes.Schemes;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.DataProtection
 {
@@ -35,7 +36,7 @@ namespace OpenIddict.Server.DataProtection
              * Authentication processing:
              */
             ValidateDataProtectionToken.Descriptor,
-            
+
             /*
              * Sign-in processing:
              */
@@ -108,7 +109,7 @@ namespace OpenIddict.Server.DataProtection
                             OpenIddictServerEndpointType.Token => Errors.InvalidGrant,
                             _                                  => Errors.InvalidToken
                         },
-                        description: "The specified token is not valid.");
+                        description: context.Localizer[SR.ID3027]);
 
                     return default;
                 }
@@ -146,7 +147,7 @@ namespace OpenIddict.Server.DataProtection
                         TokenTypeHints.RefreshToken      => new[] { Handlers.Server, Formats.RefreshToken,      Schemes.Server },
                         TokenTypeHints.UserCode          => new[] { Handlers.Server, Formats.UserCode,          Schemes.Server },
 
-                        _ => throw new InvalidOperationException("The specified token type is not supported.")
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
                     });
 
                     try

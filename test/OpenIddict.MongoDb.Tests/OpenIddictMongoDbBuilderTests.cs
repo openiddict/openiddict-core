@@ -12,6 +12,7 @@ using Moq;
 using OpenIddict.Core;
 using OpenIddict.MongoDb.Models;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.MongoDb.Tests
 {
@@ -110,7 +111,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetApplicationsCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The collection name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1260), exception.Message);
         }
 
         [Fact]
@@ -143,7 +144,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetAuthorizationsCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The collection name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1260), exception.Message);
         }
 
         [Fact]
@@ -176,7 +177,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetScopesCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The collection name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1260), exception.Message);
         }
 
         [Fact]
@@ -209,7 +210,7 @@ namespace OpenIddict.MongoDb.Tests
             var exception = Assert.Throws<ArgumentException>(() => builder.SetTokensCollectionName(name));
 
             Assert.Equal("name", exception.ParamName);
-            Assert.StartsWith("The collection name cannot be null or empty.", exception.Message);
+            Assert.StartsWith(SR.GetResourceString(SR.ID1260), exception.Message);
         }
 
         [Fact]
