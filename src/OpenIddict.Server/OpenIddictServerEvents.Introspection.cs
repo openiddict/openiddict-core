@@ -84,8 +84,7 @@ namespace OpenIddict.Server
             /// Gets the list of audiences returned to the caller
             /// as part of the "aud" claim, if applicable.
             /// </summary>
-            public ISet<string> Audiences { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets or sets the "client_id" claim
@@ -115,8 +114,7 @@ namespace OpenIddict.Server
             /// Gets the list of scopes returned to the caller
             /// as part of the "scope" claim, if applicable.
             /// </summary>
-            public ISet<string> Scopes { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets or sets the "sub" claim

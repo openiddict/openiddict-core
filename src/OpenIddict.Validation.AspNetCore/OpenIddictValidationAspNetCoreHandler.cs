@@ -26,19 +26,24 @@ namespace OpenIddict.Validation.AspNetCore
     public class OpenIddictValidationAspNetCoreHandler : AuthenticationHandler<OpenIddictValidationAspNetCoreOptions>,
         IAuthenticationRequestHandler
     {
-        private readonly IOpenIddictValidationProvider _provider;
+        private readonly IOpenIddictValidationDispatcher _dispatcher;
+        private readonly IOpenIddictValidationFactory _factory;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictValidationAspNetCoreHandler"/> class.
         /// </summary>
         public OpenIddictValidationAspNetCoreHandler(
-            [NotNull] IOpenIddictValidationProvider provider,
+            [NotNull] IOpenIddictValidationDispatcher dispatcher,
+            [NotNull] IOpenIddictValidationFactory factory,
             [NotNull] IOptionsMonitor<OpenIddictValidationAspNetCoreOptions> options,
             [NotNull] ILoggerFactory logger,
             [NotNull] UrlEncoder encoder,
             [NotNull] ISystemClock clock)
             : base(options, logger, encoder, clock)
-            => _provider = provider;
+        {
+            _dispatcher = dispatcher;
+            _factory = factory;
+        }
 
         public async Task<bool> HandleRequestAsync()
         {
@@ -48,7 +53,7 @@ namespace OpenIddict.Validation.AspNetCore
             if (transaction == null)
             {
                 // Create a new transaction and attach the HTTP request to make it available to the ASP.NET Core handlers.
-                transaction = await _provider.CreateTransactionAsync();
+                transaction = await _factory.CreateTransactionAsync();
                 transaction.Properties[typeof(HttpRequest).FullName] = new WeakReference<HttpRequest>(Request);
 
                 // Attach the OpenIddict validation transaction to the ASP.NET Core features
@@ -57,7 +62,7 @@ namespace OpenIddict.Validation.AspNetCore
             }
 
             var context = new ProcessRequestContext(transaction);
-            await _provider.DispatchAsync(context);
+            await _dispatcher.DispatchAsync(context);
 
             if (context.IsRequestHandled)
             {
@@ -81,7 +86,7 @@ namespace OpenIddict.Validation.AspNetCore
                     }
                 };
 
-                await _provider.DispatchAsync(notification);
+                await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled)
                 {
@@ -115,7 +120,7 @@ namespace OpenIddict.Validation.AspNetCore
             if (context == null)
             {
                 context = new ProcessAuthenticationContext(transaction);
-                await _provider.DispatchAsync(context);
+                await _dispatcher.DispatchAsync(context);
 
                 // Store the context object in the transaction so it can be later retrieved by handlers
                 // that want to access the authentication result without triggering a new authentication flow.
@@ -179,7 +184,7 @@ namespace OpenIddict.Validation.AspNetCore
                 Response = new OpenIddictResponse()
             };
 
-            await _provider.DispatchAsync(context);
+            await _dispatcher.DispatchAsync(context);
 
             if (context.IsRequestHandled || context.IsRequestSkipped)
             {
@@ -198,7 +203,7 @@ namespace OpenIddict.Validation.AspNetCore
                     }
                 };
 
-                await _provider.DispatchAsync(notification);
+                await _dispatcher.DispatchAsync(notification);
 
                 if (notification.IsRequestHandled || context.IsRequestSkipped)
                 {

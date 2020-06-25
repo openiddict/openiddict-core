@@ -71,6 +71,7 @@ namespace OpenIddict.Validation.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<InferIssuerFromHost>()
                     .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -141,6 +142,7 @@ namespace OpenIddict.Validation.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractGetOrPostRequest>()
                     .SetOrder(InferIssuerFromHost.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -198,6 +200,7 @@ namespace OpenIddict.Validation.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractAccessToken>()
                     .SetOrder(ExtractGetOrPostRequest.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -249,6 +252,7 @@ namespace OpenIddict.Validation.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachHostChallengeError>()
                     .SetOrder(int.MinValue + 50_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -295,6 +299,7 @@ namespace OpenIddict.Validation.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
                     .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -350,6 +355,7 @@ namespace OpenIddict.Validation.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
                     .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -402,6 +408,7 @@ namespace OpenIddict.Validation.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
                     .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -515,6 +522,7 @@ namespace OpenIddict.Validation.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
                     .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -566,6 +574,7 @@ namespace OpenIddict.Validation.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessJsonResponse<TContext>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>

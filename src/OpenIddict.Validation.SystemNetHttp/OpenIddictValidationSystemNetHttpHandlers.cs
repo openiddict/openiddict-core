@@ -41,6 +41,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<PrepareGetHttpRequest<TContext>>()
                     .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public ValueTask HandleAsync([NotNull] TContext context)
@@ -74,6 +75,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<PreparePostHttpRequest<TContext>>()
                     .SetOrder(PrepareGetHttpRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public ValueTask HandleAsync([NotNull] TContext context)
@@ -107,6 +109,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<AttachQueryStringParameters<TContext>>()
                     .SetOrder(AttachFormParameters<TContext>.Descriptor.Order - 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] TContext context)
@@ -156,6 +159,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<AttachFormParameters<TContext>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public ValueTask HandleAsync([NotNull] TContext context)
@@ -202,6 +206,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<SendHttpRequest<TContext>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] TContext context)
@@ -250,6 +255,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                     .AddFilter<RequireHttpMetadataAddress>()
                     .UseSingletonHandler<ExtractJsonHttpResponse<TContext>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] TContext context)

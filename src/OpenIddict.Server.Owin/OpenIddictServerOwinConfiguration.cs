@@ -26,10 +26,7 @@ namespace OpenIddict.Server.Owin
             }
 
             // Register the built-in event handlers used by the OpenIddict OWIN server components.
-            foreach (var handler in OpenIddictServerOwinHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictServerOwinHandlers.DefaultHandlers);
         }
 
         public void PostConfigure([CanBeNull] string name, [NotNull] OpenIddictServerOwinOptions options)

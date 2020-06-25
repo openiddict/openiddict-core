@@ -85,8 +85,7 @@ namespace OpenIddict.Server
             /// <summary>
             /// Gets or sets the values used for the "aud" claim.
             /// </summary>
-            public ISet<string> Audiences { get; } =
-                new HashSet<string>(StringComparer.Ordinal);
+            public HashSet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
 
             /// <summary>
             /// Gets or sets the value used for the "birthdate" claim.

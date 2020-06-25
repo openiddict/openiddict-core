@@ -132,6 +132,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateAuthenticationDemand>()
                     .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -190,6 +191,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateTokenParameter>()
                     .SetOrder(ValidateAuthenticationDemand.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -263,6 +265,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDegradedModeDisabled>()
                     .UseSingletonHandler<NormalizeUserCode>()
                     .SetOrder(ValidateTokenParameter.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -333,6 +336,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireTokenStorageEnabled>()
                     .UseScopedHandler<ValidateReferenceTokenIdentifier>()
                     .SetOrder(NormalizeUserCode.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -411,6 +415,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateIdentityModelToken>()
                     .SetOrder(ValidateReferenceTokenIdentifier.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -521,6 +526,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<NormalizeScopeClaims>()
                     .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -571,6 +577,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<MapInternalClaims>()
                     .SetOrder(NormalizeScopeClaims.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -695,6 +702,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireTokenStorageEnabled>()
                     .UseScopedHandler<RestoreReferenceTokenProperties>()
                     .SetOrder(MapInternalClaims.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -743,6 +751,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidatePrincipal>()
                     .SetOrder(RestoreReferenceTokenProperties.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -850,6 +859,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireTokenStorageEnabled>()
                     .UseScopedHandler<ValidateTokenEntry>()
                     .SetOrder(ValidatePrincipal.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -1051,6 +1061,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAuthorizationStorageEnabled>()
                     .UseScopedHandler<ValidateAuthorizationEntry>()
                     .SetOrder(ValidateTokenEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -1106,6 +1117,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateExpirationDate>()
                     .SetOrder(ValidateTokenEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1174,6 +1186,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                     .UseSingletonHandler<ValidateChallengeDemand>()
                     .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1215,6 +1228,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                     .UseSingletonHandler<AttachDefaultChallengeError>()
                     .SetOrder(ValidateChallengeDemand.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1283,6 +1297,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireTokenStorageEnabled>()
                     .UseScopedHandler<RejectDeviceCodeEntry>()
                     .SetOrder(AttachDefaultChallengeError.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1351,6 +1366,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireTokenStorageEnabled>()
                     .UseScopedHandler<RejectUserCodeEntry>()
                     .SetOrder(RejectDeviceCodeEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1404,6 +1420,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .UseSingletonHandler<ValidateSignInDemand>()
                     .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1497,6 +1514,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .UseSingletonHandler<RestoreInternalClaims>()
                     .SetOrder(ValidateSignInDemand.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1567,6 +1585,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .UseSingletonHandler<AttachDefaultScopes>()
                     .SetOrder(RestoreInternalClaims.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1607,6 +1626,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .UseSingletonHandler<AttachDefaultPresenters>()
                     .SetOrder(AttachDefaultScopes.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1646,6 +1666,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .UseSingletonHandler<InferResources>()
                     .SetOrder(AttachDefaultPresenters.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1687,6 +1708,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .UseSingletonHandler<EvaluateReturnedTokens>()
                     .SetOrder(InferResources.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1809,6 +1831,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAuthorizationStorageEnabled>()
                     .UseScopedHandler<AttachAuthorization>()
                     .SetOrder(EvaluateReturnedTokens.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1900,6 +1923,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAccessTokenIncluded>()
                     .UseSingletonHandler<PrepareAccessTokenPrincipal>()
                     .SetOrder(AttachAuthorization.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2023,6 +2047,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAuthorizationCodeIncluded>()
                     .UseSingletonHandler<PrepareAuthorizationCodePrincipal>()
                     .SetOrder(PrepareAccessTokenPrincipal.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2112,6 +2137,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .UseSingletonHandler<PrepareDeviceCodePrincipal>()
                     .SetOrder(PrepareAuthorizationCodePrincipal.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2196,6 +2222,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireRefreshTokenIncluded>()
                     .UseSingletonHandler<PrepareRefreshTokenPrincipal>()
                     .SetOrder(PrepareDeviceCodePrincipal.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2281,6 +2308,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireIdentityTokenIncluded>()
                     .UseSingletonHandler<PrepareIdentityTokenPrincipal>()
                     .SetOrder(PrepareRefreshTokenPrincipal.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2398,6 +2426,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireUserCodeIncluded>()
                     .UseSingletonHandler<PrepareUserCodePrincipal>()
                     .SetOrder(PrepareIdentityTokenPrincipal.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2486,6 +2515,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireTokenStorageEnabled>()
                     .UseScopedHandler<RedeemTokenEntry>()
                     .SetOrder(100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2588,6 +2618,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireRollingTokensEnabled>()
                     .UseScopedHandler<RevokeExistingTokenEntries>()
                     .SetOrder(RedeemTokenEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2664,6 +2695,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireRollingTokensDisabled>()
                     .UseScopedHandler<ExtendRefreshTokenEntry>()
                     .SetOrder(RevokeExistingTokenEntries.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2748,6 +2780,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAccessTokenIncluded>()
                     .UseScopedHandler<CreateAccessTokenEntry>()
                     .SetOrder(ExtendRefreshTokenEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2821,6 +2854,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAccessTokenIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelAccessToken>()
                     .SetOrder(CreateAccessTokenEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -2950,6 +2984,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAccessTokenIncluded>()
                     .UseScopedHandler<ConvertReferenceAccessToken>()
                     .SetOrder(GenerateIdentityModelAccessToken.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3050,6 +3085,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAuthorizationCodeIncluded>()
                     .UseScopedHandler<CreateAuthorizationCodeEntry>()
                     .SetOrder(ConvertReferenceAccessToken.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3123,6 +3159,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAuthorizationCodeIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelAuthorizationCode>()
                     .SetOrder(CreateAuthorizationCodeEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3233,6 +3270,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAuthorizationCodeIncluded>()
                     .UseScopedHandler<ConvertReferenceAuthorizationCode>()
                     .SetOrder(GenerateIdentityModelAuthorizationCode.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3333,6 +3371,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDeviceCodeIncluded>()
                     .UseScopedHandler<CreateDeviceCodeEntry>()
                     .SetOrder(ConvertReferenceAuthorizationCode.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3411,6 +3450,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDeviceCodeIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelDeviceCode>()
                     .SetOrder(CreateDeviceCodeEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3521,6 +3561,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDeviceCodeIncluded>()
                     .UseScopedHandler<ConvertReferenceDeviceCode>()
                     .SetOrder(GenerateIdentityModelDeviceCode.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3620,6 +3661,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDeviceCodeIncluded>()
                     .UseScopedHandler<UpdateReferenceDeviceCodeEntry>()
                     .SetOrder(ConvertReferenceDeviceCode.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3722,6 +3764,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireRefreshTokenIncluded>()
                     .UseScopedHandler<CreateRefreshTokenEntry>()
                     .SetOrder(UpdateReferenceDeviceCodeEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3795,6 +3838,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireRefreshTokenIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelRefreshToken>()
                     .SetOrder(CreateRefreshTokenEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3905,6 +3949,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireRefreshTokenIncluded>()
                     .UseScopedHandler<ConvertReferenceRefreshToken>()
                     .SetOrder(GenerateIdentityModelRefreshToken.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -3984,6 +4029,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireUserCodeIncluded>()
                     .UseSingletonHandler<AttachDeviceCodeIdentifier>()
                     .SetOrder(ConvertReferenceRefreshToken.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4051,6 +4097,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireUserCodeIncluded>()
                     .UseScopedHandler<CreateUserCodeEntry>()
                     .SetOrder(AttachDeviceCodeIdentifier.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4124,6 +4171,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireUserCodeIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelUserCode>()
                     .SetOrder(CreateUserCodeEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4224,6 +4272,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireUserCodeIncluded>()
                     .UseScopedHandler<ConvertReferenceUserCode>()
                     .SetOrder(GenerateIdentityModelUserCode.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4315,6 +4364,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireIdentityTokenIncluded>()
                     .UseSingletonHandler<AttachTokenDigests>()
                     .SetOrder(ConvertReferenceUserCode.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4468,6 +4518,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireIdentityTokenIncluded>()
                     .UseScopedHandler<CreateIdentityTokenEntry>()
                     .SetOrder(AttachTokenDigests.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4541,6 +4592,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireIdentityTokenIncluded>()
                     .UseSingletonHandler<GenerateIdentityModelIdentityToken>()
                     .SetOrder(CreateIdentityTokenEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4639,6 +4691,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireUserCodeIncluded>()
                     .UseSingletonHandler<BeautifyUserCode>()
                     .SetOrder(GenerateIdentityModelIdentityToken.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4692,6 +4745,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireAccessTokenIncluded>()
                     .UseSingletonHandler<AttachAccessTokenProperties>()
                     .SetOrder(BeautifyUserCode.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4743,6 +4797,7 @@ namespace OpenIddict.Server
                     .AddFilter<RequireDeviceCodeIncluded>()
                     .UseSingletonHandler<AttachDeviceCodeProperties>()
                     .SetOrder(AttachAccessTokenProperties.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -4759,7 +4814,7 @@ namespace OpenIddict.Server
                     throw new ArgumentNullException(nameof(context));
                 }
 
-                var address = GetEndpointAbsoluteUrl(context.Issuer, context.Options.VerificationEndpointUris.FirstOrDefault());
+                var address = GetEndpointAbsoluteUri(context.Issuer, context.Options.VerificationEndpointUris.FirstOrDefault());
                 if (address != null)
                 {
                     var builder = new UriBuilder(address)
@@ -4780,7 +4835,7 @@ namespace OpenIddict.Server
 
                 return default;
 
-                static Uri GetEndpointAbsoluteUrl(Uri issuer, Uri endpoint)
+                static Uri GetEndpointAbsoluteUri(Uri issuer, Uri endpoint)
                 {
                     // If the endpoint is disabled (i.e a null address is specified), return null.
                     if (endpoint == null)
@@ -4832,6 +4887,7 @@ namespace OpenIddict.Server
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                     .UseSingletonHandler<ValidateSignOutDemand>()
                     .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>

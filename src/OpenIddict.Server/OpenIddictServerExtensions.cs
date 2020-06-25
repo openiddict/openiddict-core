@@ -36,7 +36,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddLogging();
             builder.Services.AddOptions();
 
-            builder.Services.TryAddScoped<IOpenIddictServerProvider, OpenIddictServerProvider>();
+            builder.Services.TryAddScoped<IOpenIddictServerDispatcher, OpenIddictServerDispatcher>();
+            builder.Services.TryAddScoped<IOpenIddictServerFactory, OpenIddictServerFactory>();
 
             // Register the built-in server event handlers used by the OpenIddict server components.
             // Note: the order used here is not important, as the actual order is set in the options.

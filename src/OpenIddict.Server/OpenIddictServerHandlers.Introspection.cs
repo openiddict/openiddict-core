@@ -68,10 +68,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractIntrospectionRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractIntrospectionRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractIntrospectionRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -102,7 +102,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ExtractIntrospectionRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -143,10 +143,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateIntrospectionRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateIntrospectionRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateIntrospectionRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -177,7 +177,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ValidateIntrospectionRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the principal without triggering a new validation process.
@@ -213,10 +213,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleIntrospectionRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleIntrospectionRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleIntrospectionRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -247,7 +247,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new HandleIntrospectionRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -325,10 +325,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyIntrospectionResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyIntrospectionResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyIntrospectionResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -359,7 +359,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ApplyIntrospectionResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -752,10 +752,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateToken : IOpenIddictServerHandler<ValidateIntrospectionRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateToken([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateToken([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -781,7 +781,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ProcessAuthenticationContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {

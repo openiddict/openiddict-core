@@ -29,7 +29,6 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets the resources associated with the scope.
         /// </summary>
-        public virtual ISet<string> Resources { get; }
-            = new HashSet<string>(StringComparer.Ordinal);
+        public virtual HashSet<string> Resources { get; } = new HashSet<string>(StringComparer.Ordinal);
     }
 }

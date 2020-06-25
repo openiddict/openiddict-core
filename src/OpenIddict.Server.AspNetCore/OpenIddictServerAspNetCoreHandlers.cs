@@ -80,6 +80,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<InferEndpointType>()
                     .SetOrder(int.MinValue + 50_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -119,7 +120,7 @@ namespace OpenIddict.Server.AspNetCore
 
                 return default;
 
-                static bool Matches(HttpRequest request, IList<Uri> addresses)
+                static bool Matches(HttpRequest request, IReadOnlyList<Uri> addresses)
                 {
                     for (var index = 0; index < addresses.Count; index++)
                     {
@@ -182,6 +183,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<InferIssuerFromHost>()
                     .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -253,6 +255,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireTransportSecurityRequirementEnabled>()
                     .UseSingletonHandler<ValidateTransportSecurityRequirement>()
                     .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -311,6 +314,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<AttachHostChallengeError>()
                     .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -354,6 +358,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<AttachHostParameters<TContext>>()
                     .SetOrder(int.MaxValue - 150_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -414,6 +419,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ExtractGetRequest<TContext>>()
                     .SetOrder(ValidateTransportSecurityRequirement.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -473,6 +479,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ExtractGetOrPostRequest<TContext>>()
                     .SetOrder(ExtractGetRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -560,6 +567,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ExtractPostRequest<TContext>>()
                     .SetOrder(ExtractGetOrPostRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -643,6 +651,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ExtractBasicAuthenticationCredentials<TContext>>()
                     .SetOrder(ExtractPostRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -744,6 +753,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ExtractAccessToken<TContext>>()
                     .SetOrder(ExtractBasicAuthenticationCredentials<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -798,6 +808,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<TFilter>()
                     .UseSingletonHandler<EnablePassthroughMode<TContext, TFilter>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -834,6 +845,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
                     .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -897,6 +909,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
                     .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -949,6 +962,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
                     .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1066,6 +1080,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
                     .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1117,6 +1132,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessJsonResponse<TContext>>()
                     .SetOrder(ProcessPassthroughErrorResponse<TContext, IOpenIddictServerHandlerFilter<TContext>>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1179,6 +1195,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<TFilter>()
                     .UseSingletonHandler<ProcessPassthroughErrorResponse<TContext, TFilter>>()
                     .SetOrder(ProcessStatusCodePagesErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1230,6 +1247,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireStatusCodePagesIntegrationEnabled>()
                     .UseSingletonHandler<ProcessStatusCodePagesErrorResponse<TContext>>()
                     .SetOrder(ProcessLocalErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1292,6 +1310,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessLocalErrorResponse<TContext>>()
                     .SetOrder(ProcessEmptyResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1373,6 +1392,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessHostRedirectionResponse<TContext>>()
                     .SetOrder(ProcessEmptyResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1425,6 +1445,7 @@ namespace OpenIddict.Server.AspNetCore
                     .AddFilter<RequireHttpRequest>()
                     .UseSingletonHandler<ProcessEmptyResponse<TContext>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>

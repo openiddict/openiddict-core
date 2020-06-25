@@ -35,10 +35,7 @@ namespace OpenIddict.Validation.SystemNetHttp
             }
 
             // Register the built-in event handlers used by the OpenIddict System.Net.Http validation components.
-            foreach (var handler in OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictValidationSystemNetHttpHandlers.DefaultHandlers);
         }
 
         public void Configure([NotNull] HttpClientFactoryOptions options)

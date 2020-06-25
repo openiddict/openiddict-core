@@ -54,10 +54,7 @@ namespace OpenIddict.Server.AspNetCore
             }
 
             // Register the built-in event handlers used by the OpenIddict ASP.NET Core server components.
-            foreach (var handler in OpenIddictServerAspNetCoreHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictServerAspNetCoreHandlers.DefaultHandlers);
         }
 
         /// <summary>

@@ -55,7 +55,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            var builder = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>();
+            // Note: handlers registered using this API are assumed to be custom handlers by default.
+            var builder = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
+                .SetType(OpenIddictValidationHandlerType.Custom);
+
             configuration(builder);
 
             return AddEventHandler(builder.Build());
@@ -77,7 +80,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Register the handler in the services collection.
             Services.Add(descriptor.ServiceDescriptor);
 
-            return Configure(options => options.CustomHandlers.Add(descriptor));
+            return Configure(options => options.Handlers.Add(descriptor));
         }
 
         /// <summary>
@@ -97,19 +100,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             Services.PostConfigure<OpenIddictValidationOptions>(options =>
             {
-                for (var index = options.CustomHandlers.Count - 1; index >= 0; index--)
+                for (var index = options.Handlers.Count - 1; index >= 0; index--)
                 {
-                    if (options.CustomHandlers[index].ServiceDescriptor.ServiceType == descriptor.ServiceDescriptor.ServiceType)
+                    if (options.Handlers[index].ServiceDescriptor.ServiceType == descriptor.ServiceDescriptor.ServiceType)
                     {
-                        options.CustomHandlers.RemoveAt(index);
-                    }
-                }
-
-                for (var index = options.DefaultHandlers.Count - 1; index >= 0; index--)
-                {
-                    if (options.DefaultHandlers[index].ServiceDescriptor.ServiceType == descriptor.ServiceDescriptor.ServiceType)
-                    {
-                        options.DefaultHandlers.RemoveAt(index);
+                        options.Handlers.RemoveAt(index);
                     }
                 }
             });

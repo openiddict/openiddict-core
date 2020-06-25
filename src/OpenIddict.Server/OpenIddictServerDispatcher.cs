@@ -15,17 +15,17 @@ using static OpenIddict.Server.OpenIddictServerEvents;
 
 namespace OpenIddict.Server
 {
-    public class OpenIddictServerProvider : IOpenIddictServerProvider
+    public class OpenIddictServerDispatcher : IOpenIddictServerDispatcher
     {
-        private readonly ILogger<OpenIddictServerProvider> _logger;
+        private readonly ILogger<OpenIddictServerDispatcher> _logger;
         private readonly IOptionsMonitor<OpenIddictServerOptions> _options;
         private readonly IServiceProvider _provider;
 
         /// <summary>
-        /// Creates a new instance of the <see cref="OpenIddictServerProvider"/> class.
+        /// Creates a new instance of the <see cref="OpenIddictServerDispatcher"/> class.
         /// </summary>
-        public OpenIddictServerProvider(
-            [NotNull] ILogger<OpenIddictServerProvider> logger,
+        public OpenIddictServerDispatcher(
+            [NotNull] ILogger<OpenIddictServerDispatcher> logger,
             [NotNull] IOptionsMonitor<OpenIddictServerOptions> options,
             [NotNull] IServiceProvider provider)
         {
@@ -33,14 +33,6 @@ namespace OpenIddict.Server
             _options = options;
             _provider = provider;
         }
-
-        public ValueTask<OpenIddictServerTransaction> CreateTransactionAsync()
-            => new ValueTask<OpenIddictServerTransaction>(new OpenIddictServerTransaction
-            {
-                Issuer = _options.CurrentValue.Issuer,
-                Logger = _logger,
-                Options = _options.CurrentValue
-            });
 
         public async ValueTask DispatchAsync<TContext>([NotNull] TContext context) where TContext : BaseContext
         {
@@ -82,14 +74,12 @@ namespace OpenIddict.Server
 
             async IAsyncEnumerable<IOpenIddictServerHandler<TContext>> GetHandlersAsync()
             {
-                var descriptors = new List<OpenIddictServerHandlerDescriptor>(
-                    capacity: _options.CurrentValue.CustomHandlers.Count +
-                              _options.CurrentValue.DefaultHandlers.Count);
-
-                descriptors.AddRange(_options.CurrentValue.CustomHandlers);
-                descriptors.AddRange(_options.CurrentValue.DefaultHandlers);
-
-                descriptors.Sort((left, right) => left.Order.CompareTo(right.Order));
+                // Note: the descriptors collection is sorted during options initialization for performance reasons.
+                var descriptors = _options.CurrentValue.Handlers;
+                if (descriptors.Count == 0)
+                {
+                    yield break;
+                }
 
                 for (var index = 0; index < descriptors.Count; index++)
                 {

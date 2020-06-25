@@ -64,13 +64,14 @@ namespace OpenIddict.Server.Owin
             var middleware = new OpenIddictServerOwinMiddleware(
                 next: Next,
                 options: GetRequiredService<IOptionsMonitor<OpenIddictServerOwinOptions>>(provider),
-                provider: GetRequiredService<IOpenIddictServerProvider>(provider));
+                dispatcher: GetRequiredService<IOpenIddictServerDispatcher>(provider),
+                factory: GetRequiredService<IOpenIddictServerFactory>(provider));
 
             return middleware.Invoke(context);
 
             static T GetRequiredService<T>(IServiceProvider provider)
                 => provider.GetService<T>() ?? throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The OpenIddict server authentication services cannot be resolved from the DI container.")
+                    .AppendLine("The OpenIddict server services cannot be resolved from the DI container.")
                     .Append("To register the OWIN services, use 'services.AddOpenIddict().AddServer().UseOwin()'.")
                     .ToString());
         }

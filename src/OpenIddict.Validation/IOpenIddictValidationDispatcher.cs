@@ -6,13 +6,12 @@
 
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Validation.OpenIddictValidationEvents;
 
-namespace OpenIddict.Server
+namespace OpenIddict.Validation
 {
-    public interface IOpenIddictServerProvider
+    public interface IOpenIddictValidationDispatcher
     {
-        ValueTask<OpenIddictServerTransaction> CreateTransactionAsync();
         ValueTask DispatchAsync<TContext>([NotNull] TContext context) where TContext : BaseContext;
     }
 }
