@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using JetBrains.Annotations;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Abstractions
 {
@@ -199,7 +200,7 @@ namespace OpenIddict.Abstractions
                             {
                                 return false;
                             }
-                            
+
                             if (!Equals(property.Value, element))
                             {
                                 return false;
@@ -298,7 +299,7 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The item name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1191), nameof(name));
             }
 
             if (Value is JsonElement element && element.ValueKind == JsonValueKind.Object)
@@ -324,7 +325,7 @@ namespace OpenIddict.Abstractions
         {
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), "The item index cannot be negative.");
+                throw new ArgumentOutOfRangeException(nameof(index), SR.GetResourceString(SR.ID1192));
             }
 
             if (Value is string[] array)
@@ -437,7 +438,7 @@ namespace OpenIddict.Abstractions
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The parameter name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1189), nameof(name));
             }
 
             if (Value is JsonElement element && element.ValueKind == JsonValueKind.Object &&
@@ -499,7 +500,7 @@ namespace OpenIddict.Abstractions
                     value.WriteTo(writer);
                     break;
 
-                default: throw new InvalidOperationException("The type of the parameter value is not supported.");
+                default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1193));
             }
         }
 

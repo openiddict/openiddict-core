@@ -14,6 +14,7 @@ using JetBrains.Annotations;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlerFilters;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation.SystemNetHttp
 {
@@ -63,11 +64,11 @@ namespace OpenIddict.Validation.SystemNetHttp
                     var request = context.Transaction.GetHttpRequestMessage();
                     if (request == null)
                     {
-                        throw new InvalidOperationException("The System.Net.Http request cannot be resolved.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                     }
 
                     var configuration = await context.Options.ConfigurationManager.GetConfigurationAsync(default) ??
-                        throw new InvalidOperationException("An unknown error occurred while retrieving the server configuration.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1139));
 
                     // The OAuth 2.0 specification recommends sending the client credentials using basic authentication.
                     // However, this authentication method is known to have compatibility issues with how the

@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -21,6 +20,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.MongoDb
 {
@@ -128,10 +128,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == authorization.Id &&
                 entity.ConcurrencyToken == authorization.ConcurrencyToken)).DeletedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the authorization from the database and retry the operation.")
-                    .ToString());
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1240));
             }
 
             // Delete the tokens associated with the authorization.
@@ -152,12 +149,12 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -190,17 +187,17 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -235,22 +232,22 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -288,22 +285,22 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -338,7 +335,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -369,7 +366,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -390,7 +387,7 @@ namespace OpenIddict.MongoDb
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -598,11 +595,7 @@ namespace OpenIddict.MongoDb
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new authorization instance.")
-                        .Append("Make sure that the authorization entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID1241), exception)));
             }
         }
 
@@ -903,10 +896,7 @@ namespace OpenIddict.MongoDb
                 entity.Id == authorization.Id &&
                 entity.ConcurrencyToken == timestamp, authorization, null as ReplaceOptions, cancellationToken)).MatchedCount == 0)
             {
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the authorization from the database and retry the operation.")
-                    .ToString());
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1240));
             }
         }
     }

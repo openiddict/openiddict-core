@@ -13,7 +13,6 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
@@ -23,6 +22,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFramework.Models;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework
 {
@@ -210,10 +210,7 @@ namespace OpenIddict.EntityFramework
                     Context.Entry(token).State = EntityState.Unchanged;
                 }
 
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the authorization from the database and retry the operation.")
-                    .ToString(), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1240), exception);
             }
         }
 
@@ -230,12 +227,12 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             var key = ConvertIdentifierFromString(client);
@@ -261,17 +258,17 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             var key = ConvertIdentifierFromString(client);
@@ -299,22 +296,22 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             var key = ConvertIdentifierFromString(client);
@@ -345,22 +342,22 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -398,7 +395,7 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var key = ConvertIdentifierFromString(identifier);
@@ -421,7 +418,7 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var key = ConvertIdentifierFromString(identifier);
@@ -442,7 +439,7 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             return (from authorization in Authorizations.Include(authorization => authorization.Application)
@@ -675,11 +672,7 @@ namespace OpenIddict.EntityFramework
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TAuthorization>(Task.FromException<TAuthorization>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new authorization instance.")
-                        .Append("Make sure that the authorization entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom authorization store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID1241), exception)));
             }
         }
 
@@ -810,7 +803,7 @@ namespace OpenIddict.EntityFramework
 
             if (exceptions != null)
             {
-                throw new AggregateException("An error occurred while pruning authorizations.", exceptions);
+                throw new AggregateException(SR.GetResourceString(SR.ID1242), exceptions);
             }
         }
 
@@ -836,7 +829,7 @@ namespace OpenIddict.EntityFramework
                 var application = await Applications.FindAsync(cancellationToken, ConvertIdentifierFromString(identifier));
                 if (application == null)
                 {
-                    throw new InvalidOperationException("The application associated with the authorization cannot be found.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1243));
                 }
 
                 authorization.Application = application;
@@ -1025,10 +1018,7 @@ namespace OpenIddict.EntityFramework
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 Context.Entry(authorization).State = EntityState.Unchanged;
 
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the authorization from the database and retry the operation.")
-                    .ToString(), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1240), exception);
             }
         }
 

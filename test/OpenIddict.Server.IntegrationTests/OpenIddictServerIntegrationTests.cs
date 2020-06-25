@@ -8,19 +8,21 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
+using OpenIddict.Abstractions.Resources;
 using OpenIddict.Core;
 using Xunit;
 using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.FunctionalTests
 {
@@ -46,13 +48,7 @@ namespace OpenIddict.Server.FunctionalTests
                 return client.PostAsync("/authenticate", new OpenIddictRequest());
             });
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("An identity cannot be extracted from this request.")
-                .Append("This generally indicates that the OpenIddict server stack was asked ")
-                .AppendLine("to validate a token for an endpoint it doesn't manage.")
-                .Append("To validate tokens received by custom API endpoints, ")
-                .Append("the OpenIddict validation services must be used instead.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1001), exception.Message);
         }
 
         [Fact]
@@ -81,13 +77,7 @@ namespace OpenIddict.Server.FunctionalTests
                 return client.GetAsync("/authenticate");
             });
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("An identity cannot be extracted from this request.")
-                .Append("This generally indicates that the OpenIddict server stack was asked ")
-                .AppendLine("to validate a token for an endpoint it doesn't manage.")
-                .Append("To validate tokens received by custom API endpoints, ")
-                .Append("the OpenIddict validation services must be used instead.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1001), exception.Message);
         }
 
         [Fact]
@@ -121,11 +111,7 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("An identity cannot be extracted from this token request.")
-                .Append("This generally indicates that the OpenIddict server stack was asked ")
-                .AppendLine("to validate a token for an invalid grant type (e.g password).")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1000), exception.Message);
         }
 
         [Fact]
@@ -733,11 +719,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.")
-                .Append("When implementing custom token deserialization, a 'oi_tkn_typ' claim containing ")
-                .Append("the type of the token being processed must be added to the security principal.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1003), exception.Message);
         }
 
         [Fact]
@@ -787,10 +769,7 @@ namespace OpenIddict.Server.FunctionalTests
             });
 
             // Assert
-            Assert.Equal(new StringBuilder()
-                .AppendFormat("The type of token associated with the deserialized principal ({0}) ", TokenTypeHints.AuthorizationCode)
-                .AppendFormat("doesn't match the expected token type ({0}).", TokenTypeHints.AccessToken)
-                .ToString(), exception.Message);
+            Assert.Equal(SR.FormatID1004(TokenTypeHints.AuthorizationCode, TokenTypeHints.AccessToken), exception.Message);
         }
 
         [Fact]
@@ -1137,7 +1116,7 @@ namespace OpenIddict.Server.FunctionalTests
                 return client.PostAsync("/challenge", new OpenIddictRequest());
             });
 
-            Assert.Equal("An OpenID Connect response cannot be returned from this endpoint.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1005), exception.Message);
         }
 
         [Fact]
@@ -1166,7 +1145,7 @@ namespace OpenIddict.Server.FunctionalTests
                 return client.GetAsync("/challenge");
             });
 
-            Assert.Equal("An OpenID Connect response cannot be returned from this endpoint.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1005), exception.Message);
         }
 
         [Fact]
@@ -1201,7 +1180,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.AccessDenied, response.Error);
-            Assert.Equal("The authorization was denied by the resource owner.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3015), response.ErrorDescription);
             Assert.Null(response.ErrorUri);
         }
 
@@ -1235,7 +1214,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal("The token request was rejected by the authorization server.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3024), response.ErrorDescription);
             Assert.Null(response.ErrorUri);
         }
 
@@ -1283,7 +1262,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InsufficientAccess, response.Error);
-            Assert.Equal("The user information access demand was rejected by the authorization server.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3025), response.ErrorDescription);
             Assert.Null(response.ErrorUri);
         }
 
@@ -1394,7 +1373,7 @@ namespace OpenIddict.Server.FunctionalTests
                 return client.PostAsync("/signin", new OpenIddictRequest());
             });
 
-            Assert.Equal("An OpenID Connect response cannot be returned from this endpoint.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1009), exception.Message);
         }
 
         [Fact]
@@ -1423,7 +1402,7 @@ namespace OpenIddict.Server.FunctionalTests
                 return client.GetAsync("/signin");
             });
 
-            Assert.Equal("An OpenID Connect response cannot be returned from this endpoint.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1009), exception.Message);
         }
 
         [Fact]
@@ -1456,10 +1435,7 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The specified principal doesn't contain any claims-based identity.")
-                .Append("Make sure that 'ClaimsPrincipal.Identity' is not null.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1010), exception.Message);
         }
 
         [Fact]
@@ -1492,11 +1468,7 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The specified principal doesn't contain a valid/authenticated identity.")
-                .Append("Make sure that 'ClaimsPrincipal.Identity.AuthenticationType' is not null ")
-                .Append("and that 'ClaimsPrincipal.Identity.IsAuthenticated' returns 'true'.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1013), exception.Message);
         }
 
         [Fact]
@@ -1529,7 +1501,7 @@ namespace OpenIddict.Server.FunctionalTests
                 });
             });
 
-            Assert.Equal("The specified principal was rejected because the mandatory subject claim was missing.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1014), exception.Message);
         }
 
         [Fact]
@@ -3212,7 +3184,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal("The specified authorization code is no longer valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3016), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
@@ -3350,7 +3322,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidGrant, response.Error);
-            Assert.Equal("The specified refresh token is no longer valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3018), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("60FFF7EA-F98E-437B-937E-5073CC313103", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
@@ -4100,7 +4072,7 @@ namespace OpenIddict.Server.FunctionalTests
                 return client.PostAsync("/signout", new OpenIddictRequest());
             });
 
-            Assert.Equal("An OpenID Connect response cannot be returned from this endpoint.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1023), exception.Message);
         }
 
         [Fact]
@@ -4129,7 +4101,7 @@ namespace OpenIddict.Server.FunctionalTests
                 return client.GetAsync("/signout");
             });
 
-            Assert.Equal("An OpenID Connect response cannot be returned from this endpoint.", exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1023), exception.Message);
         }
 
         [Theory]
@@ -4290,9 +4262,10 @@ namespace OpenIddict.Server.FunctionalTests
         {
             var manager = new Mock<OpenIddictApplicationManager<OpenIddictApplication>>(
                 Mock.Of<IOpenIddictApplicationCache<OpenIddictApplication>>(),
-                Mock.Of<IOpenIddictApplicationStoreResolver>(),
+                Mock.Of<IStringLocalizer<OpenIddictResources>>(),
                 OutputHelper.ToLogger<OpenIddictApplicationManager<OpenIddictApplication>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
+                Mock.Of<IOpenIddictApplicationStoreResolver>());
 
             configuration?.Invoke(manager);
 
@@ -4304,9 +4277,10 @@ namespace OpenIddict.Server.FunctionalTests
         {
             var manager = new Mock<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(
                 Mock.Of<IOpenIddictAuthorizationCache<OpenIddictAuthorization>>(),
-                Mock.Of<IOpenIddictAuthorizationStoreResolver>(),
+                Mock.Of<IStringLocalizer<OpenIddictResources>>(),
                 OutputHelper.ToLogger<OpenIddictAuthorizationManager<OpenIddictAuthorization>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
+                Mock.Of<IOpenIddictAuthorizationStoreResolver>());
 
             configuration?.Invoke(manager);
 
@@ -4318,9 +4292,10 @@ namespace OpenIddict.Server.FunctionalTests
         {
             var manager = new Mock<OpenIddictScopeManager<OpenIddictScope>>(
                 Mock.Of<IOpenIddictScopeCache<OpenIddictScope>>(),
-                Mock.Of<IOpenIddictScopeStoreResolver>(),
+                Mock.Of<IStringLocalizer<OpenIddictResources>>(),
                 OutputHelper.ToLogger<OpenIddictScopeManager<OpenIddictScope>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
+                Mock.Of<IOpenIddictScopeStoreResolver>());
 
             configuration?.Invoke(manager);
 
@@ -4332,9 +4307,10 @@ namespace OpenIddict.Server.FunctionalTests
         {
             var manager = new Mock<OpenIddictTokenManager<OpenIddictToken>>(
                 Mock.Of<IOpenIddictTokenCache<OpenIddictToken>>(),
-                Mock.Of<IOpenIddictTokenStoreResolver>(),
+                Mock.Of<IStringLocalizer<OpenIddictResources>>(),
                 OutputHelper.ToLogger<OpenIddictTokenManager<OpenIddictToken>>(),
-                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>());
+                Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
+                Mock.Of<IOpenIddictTokenStoreResolver>());
 
             configuration?.Invoke(manager);
 

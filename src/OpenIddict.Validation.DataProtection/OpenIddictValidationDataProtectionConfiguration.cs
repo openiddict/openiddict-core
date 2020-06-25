@@ -8,7 +8,6 @@ using System;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Validation.DataProtection
 {

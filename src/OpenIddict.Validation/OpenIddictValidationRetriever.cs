@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -35,26 +36,26 @@ namespace OpenIddict.Validation
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
             }
 
             if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
             {
-                throw new ArgumentException("The address must be a valid absolute URI.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1143), nameof(address));
             }
 
             cancel.ThrowIfCancellationRequested();
 
             var configuration = await _service.GetConfigurationAsync(uri, cancel) ??
-                throw new InvalidOperationException("The server configuration couldn't be retrieved.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1144));
 
             if (!Uri.TryCreate(configuration.JwksUri, UriKind.Absolute, out uri) || !uri.IsWellFormedOriginalString())
             {
-                throw new InvalidOperationException("The JWKS URI couldn't be resolved from the provider metadata.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1145));
             }
 
             configuration.JsonWebKeySet = await _service.GetSecurityKeysAsync(uri, cancel) ??
-                throw new InvalidOperationException("The server JSON Web Key set couldn't be retrieved.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1146));
 
             // Copy the signing keys found in the JSON Web Key Set to the SigningKeys collection.
             foreach (var key in configuration.JsonWebKeySet.GetSigningKeys())

@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Core
 {
@@ -23,20 +23,7 @@ namespace OpenIddict.Core
         /// <typeparam name="TAuthorization">The type of the Authorization entity.</typeparam>
         /// <returns>An <see cref="IOpenIddictAuthorizationStore{TAuthorization}"/>.</returns>
         public IOpenIddictAuthorizationStore<TAuthorization> Get<TAuthorization>() where TAuthorization : class
-        {
-            var store = _provider.GetService<IOpenIddictAuthorizationStore<TAuthorization>>();
-            if (store == null)
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("No authorization store has been registered in the dependency injection container.")
-                    .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
-                    .AppendLine("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
-                    .Append("To register a custom store, create an implementation of 'IOpenIddictAuthorizationStore' and ")
-                    .Append("use 'services.AddOpenIddict().AddCore().AddAuthorizationStore()' to add it to the DI container.")
-                    .ToString());
-            }
-
-            return store;
-        }
+            => _provider.GetService<IOpenIddictAuthorizationStore<TAuthorization>>() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1228));
     }
 }

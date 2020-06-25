@@ -16,6 +16,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Core
 {
@@ -132,12 +133,12 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -188,17 +189,17 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -251,22 +252,22 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -322,22 +323,22 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             // Note: this method is only partially cached.
@@ -366,7 +367,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -415,7 +416,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var parameters = new
@@ -455,7 +456,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -507,7 +508,7 @@ namespace OpenIddict.Core
             var identifier = await _store.GetIdAsync(authorization, cancellationToken);
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new InvalidOperationException("The application identifier cannot be extracted.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1195));
             }
 
             if (_signals.TryRemove(identifier, out CancellationTokenSource signal))
@@ -539,7 +540,7 @@ namespace OpenIddict.Core
                 var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
                 if (signal == null)
                 {
-                    throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
 
                 entry.AddExpirationToken(signal);
@@ -571,7 +572,7 @@ namespace OpenIddict.Core
                 var signal = await CreateExpirationSignalAsync(authorization, cancellationToken);
                 if (signal == null)
                 {
-                    throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
 
                 entry.AddExpirationToken(signal);
@@ -602,7 +603,7 @@ namespace OpenIddict.Core
             var identifier = await _store.GetIdAsync(authorization, cancellationToken);
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new InvalidOperationException("The authorization identifier cannot be extracted.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1200));
             }
 
             var signal = _signals.GetOrAdd(identifier, _ => new CancellationTokenSource());

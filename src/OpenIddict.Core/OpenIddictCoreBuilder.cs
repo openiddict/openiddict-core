@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Abstractions;
 using OpenIddict.Core;
 using OpenIddict.Extensions;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -83,7 +84,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictApplicationStore<>));
             if (root == null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictApplicationStore<>)
@@ -92,7 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
                 }
 
                 Services.Replace(new ServiceDescriptor(typeof(IOpenIddictApplicationStore<>), type, lifetime));
@@ -140,7 +141,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictAuthorizationStore<>));
             if (root == null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictAuthorizationStore<>)
@@ -149,7 +150,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
                 }
 
                 Services.Replace(new ServiceDescriptor(typeof(IOpenIddictAuthorizationStore<>), type, lifetime));
@@ -197,7 +198,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictScopeStore<>));
             if (root == null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictScopeStore<>)
@@ -206,7 +207,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
                 }
 
                 Services.Replace(new ServiceDescriptor(typeof(IOpenIddictScopeStore<>), type, lifetime));
@@ -254,7 +255,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(IOpenIddictTokenStore<>));
             if (root == null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictTokenStore<>)
@@ -263,7 +264,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
                 }
 
                 Services.Replace(new ServiceDescriptor(typeof(IOpenIddictTokenStore<>), type, lifetime));
@@ -308,7 +309,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictApplicationManager<>));
             if (root == null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictApplicationManager<>)
@@ -317,7 +318,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
                 }
 
                 Services.Replace(ServiceDescriptor.Scoped(type, type));
@@ -364,7 +365,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!typeof(IOpenIddictApplicationStoreResolver).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             Services.Replace(new ServiceDescriptor(typeof(IOpenIddictApplicationStoreResolver), type, lifetime));
@@ -402,7 +403,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictAuthorizationManager<>));
             if (root == null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictAuthorizationManager<>)
@@ -411,7 +412,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
                 }
 
                 Services.Replace(ServiceDescriptor.Scoped(type, type));
@@ -458,7 +459,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!typeof(IOpenIddictAuthorizationStoreResolver).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             Services.Replace(new ServiceDescriptor(typeof(IOpenIddictAuthorizationStoreResolver), type, lifetime));
@@ -496,7 +497,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictScopeManager<>));
             if (root == null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictScopeManager<>)
@@ -505,7 +506,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
                 }
 
                 Services.Replace(ServiceDescriptor.Scoped(type, type));
@@ -552,7 +553,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!typeof(IOpenIddictScopeStoreResolver).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             Services.Replace(new ServiceDescriptor(typeof(IOpenIddictScopeStoreResolver), type, lifetime));
@@ -590,7 +591,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var root = OpenIddictHelpers.FindGenericBaseType(type, typeof(OpenIddictTokenManager<>));
             if (root == null)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             // Note: managers can be either open generics (e.g OpenIddictTokenManager<>)
@@ -599,7 +600,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 if (type.GetGenericArguments().Length != 1)
                 {
-                    throw new ArgumentException("The specified type is invalid.", nameof(type));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
                 }
 
                 Services.Replace(ServiceDescriptor.Scoped(type, type));
@@ -646,7 +647,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!typeof(IOpenIddictTokenStoreResolver).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             Services.Replace(new ServiceDescriptor(typeof(IOpenIddictTokenStoreResolver), type, lifetime));
@@ -695,7 +696,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (type.IsValueType)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             return Configure(options => options.DefaultApplicationType = type);
@@ -722,7 +723,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (type.IsValueType)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             return Configure(options => options.DefaultAuthorizationType = type);
@@ -749,7 +750,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (type.IsValueType)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             return Configure(options => options.DefaultScopeType = type);
@@ -776,7 +777,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (type.IsValueType)
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             return Configure(options => options.DefaultTokenType = type);
@@ -792,7 +793,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (limit < 10)
             {
-                throw new ArgumentException("The cache size cannot be less than 10.", nameof(limit));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1232), nameof(limit));
             }
 
             return Configure(options => options.EntityCacheLimit = limit);

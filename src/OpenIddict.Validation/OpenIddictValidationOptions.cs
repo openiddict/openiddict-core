@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -134,7 +135,7 @@ namespace OpenIddict.Validation
                         TokenTypeHints.AccessToken => JsonWebTokenTypes.AccessToken,
                         TokenTypeHints.IdToken     => JsonWebTokenTypes.IdentityToken,
 
-                        _ => throw new NotSupportedException("The token usage of the JWT token is not supported.")
+                        _ => throw new NotSupportedException(SR.GetResourceString(SR.ID1268))
                     };
                 }
 
@@ -142,14 +143,14 @@ namespace OpenIddict.Validation
                 // (provided via the type delegate parameter) or inferred from the token_usage claim.
                 if (string.IsNullOrEmpty(type))
                 {
-                    throw new SecurityTokenInvalidTypeException("The type of the JWT token cannot be resolved or inferred.");
+                    throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID1269));
                 }
 
                 // Note: unlike IdentityModel, this custom validator deliberately uses case-insensitive comparisons.
                 if (parameters.ValidTypes != null && parameters.ValidTypes.Any() &&
                    !parameters.ValidTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
                 {
-                    throw new SecurityTokenInvalidTypeException("The type of the JWT token doesn't match the expected type.")
+                    throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID1270))
                     {
                         InvalidType = type
                     };

@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -18,6 +17,7 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.AspNetCore
 {
@@ -101,11 +101,7 @@ namespace OpenIddict.Server.AspNetCore
                     return false;
                 }
 
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                    .Append("that the event handler responsible of processing OpenID Connect responses ")
-                    .Append("was not registered or was explicitly removed from the handlers list.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
             }
 
             return false;
@@ -114,7 +110,7 @@ namespace OpenIddict.Server.AspNetCore
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
             // Note: in many cases, the authentication token was already validated by the time this action is called
             // (generally later in the pipeline, when using the pass-through mode). To avoid having to re-validate it,
@@ -152,7 +148,7 @@ namespace OpenIddict.Server.AspNetCore
                     [OpenIddictServerAspNetCoreConstants.Properties.ErrorUri] = context.ErrorUri
                 });
 
-                return AuthenticateResult.Fail("An error occurred while authenticating the current request.", properties);
+                return AuthenticateResult.Fail(SR.GetResourceString(SR.ID1112), properties);
             }
 
             else
@@ -178,7 +174,7 @@ namespace OpenIddict.Server.AspNetCore
         protected override async Task HandleChallengeAsync([CanBeNull] AuthenticationProperties properties)
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
             transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
 
@@ -213,11 +209,7 @@ namespace OpenIddict.Server.AspNetCore
                     return;
                 }
 
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                    .Append("that the event handler responsible of processing OpenID Connect responses ")
-                    .Append("was not registered or was explicitly removed from the handlers list.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
             }
         }
 
@@ -232,7 +224,7 @@ namespace OpenIddict.Server.AspNetCore
             }
 
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
             transaction.Properties[typeof(AuthenticationProperties).FullName] = properties ?? new AuthenticationProperties();
 
@@ -268,18 +260,14 @@ namespace OpenIddict.Server.AspNetCore
                     return;
                 }
 
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                    .Append("that the event handler responsible of processing OpenID Connect responses ")
-                    .Append("was not registered or was explicitly removed from the handlers list.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
             }
         }
 
         public async Task SignOutAsync([CanBeNull] AuthenticationProperties properties)
         {
             var transaction = Context.Features.Get<OpenIddictServerAspNetCoreFeature>()?.Transaction ??
-                throw new InvalidOperationException("An unknown error occurred while retrieving the OpenIddict server context.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1111));
 
             var context = new ProcessSignOutContext(transaction)
             {
@@ -314,11 +302,7 @@ namespace OpenIddict.Server.AspNetCore
                     return;
                 }
 
-                throw new InvalidOperationException(new StringBuilder()
-                    .Append("The OpenID Connect response was not correctly processed. This may indicate ")
-                    .Append("that the event handler responsible of processing OpenID Connect responses ")
-                    .Append("was not registered or was explicitly removed from the handlers list.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1110));
             }
         }
     }

@@ -17,10 +17,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using OpenIddict.Abstractions.Resources;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
 #if !SUPPORTS_KEY_DERIVATION_WITH_SPECIFIED_HASH_ALGORITHM
@@ -49,20 +52,27 @@ namespace OpenIddict.Core
     {
         public OpenIddictApplicationManager(
             [NotNull] IOpenIddictApplicationCache<TApplication> cache,
-            [NotNull] IOpenIddictApplicationStoreResolver resolver,
+            [NotNull] IStringLocalizer<OpenIddictResources> localizer,
             [NotNull] ILogger<OpenIddictApplicationManager<TApplication>> logger,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options,
+            [NotNull] IOpenIddictApplicationStoreResolver resolver)
         {
             Cache = cache;
-            Store = resolver.Get<TApplication>();
+            Localizer = localizer;
             Logger = logger;
             Options = options;
+            Store = resolver.Get<TApplication>();
         }
 
         /// <summary>
         /// Gets the cache associated with the current manager.
         /// </summary>
         protected IOpenIddictApplicationCache<TApplication> Cache { get; }
+
+        /// <summary>
+        /// Gets the string localizer associated with the current manager.
+        /// </summary>
+        protected IStringLocalizer Localizer { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -144,7 +154,7 @@ namespace OpenIddict.Core
 
             if (!string.IsNullOrEmpty(await Store.GetClientSecretAsync(application, cancellationToken)))
             {
-                throw new ArgumentException("The client secret hash cannot be set on the application entity.", nameof(application));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1205), nameof(application));
             }
 
             // If no client type was specified, assume it's a public application if no secret was provided.
@@ -166,7 +176,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine("One or more validation error(s) occurred while trying to create a new application:");
+                builder.AppendLine(SR.GetResourceString(SR.ID1206));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -220,7 +230,7 @@ namespace OpenIddict.Core
             var application = await Store.InstantiateAsync(cancellationToken);
             if (application == null)
             {
-                throw new InvalidOperationException("An error occurred while trying to create a new application.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1207));
             }
 
             await PopulateAsync(application, descriptor, cancellationToken);
@@ -276,7 +286,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var application = Options.CurrentValue.DisableEntityCaching ?
@@ -313,7 +323,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var application = Options.CurrentValue.DisableEntityCaching ?
@@ -348,7 +358,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
             }
 
             var applications = Options.CurrentValue.DisableEntityCaching ?
@@ -390,7 +400,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
             }
 
             var applications = Options.CurrentValue.DisableEntityCaching ?
@@ -755,7 +765,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The client type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1208), nameof(type));
             }
 
             return string.Equals(await GetClientTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
@@ -778,7 +788,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The consent type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1209), nameof(type));
             }
 
             return string.Equals(await GetConsentTypeAsync(application, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
@@ -801,7 +811,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(permission))
             {
-                throw new ArgumentException("The permission name cannot be null or empty.", nameof(permission));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1210), nameof(permission));
             }
 
             return (await GetPermissionsAsync(application, cancellationToken)).Contains(permission, StringComparer.Ordinal);
@@ -824,7 +834,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(requirement))
             {
-                throw new ArgumentException("The requirement name cannot be null or empty.", nameof(requirement));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1211), nameof(requirement));
             }
 
             return (await GetRequirementsAsync(application, cancellationToken)).Contains(requirement, StringComparer.Ordinal);
@@ -961,13 +971,13 @@ namespace OpenIddict.Core
                 // Ensure the address is not null or empty.
                 if (string.IsNullOrEmpty(address))
                 {
-                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1212));
                 }
 
                 // Ensure the address is a valid absolute URL.
                 if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
                 {
-                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1213));
                 }
 
                 descriptor.PostLogoutRedirectUris.Add(uri);
@@ -979,13 +989,13 @@ namespace OpenIddict.Core
                 // Ensure the address is not null or empty.
                 if (string.IsNullOrEmpty(address))
                 {
-                    throw new ArgumentException("Callback URLs cannot be null or empty.");
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1212));
                 }
 
                 // Ensure the address is a valid absolute URL.
                 if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
                 {
-                    throw new ArgumentException("Callback URLs must be valid absolute URLs.");
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1213));
                 }
 
                 descriptor.RedirectUris.Add(uri);
@@ -1011,7 +1021,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine("One or more validation error(s) occurred while trying to update an existing application:");
+                builder.AppendLine(SR.GetResourceString(SR.ID1214));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -1133,7 +1143,7 @@ namespace OpenIddict.Core
             var identifier = await Store.GetClientIdAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(identifier))
             {
-                yield return new ValidationResult("The client identifier cannot be null or empty.");
+                yield return new ValidationResult(Localizer[SR.ID3036]);
             }
 
             else
@@ -1147,14 +1157,14 @@ namespace OpenIddict.Core
                     await Store.GetIdAsync(other, cancellationToken),
                     await Store.GetIdAsync(application, cancellationToken), StringComparison.Ordinal))
                 {
-                    yield return new ValidationResult("An application with the same client identifier already exists.");
+                    yield return new ValidationResult(Localizer[SR.ID3111]);
                 }
             }
 
             var type = await Store.GetClientTypeAsync(application, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                yield return new ValidationResult("The client type cannot be null or empty.");
+                yield return new ValidationResult(Localizer[SR.ID3118]);
             }
 
             else
@@ -1164,21 +1174,20 @@ namespace OpenIddict.Core
                     !string.Equals(type, ClientTypes.Hybrid, StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return new ValidationResult("Only 'confidential', 'hybrid' or 'public' applications are " +
-                                                      "supported by the default application manager.");
+                    yield return new ValidationResult(Localizer[SR.ID3112]);
                 }
 
                 // Ensure a client secret was specified if the client is a confidential application.
                 var secret = await Store.GetClientSecretAsync(application, cancellationToken);
                 if (string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Confidential, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return new ValidationResult("The client secret cannot be null or empty for a confidential application.");
+                    yield return new ValidationResult(Localizer[SR.ID3113]);
                 }
 
                 // Ensure no client secret was specified if the client is a public application.
                 else if (!string.IsNullOrEmpty(secret) && string.Equals(type, ClientTypes.Public, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return new ValidationResult("A client secret cannot be associated with a public application.");
+                    yield return new ValidationResult(Localizer[SR.ID3114]);
                 }
             }
 
@@ -1191,7 +1200,7 @@ namespace OpenIddict.Core
                 // Ensure the address is not null or empty.
                 if (string.IsNullOrEmpty(address))
                 {
-                    yield return new ValidationResult("Callback URLs cannot be null or empty.");
+                    yield return new ValidationResult(Localizer[SR.ID3119]);
 
                     break;
                 }
@@ -1199,7 +1208,7 @@ namespace OpenIddict.Core
                 // Ensure the address is a valid absolute URL.
                 if (!Uri.TryCreate(address, UriKind.Absolute, out Uri uri) || !uri.IsWellFormedOriginalString())
                 {
-                    yield return new ValidationResult("Callback URLs must be valid absolute URLs.");
+                    yield return new ValidationResult(Localizer[SR.ID3120]);
 
                     break;
                 }
@@ -1207,7 +1216,7 @@ namespace OpenIddict.Core
                 // Ensure the address doesn't contain a fragment.
                 if (!string.IsNullOrEmpty(uri.Fragment))
                 {
-                    yield return new ValidationResult("Callback URLs cannot contain a fragment.");
+                    yield return new ValidationResult(Localizer[SR.ID3115]);
 
                     break;
                 }
@@ -1234,7 +1243,7 @@ namespace OpenIddict.Core
             }
             if (string.IsNullOrEmpty(secret))
             {
-                throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1215), nameof(secret));
             }
 
             if (await HasClientTypeAsync(application, ClientTypes.Public, cancellationToken))
@@ -1285,7 +1294,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
             }
 
             foreach (var uri in await Store.GetRedirectUrisAsync(application, cancellationToken))
@@ -1317,7 +1326,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(secret))
             {
-                throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1215), nameof(secret));
             }
 
             // Note: the PRF, iteration count, salt length and key length currently all match the default values
@@ -1362,7 +1371,7 @@ namespace OpenIddict.Core
                     var name when name == HashAlgorithmName.SHA256 => 1,
                     var name when name == HashAlgorithmName.SHA512 => 2,
 
-                    _ => throw new InvalidOperationException("The specified HMAC algorithm is not valid.")
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1216))
                 });
 
                 // Write the iteration count of the algorithm.
@@ -1397,12 +1406,12 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(secret))
             {
-                throw new ArgumentException("The secret cannot be null or empty.", nameof(secret));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1215), nameof(secret));
             }
 
             if (string.IsNullOrEmpty(comparand))
             {
-                throw new ArgumentException("The comparand cannot be null or empty.", nameof(comparand));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1217), nameof(comparand));
             }
 
             try
@@ -1443,7 +1452,7 @@ namespace OpenIddict.Core
                     1 => HashAlgorithmName.SHA256,
                     2 => HashAlgorithmName.SHA512,
 
-                    _ => throw new InvalidOperationException("The specified hash algorithm is not valid.")
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1216))
                 };
 
                 // Read the iteration count of the algorithm.
@@ -1493,7 +1502,7 @@ namespace OpenIddict.Core
                 var name when name == HashAlgorithmName.SHA256 => new Sha256Digest(),
                 var name when name == HashAlgorithmName.SHA512 => new Sha512Digest(),
 
-                _ => throw new InvalidOperationException("The specified hash algorithm is not valid.")
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1216))
             });
 
             generator.Init(PbeParametersGenerator.Pkcs5PasswordToBytes(secret.ToCharArray()), salt.ToArray(), iterations);

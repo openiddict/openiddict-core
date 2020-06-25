@@ -6,7 +6,6 @@
 
 using System;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -16,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -46,7 +46,7 @@ namespace OpenIddict.Validation
 
             if (!address.IsAbsoluteUri)
             {
-                throw new ArgumentException("The address must be an absolute URI.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1143), nameof(address));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -72,7 +72,7 @@ namespace OpenIddict.Validation
                 var configuration = await HandleConfigurationResponseAsync();
                 if (configuration == null)
                 {
-                    throw new InvalidOperationException("The OpenID Connect server configuration couldn't be retrieved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1144));
                 }
 
                 return configuration;
@@ -89,16 +89,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while preparing the configuration request.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1147(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -116,16 +108,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while sending the configuration request.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1148(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -143,16 +127,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while extracting the configuration response.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1149(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -171,16 +147,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while handling the configuration response.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1150(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -218,7 +186,7 @@ namespace OpenIddict.Validation
 
             if (!address.IsAbsoluteUri)
             {
-                throw new ArgumentException("The address must be an absolute URI.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1143), nameof(address));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -245,7 +213,7 @@ namespace OpenIddict.Validation
                 var keys = await HandleCryptographyResponseAsync();
                 if (keys == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while retrieving the JWK set.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1146));
                 }
 
                 return keys;
@@ -262,16 +230,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while preparing the cryptography request.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1151(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -289,16 +249,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while sending the cryptography request.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1152(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -316,16 +268,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while extracting the cryptography response.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1153(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -344,16 +288,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while handling the cryptography response.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1154(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -405,12 +341,12 @@ namespace OpenIddict.Validation
 
             if (!address.IsAbsoluteUri)
             {
-                throw new ArgumentException("The address must be an absolute URI.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1143), nameof(address));
             }
 
             if (string.IsNullOrEmpty(token))
             {
-                throw new ArgumentException("The token cannot be null or empty.", nameof(token));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1155), nameof(token));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -436,7 +372,7 @@ namespace OpenIddict.Validation
                 var principal = await HandleIntrospectionResponseAsync();
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while introspecting the token.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1156));
                 }
 
                 return principal;
@@ -455,16 +391,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while preparing the introspection request.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1157(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -482,16 +410,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while sending the introspection request.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1158(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -509,16 +429,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while extracting the introspection response.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1159(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -539,16 +451,8 @@ namespace OpenIddict.Validation
 
                     if (context.IsRejected)
                     {
-                        var message = new StringBuilder()
-                            .AppendLine("An error occurred while handling the introspection response.")
-                            .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                            .AppendLine()
-                            .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                            .ToString();
-
-                        throw new OpenIddictExceptions.GenericException(message,
+                        throw new OpenIddictExceptions.GenericException(
+                            SR.FormatID1160(context.Error, context.ErrorDescription, context.ErrorUri),
                             context.Error, context.ErrorDescription, context.ErrorUri);
                     }
 
@@ -581,7 +485,7 @@ namespace OpenIddict.Validation
         {
             if (string.IsNullOrEmpty(token))
             {
-                throw new ArgumentException("The access token cannot be null or empty.", nameof(token));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1161), nameof(token));
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -609,16 +513,8 @@ namespace OpenIddict.Validation
 
                 if (context.IsRejected)
                 {
-                    var message = new StringBuilder()
-                        .AppendLine("An error occurred while validating the access token.")
-                        .AppendFormat("Error: {0}", context.Error ?? "(not available)")
-                        .AppendLine()
-                        .AppendFormat("Error description: {0}", context.ErrorDescription ?? "(not available)")
-                        .AppendLine()
-                        .AppendFormat("Error URI: {0}", context.ErrorUri ?? "(not available)")
-                        .ToString();
-
-                    throw new OpenIddictExceptions.GenericException(message,
+                    throw new OpenIddictExceptions.GenericException(
+                        SR.FormatID1162(context.Error, context.ErrorDescription, context.ErrorUri),
                         context.Error, context.ErrorDescription, context.ErrorUri);
                 }
 

@@ -73,5 +73,21 @@
       </ReferencePath>
     </ItemGroup>
   </Target>
+  
+  <!--
+    Note: Arcade always generates .resx backing files with internal static methods/constants.
+    To ensure the OpenIddict resources are public, the default visibility is manually overriden.
+  -->
+
+  <Target Name="OverrideResourcesVisibility" Condition=" @(EmbeddedResourceSGResx) != '' " AfterTargets="_GenerateResxSource">
+    <WriteLinesToFile
+        File=" %(EmbeddedResourceSGResx.SourceOutputPath) "
+        Lines=" $([System.IO.File]::ReadAllText(%(EmbeddedResourceSGResx.SourceOutputPath))
+            .Replace('internal const', 'public const')
+            .Replace('internal static', 'public static')
+            .Replace('static partial class', 'partial class')) "
+        Overwrite="true"
+        Encoding="Unicode" />
+  </Target>
 
 </Project>

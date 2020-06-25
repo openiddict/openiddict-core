@@ -23,6 +23,7 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
 using Properties = OpenIddict.Server.OpenIddictServerConstants.Properties;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -162,19 +163,10 @@ namespace OpenIddict.Server
                     case OpenIddictServerEndpointType.Verification:
                         return default;
 
-                    case OpenIddictServerEndpointType.Token: throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An identity cannot be extracted from this token request.")
-                        .Append("This generally indicates that the OpenIddict server stack was asked ")
-                        .AppendLine("to validate a token for an invalid grant type (e.g password).")
-                        .ToString());
+                    case OpenIddictServerEndpointType.Token:
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1000));
 
-                    default: throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An identity cannot be extracted from this request.")
-                        .Append("This generally indicates that the OpenIddict server stack was asked ")
-                        .AppendLine("to validate a token for an endpoint it doesn't manage.")
-                        .Append("To validate tokens received by custom API endpoints, ")
-                        .Append("the OpenIddict validation services must be used instead.")
-                        .ToString());
+                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1001));
                 }
             }
         }
@@ -236,7 +228,7 @@ namespace OpenIddict.Server
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The security token is missing.");
+                        description: context.Localizer[SR.ID3000]);
 
                     return default;
                 }
@@ -316,13 +308,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ValidateReferenceTokenIdentifier() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public ValidateReferenceTokenIdentifier() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public ValidateReferenceTokenIdentifier([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -373,13 +359,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified authorization code is invalid.",
+                                => context.Localizer[SR.ID3001],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is invalid.",
+                                => context.Localizer[SR.ID3002],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is invalid.",
+                                => context.Localizer[SR.ID3003],
 
-                            _ => "The specified token is invalid."
+                            _ => context.Localizer[SR.ID3004]
                         });
 
                     return;
@@ -388,10 +374,7 @@ namespace OpenIddict.Server
                 var payload = await _tokenManager.GetPayloadAsync(token);
                 if (string.IsNullOrEmpty(payload))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The payload associated with a reference token cannot be retrieved.")
-                        .Append("This may indicate that the token entry was corrupted.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1025));
                 }
 
                 // Replace the token parameter by the payload resolved from the token entry.
@@ -479,7 +462,7 @@ namespace OpenIddict.Server
                     // For user codes, only the short "oi_usrc+jwt" form is valid.
                     TokenTypeHints.UserCode => new[] { JsonWebTokenTypes.Private.UserCode },
 
-                    _ => throw new InvalidOperationException("The token type is not supported.")
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
                 };
 
                 var result = context.Options.JsonWebTokenHandler.ValidateToken(context.Token, parameters);
@@ -496,21 +479,17 @@ namespace OpenIddict.Server
                         description: (result.Exception, context.EndpointType) switch
                         {
                             (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified token is not an authorization code.",
+                                when context.Request.IsAuthorizationCodeGrantType() => context.Localizer[SR.ID3005],
 
                             (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsDeviceCodeGrantType()
-                                => "The specified token is not an device code.",
+                                when context.Request.IsDeviceCodeGrantType() => context.Localizer[SR.ID3006],
 
                             (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Token)
-                                when context.Request.IsRefreshTokenGrantType()
-                                => "The specified token is not a refresh token.",
+                                when context.Request.IsRefreshTokenGrantType() => context.Localizer[SR.ID3007],
 
-                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Userinfo)
-                                => "The specified token is not an access token.",
+                            (SecurityTokenInvalidTypeException _, OpenIddictServerEndpointType.Userinfo) => context.Localizer[SR.ID3008],
 
-                            _ => "The specified token is not valid."
+                            _ => context.Localizer[SR.ID3027]
                         });
 
                     return default;
@@ -529,7 +508,7 @@ namespace OpenIddict.Server
                 // Store the token type (resolved from "typ" or "token_usage") as a special private claim.
                 context.Principal.SetTokenType(result.TokenType switch
                 {
-                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException("The token type cannot be resolved"),
+                    var type when string.IsNullOrEmpty(type) => throw new InvalidOperationException(SR.GetResourceString(SR.ID1024)),
 
                     JsonWebTokenTypes.AccessToken                                            => TokenTypeHints.AccessToken,
                     JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken   => TokenTypeHints.AccessToken,
@@ -542,7 +521,7 @@ namespace OpenIddict.Server
                     JsonWebTokenTypes.Private.RefreshToken      => TokenTypeHints.RefreshToken,
                     JsonWebTokenTypes.Private.UserCode          => TokenTypeHints.UserCode,
 
-                    _ => throw new InvalidOperationException("The token type is not supported.")
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1002))
                 });
 
                 // Restore the claim destinations from the special oi_cl_dstn claim (represented as a dictionary/JSON object).
@@ -726,13 +705,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RestoreReferenceTokenProperties() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public RestoreReferenceTokenProperties() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public RestoreReferenceTokenProperties([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -770,7 +743,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
 
                 // Restore the creation/expiration dates/identifiers from the token entry metadata.
@@ -822,17 +795,17 @@ namespace OpenIddict.Server
                         },
                         description: context.EndpointType switch
                         {
-                            OpenIddictServerEndpointType.Authorization => "The specified identity token hint is invalid.",
-                            OpenIddictServerEndpointType.Logout        => "The specified identity token hint is invalid.",
+                            OpenIddictServerEndpointType.Authorization => context.Localizer[SR.ID3009],
+                            OpenIddictServerEndpointType.Logout        => context.Localizer[SR.ID3009],
 
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified authorization code is invalid.",
+                                => context.Localizer[SR.ID3001],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is invalid.",
+                                => context.Localizer[SR.ID3002],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is invalid.",
+                                => context.Localizer[SR.ID3003],
 
-                            _ => "The specified token is invalid."
+                            _ => context.Localizer[SR.ID3004]
                         });
 
 
@@ -848,19 +821,12 @@ namespace OpenIddict.Server
                     var type = context.Principal.GetTokenType();
                     if (string.IsNullOrEmpty(type))
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .AppendLine("The deserialized principal doesn't contain the mandatory 'oi_tkn_typ' claim.")
-                            .Append("When implementing custom token deserialization, a 'oi_tkn_typ' claim containing ")
-                            .Append("the type of the token being processed must be added to the security principal.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1003));
                     }
 
                     if (!string.Equals(type, context.TokenType, StringComparison.OrdinalIgnoreCase))
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .AppendFormat("The type of token associated with the deserialized principal ({0}) ", type)
-                            .AppendFormat("doesn't match the expected token type ({0}).", context.TokenType)
-                            .ToString());
+                        throw new InvalidOperationException(SR.FormatID1004(type, context.TokenType));
                     }
                 }
 
@@ -878,13 +844,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictAuthorizationManager _authorizationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ValidateTokenEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public ValidateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public ValidateTokenEntry(
                 [NotNull] IOpenIddictAuthorizationManager authorizationManager,
@@ -935,13 +895,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified authorization code is invalid.",
+                                => context.Localizer[SR.ID3001],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is invalid.",
+                                => context.Localizer[SR.ID3002],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is invalid.",
+                                => context.Localizer[SR.ID3003],
 
-                            _ => "The specified token is invalid."
+                            _ => context.Localizer[SR.ID3004]
                         });
 
                     return;
@@ -974,13 +934,13 @@ namespace OpenIddict.Server
                             description: context.EndpointType switch
                             {
                                 OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                    => "The specified authorization code has already been redeemed.",
+                                    => context.Localizer[SR.ID3010],
                                 OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                    => "The specified device code has already been redeemed.",
+                                    => context.Localizer[SR.ID3011],
                                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                    => "The specified refresh token has already been redeemed.",
+                                    => context.Localizer[SR.ID3012],
 
-                                _ => "The specified token has already been redeemed."
+                                _ => context.Localizer[SR.ID3013]
                             });
 
                         return;
@@ -995,7 +955,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.AuthorizationPending,
-                                description: "The authorization has not been granted yet by the end user.");
+                                description: context.Localizer[SR.ID3014]);
 
                             return;
                         }
@@ -1007,7 +967,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.AccessDenied,
-                                description: "The authorization demand has been rejected by the end user.");
+                                description: context.Localizer[SR.ID3015]);
 
                             return;
                         }
@@ -1027,13 +987,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified authorization code is no longer valid.",
+                                => context.Localizer[SR.ID3016],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is no longer valid.",
+                                => context.Localizer[SR.ID3017],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is no longer valid.",
+                                => context.Localizer[SR.ID3018],
 
-                            _ => "The specified token is no longer valid."
+                            _ => context.Localizer[SR.ID3019]
                         });
 
                     return;
@@ -1085,13 +1045,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictAuthorizationManager _authorizationManager;
 
-            public ValidateAuthorizationEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public ValidateAuthorizationEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public ValidateAuthorizationEntry([NotNull] IOpenIddictAuthorizationManager authorizationManager)
                 => _authorizationManager = authorizationManager;
@@ -1135,13 +1089,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The authorization associated with the authorization code is no longer valid.",
+                                => context.Localizer[SR.ID3020],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The authorization associated with the device code is no longer valid.",
+                                => context.Localizer[SR.ID3021],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The authorization associated with the refresh token is no longer valid.",
+                                => context.Localizer[SR.ID3022],
 
-                            _ => "The authorization associated with the token is no longer valid."
+                            _ => context.Localizer[SR.ID3023]
                         });
 
                     return;
@@ -1202,13 +1156,13 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified authorization code is no longer valid.",
+                                => context.Localizer[SR.ID3016],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is no longer valid.",
+                                => context.Localizer[SR.ID3017],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is no longer valid.",
+                                => context.Localizer[SR.ID3018],
 
-                            _ => "The specified token is no longer valid."
+                            _ => context.Localizer[SR.ID3019]
                         });
 
                     return default;
@@ -1255,7 +1209,7 @@ namespace OpenIddict.Server
                     case OpenIddictServerEndpointType.Verification:
                         return default;
 
-                    default: throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
+                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1005));
                 }
             }
         }
@@ -1296,17 +1250,17 @@ namespace OpenIddict.Server
                     OpenIddictServerEndpointType.Userinfo      => Errors.InsufficientAccess,
                     OpenIddictServerEndpointType.Verification  => Errors.AccessDenied,
 
-                    _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1005))
                 };
 
                 context.Response.ErrorDescription ??= context.EndpointType switch
                 {
-                    OpenIddictServerEndpointType.Authorization => "The authorization was denied by the resource owner.",
-                    OpenIddictServerEndpointType.Token         => "The token request was rejected by the authorization server.",
-                    OpenIddictServerEndpointType.Userinfo      => "The user information access demand was rejected by the authorization server.",
-                    OpenIddictServerEndpointType.Verification  => "The authorization was denied by the resource owner.",
+                    OpenIddictServerEndpointType.Authorization => context.Localizer[SR.ID3015],
+                    OpenIddictServerEndpointType.Verification  => context.Localizer[SR.ID3015],
+                    OpenIddictServerEndpointType.Token         => context.Localizer[SR.ID3024],
+                    OpenIddictServerEndpointType.Userinfo      => context.Localizer[SR.ID3025],
 
-                    _ => throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.")
+                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1005))
                 };
 
                 return default;
@@ -1321,13 +1275,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RejectDeviceCodeEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public RejectDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public RejectDeviceCodeEntry([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -1365,13 +1313,13 @@ namespace OpenIddict.Server
 
                 var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                     typeof(ProcessAuthenticationContext).FullName) ??
-                    throw new InvalidOperationException("The authentication context cannot be found.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
                 // Extract the device code identifier from the user code principal.
                 var identifier = notification.Principal.GetClaim(Claims.Private.DeviceCodeId);
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException("The device code identifier cannot be extracted from the principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1007));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
@@ -1390,13 +1338,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RejectUserCodeEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public RejectUserCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public RejectUserCodeEntry([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -1434,13 +1376,13 @@ namespace OpenIddict.Server
 
                 var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                     typeof(ProcessAuthenticationContext).FullName) ??
-                    throw new InvalidOperationException("The authentication context cannot be found.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
                 // Extract the device code identifier from the authentication principal.
                 var identifier = notification.Principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
@@ -1489,15 +1431,12 @@ namespace OpenIddict.Server
                     case OpenIddictServerEndpointType.Verification:
                         break;
 
-                    default: throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
+                    default: throw new InvalidOperationException(SR.GetResourceString(SR.ID1009));
                 }
 
                 if (context.Principal.Identity == null)
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The specified principal doesn't contain any claims-based identity.")
-                        .Append("Make sure that 'ClaimsPrincipal.Identity' is not null.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1010));
                 }
 
                 // Note: sign-in operations triggered from the device endpoint can't be associated to specific users
@@ -1507,20 +1446,12 @@ namespace OpenIddict.Server
                 {
                     if (context.Principal.Identity.IsAuthenticated)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The specified principal contains an authenticated identity, which is not valid ")
-                            .AppendLine("when the sign-in operation is triggered from the device authorization endpoint.")
-                            .Append("Make sure that 'ClaimsPrincipal.Identity.AuthenticationType' is null ")
-                            .Append("and that 'ClaimsPrincipal.Identity.IsAuthenticated' returns 'false'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1011));
                     }
 
                     if (!string.IsNullOrEmpty(context.Principal.GetClaim(Claims.Subject)))
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The specified principal contains a subject claim, which is not valid ")
-                            .Append("when the sign-in operation is triggered from the device authorization endpoint.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1012));
                     }
 
                     return default;
@@ -1528,18 +1459,12 @@ namespace OpenIddict.Server
 
                 if (!context.Principal.Identity.IsAuthenticated)
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The specified principal doesn't contain a valid/authenticated identity.")
-                        .Append("Make sure that 'ClaimsPrincipal.Identity.AuthenticationType' is not null ")
-                        .Append("and that 'ClaimsPrincipal.Identity.IsAuthenticated' returns 'true'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1013));
                 }
 
                 if (string.IsNullOrEmpty(context.Principal.GetClaim(Claims.Subject)))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The specified principal was rejected because the mandatory subject claim was missing.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1014));
                 }
 
                 return default;
@@ -1590,7 +1515,7 @@ namespace OpenIddict.Server
 
                 var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                     typeof(ProcessAuthenticationContext).FullName) ??
-                    throw new InvalidOperationException("The authentication context cannot be found.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
                 // Restore the internal claims resolved from the authorization code/refresh token.
                 foreach (var claims in notification.Principal.Claims
@@ -1603,7 +1528,7 @@ namespace OpenIddict.Server
                         continue;
                     }
 
-                    // When the request is a verification request, don't flow the copy from the user code.
+                    // When the request is a verification request, don't flow the scopes from the user code.
                     if (context.EndpointType == OpenIddictServerEndpointType.Verification &&
                         string.Equals(claims.Key, Claims.Private.Scope, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1851,13 +1776,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictAuthorizationManager _authorizationManager;
 
-            public AttachAuthorization() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public AttachAuthorization() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public AttachAuthorization(
                 [NotNull] IOpenIddictApplicationManager applicationManager,
@@ -1921,7 +1840,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -1930,7 +1849,7 @@ namespace OpenIddict.Server
                 var authorization = await _authorizationManager.CreateAsync(descriptor);
                 if (authorization == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while creating an authorization entry.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1017));
                 }
 
                 var identifier = await _authorizationManager.GetIdAsync(authorization);
@@ -2319,7 +2238,7 @@ namespace OpenIddict.Server
                 {
                     var notification = context.Transaction.GetProperty<ProcessAuthenticationContext>(
                         typeof(ProcessAuthenticationContext).FullName) ??
-                        throw new InvalidOperationException("The authentication context cannot be found.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1006));
 
                     principal.SetExpirationDate(notification.Principal.GetExpirationDate());
                 }
@@ -2540,13 +2459,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RedeemTokenEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public RedeemTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public RedeemTokenEntry([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -2618,15 +2531,16 @@ namespace OpenIddict.Server
                         description: context.EndpointType switch
                         {
                             OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                                => "The specified authorization code is no longer valid.",
+                                => context.Localizer[SR.ID3016],
                             OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                                => "The specified device code is no longer valid.",
+                                => context.Localizer[SR.ID3017],
                             OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                                => "The specified refresh token is no longer valid.",
+                                => context.Localizer[SR.ID3018],
 
-                            OpenIddictServerEndpointType.Verification => "The specified user code is no longer valid.",
+                            OpenIddictServerEndpointType.Verification
+                                => context.Localizer[SR.ID3026],
 
-                            _ => "The specified token is no longer valid."
+                            _ => context.Localizer["The specified token is no longer valid."]
                         });
 
                     return;
@@ -2642,13 +2556,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public RevokeExistingTokenEntries() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public RevokeExistingTokenEntries() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public RevokeExistingTokenEntries([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -2718,13 +2626,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ExtendRefreshTokenEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public ExtendRefreshTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public ExtendRefreshTokenEntry([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -2773,7 +2675,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("The token details cannot be found in the database.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1264));
                 }
 
                 // Compute the new expiration date of the refresh token and update the token entry.
@@ -2799,13 +2701,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateAccessTokenEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public CreateAccessTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public CreateAccessTokenEntry(
                 [NotNull] IOpenIddictApplicationManager applicationManager,
@@ -2845,7 +2741,7 @@ namespace OpenIddict.Server
                 var principal = context.AccessTokenPrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -2865,7 +2761,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -2874,7 +2770,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -2936,7 +2832,7 @@ namespace OpenIddict.Server
 
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var claims = new Dictionary<string, object>(StringComparer.Ordinal);
@@ -3004,13 +2900,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceAccessToken() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public ConvertReferenceAccessToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public ConvertReferenceAccessToken([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -3051,19 +2941,19 @@ namespace OpenIddict.Server
                 var principal = context.AccessTokenPrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
 
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
@@ -3101,13 +2991,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateAuthorizationCodeEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public CreateAuthorizationCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public CreateAuthorizationCodeEntry(
                 [NotNull] IOpenIddictApplicationManager applicationManager,
@@ -3147,7 +3031,7 @@ namespace OpenIddict.Server
                 var principal = context.AuthorizationCodePrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -3167,7 +3051,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -3176,7 +3060,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -3236,7 +3120,7 @@ namespace OpenIddict.Server
 
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 var descriptor = new SecurityTokenDescriptor
@@ -3287,13 +3171,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceAuthorizationCode() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public ConvertReferenceAuthorizationCode() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public ConvertReferenceAuthorizationCode([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -3333,19 +3211,19 @@ namespace OpenIddict.Server
                 var principal = context.AuthorizationCodePrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
 
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
@@ -3383,13 +3261,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateDeviceCodeEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public CreateDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public CreateDeviceCodeEntry(
                 [NotNull] IOpenIddictApplicationManager applicationManager,
@@ -3434,7 +3306,7 @@ namespace OpenIddict.Server
                 var principal = context.DeviceCodePrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -3454,7 +3326,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -3463,7 +3335,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -3523,7 +3395,7 @@ namespace OpenIddict.Server
 
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 var descriptor = new SecurityTokenDescriptor
@@ -3574,13 +3446,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceDeviceCode() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public ConvertReferenceDeviceCode() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public ConvertReferenceDeviceCode([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -3626,19 +3492,19 @@ namespace OpenIddict.Server
                 var principal = context.DeviceCodePrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
 
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
@@ -3675,13 +3541,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public UpdateReferenceDeviceCodeEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public UpdateReferenceDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public UpdateReferenceDeviceCodeEntry([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -3726,20 +3586,20 @@ namespace OpenIddict.Server
                 var principal = context.DeviceCodePrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 // Extract the token identifier from the authentication principal.
                 var identifier = context.Principal.GetClaim(Claims.Private.DeviceCodeId);
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException("The device code identifier cannot be extracted from the principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1007));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("The token details cannot be found in the database.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1264));
                 }
 
                 // Replace the device code details by the payload derived from the new device code principal,
@@ -3773,13 +3633,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateRefreshTokenEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public CreateRefreshTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public CreateRefreshTokenEntry(
                 [NotNull] IOpenIddictApplicationManager applicationManager,
@@ -3819,7 +3673,7 @@ namespace OpenIddict.Server
                 var principal = context.RefreshTokenPrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -3839,7 +3693,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -3848,7 +3702,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -3908,7 +3762,7 @@ namespace OpenIddict.Server
 
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 var descriptor = new SecurityTokenDescriptor
@@ -3959,13 +3813,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceRefreshToken() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public ConvertReferenceRefreshToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public ConvertReferenceRefreshToken([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -4006,19 +3854,19 @@ namespace OpenIddict.Server
                 var principal = context.RefreshTokenPrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
 
                 // Generate a new crypto-secure random identifier that will be substituted to the token.
@@ -4081,7 +3929,7 @@ namespace OpenIddict.Server
                 var principal = context.UserCodePrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var identifier = context.DeviceCodePrincipal.GetTokenId();
@@ -4103,13 +3951,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateUserCodeEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public CreateUserCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public CreateUserCodeEntry(
                 [NotNull] IOpenIddictApplicationManager applicationManager,
@@ -4149,7 +3991,7 @@ namespace OpenIddict.Server
                 var principal = context.UserCodePrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -4169,7 +4011,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -4178,7 +4020,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -4238,7 +4080,7 @@ namespace OpenIddict.Server
 
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 var descriptor = new SecurityTokenDescriptor
@@ -4279,13 +4121,7 @@ namespace OpenIddict.Server
         {
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public ConvertReferenceUserCode() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public ConvertReferenceUserCode() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public ConvertReferenceUserCode([NotNull] IOpenIddictTokenManager tokenManager)
                 => _tokenManager = tokenManager;
@@ -4326,19 +4162,19 @@ namespace OpenIddict.Server
                 var principal = context.UserCodePrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var identifier = principal.GetTokenId();
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    throw new InvalidOperationException("The token identifier cannot be extracted from the principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1008));
                 }
 
                 var token = await _tokenManager.FindByIdAsync(identifier);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("The token entry cannot be found in the database.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1020));
                 }
 
                 // Note: unlike other reference tokens, user codes are meant to be used by humans,
@@ -4420,13 +4256,13 @@ namespace OpenIddict.Server
                     credentials => credentials.Key is AsymmetricSecurityKey);
                 if (credentials == null)
                 {
-                    throw new InvalidOperationException("No suitable signing credentials could be found.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1265));
                 }
 
                 using var hash = GetHashAlgorithm(credentials);
                 if (hash == null || hash is KeyedHashAlgorithm)
                 {
-                    throw new InvalidOperationException("The signing credentials algorithm is not valid.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1266));
                 }
 
                 if (!string.IsNullOrEmpty(context.Response.AccessToken))
@@ -4500,7 +4336,7 @@ namespace OpenIddict.Server
                                 SecurityAlgorithms.RsaSsaPssSha384Signature => HashAlgorithmName.SHA384,
                                 SecurityAlgorithms.RsaSsaPssSha512Signature => HashAlgorithmName.SHA512,
 
-                                _ => throw new InvalidOperationException("The signing credentials algorithm is not supported.")
+                                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID1266))
                             }
                         };
 
@@ -4521,13 +4357,7 @@ namespace OpenIddict.Server
             private readonly IOpenIddictApplicationManager _applicationManager;
             private readonly IOpenIddictTokenManager _tokenManager;
 
-            public CreateIdentityTokenEntry() => throw new InvalidOperationException(new StringBuilder()
-                .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                .ToString());
+            public CreateIdentityTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
             public CreateIdentityTokenEntry(
                 [NotNull] IOpenIddictApplicationManager applicationManager,
@@ -4567,7 +4397,7 @@ namespace OpenIddict.Server
                 var principal = context.IdentityTokenPrincipal;
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token entry cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1019));
                 }
 
                 var descriptor = new OpenIddictTokenDescriptor
@@ -4587,7 +4417,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The application entry cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1016));
                     }
 
                     descriptor.ApplicationId = await _applicationManager.GetIdAsync(application);
@@ -4596,7 +4426,7 @@ namespace OpenIddict.Server
                 var token = await _tokenManager.CreateAsync(descriptor);
                 if (token == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while creating a token entry.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1018));
                 }
 
                 var identifier = await _tokenManager.GetIdAsync(token);
@@ -4657,7 +4487,7 @@ namespace OpenIddict.Server
 
                 if (principal == null)
                 {
-                    throw new InvalidOperationException("A token cannot be created from a null principal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1021));
                 }
 
                 var claims = new Dictionary<string, object>(StringComparer.Ordinal);
@@ -4883,7 +4713,7 @@ namespace OpenIddict.Server
                     // At this stage, throw an exception if the issuer cannot be retrieved.
                     if (issuer == null || !issuer.IsAbsoluteUri)
                     {
-                        throw new InvalidOperationException("The issuer must be a non-null, non-empty absolute URL.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1022));
                     }
 
                     // Ensure the issuer ends with a trailing slash, as it is necessary
@@ -4937,7 +4767,7 @@ namespace OpenIddict.Server
 
                 if (context.EndpointType != OpenIddictServerEndpointType.Logout)
                 {
-                    throw new InvalidOperationException("An OpenID Connect response cannot be returned from this endpoint.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1023));
                 }
 
                 return default;

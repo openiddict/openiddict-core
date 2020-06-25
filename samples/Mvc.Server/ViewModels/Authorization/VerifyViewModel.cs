@@ -12,7 +12,7 @@ namespace Mvc.Server.ViewModels.Authorization
 
         [BindNever, Display(Name = "Error")]
         public string Error { get; set; }
-        
+
         [BindNever, Display(Name = "Error description")]
         public string ErrorDescription { get; set; }
 

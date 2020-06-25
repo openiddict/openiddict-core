@@ -6,6 +6,7 @@
 
 using System;
 using JetBrains.Annotations;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -53,7 +54,7 @@ namespace OpenIddict.Server
             {
                 if (string.IsNullOrEmpty(address))
                 {
-                    throw new ArgumentException("The post_logout_redirect_uri cannot be null or empty.", nameof(address));
+                    throw new ArgumentException(SR.GetResourceString(SR.ID1101), nameof(address));
                 }
 
                 // Don't allow validation to alter the post_logout_redirect_uri parameter extracted
@@ -61,9 +62,7 @@ namespace OpenIddict.Server
                 if (!string.IsNullOrEmpty(Request.PostLogoutRedirectUri) &&
                     !string.Equals(Request.PostLogoutRedirectUri, address, StringComparison.Ordinal))
                 {
-                    throw new InvalidOperationException(
-                        "The end session request cannot be validated because a different " +
-                        "post_logout_redirect_uri was specified by the client application.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1102));
                 }
 
                 PostLogoutRedirectUri = address;

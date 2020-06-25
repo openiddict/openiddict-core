@@ -5,8 +5,8 @@
  */
 
 using System.Collections.Immutable;
-using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 
 namespace OpenIddict.Server.Owin
 {

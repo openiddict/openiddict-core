@@ -25,6 +25,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFramework.Models;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.EntityFramework
 {
@@ -236,10 +237,7 @@ namespace OpenIddict.EntityFramework
                     Context.Entry(token).State = EntityState.Unchanged;
                 }
 
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the application from the database and retry the operation.")
-                    .ToString(), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1238), exception);
             }
         }
 
@@ -256,7 +254,7 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var key = ConvertIdentifierFromString(identifier);
@@ -279,7 +277,7 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             return await (from application in Applications
@@ -298,7 +296,7 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
             }
 
             // To optimize the efficiency of the query a bit, only applications whose stringified
@@ -337,7 +335,7 @@ namespace OpenIddict.EntityFramework
         {
             if (string.IsNullOrEmpty(address))
             {
-                throw new ArgumentException("The address cannot be null or empty.", nameof(address));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1142), nameof(address));
             }
 
             // To optimize the efficiency of the query a bit, only applications whose stringified
@@ -734,11 +732,7 @@ namespace OpenIddict.EntityFramework
             catch (MemberAccessException exception)
             {
                 return new ValueTask<TApplication>(Task.FromException<TApplication>(
-                    new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An error occurred while trying to create a new application instance.")
-                        .Append("Make sure that the application entity is not abstract and has a public parameterless constructor ")
-                        .Append("or create a custom application store that overrides 'InstantiateAsync()' to use a custom factory.")
-                        .ToString(), exception)));
+                    new InvalidOperationException(SR.GetResourceString(SR.ID1239), exception)));
             }
         }
 
@@ -1119,10 +1113,7 @@ namespace OpenIddict.EntityFramework
                 // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
                 Context.Entry(application).State = EntityState.Unchanged;
 
-                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                    .AppendLine("The application was concurrently updated and cannot be persisted in its current state.")
-                    .Append("Reload the application from the database and retry the operation.")
-                    .ToString(), exception);
+                throw new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID1238), exception);
             }
         }
 

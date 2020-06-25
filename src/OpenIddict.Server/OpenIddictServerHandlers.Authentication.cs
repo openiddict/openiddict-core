@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -16,6 +15,7 @@ using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlerFilters;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -125,11 +125,7 @@ namespace OpenIddict.Server
 
                     if (notification.Request == null)
                     {
-                        throw new InvalidOperationException(new StringBuilder()
-                            .Append("The authorization request was not correctly extracted. To extract authorization requests, ")
-                            .Append("create a class implementing 'IOpenIddictServerHandler<ExtractAuthorizationRequestContext>' ")
-                            .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                            .ToString());
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1026));
                     }
 
                     context.Logger.LogInformation("The authorization request was successfully extracted: {Request}.", notification.Request);
@@ -201,7 +197,7 @@ namespace OpenIddict.Server
 
                     if (string.IsNullOrEmpty(notification.RedirectUri))
                     {
-                        throw new InvalidOperationException("The request cannot be validated because no redirect_uri was specified.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1027));
                     }
 
                     context.Logger.LogInformation("The authorization request was successfully validated.");
@@ -299,14 +295,7 @@ namespace OpenIddict.Server
                         }
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The authorization request was not handled. To handle authorization requests in a controller, ")
-                        .Append("create a custom controller action with the same route as the authorization endpoint ")
-                        .Append("and enable the pass-through mode in the server ASP.NET Core or OWIN options using ")
-                        .AppendLine("'services.AddOpenIddict().AddServer().UseAspNetCore().EnableAuthorizationEndpointPassthrough()'.")
-                        .Append("Alternatively, create a class implementing 'IOpenIddictServerHandler<HandleAuthorizationRequestContext>' ")
-                        .Append("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1028));
                 }
             }
 
@@ -360,11 +349,7 @@ namespace OpenIddict.Server
                         return;
                     }
 
-                    throw new InvalidOperationException(new StringBuilder()
-                        .Append("The authorization response was not correctly applied. To apply authorization responses, ")
-                        .Append("create a class implementing 'IOpenIddictServerHandler<ApplyAuthorizationResponseContext>' ")
-                        .AppendLine("and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1029));
                 }
             }
 
@@ -401,11 +386,11 @@ namespace OpenIddict.Server
                     if (!string.IsNullOrEmpty(context.Request.Request))
                     {
                         context.Logger.LogError("The authorization request was rejected because it contained " +
-                                                "an unsupported parameter: {Parameter}.", "request");
+                                                "an unsupported parameter: {Parameter}.", Parameters.Request);
 
                         context.Reject(
                             error: Errors.RequestNotSupported,
-                            description: "The 'request' parameter is not supported.");
+                            description: context.Localizer[SR.ID3028, Parameters.Request]);
 
                         return default;
                     }
@@ -447,11 +432,11 @@ namespace OpenIddict.Server
                     if (!string.IsNullOrEmpty(context.Request.RequestUri))
                     {
                         context.Logger.LogError("The authorization request was rejected because it contained " +
-                                                "an unsupported parameter: {Parameter}.", "request_uri");
+                                                "an unsupported parameter: {Parameter}.", Parameters.RequestUri);
 
                         context.Reject(
                             error: Errors.RequestUriNotSupported,
-                            description: "The 'request_uri' parameter is not supported.");
+                            description: context.Localizer[SR.ID3028, Parameters.RequestUri]);
 
                         return default;
                     }
@@ -498,7 +483,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'client_id' parameter is missing.");
+                            description: context.Localizer[SR.ID3029, Parameters.ClientId]);
 
                         return default;
                     }
@@ -550,7 +535,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: "The mandatory 'redirect_uri' parameter is missing.");
+                                description: context.Localizer[SR.ID3029, Parameters.RedirectUri]);
 
                             return default;
                         }
@@ -573,7 +558,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'redirect_uri' parameter must be a valid absolute URL.");
+                            description: context.Localizer[SR.ID3030, Parameters.RedirectUri]);
 
                         return default;
                     }
@@ -588,7 +573,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'redirect_uri' parameter must not include a fragment.");
+                            description: context.Localizer[SR.ID3031, Parameters.RedirectUri]);
 
                         return default;
                     }
@@ -634,7 +619,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'response_type' parameter is missing.");
+                            description: context.Localizer[SR.ID3029, Parameters.ResponseType]);
 
                         return default;
                     }
@@ -649,7 +634,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnsupportedResponseType,
-                            description: "The specified 'response_type' parameter is not allowed.");
+                            description: context.Localizer[SR.ID3032, Parameters.ResponseType]);
 
                         return default;
                     }
@@ -699,7 +684,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'response_type'/'response_mode' combination is invalid.");
+                            description: context.Localizer[SR.ID3033, Parameters.ResponseType, Parameters.ResponseMode]);
 
                         return default;
                     }
@@ -713,7 +698,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'response_mode' parameter is not supported.");
+                            description: context.Localizer[SR.ID3032, Parameters.ResponseMode]);
 
                         return default;
                     }
@@ -783,7 +768,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'openid' scope is missing.");
+                            description: context.Localizer[SR.ID3034, Scopes.OpenId]);
 
                         return default;
                     }
@@ -793,7 +778,7 @@ namespace OpenIddict.Server
                     {
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'offline_access' scope is not allowed.");
+                            description: context.Localizer[SR.ID3035, Scopes.OfflineAccess]);
 
                         return default;
                     }
@@ -847,7 +832,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'nonce' parameter is missing.");
+                            description: context.Localizer[SR.ID3029, Parameters.Nonce]);
 
                         return default;
                     }
@@ -894,7 +879,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'prompt' parameter is invalid.");
+                            description: context.Localizer[SR.ID3052, Parameters.Prompt]);
 
                         return default;
                     }
@@ -945,7 +930,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'code_challenge_method' parameter cannot be used without 'code_challenge'.");
+                            description: context.Localizer[SR.ID3037, Parameters.CodeChallengeMethod, Parameters.CodeChallenge]);
 
                         return default;
                     }
@@ -960,7 +945,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'code_challenge_method' parameter must be specified.");
+                            description: context.Localizer[SR.ID3029, Parameters.CodeChallengeMethod]);
 
                         return default;
                     }
@@ -974,7 +959,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'code_challenge_method' parameter is not supported.");
+                            description: context.Localizer[SR.ID3032, Parameters.CodeChallengeMethod]);
 
                         return default;
                     }
@@ -987,8 +972,8 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The 'code_challenge' and 'code_challenge_method' parameters " +
-                                         "can only be used with a response type containing 'code'.");
+                            description: context.Localizer[SR.ID3040, Parameters.CodeChallenge,
+                                Parameters.CodeChallengeMethod, ResponseTypes.Code]);
 
                         return default;
                     }
@@ -1001,7 +986,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'response_type' parameter is not allowed when using PKCE.");
+                            description: context.Localizer[SR.ID3041, Parameters.ResponseType]);
 
                         return default;
                     }
@@ -1018,13 +1003,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientId() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientId() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateClientId([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1062,7 +1041,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'client_id' parameter is invalid.");
+                            description: context.Localizer[SR.ID3052, Parameters.ClientId]);
 
                         return;
                     }
@@ -1078,13 +1057,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientType() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateClientType([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1117,7 +1090,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
                     // To prevent downgrade attacks, ensure that authorization requests returning an access token directly
@@ -1132,7 +1105,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "The specified 'response_type' parameter is not valid for this client application.");
+                            description: context.Localizer[SR.ID3043, Parameters.ResponseType]);
 
                         return;
                     }
@@ -1147,13 +1120,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateClientRedirectUri() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateClientRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateClientRedirectUri([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1186,7 +1153,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
                     // If no explicit redirect_uri was specified, retrieve the addresses associated with
@@ -1201,7 +1168,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: "The mandatory 'redirect_uri' parameter is missing.");
+                                description: context.Localizer[SR.ID3029, Parameters.RedirectUri]);
 
                             return;
                         }
@@ -1219,7 +1186,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'redirect_uri' parameter is not valid for this client application.");
+                            description: context.Localizer[SR.ID3043, Parameters.RedirectUri]);
 
                         return;
                     }
@@ -1234,13 +1201,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictScopeManager _scopeManager;
 
-                public ValidateScopes() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateScopes() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateScopes([NotNull] IOpenIddictScopeManager scopeManager)
                     => _scopeManager = scopeManager;
@@ -1291,7 +1252,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidScope,
-                            description: "The specified 'scope' parameter is not valid.");
+                            description: context.Localizer[SR.ID3052, Parameters.Scope]);
 
                         return;
                     }
@@ -1306,13 +1267,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateEndpointPermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateEndpointPermissions([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1346,7 +1301,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
                     // Reject the request if the application is not allowed to use the authorization endpoint.
@@ -1357,7 +1312,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "This client application is not allowed to use the authorization endpoint.");
+                            description: context.Localizer[SR.ID3046]);
 
                         return;
                     }
@@ -1372,13 +1327,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateGrantTypePermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateGrantTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateGrantTypePermissions([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1412,7 +1361,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
                     // Reject the request if the application is not allowed to use the authorization code flow.
@@ -1424,7 +1373,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "The client application is not allowed to use the authorization code flow.");
+                            description: context.Localizer[SR.ID3047]);
 
                         return;
                     }
@@ -1438,7 +1387,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "The client application is not allowed to use the implicit flow.");
+                            description: context.Localizer[SR.ID3048]);
 
                         return;
                     }
@@ -1453,7 +1402,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.UnauthorizedClient,
-                            description: "The client application is not allowed to use the hybrid flow.");
+                            description: context.Localizer[SR.ID3049]);
 
                         return;
                     }
@@ -1468,7 +1417,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The client application is not allowed to use the 'offline_access' scope.");
+                            description: context.Localizer[SR.ID3050]);
 
                         return;
                     }
@@ -1483,13 +1432,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateScopePermissions() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateScopePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateScopePermissions([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1523,7 +1466,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
                     foreach (var scope in context.Request.GetScopes())
@@ -1543,7 +1486,7 @@ namespace OpenIddict.Server
 
                             context.Reject(
                                 error: Errors.InvalidRequest,
-                                description: "This client application is not allowed to use the specified scope.");
+                                description: context.Localizer[SR.ID3051]);
 
                             return;
                         }
@@ -1560,13 +1503,7 @@ namespace OpenIddict.Server
             {
                 private readonly IOpenIddictApplicationManager _applicationManager;
 
-                public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The core services must be registered when enabling the OpenIddict server feature.")
-                    .Append("To register the OpenIddict core services, reference the 'OpenIddict.Core' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.")
-                    .Append("Alternatively, you can disable the built-in database-based server features by enabling ")
-                    .Append("the degraded mode with 'services.AddOpenIddict().AddServer().EnableDegradedMode()'.")
-                    .ToString());
+                public ValidateProofKeyForCodeExchangeRequirement() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1015));
 
                 public ValidateProofKeyForCodeExchangeRequirement([NotNull] IOpenIddictApplicationManager applicationManager)
                     => _applicationManager = applicationManager;
@@ -1606,7 +1543,7 @@ namespace OpenIddict.Server
                     var application = await _applicationManager.FindByClientIdAsync(context.ClientId);
                     if (application == null)
                     {
-                        throw new InvalidOperationException("The client application details cannot be found in the database.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1031));
                     }
 
                     if (await _applicationManager.HasRequirementAsync(application, Requirements.Features.ProofKeyForCodeExchange))
@@ -1616,7 +1553,7 @@ namespace OpenIddict.Server
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The mandatory 'code_challenge' parameter is missing.");
+                            description: context.Localizer[SR.ID3029, Parameters.CodeChallenge]);
 
                         return;
                     }

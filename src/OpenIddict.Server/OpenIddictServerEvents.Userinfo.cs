@@ -7,8 +7,8 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using JetBrains.Annotations;
 using System.Text.Json;
+using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 
 namespace OpenIddict.Server

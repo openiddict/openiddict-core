@@ -436,7 +436,7 @@ namespace OpenIddict.Server.FunctionalTests
                 // returned by ReadAsStreamAsync() is always assumed to contain UTF-8 encoded payloads.
                 using var stream = await message.Content.ReadAsStreamAsync();
                 using var document = await HtmlParser.ParseDocumentAsync(stream);
-                
+
                 // Note: a dictionary is deliberately not used here to allow multiple parameters with the
                 // same name to be retrieved. While initially not allowed by the core OAuth2 specification,
                 // this is required for derived drafts like the OAuth2 token exchange specification.

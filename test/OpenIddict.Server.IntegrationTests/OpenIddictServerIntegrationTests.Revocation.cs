@@ -16,6 +16,7 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers;
 using static OpenIddict.Server.OpenIddictServerHandlers.Revocation;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.FunctionalTests
 {
@@ -39,7 +40,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3084), response.ErrorDescription);
         }
 
         [Theory]
@@ -149,7 +150,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The mandatory 'token' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3029(Parameters.Token), response.ErrorDescription);
         }
 
         [Fact]
@@ -191,7 +192,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnsupportedTokenType, response.Error);
-            Assert.Equal("This token cannot be revoked.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3079), response.ErrorDescription);
         }
 
         [Fact]
@@ -233,7 +234,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal("The client application is not allowed to revoke the specified token.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3080), response.ErrorDescription);
         }
 
         [Fact]
@@ -276,7 +277,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal("The client application is not allowed to revoke the specified token.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3080), response.ErrorDescription);
         }
 
         [Fact]
@@ -318,7 +319,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal("The client application is not allowed to revoke the specified token.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3080), response.ErrorDescription);
         }
 
         [Fact]
@@ -341,7 +342,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal("The mandatory 'client_id' parameter is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3029(Parameters.ClientId), response.ErrorDescription);
         }
 
         [Fact]
@@ -371,7 +372,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal("The specified 'client_id' parameter is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3052(Parameters.ClientId), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         }
@@ -414,7 +415,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.UnauthorizedClient, response.Error);
-            Assert.Equal("This client application is not allowed to use the revocation endpoint.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3078), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasPermissionAsync(application,
@@ -454,7 +455,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal("The 'client_secret' parameter is not valid for this client application.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3061(Parameters.ClientSecret), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
@@ -493,7 +494,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal("The 'client_secret' parameter required for this client application is missing.", response.ErrorDescription);
+            Assert.Equal(SR.FormatID3062(Parameters.ClientSecret), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.Once());
@@ -535,7 +536,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidClient, response.Error);
-            Assert.Equal("The specified client credentials are invalid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3055), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
@@ -731,7 +732,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal("The specified token is invalid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3004), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.TryRevokeAsync(It.IsAny<OpenIddictToken>(), It.IsAny<CancellationToken>()), Times.Never());
@@ -791,7 +792,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidToken, response.Error);
-            Assert.Equal("The specified token is no longer valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3019), response.ErrorDescription);
 
             Mock.Get(manager).Verify(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
             Mock.Get(manager).Verify(manager => manager.TryRevokeAsync(It.IsAny<OpenIddictToken>(), It.IsAny<CancellationToken>()), Times.Never());

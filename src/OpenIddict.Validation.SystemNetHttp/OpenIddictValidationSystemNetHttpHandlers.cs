@@ -17,6 +17,7 @@ using JetBrains.Annotations;
 using OpenIddict.Abstractions;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlerFilters;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation.SystemNetHttp
 {
@@ -124,7 +125,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 var request = context.Transaction.GetHttpRequestMessage();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The System.Net.Http request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                 }
 
                 // Note: System.Net.Http doesn't expose convenient methods allowing to create
@@ -174,7 +175,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 var request = context.Transaction.GetHttpRequestMessage();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The System.Net.Http request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                 }
 
                 request.Content = new FormUrlEncodedContent(
@@ -221,20 +222,20 @@ namespace OpenIddict.Validation.SystemNetHttp
                 var request = context.Transaction.GetHttpRequestMessage();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The System.Net.Http request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                 }
 
                 var assembly = typeof(OpenIddictValidationSystemNetHttpOptions).Assembly.GetName();
                 using var client = _factory.CreateClient(assembly.Name);
                 if (client == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while creating a System.Net.Http client.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1173));
                 }
 
                 var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
                 if (response == null)
                 {
-                    throw new InvalidOperationException("An unknown error occurred while sending a System.Net.Http request.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1174));
                 }
 
                 // Store the HttpResponseMessage in the transaction properties.
@@ -270,7 +271,7 @@ namespace OpenIddict.Validation.SystemNetHttp
                 var response = context.Transaction.GetHttpResponseMessage();
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The System.Net.Http request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1172));
                 }
 
                 // The status code is deliberately not validated to ensure even errored responses

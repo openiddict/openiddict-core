@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server
 {
@@ -86,7 +87,7 @@ namespace OpenIddict.Server
 
                 if (!typeof(IOpenIddictServerHandlerFilter<>).MakeGenericType(typeof(TContext)).IsAssignableFrom(type))
                 {
-                    throw new InvalidOperationException("The specified service type is not valid.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1103));
                 }
 
                 _filterTypes.Add(type);
@@ -118,7 +119,7 @@ namespace OpenIddict.Server
                 var type = descriptor.ServiceType;
                 if (!typeof(IOpenIddictServerHandler<>).MakeGenericType(typeof(TContext)).IsAssignableFrom(type))
                 {
-                    throw new InvalidOperationException("The specified service type is not valid.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1103));
                 }
 
                 _descriptor = descriptor;
@@ -216,7 +217,7 @@ namespace OpenIddict.Server
                 ContextType = typeof(TContext),
                 FilterTypes = _filterTypes.ToImmutableArray(),
                 Order = _order,
-                ServiceDescriptor = _descriptor ?? throw new InvalidOperationException("No service descriptor was set."),
+                ServiceDescriptor = _descriptor ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID1104)),
                 Type = _type
             };
         }

@@ -5,13 +5,13 @@
  */
 
 using System;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.MongoDb.Tests
 {
@@ -43,12 +43,7 @@ namespace OpenIddict.MongoDb.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomToken>());
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The specified token type is not compatible with the MongoDB stores.")
-                .Append("When enabling the MongoDB stores, make sure you use the built-in ")
-                .Append("'OpenIddictMongoDbToken' entity or a custom entity that inherits ")
-                .Append("from the 'OpenIddictMongoDbToken' entity.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1259), exception.Message);
         }
 
         [Fact]

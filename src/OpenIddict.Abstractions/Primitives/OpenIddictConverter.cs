@@ -8,6 +8,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Abstractions
 {
@@ -52,7 +53,7 @@ namespace OpenIddict.Abstractions
             return typeToConvert == typeof(OpenIddictMessage)  ? new OpenIddictMessage(document.RootElement.Clone()) :
                    typeToConvert == typeof(OpenIddictRequest)  ? new OpenIddictRequest(document.RootElement.Clone()) :
                    typeToConvert == typeof(OpenIddictResponse) ? (OpenIddictMessage) new OpenIddictResponse(document.RootElement.Clone()) :
-                   throw new ArgumentException("The specified type is not supported.", nameof(typeToConvert));
+                   throw new ArgumentException(SR.GetResourceString(SR.ID1175), nameof(typeToConvert));
         }
 
         /// <summary>

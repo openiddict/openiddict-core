@@ -5,13 +5,13 @@
  */
 
 using System;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using OpenIddict.Abstractions;
 using OpenIddict.MongoDb.Models;
 using Xunit;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.MongoDb.Tests
 {
@@ -43,12 +43,7 @@ namespace OpenIddict.MongoDb.Tests
             // Act and assert
             var exception = Assert.Throws<InvalidOperationException>(() => resolver.Get<CustomAuthorization>());
 
-            Assert.Equal(new StringBuilder()
-                .AppendLine("The specified authorization type is not compatible with the MongoDB stores.")
-                .Append("When enabling the MongoDB stores, make sure you use the built-in ")
-                .Append("'OpenIddictMongoDbAuthorization' entity or a custom entity that inherits ")
-                .Append("from the 'OpenIddictMongoDbAuthorization' entity.")
-                .ToString(), exception.Message);
+            Assert.Equal(SR.GetResourceString(SR.ID1257), exception.Message);
         }
 
         [Fact]

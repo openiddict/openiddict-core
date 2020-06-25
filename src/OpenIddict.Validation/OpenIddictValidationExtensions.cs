@@ -8,13 +8,17 @@ using System;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
+using OpenIddict.Abstractions.Resources;
 using OpenIddict.Validation;
 using static OpenIddict.Validation.OpenIddictValidationHandlerFilters;
 using static OpenIddict.Validation.OpenIddictValidationHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    using Microsoft.Extensions.Options;
+
     /// <summary>
     /// Exposes extensions allowing to register the OpenIddict validation services.
     /// </summary>
@@ -49,6 +53,18 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddSingleton<RequireLocalValidation>();
             builder.Services.TryAddSingleton<RequireTokenEntryValidationEnabled>();
             builder.Services.TryAddSingleton<RequireIntrospectionValidation>();
+
+            builder.Services.TryAddSingleton<IStringLocalizer<OpenIddictResources>>(provider =>
+            {
+                // Note: the string localizer factory is deliberately not resolved from
+                // the DI container to ensure the built-in .resx files are always used
+                // even if the factory was replaced by a different implementation in DI.
+                var factory = new ResourceManagerStringLocalizerFactory(
+                    localizationOptions: Options.Create(new LocalizationOptions()),
+                    loggerFactory: NullLoggerFactory.Instance);
+
+                return new StringLocalizer<OpenIddictResources>(factory);
+            });
 
             // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

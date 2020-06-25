@@ -6,13 +6,13 @@
 
 using System;
 using System.Linq;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -41,59 +41,45 @@ namespace OpenIddict.Validation
 
             if (options.JsonWebTokenHandler == null)
             {
-                throw new InvalidOperationException("The security token handler cannot be null.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1074));
             }
 
             if (options.Configuration == null && options.ConfigurationManager == null &&
                 options.Issuer == null && options.MetadataAddress == null)
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("An OAuth 2.0/OpenID Connect server configuration or an issuer address must be registered.")
-                    .Append("To use a local OpenIddict server, reference the 'OpenIddict.Validation.ServerIntegration' package ")
-                    .AppendLine("and call 'services.AddOpenIddict().AddValidation().UseLocalServer()' to import the server settings.")
-                    .Append("To use a remote server, reference the 'OpenIddict.Validation.SystemNetHttp' package and call ")
-                    .Append("'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' ")
-                    .AppendLine("and 'services.AddOpenIddict().AddValidation().SetIssuer()' to use server discovery.")
-                    .Append("Alternatively, you can register a static server configuration by calling ")
-                    .Append("'services.AddOpenIddict().AddValidation().SetConfiguration()'.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1127));
             }
 
             if (options.ValidationType == OpenIddictValidationType.Introspection)
             {
                 if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("An introspection client must be registered when using introspection.")
-                        .Append("Reference the 'OpenIddict.Validation.SystemNetHttp' package and call ")
-                        .Append("'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' ")
-                        .Append("to register the default System.Net.Http-based integration.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1128));
                 }
 
                 if (options.Issuer == null && options.MetadataAddress == null)
                 {
-                    throw new InvalidOperationException("The issuer or the metadata address must be set when using introspection.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1129));
                 }
 
                 if (string.IsNullOrEmpty(options.ClientId))
                 {
-                    throw new InvalidOperationException("The client identifier cannot be null or empty when using introspection.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1130));
                 }
 
                 if (string.IsNullOrEmpty(options.ClientSecret))
                 {
-                    throw new InvalidOperationException("The client secret cannot be null or empty when using introspection.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1131));
                 }
 
                 if (options.EnableAuthorizationEntryValidation)
                 {
-                    throw new InvalidOperationException("Authorization validation cannot be enabled when using introspection.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1132));
                 }
 
                 if (options.EnableTokenEntryValidation)
                 {
-                    throw new InvalidOperationException("Token validation cannot be enabled when using introspection.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1133));
                 }
             }
 
@@ -102,10 +88,7 @@ namespace OpenIddict.Validation
                 options.EncryptionCredentials.All(credentials => credentials.Key is X509SecurityKey x509SecurityKey &&
                     (x509SecurityKey.Certificate.NotBefore > DateTime.Now || x509SecurityKey.Certificate.NotAfter < DateTime.Now)))
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("When using X.509 encryption credentials, at least one of the registered certificates must be valid.")
-                    .Append("To use key rollover, register both the new certificate and the old one in the credentials collection.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1086));
             }
 
             if (options.Configuration == null && options.ConfigurationManager == null)
@@ -113,12 +96,7 @@ namespace OpenIddict.Validation
                 if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
                     !options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("A discovery client must be registered when using server discovery.")
-                        .Append("Reference the 'OpenIddict.Validation.SystemNetHttp' package and call ")
-                        .Append("'services.AddOpenIddict().AddValidation().UseSystemNetHttp()' ")
-                        .Append("to register the default System.Net.Http-based integration.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1134));
                 }
 
                 if (options.MetadataAddress == null)
@@ -130,12 +108,12 @@ namespace OpenIddict.Validation
                 {
                     if (options.Issuer == null || !options.Issuer.IsAbsoluteUri)
                     {
-                        throw new InvalidOperationException("The authority must be provided and must be an absolute URL.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1135));
                     }
 
                     if (!string.IsNullOrEmpty(options.Issuer.Fragment) || !string.IsNullOrEmpty(options.Issuer.Query))
                     {
-                        throw new InvalidOperationException("The authority cannot contain a fragment or a query string.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1136));
                     }
 
                     if (!options.Issuer.OriginalString.EndsWith("/"))

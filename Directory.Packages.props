@@ -42,6 +42,7 @@
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="2.1.2" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="2.1.2" />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="2.1.1" />
+    <PackageVersion Include="Microsoft.Extensions.Localization" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="2.1.1" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="2.1.6" />
@@ -63,6 +64,7 @@
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.6" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="3.1.6" />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="3.1.6" />
+    <PackageVersion Include="Microsoft.Extensions.Localization" Version="3.1.6" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="3.1.6" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="3.1.6" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="3.1.6" />

@@ -26,6 +26,7 @@ using Xunit.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreHandlers;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.AspNetCore.FunctionalTests
 {
@@ -287,7 +288,7 @@ namespace OpenIddict.Server.AspNetCore.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("This server only accepts HTTPS requests.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3083), response.ErrorDescription);
         }
 
         [Theory]

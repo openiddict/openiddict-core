@@ -11,6 +11,7 @@ using MongoDB.Driver;
 using OpenIddict.Core;
 using OpenIddict.MongoDb;
 using OpenIddict.MongoDb.Models;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -107,7 +108,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The collection name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1260), nameof(name));
             }
 
             return Configure(options => options.ApplicationsCollectionName = name);
@@ -122,7 +123,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The collection name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1260), nameof(name));
             }
 
             return Configure(options => options.AuthorizationsCollectionName = name);
@@ -137,7 +138,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The collection name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1260), nameof(name));
             }
 
             return Configure(options => options.ScopesCollectionName = name);
@@ -152,7 +153,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The collection name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1260), nameof(name));
             }
 
             return Configure(options => options.TokensCollectionName = name);

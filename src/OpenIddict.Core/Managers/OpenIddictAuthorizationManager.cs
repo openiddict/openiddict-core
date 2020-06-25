@@ -15,11 +15,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
+using OpenIddict.Abstractions.Resources;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Core
 {
@@ -36,20 +39,27 @@ namespace OpenIddict.Core
     {
         public OpenIddictAuthorizationManager(
             [NotNull] IOpenIddictAuthorizationCache<TAuthorization> cache,
-            [NotNull] IOpenIddictAuthorizationStoreResolver resolver,
+            [NotNull] IStringLocalizer<OpenIddictResources> localizer,
             [NotNull] ILogger<OpenIddictAuthorizationManager<TAuthorization>> logger,
-            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options)
+            [NotNull] IOptionsMonitor<OpenIddictCoreOptions> options,
+            [NotNull] IOpenIddictAuthorizationStoreResolver resolver)
         {
             Cache = cache;
-            Store = resolver.Get<TAuthorization>();
+            Localizer = localizer;
             Logger = logger;
             Options = options;
+            Store = resolver.Get<TAuthorization>();
         }
 
         /// <summary>
         /// Gets the cache associated with the current manager.
         /// </summary>
         protected IOpenIddictAuthorizationCache<TAuthorization> Cache { get; }
+
+        /// <summary>
+        /// Gets the string localizer associated with the current manager.
+        /// </summary>
+        protected IStringLocalizer Localizer { get; }
 
         /// <summary>
         /// Gets the logger associated with the current manager.
@@ -123,7 +133,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine("One or more validation error(s) occurred while trying to create a new authorization:");
+                builder.AppendLine(SR.GetResourceString(SR.ID1218));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -174,7 +184,7 @@ namespace OpenIddict.Core
             var authorization = await Store.InstantiateAsync(cancellationToken);
             if (authorization == null)
             {
-                throw new InvalidOperationException("An error occurred while trying to create a new authorization.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1219));
             }
 
             await PopulateAsync(authorization, descriptor, cancellationToken);
@@ -206,17 +216,17 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             var descriptor = new OpenIddictAuthorizationDescriptor
@@ -269,12 +279,12 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -322,17 +332,17 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -377,22 +387,22 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -439,22 +449,22 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             if (string.IsNullOrEmpty(client))
             {
-                throw new ArgumentException("The client identifier cannot be null or empty.", nameof(client));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1123), nameof(client));
             }
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -502,7 +512,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -545,7 +555,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var authorization = Options.CurrentValue.DisableEntityCaching ?
@@ -580,7 +590,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("The subject cannot be null or empty.", nameof(subject));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1197), nameof(subject));
             }
 
             var authorizations = Options.CurrentValue.DisableEntityCaching ?
@@ -810,7 +820,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(status))
             {
-                throw new ArgumentException("The status cannot be null or empty.", nameof(status));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1198), nameof(status));
             }
 
             return string.Equals(await Store.GetStatusAsync(authorization, cancellationToken), status, StringComparison.OrdinalIgnoreCase);
@@ -833,7 +843,7 @@ namespace OpenIddict.Core
 
             if (string.IsNullOrEmpty(type))
             {
-                throw new ArgumentException("The type cannot be null or empty.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1199), nameof(type));
             }
 
             return string.Equals(await Store.GetTypeAsync(authorization, cancellationToken), type, StringComparison.OrdinalIgnoreCase);
@@ -1047,7 +1057,7 @@ namespace OpenIddict.Core
             if (results.Any(result => result != ValidationResult.Success))
             {
                 var builder = new StringBuilder();
-                builder.AppendLine("One or more validation error(s) occurred while trying to update an existing authorization:");
+                builder.AppendLine(SR.GetResourceString(SR.ID1220));
                 builder.AppendLine();
 
                 foreach (var result in results)
@@ -1123,18 +1133,18 @@ namespace OpenIddict.Core
             var type = await Store.GetTypeAsync(authorization, cancellationToken);
             if (string.IsNullOrEmpty(type))
             {
-                yield return new ValidationResult("The authorization type cannot be null or empty.");
+                yield return new ValidationResult(Localizer[SR.ID3116]);
             }
 
             else if (!string.Equals(type, AuthorizationTypes.AdHoc, StringComparison.OrdinalIgnoreCase) &&
                      !string.Equals(type, AuthorizationTypes.Permanent, StringComparison.OrdinalIgnoreCase))
             {
-                yield return new ValidationResult("The specified authorization type is not supported by the default token manager.");
+                yield return new ValidationResult(Localizer[SR.ID3117]);
             }
 
             if (string.IsNullOrEmpty(await Store.GetStatusAsync(authorization, cancellationToken)))
             {
-                yield return new ValidationResult("The status cannot be null or empty.");
+                yield return new ValidationResult(Localizer[SR.ID3038]);
             }
 
             // Ensure that the scopes are not null or empty and do not contain spaces.
@@ -1142,14 +1152,14 @@ namespace OpenIddict.Core
             {
                 if (string.IsNullOrEmpty(scope))
                 {
-                    yield return new ValidationResult("Scopes cannot be null or empty.");
+                    yield return new ValidationResult(Localizer[SR.ID3039]);
 
                     break;
                 }
 
                 if (scope.Contains(Separators.Space[0]))
                 {
-                    yield return new ValidationResult("Scopes cannot contain spaces.");
+                    yield return new ValidationResult(Localizer[SR.ID3042]);
 
                     break;
                 }

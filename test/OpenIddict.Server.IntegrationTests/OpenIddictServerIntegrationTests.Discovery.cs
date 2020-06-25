@@ -16,6 +16,7 @@ using OpenIddict.Abstractions;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.FunctionalTests
 {
@@ -39,7 +40,7 @@ namespace OpenIddict.Server.FunctionalTests
 
             // Assert
             Assert.Equal(Errors.InvalidRequest, response.Error);
-            Assert.Equal("The specified HTTP method is not valid.", response.ErrorDescription);
+            Assert.Equal(SR.GetResourceString(SR.ID3084), response.ErrorDescription);
         }
 
         [Theory]

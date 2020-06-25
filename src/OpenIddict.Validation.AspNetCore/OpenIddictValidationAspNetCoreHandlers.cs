@@ -25,6 +25,7 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreHandlerFilters;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
 using Properties = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreConstants.Properties;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation.AspNetCore
 {
@@ -100,7 +101,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var request = context.Transaction.GetHttpRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 // Only use the current host as the issuer if the
@@ -114,7 +115,7 @@ namespace OpenIddict.Validation.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The mandatory 'Host' header is missing.");
+                        description: context.Localizer[SR.ID3081]);
 
                     return default;
                 }
@@ -124,7 +125,7 @@ namespace OpenIddict.Validation.AspNetCore
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
-                        description: "The specified 'Host' header is invalid.");
+                        description: context.Localizer[SR.ID3082]);
 
                     return default;
                 }
@@ -177,7 +178,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var request = context.Transaction.GetHttpRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 // Resolve the access token from the standard Authorization header.
@@ -237,7 +238,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var request = context.Transaction.GetHttpRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 if (string.IsNullOrEmpty(request.ContentType) ||
@@ -301,7 +302,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var request = context.Transaction.GetHttpRequest();
                 if (request == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 // Resolve the access token from the standard access_token query parameter.
@@ -398,7 +399,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 response.StatusCode = context.Response.Error switch
@@ -454,7 +455,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 // Prevent the response from being cached.
@@ -507,7 +508,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 var scheme = context.Response.Error switch
@@ -616,7 +617,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 // If the response doesn't contain a WWW-Authenticate header, don't return an empty response.
@@ -668,7 +669,7 @@ namespace OpenIddict.Validation.AspNetCore
                 var response = context.Transaction.GetHttpRequest()?.HttpContext.Response;
                 if (response == null)
                 {
-                    throw new InvalidOperationException("The ASP.NET Core HTTP request cannot be resolved.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1113));
                 }
 
                 context.Logger.LogInformation("The response was successfully returned as a JSON document: {Response}.", context.Response);

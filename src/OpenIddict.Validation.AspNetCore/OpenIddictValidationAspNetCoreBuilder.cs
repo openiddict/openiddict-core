@@ -8,6 +8,7 @@ using System;
 using System.ComponentModel;
 using JetBrains.Annotations;
 using OpenIddict.Validation.AspNetCore;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -57,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (string.IsNullOrEmpty(realm))
             {
-                throw new ArgumentException("The realm cannot be null or empty.", nameof(realm));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1106), nameof(realm));
             }
 
             return Configure(options => options.Realm = realm);

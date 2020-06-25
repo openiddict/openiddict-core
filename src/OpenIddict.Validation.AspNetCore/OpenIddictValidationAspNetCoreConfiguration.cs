@@ -5,10 +5,10 @@
  */
 
 using System;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation.AspNetCore
 {
@@ -34,10 +34,7 @@ namespace OpenIddict.Validation.AspNetCore
             if (options.SchemeMap.TryGetValue(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, out var builder) &&
                 builder.HandlerType != typeof(OpenIddictValidationAspNetCoreHandler))
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The OpenIddict ASP.NET Core validation handler cannot be registered as an authentication scheme.")
-                    .Append("This may indicate that an instance of another handler was registered with the same scheme.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1163));
             }
 
             options.AddScheme<OpenIddictValidationAspNetCoreHandler>(
@@ -80,11 +77,7 @@ namespace OpenIddict.Validation.AspNetCore
 
             if (!TryValidate(options.DefaultSignInScheme) || !TryValidate(options.DefaultSignOutScheme))
             {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("The OpenIddict ASP.NET Core validation cannot be used as the default sign-in/sign-out handler.")
-                    .Append("Make sure that neither DefaultSignInScheme nor DefaultSignOutScheme ")
-                    .Append("point to an instance of the OpenIddict ASP.NET Core validation handler.")
-                    .ToString());
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1164));
             }
         }
     }

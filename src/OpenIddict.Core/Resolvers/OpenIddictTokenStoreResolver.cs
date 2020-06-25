@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Core
 {
@@ -23,20 +23,7 @@ namespace OpenIddict.Core
         /// <typeparam name="TToken">The type of the Token entity.</typeparam>
         /// <returns>An <see cref="IOpenIddictTokenStore{TToken}"/>.</returns>
         public IOpenIddictTokenStore<TToken> Get<TToken>() where TToken : class
-        {
-            var store = _provider.GetService<IOpenIddictTokenStore<TToken>>();
-            if (store == null)
-            {
-                throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("No token store has been registered in the dependency injection container.")
-                    .Append("To register the Entity Framework Core stores, reference the 'OpenIddict.EntityFrameworkCore' ")
-                    .AppendLine("package and call 'services.AddOpenIddict().AddCore().UseEntityFrameworkCore()'.")
-                    .Append("To register a custom store, create an implementation of 'IOpenIddictTokenStore' and ")
-                    .Append("use 'services.AddOpenIddict().AddCore().AddTokenStore()' to add it to the DI container.")
-                    .ToString());
-            }
-
-            return store;
-        }
+            => _provider.GetService<IOpenIddictTokenStore<TToken>>() ??
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1230));
     }
 }

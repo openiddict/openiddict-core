@@ -17,6 +17,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using OpenIddict.Abstractions;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Core
 {
@@ -116,7 +117,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new ArgumentException("The identifier cannot be null or empty.", nameof(identifier));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1194), nameof(identifier));
             }
 
             var parameters = new
@@ -158,7 +159,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The scope name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1201), nameof(name));
             }
 
             var parameters = new
@@ -197,7 +198,7 @@ namespace OpenIddict.Core
         {
             if (names.Any(name => string.IsNullOrEmpty(name)))
             {
-                throw new ArgumentException("Scope names cannot be null or empty.", nameof(names));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1202), nameof(names));
             }
 
             // Note: this method is only partially cached.
@@ -225,7 +226,7 @@ namespace OpenIddict.Core
         {
             if (string.IsNullOrEmpty(resource))
             {
-                throw new ArgumentException("The resource cannot be null or empty.", nameof(resource));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1061), nameof(resource));
             }
 
             return ExecuteAsync(cancellationToken);
@@ -277,7 +278,7 @@ namespace OpenIddict.Core
             var identifier = await _store.GetIdAsync(scope, cancellationToken);
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new InvalidOperationException("The application identifier cannot be extracted.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1195));
             }
 
             if (_signals.TryRemove(identifier, out CancellationTokenSource signal))
@@ -309,7 +310,7 @@ namespace OpenIddict.Core
                 var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
                 if (signal == null)
                 {
-                    throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
 
                 entry.AddExpirationToken(signal);
@@ -341,7 +342,7 @@ namespace OpenIddict.Core
                 var signal = await CreateExpirationSignalAsync(scope, cancellationToken);
                 if (signal == null)
                 {
-                    throw new InvalidOperationException("An error occurred while creating an expiration signal.");
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1196));
                 }
 
                 entry.AddExpirationToken(signal);
@@ -371,7 +372,7 @@ namespace OpenIddict.Core
             var identifier = await _store.GetIdAsync(scope, cancellationToken);
             if (string.IsNullOrEmpty(identifier))
             {
-                throw new InvalidOperationException("The scope identifier cannot be extracted.");
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID1203));
             }
 
             var signal = _signals.GetOrAdd(identifier, _ => new CancellationTokenSource());

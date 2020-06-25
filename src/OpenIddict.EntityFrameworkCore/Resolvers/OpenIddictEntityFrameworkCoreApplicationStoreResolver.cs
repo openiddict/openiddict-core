@@ -6,13 +6,13 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore.Models;
 using OpenIddict.Extensions;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.EntityFrameworkCore
 {
@@ -54,22 +54,13 @@ namespace OpenIddict.EntityFrameworkCore
                 var root = OpenIddictHelpers.FindGenericBaseType(key, typeof(OpenIddictEntityFrameworkCoreApplication<,,>));
                 if (root == null)
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("The specified application type is not compatible with the Entity Framework Core stores.")
-                        .Append("When enabling the Entity Framework Core stores, make sure you use the built-in ")
-                        .Append("'OpenIddictEntityFrameworkCoreApplication' entity or a custom entity that inherits ")
-                        .Append("from the generic 'OpenIddictEntityFrameworkCoreApplication' entity.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1251));
                 }
 
                 var context = _options.CurrentValue.DbContextType;
                 if (context == null)
                 {
-                    throw new InvalidOperationException(new StringBuilder()
-                        .AppendLine("No Entity Framework Core context was specified in the OpenIddict options.")
-                        .Append("To configure the OpenIddict Entity Framework Core stores to use a specific 'DbContext', ")
-                        .Append("use 'options.UseEntityFrameworkCore().UseDbContext<TContext>()'.")
-                        .ToString());
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID1252));
                 }
 
                 return typeof(OpenIddictEntityFrameworkCoreApplicationStore<,,,,>).MakeGenericType(

@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Core;
 using OpenIddict.EntityFramework;
 using OpenIddict.EntityFramework.Models;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -111,7 +112,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (!typeof(DbContext).IsAssignableFrom(type))
             {
-                throw new ArgumentException("The specified type is invalid.", nameof(type));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1231), nameof(type));
             }
 
             Services.TryAddScoped(type);

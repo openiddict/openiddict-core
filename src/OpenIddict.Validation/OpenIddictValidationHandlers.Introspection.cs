@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -149,7 +150,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.ServerError,
-                            description: "The mandatory 'active' parameter couldn't be found in the introspection response.");
+                            description: context.Localizer[SR.ID3105, Parameters.Active]);
 
                         return default;
                     }
@@ -160,7 +161,7 @@ namespace OpenIddict.Validation
                     {
                         context.Reject(
                             error: Errors.InvalidToken,
-                            description: "The token was rejected by the remote authorization server.");
+                            description: context.Localizer[SR.ID3106]);
 
                         return default;
                     }
@@ -207,7 +208,7 @@ namespace OpenIddict.Validation
 
                         context.Reject(
                             error: Errors.ServerError,
-                            description: $"The {parameter.Key} claim is malformed or isn't of the expected type.");
+                            description: context.Localizer[SR.ID3107, parameter.Key]);
 
                         return default;
                     }
@@ -328,7 +329,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: "An introspection response containing an invalid issuer was returned.");
+                                description: context.Localizer[SR.ID3108]);
 
                             return default;
                         }
@@ -337,7 +338,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.ServerError,
-                                description: "The issuer returned in the introspection response is not valid.");
+                                description: context.Localizer[SR.ID3109]);
 
                             return default;
                         }
@@ -387,7 +388,7 @@ namespace OpenIddict.Validation
                         {
                             context.Reject(
                                 error: Errors.InvalidToken,
-                                description: "The type of the introspection token doesn't match the expected type.");
+                                description: context.Localizer[SR.ID3110]);
 
                             return default;
                         }

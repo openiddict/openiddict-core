@@ -6,6 +6,7 @@
 
 using System;
 using JetBrains.Annotations;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Validation
 {
@@ -31,7 +32,7 @@ namespace OpenIddict.Validation
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The property name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1105), nameof(name));
             }
 
             if (transaction.Properties.TryGetValue(name, out var property) && property is TProperty result)
@@ -61,7 +62,7 @@ namespace OpenIddict.Validation
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("The property name cannot be null or empty.", nameof(name));
+                throw new ArgumentException(SR.GetResourceString(SR.ID1105), nameof(name));
             }
 
             if (value == null)

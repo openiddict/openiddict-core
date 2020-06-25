@@ -28,6 +28,7 @@ using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinConstants;
 using static OpenIddict.Server.Owin.OpenIddictServerOwinHandlerFilters;
 using JsonWebTokenTypes = OpenIddict.Server.Owin.OpenIddictServerOwinConstants.JsonWebTokenTypes;
+using SR = OpenIddict.Abstractions.Resources.OpenIddictResources;
 
 namespace OpenIddict.Server.Owin
 {
@@ -68,12 +69,7 @@ namespace OpenIddict.Server.Owin
             {
                 private readonly IDistributedCache _cache;
 
-                public RestoreCachedRequestParameters() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("A distributed cache instance must be registered when enabling request caching.")
-                    .Append("To register the default in-memory distributed cache implementation, reference the ")
-                    .Append("'Microsoft.Extensions.Caching.Memory' package and call ")
-                    .Append("'services.AddDistributedMemoryCache()' from 'ConfigureServices'.")
-                    .ToString());
+                public RestoreCachedRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
 
                 public RestoreCachedRequestParameters([NotNull] IDistributedCache cache)
                     => _cache = cache;
@@ -122,7 +118,7 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'request_id' parameter is invalid.");
+                            description: context.Localizer[SR.ID3052, Parameters.RequestId]);
 
                         return;
                     }
@@ -140,7 +136,7 @@ namespace OpenIddict.Server.Owin
 
                         context.Reject(
                             error: Errors.InvalidRequest,
-                            description: "The specified 'request_id' parameter is invalid.");
+                            description: context.Localizer[SR.ID3052, Parameters.RequestId]);
 
                         return;
                     }
@@ -149,7 +145,7 @@ namespace OpenIddict.Server.Owin
                         Base64UrlEncoder.Decode(((JsonWebToken) result.SecurityToken).InnerToken.EncodedPayload));
                     if (document.RootElement.ValueKind != JsonValueKind.Object)
                     {
-                        throw new InvalidOperationException("The authorization request payload is malformed.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1116));
                     }
 
                     // Restore the authorization request parameters from the serialized payload.
@@ -175,12 +171,7 @@ namespace OpenIddict.Server.Owin
                 private readonly IDistributedCache _cache;
                 private readonly IOptionsMonitor<OpenIddictServerOwinOptions> _options;
 
-                public CacheRequestParameters() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("A distributed cache instance must be registered when enabling request caching.")
-                    .Append("To register the default in-memory distributed cache implementation, reference the ")
-                    .Append("'Microsoft.Extensions.Caching.Memory' package and call ")
-                    .Append("'services.AddDistributedMemoryCache()' from 'ConfigureServices'.")
-                    .ToString());
+                public CacheRequestParameters() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
 
                 public CacheRequestParameters(
                     [NotNull] IDistributedCache cache,
@@ -221,7 +212,7 @@ namespace OpenIddict.Server.Owin
                     var request = context.Transaction.GetOwinRequest();
                     if (request == null)
                     {
-                        throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                     }
 
                     // Don't cache the request if the request doesn't include any parameter.
@@ -288,12 +279,7 @@ namespace OpenIddict.Server.Owin
             {
                 private readonly IDistributedCache _cache;
 
-                public RemoveCachedRequest() => throw new InvalidOperationException(new StringBuilder()
-                    .AppendLine("A distributed cache instance must be registered when enabling request caching.")
-                    .Append("To register the default in-memory distributed cache implementation, reference the ")
-                    .Append("'Microsoft.Extensions.Caching.Memory' package and call ")
-                    .Append("'services.AddDistributedMemoryCache()' from 'ConfigureServices'.")
-                    .ToString());
+                public RemoveCachedRequest() => throw new InvalidOperationException(SR.GetResourceString(SR.ID1115));
 
                 public RemoveCachedRequest([NotNull] IDistributedCache cache)
                     => _cache = cache;
@@ -380,7 +366,7 @@ namespace OpenIddict.Server.Owin
                     var response = context.Transaction.GetOwinRequest()?.Context.Response;
                     if (response == null)
                     {
-                        throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                     }
 
                     if (string.IsNullOrEmpty(context.RedirectUri) ||
@@ -478,7 +464,7 @@ namespace OpenIddict.Server.Owin
                     var response = context.Transaction.GetOwinRequest()?.Context.Response;
                     if (response == null)
                     {
-                        throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                     }
 
                     if (string.IsNullOrEmpty(context.RedirectUri) ||
@@ -549,7 +535,7 @@ namespace OpenIddict.Server.Owin
                     var response = context.Transaction.GetOwinRequest()?.Context.Response;
                     if (response == null)
                     {
-                        throw new InvalidOperationException("The OWIN request cannot be resolved.");
+                        throw new InvalidOperationException(SR.GetResourceString(SR.ID1119));
                     }
 
                     if (string.IsNullOrEmpty(context.RedirectUri) ||
