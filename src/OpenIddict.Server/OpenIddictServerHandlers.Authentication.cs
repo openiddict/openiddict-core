@@ -69,10 +69,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractAuthorizationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractAuthorizationRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -103,7 +103,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ExtractAuthorizationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -144,10 +144,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateAuthorizationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateAuthorizationRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -178,7 +178,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ValidateAuthorizationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the redirect_uri without triggering a new validation process.
@@ -219,10 +219,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleAuthorizationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleAuthorizationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleAuthorizationRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -253,7 +253,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new HandleAuthorizationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -284,7 +284,7 @@ namespace OpenIddict.Server
                             Response = new OpenIddictResponse()
                         };
 
-                        await _provider.DispatchAsync(@event);
+                        await _dispatcher.DispatchAsync(@event);
 
                         if (@event.IsRequestHandled)
                         {
@@ -322,10 +322,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyAuthorizationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyAuthorizationResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyAuthorizationResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -356,7 +356,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ApplyAuthorizationResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {

@@ -183,38 +183,37 @@ namespace OpenIddict.EntityFramework
             // To prevent an SQL exception from being thrown if a new associated entity is
             // created after the existing entries have been listed, the following logic is
             // executed in a serializable transaction, that will lock the affected tables.
-            using (var transaction = CreateTransaction())
+            using var transaction = CreateTransaction();
+
+            // Remove all the tokens associated with the authorization.
+            var tokens = await ListTokensAsync();
+            foreach (var token in tokens)
             {
-                // Remove all the tokens associated with the authorization.
-                var tokens = await ListTokensAsync();
+                Tokens.Remove(token);
+            }
+
+            Authorizations.Remove(authorization);
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+                transaction?.Commit();
+            }
+
+            catch (DbUpdateConcurrencyException exception)
+            {
+                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                Context.Entry(authorization).State = EntityState.Unchanged;
+
                 foreach (var token in tokens)
                 {
-                    Tokens.Remove(token);
+                    Context.Entry(token).State = EntityState.Unchanged;
                 }
 
-                Authorizations.Remove(authorization);
-
-                try
-                {
-                    await Context.SaveChangesAsync(cancellationToken);
-                    transaction?.Commit();
-                }
-
-                catch (DbUpdateConcurrencyException exception)
-                {
-                    // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
-                    Context.Entry(authorization).State = EntityState.Unchanged;
-
-                    foreach (var token in tokens)
-                    {
-                        Context.Entry(token).State = EntityState.Unchanged;
-                    }
-
-                    throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
-                        .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
-                        .Append("Reload the authorization from the database and retry the operation.")
-                        .ToString(), exception);
-                }
+                throw new OpenIddictExceptions.ConcurrencyException(new StringBuilder()
+                    .AppendLine("The authorization was concurrently updated and cannot be persisted in its current state.")
+                    .Append("Reload the authorization from the database and retry the operation.")
+                    .ToString(), exception);
             }
         }
 
@@ -743,7 +742,7 @@ namespace OpenIddict.EntityFramework
             // entities in a single command without having to retrieve and materialize them first.
             // To work around this limitation, entities are manually listed and deleted using a batch logic.
 
-            IList<Exception> exceptions = null;
+            List<Exception> exceptions = null;
 
             DbContextTransaction CreateTransaction()
             {

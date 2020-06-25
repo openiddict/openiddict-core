@@ -197,8 +197,7 @@ namespace OpenIddict.Server.Tests
 
             // Assert
             Assert.DoesNotContain(services, x => x.ServiceType == descriptor.ServiceDescriptor.ServiceType);
-            Assert.DoesNotContain(options.CustomHandlers, x => x.ServiceDescriptor.ServiceType == descriptor.ServiceDescriptor.ServiceType);
-            Assert.DoesNotContain(options.DefaultHandlers, x => x.ServiceDescriptor.ServiceType == descriptor.ServiceDescriptor.ServiceType);
+            Assert.DoesNotContain(options.Handlers, x => x.ServiceDescriptor.ServiceType == descriptor.ServiceDescriptor.ServiceType);
         }
 
         [Fact]

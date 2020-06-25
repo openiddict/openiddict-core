@@ -704,7 +704,7 @@ namespace OpenIddict.MongoDb
                     .DeleteManyAsync(token => buffer.Contains(token.AuthorizationId), cancellationToken);
             }
 
-            IEnumerable<IList<TSource>> Buffer<TSource>(IEnumerable<TSource> source, int count)
+            static IEnumerable<List<TSource>> Buffer<TSource>(IEnumerable<TSource> source, int count)
             {
                 List<TSource> buffer = null;
 

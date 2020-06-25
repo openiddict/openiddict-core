@@ -52,10 +52,7 @@ namespace OpenIddict.Validation.AspNetCore
             }
 
             // Register the built-in event handlers used by the OpenIddict ASP.NET Core validation components.
-            foreach (var handler in OpenIddictValidationAspNetCoreHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictValidationAspNetCoreHandlers.DefaultHandlers);
         }
 
         /// <summary>

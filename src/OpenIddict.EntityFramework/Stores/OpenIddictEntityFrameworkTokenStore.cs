@@ -771,7 +771,7 @@ namespace OpenIddict.EntityFramework
             // entities in a single command without having to retrieve and materialize them first.
             // To work around this limitation, entities are manually listed and deleted using a batch logic.
 
-            IList<Exception> exceptions = null;
+            List<Exception> exceptions = null;
 
             DbContextTransaction CreateTransaction()
             {

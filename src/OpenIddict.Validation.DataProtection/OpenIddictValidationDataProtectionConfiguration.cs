@@ -35,10 +35,7 @@ namespace OpenIddict.Validation.DataProtection
             }
 
             // Register the built-in event handlers used by the OpenIddict Data Protection validation components.
-            foreach (var handler in OpenIddictValidationDataProtectionHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictValidationDataProtectionHandlers.DefaultHandlers);
         }
 
         /// <summary>

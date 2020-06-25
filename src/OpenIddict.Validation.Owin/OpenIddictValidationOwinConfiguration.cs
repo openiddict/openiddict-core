@@ -23,10 +23,7 @@ namespace OpenIddict.Validation.Owin
             }
 
             // Register the built-in event handlers used by the OpenIddict OWIN validation components.
-            foreach (var handler in OpenIddictValidationOwinHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictValidationOwinHandlers.DefaultHandlers);
         }
     }
 }

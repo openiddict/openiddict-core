@@ -62,6 +62,7 @@ namespace OpenIddict.Server.DataProtection
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateDataProtectionToken>()
                     .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -180,6 +181,7 @@ namespace OpenIddict.Server.DataProtection
                     .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAccessToken>()
                     .SetOrder(GenerateIdentityModelAccessToken.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -244,6 +246,7 @@ namespace OpenIddict.Server.DataProtection
                     .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionAuthorizationCode>()
                     .SetOrder(GenerateIdentityModelAuthorizationCode.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -308,6 +311,7 @@ namespace OpenIddict.Server.DataProtection
                     .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionDeviceCode>()
                     .SetOrder(GenerateIdentityModelDeviceCode.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -372,6 +376,7 @@ namespace OpenIddict.Server.DataProtection
                     .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionRefreshToken>()
                     .SetOrder(GenerateIdentityModelRefreshToken.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -436,6 +441,7 @@ namespace OpenIddict.Server.DataProtection
                     .AddFilter<RequireDataProtectionFormatEnabled>()
                     .UseSingletonHandler<GenerateDataProtectionUserCode>()
                     .SetOrder(GenerateIdentityModelUserCode.Descriptor.Order - 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>

@@ -37,7 +37,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddOptions();
 
             builder.Services.TryAddSingleton<OpenIddictValidationService>();
-            builder.Services.TryAddScoped<IOpenIddictValidationProvider, OpenIddictValidationProvider>();
+            builder.Services.TryAddScoped<IOpenIddictValidationDispatcher, OpenIddictValidationDispatcher>();
+            builder.Services.TryAddScoped<IOpenIddictValidationFactory, OpenIddictValidationFactory>();
 
             // Register the built-in validation event handlers used by the OpenIddict validation components.
             // Note: the order used here is not important, as the actual order is set in the options.

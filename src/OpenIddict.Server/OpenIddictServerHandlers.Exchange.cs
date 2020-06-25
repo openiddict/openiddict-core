@@ -74,10 +74,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractTokenRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractTokenRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractTokenRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -108,7 +108,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ExtractTokenRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -149,10 +149,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateTokenRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateTokenRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateTokenRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -183,7 +183,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ValidateTokenRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the principal without triggering a new validation process.
@@ -219,10 +219,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleTokenRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleTokenRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleTokenRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -253,7 +253,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new HandleTokenRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -284,7 +284,7 @@ namespace OpenIddict.Server
                             Response = new OpenIddictResponse()
                         };
 
-                        await _provider.DispatchAsync(@event);
+                        await _dispatcher.DispatchAsync(@event);
 
                         if (@event.IsRequestHandled)
                         {
@@ -322,10 +322,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyTokenResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyTokenResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyTokenResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -356,7 +356,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ApplyTokenResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -1332,10 +1332,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateToken : IOpenIddictServerHandler<ValidateTokenRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateToken([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateToken([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -1368,7 +1368,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ProcessAuthenticationContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the authentication result without triggering a new authentication flow.

@@ -68,6 +68,7 @@ namespace OpenIddict.Server.Owin
                     // Note: this handler must be invoked before any other handler,
                     // including the built-in handlers defined in OpenIddict.Server.
                     .SetOrder(int.MinValue + 50_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -107,7 +108,7 @@ namespace OpenIddict.Server.Owin
 
                 return default;
 
-                static bool Matches(IOwinRequest request, IList<Uri> addresses)
+                static bool Matches(IOwinRequest request, IReadOnlyList<Uri> addresses)
                 {
                     for (var index = 0; index < addresses.Count; index++)
                     {
@@ -170,6 +171,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<InferIssuerFromHost>()
                     .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -241,6 +243,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireTransportSecurityRequirementEnabled>()
                     .UseSingletonHandler<ValidateTransportSecurityRequirement>()
                     .SetOrder(InferEndpointType.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -299,6 +302,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachHostChallengeError>()
                     .SetOrder(AttachDefaultChallengeError.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -345,6 +349,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractGetRequest<TContext>>()
                     .SetOrder(ValidateTransportSecurityRequirement.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -404,6 +409,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractGetOrPostRequest<TContext>>()
                     .SetOrder(ExtractGetRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -491,6 +497,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractPostRequest<TContext>>()
                     .SetOrder(ExtractGetOrPostRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -574,6 +581,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractBasicAuthenticationCredentials<TContext>>()
                     .SetOrder(ExtractPostRequest<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -675,6 +683,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ExtractAccessToken<TContext>>()
                     .SetOrder(ExtractBasicAuthenticationCredentials<TContext>.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -729,6 +738,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<TFilter>()
                     .UseSingletonHandler<EnablePassthroughMode<TContext, TFilter>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -765,6 +775,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachHttpResponseCode<TContext>>()
                     .SetOrder(AttachCacheControlHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -828,6 +839,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachCacheControlHeader<TContext>>()
                     .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -880,6 +892,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<AttachWwwAuthenticateHeader<TContext>>()
                     .SetOrder(ProcessChallengeErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -997,6 +1010,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessChallengeErrorResponse<TContext>>()
                     .SetOrder(ProcessJsonResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1048,6 +1062,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessJsonResponse<TContext>>()
                     .SetOrder(ProcessPassthroughErrorResponse<TContext, IOpenIddictServerHandlerFilter<TContext>>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1110,6 +1125,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<TFilter>()
                     .UseSingletonHandler<ProcessPassthroughErrorResponse<TContext, TFilter>>()
                     .SetOrder(ProcessLocalErrorResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1163,6 +1179,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessLocalErrorResponse<TContext>>()
                     .SetOrder(ProcessEmptyResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1244,6 +1261,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessHostRedirectionResponse<TContext>>()
                     .SetOrder(ProcessEmptyResponse<TContext>.Descriptor.Order - 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -1296,6 +1314,7 @@ namespace OpenIddict.Server.Owin
                     .AddFilter<RequireOwinRequest>()
                     .UseSingletonHandler<ProcessEmptyResponse<TContext>>()
                     .SetOrder(int.MaxValue - 100_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>

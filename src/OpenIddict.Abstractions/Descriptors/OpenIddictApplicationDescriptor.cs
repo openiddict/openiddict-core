@@ -36,24 +36,24 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets the permissions associated with the application.
         /// </summary>
-        public ISet<string> Permissions { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Permissions { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the logout callback URLs
         /// associated with the application.
         /// </summary>
-        public ISet<Uri> PostLogoutRedirectUris { get; } = new HashSet<Uri>();
+        public HashSet<Uri> PostLogoutRedirectUris { get; } = new HashSet<Uri>();
 
         /// <summary>
         /// Gets the callback URLs
         /// associated with the application.
         /// </summary>
-        public ISet<Uri> RedirectUris { get; } = new HashSet<Uri>();
+        public HashSet<Uri> RedirectUris { get; } = new HashSet<Uri>();
 
         /// <summary>
         /// Gets the requirements associated with the application.
         /// </summary>
-        public ISet<string> Requirements { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Requirements { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the application type

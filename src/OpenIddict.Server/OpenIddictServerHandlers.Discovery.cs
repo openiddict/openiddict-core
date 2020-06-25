@@ -71,10 +71,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractConfigurationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractConfigurationRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -105,7 +105,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ExtractConfigurationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -146,10 +146,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateConfigurationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateConfigurationRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -180,7 +180,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ValidateConfigurationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -212,10 +212,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleConfigurationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleConfigurationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleConfigurationRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -246,7 +246,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new HandleConfigurationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -307,10 +307,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyConfigurationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyConfigurationResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyConfigurationResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -341,7 +341,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ApplyConfigurationResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -394,33 +394,33 @@ namespace OpenIddict.Server
                     // Note: while OpenIddict allows specifying multiple endpoint addresses, the OAuth 2.0
                     // and OpenID Connect discovery specifications only allow a single address per endpoint.
 
-                    context.AuthorizationEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.AuthorizationEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.AuthorizationEndpointUris.FirstOrDefault());
 
-                    context.CryptographyEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.CryptographyEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.CryptographyEndpointUris.FirstOrDefault());
 
-                    context.DeviceEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.DeviceEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.DeviceEndpointUris.FirstOrDefault());
 
-                    context.IntrospectionEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.IntrospectionEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.IntrospectionEndpointUris.FirstOrDefault());
 
-                    context.LogoutEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.LogoutEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.LogoutEndpointUris.FirstOrDefault());
 
-                    context.RevocationEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.RevocationEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.RevocationEndpointUris.FirstOrDefault());
 
-                    context.TokenEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.TokenEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.TokenEndpointUris.FirstOrDefault());
 
-                    context.UserinfoEndpoint ??= GetEndpointAbsoluteUrl(context.Issuer,
+                    context.UserinfoEndpoint ??= GetEndpointAbsoluteUri(context.Issuer,
                         context.Options.UserinfoEndpointUris.FirstOrDefault());
 
                     return default;
 
-                    static Uri GetEndpointAbsoluteUrl(Uri issuer, Uri endpoint)
+                    static Uri GetEndpointAbsoluteUri(Uri issuer, Uri endpoint)
                     {
                         // If the endpoint is disabled (i.e a null address is specified), return null.
                         if (endpoint == null)
@@ -863,10 +863,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractCryptographyRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractCryptographyRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -897,7 +897,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ExtractCryptographyRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -938,10 +938,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateCryptographyRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateCryptographyRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -972,7 +972,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ValidateCryptographyRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -1004,10 +1004,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleCryptographyRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleCryptographyRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleCryptographyRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -1038,7 +1038,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new HandleCryptographyRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -1142,10 +1142,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyCryptographyResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyCryptographyResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyCryptographyResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -1176,7 +1176,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ApplyCryptographyResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {

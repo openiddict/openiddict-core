@@ -34,10 +34,7 @@ namespace OpenIddict.Server.DataProtection
             }
 
             // Register the built-in event handlers used by the OpenIddict Data Protection server components.
-            foreach (var handler in OpenIddictServerDataProtectionHandlers.DefaultHandlers)
-            {
-                options.DefaultHandlers.Add(handler);
-            }
+            options.Handlers.AddRange(OpenIddictServerDataProtectionHandlers.DefaultHandlers);
         }
 
         /// <summary>

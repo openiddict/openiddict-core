@@ -23,8 +23,7 @@ namespace OpenIddict.Abstractions
         /// <summary>
         /// Gets the scopes associated with the authorization.
         /// </summary>
-        public ISet<string> Scopes { get; } =
-            new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Scopes { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the status associated with the authorization.

@@ -63,6 +63,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateAccessTokenParameter>()
                     .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -121,6 +122,7 @@ namespace OpenIddict.Validation
                     .AddFilter<RequireTokenEntryValidationEnabled>()
                     .UseScopedHandler<ValidateReferenceTokenIdentifier>()
                     .SetOrder(ValidateAccessTokenParameter.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -185,6 +187,7 @@ namespace OpenIddict.Validation
                     .AddFilter<RequireLocalValidation>()
                     .UseSingletonHandler<ValidateIdentityModelToken>()
                     .SetOrder(ValidateReferenceTokenIdentifier.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -291,6 +294,7 @@ namespace OpenIddict.Validation
                     .AddFilter<RequireIntrospectionValidation>()
                     .UseSingletonHandler<IntrospectToken>()
                     .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -362,6 +366,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<NormalizeScopeClaims>()
                     .SetOrder(IntrospectToken.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -412,6 +417,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<MapInternalClaims>()
                     .SetOrder(NormalizeScopeClaims.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -534,6 +540,7 @@ namespace OpenIddict.Validation
                     .AddFilter<RequireTokenEntryValidationEnabled>()
                     .UseScopedHandler<RestoreReferenceTokenProperties>()
                     .SetOrder(MapInternalClaims.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -581,6 +588,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidatePrincipal>()
                     .SetOrder(RestoreReferenceTokenProperties.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -647,6 +655,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateExpirationDate>()
                     .SetOrder(ValidatePrincipal.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -692,6 +701,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateAudience>()
                     .SetOrder(ValidateExpirationDate.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -771,6 +781,7 @@ namespace OpenIddict.Validation
                     .AddFilter<RequireTokenEntryValidationEnabled>()
                     .UseScopedHandler<ValidateTokenEntry>()
                     .SetOrder(ValidateAudience.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -834,6 +845,7 @@ namespace OpenIddict.Validation
                     .AddFilter<RequireAuthorizationEntryValidationEnabled>()
                     .UseScopedHandler<ValidateAuthorizationEntry>()
                     .SetOrder(ValidateTokenEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             public async ValueTask HandleAsync([NotNull] ProcessAuthenticationContext context)
@@ -875,6 +887,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                     .UseSingletonHandler<AttachDefaultChallengeError>()
                     .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>
@@ -938,6 +951,7 @@ namespace OpenIddict.Validation
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<TContext>()
                     .UseSingletonHandler<HandleErrorResponse<TContext>>()
                     .SetOrder(int.MinValue + 100_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>

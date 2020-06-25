@@ -59,8 +59,9 @@ namespace OpenIddict.Validation
             // can be disposed of asynchronously if it implements IAsyncDisposable.
             try
             {
-                var provider = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationProvider>();
-                var transaction = await provider.CreateTransactionAsync();
+                var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
+                var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
+                var transaction = await factory.CreateTransactionAsync();
 
                 var request = new OpenIddictRequest();
                 request = await PrepareConfigurationRequestAsync();
@@ -83,7 +84,7 @@ namespace OpenIddict.Validation
                         Request = request
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -110,7 +111,7 @@ namespace OpenIddict.Validation
                         Request = request
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -137,7 +138,7 @@ namespace OpenIddict.Validation
                         Request = request
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -165,7 +166,7 @@ namespace OpenIddict.Validation
                         Response = response
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -230,8 +231,9 @@ namespace OpenIddict.Validation
             // can be disposed of asynchronously if it implements IAsyncDisposable.
             try
             {
-                var provider = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationProvider>();
-                var transaction = await provider.CreateTransactionAsync();
+                var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
+                var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
+                var transaction = await factory.CreateTransactionAsync();
 
                 var request = new OpenIddictRequest();
                 request = await PrepareCryptographyRequestAsync();
@@ -255,7 +257,7 @@ namespace OpenIddict.Validation
                         Request = request
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -282,7 +284,7 @@ namespace OpenIddict.Validation
                         Request = request
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -309,7 +311,7 @@ namespace OpenIddict.Validation
                         Request = request
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -337,7 +339,7 @@ namespace OpenIddict.Validation
                         Response = response
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -421,8 +423,9 @@ namespace OpenIddict.Validation
             // can be disposed of asynchronously if it implements IAsyncDisposable.
             try
             {
-                var provider = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationProvider>();
-                var transaction = await provider.CreateTransactionAsync();
+                var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationDispatcher>();
+                var factory = scope.ServiceProvider.GetRequiredService<IOpenIddictValidationFactory>();
+                var transaction = await factory.CreateTransactionAsync();
 
                 var request = new OpenIddictRequest();
                 request = await PrepareIntrospectionRequestAsync();
@@ -447,7 +450,7 @@ namespace OpenIddict.Validation
                         TokenType = type
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -474,7 +477,7 @@ namespace OpenIddict.Validation
                         Request = request
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -501,7 +504,7 @@ namespace OpenIddict.Validation
                         Request = request
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {
@@ -531,7 +534,7 @@ namespace OpenIddict.Validation
                         TokenType = type
                     };
 
-                    await provider.DispatchAsync(context);
+                    await dispatcher.DispatchAsync(context);
 
                     if (context.IsRejected)
                     {

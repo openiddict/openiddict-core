@@ -24,7 +24,7 @@ namespace OpenIddict.Validation
         /// Gets the list of credentials used to encrypt the tokens issued by the
         /// OpenIddict validation services. Note: only symmetric credentials are supported.
         /// </summary>
-        public IList<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
+        public List<EncryptingCredentials> EncryptionCredentials { get; } = new List<EncryptingCredentials>();
 
         /// <summary>
         /// Gets or sets the JWT handler used to protect and unprotect tokens.
@@ -35,16 +35,11 @@ namespace OpenIddict.Validation
         };
 
         /// <summary>
-        /// Gets the list of the user-defined/custom handlers responsible of processing the OpenIddict validation requests.
-        /// Note: the handlers added to this list must be also registered in the DI container using an appropriate lifetime.
+        /// Gets the list of the handlers responsible of processing the OpenIddict validation operations.
+        /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
+        /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.
         /// </summary>
-        public IList<OpenIddictValidationHandlerDescriptor> CustomHandlers { get; } =
-            new List<OpenIddictValidationHandlerDescriptor>();
-
-        /// <summary>
-        /// Gets the list of the built-in handlers responsible of processing the OpenIddict validation requests
-        /// </summary>
-        public IList<OpenIddictValidationHandlerDescriptor> DefaultHandlers { get; } =
+        public List<OpenIddictValidationHandlerDescriptor> Handlers { get; } =
             new List<OpenIddictValidationHandlerDescriptor>(OpenIddictValidationHandlers.DefaultHandlers);
 
         /// <summary>
@@ -106,7 +101,7 @@ namespace OpenIddict.Validation
         /// Setting this property is recommended when the authorization
         /// server issues access tokens for multiple distinct resource servers.
         /// </summary>
-        public ISet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
+        public HashSet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets the token validation parameters used by the OpenIddict validation services.

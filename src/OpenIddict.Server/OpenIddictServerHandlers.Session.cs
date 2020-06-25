@@ -49,10 +49,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractLogoutRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractLogoutRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -83,7 +83,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ExtractLogoutRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -124,10 +124,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateLogoutRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateLogoutRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -158,7 +158,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ValidateLogoutRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the redirect_uri without triggering a new validation process.
@@ -194,10 +194,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleLogoutRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleLogoutRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleLogoutRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -228,7 +228,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new HandleLogoutRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -256,7 +256,7 @@ namespace OpenIddict.Server
                         Response = new OpenIddictResponse()
                     };
 
-                    await _provider.DispatchAsync(@event);
+                    await _dispatcher.DispatchAsync(@event);
 
                     if (@event.IsRequestHandled)
                     {
@@ -293,10 +293,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyLogoutResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyLogoutResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyLogoutResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -327,7 +327,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ApplyLogoutResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {

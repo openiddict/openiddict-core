@@ -50,6 +50,7 @@ namespace OpenIddict.Validation.DataProtection
                 = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                     .UseSingletonHandler<ValidateDataProtectionToken>()
                     .SetOrder(ValidateIdentityModelToken.Descriptor.Order + 500)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
                     .Build();
 
             /// <summary>

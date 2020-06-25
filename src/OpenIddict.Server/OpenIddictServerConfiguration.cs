@@ -134,8 +134,9 @@ namespace OpenIddict.Server
                 // If the degraded mode was enabled, ensure custom validation handlers
                 // have been registered for the endpoints that require manual validation.
 
-                if (options.AuthorizationEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.AuthorizationEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateAuthorizationRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -145,8 +146,9 @@ namespace OpenIddict.Server
                         .ToString());
                 }
 
-                if (options.DeviceEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.DeviceEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateDeviceRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -156,8 +158,9 @@ namespace OpenIddict.Server
                         .ToString());
                 }
 
-                if (options.IntrospectionEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.IntrospectionEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateIntrospectionRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -167,8 +170,9 @@ namespace OpenIddict.Server
                         .ToString());
                 }
 
-                if (options.LogoutEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.LogoutEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateLogoutRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -178,8 +182,9 @@ namespace OpenIddict.Server
                         .ToString());
                 }
 
-                if (options.RevocationEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.RevocationEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateRevocationRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -189,8 +194,9 @@ namespace OpenIddict.Server
                         .ToString());
                 }
 
-                if (options.TokenEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.TokenEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateTokenRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -200,8 +206,9 @@ namespace OpenIddict.Server
                         .ToString());
                 }
 
-                if (options.VerificationEndpointUris.Count != 0 && !options.CustomHandlers.Any(
+                if (options.VerificationEndpointUris.Count != 0 && !options.Handlers.Any(
                     descriptor => descriptor.ContextType == typeof(ValidateVerificationRequestContext) &&
+                                  descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                   descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                 {
                     throw new InvalidOperationException(new StringBuilder()
@@ -216,8 +223,9 @@ namespace OpenIddict.Server
 
                 if (options.GrantTypes.Contains(GrantTypes.DeviceCode))
                 {
-                    if (!options.CustomHandlers.Any(
+                    if (!options.Handlers.Any(
                         descriptor => descriptor.ContextType == typeof(ProcessAuthenticationContext) &&
+                                      descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                       descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                     {
                         throw new InvalidOperationException(new StringBuilder()
@@ -227,8 +235,9 @@ namespace OpenIddict.Server
                             .ToString());
                     }
 
-                    if (!options.CustomHandlers.Any(
+                    if (!options.Handlers.Any(
                         descriptor => descriptor.ContextType == typeof(ProcessSignInContext) &&
+                                      descriptor.Type == OpenIddictServerHandlerType.Custom &&
                                       descriptor.FilterTypes.All(type => !typeof(RequireDegradedModeDisabled).IsAssignableFrom(type))))
                     {
                         throw new InvalidOperationException(new StringBuilder()
@@ -239,6 +248,9 @@ namespace OpenIddict.Server
                     }
                 }
             }
+
+            // Sort the handlers collection using the order associated with each handler.
+            options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
             // Automatically add the offline_access scope if the refresh token grant has been enabled.
             if (options.GrantTypes.Contains(GrantTypes.RefreshToken))

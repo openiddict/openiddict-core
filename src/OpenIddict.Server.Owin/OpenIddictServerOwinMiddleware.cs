@@ -19,26 +19,32 @@ namespace OpenIddict.Server.Owin
     /// </summary>
     public class OpenIddictServerOwinMiddleware : AuthenticationMiddleware<OpenIddictServerOwinOptions>
     {
-        private readonly IOpenIddictServerProvider _provider;
+        private readonly IOpenIddictServerDispatcher _dispatcher;
+        private readonly IOpenIddictServerFactory _factory;
 
         /// <summary>
         /// Creates a new instance of the <see cref="OpenIddictServerOwinMiddleware"/> class.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline, if applicable.</param>
         /// <param name="options">The OpenIddict server OWIN options.</param>
-        /// <param name="provider">The OpenIddict server provider.</param>
+        /// <param name="dispatcher">The OpenIddict server dispatcher.</param>
+        /// <param name="factory">The OpenIddict server factory.</param>
         public OpenIddictServerOwinMiddleware(
             [CanBeNull] OwinMiddleware next,
             [NotNull] IOptionsMonitor<OpenIddictServerOwinOptions> options,
-            [NotNull] IOpenIddictServerProvider provider)
+            [NotNull] IOpenIddictServerDispatcher dispatcher,
+            [NotNull] IOpenIddictServerFactory factory)
             : base(next, options.CurrentValue)
-            => _provider = provider;
+        {
+            _dispatcher = dispatcher;
+            _factory = factory;
+        }
 
         /// <summary>
         /// Creates and returns a new <see cref="OpenIddictServerOwinHandler"/> instance.
         /// </summary>
         /// <returns>A new instance of the <see cref="OpenIddictServerOwinHandler"/> class.</returns>
         protected override AuthenticationHandler<OpenIddictServerOwinOptions> CreateHandler()
-            => new OpenIddictServerOwinHandler(_provider);
+            => new OpenIddictServerOwinHandler(_dispatcher, _factory);
     }
 }

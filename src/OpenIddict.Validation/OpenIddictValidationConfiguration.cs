@@ -60,7 +60,7 @@ namespace OpenIddict.Validation
 
             if (options.ValidationType == OpenIddictValidationType.Introspection)
             {
-                if (!options.DefaultHandlers.Any(descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
+                if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyIntrospectionRequestContext)))
                 {
                     throw new InvalidOperationException(new StringBuilder()
                         .AppendLine("An introspection client must be registered when using introspection.")
@@ -98,8 +98,8 @@ namespace OpenIddict.Validation
 
             if (options.Configuration == null && options.ConfigurationManager == null)
             {
-                if (!options.DefaultHandlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
-                    !options.DefaultHandlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
+                if (!options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
+                    !options.Handlers.Any(descriptor => descriptor.ContextType == typeof(ApplyCryptographyRequestContext)))
                 {
                     throw new InvalidOperationException(new StringBuilder()
                         .AppendLine("A discovery client must be registered when using server discovery.")
@@ -158,6 +158,9 @@ namespace OpenIddict.Validation
                     };
                 }
             }
+
+            // Sort the handlers collection using the order associated with each handler.
+            options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
             // Attach the encryption credentials to the token validation parameters.
             options.TokenValidationParameters.TokenDecryptionKeys =

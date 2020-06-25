@@ -67,10 +67,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractDeviceRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractDeviceRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractDeviceRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -101,7 +101,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ExtractDeviceRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -142,10 +142,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateDeviceRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateDeviceRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateDeviceRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -176,7 +176,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ValidateDeviceRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -208,10 +208,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleDeviceRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleDeviceRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleDeviceRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -242,7 +242,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new HandleDeviceRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -280,7 +280,7 @@ namespace OpenIddict.Server
                         @event.Principal = principal;
                     }
 
-                    await _provider.DispatchAsync(@event);
+                    await _dispatcher.DispatchAsync(@event);
 
                     if (@event.IsRequestHandled)
                     {
@@ -317,10 +317,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyDeviceResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyDeviceResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyDeviceResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -351,7 +351,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ApplyDeviceResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -849,10 +849,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ExtractVerificationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ExtractVerificationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ExtractVerificationRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -883,7 +883,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ExtractVerificationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -924,10 +924,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ValidateVerificationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ValidateVerificationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ValidateVerificationRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -958,7 +958,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ValidateVerificationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -990,10 +990,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class HandleVerificationRequest : IOpenIddictServerHandler<ProcessRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public HandleVerificationRequest([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public HandleVerificationRequest([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -1024,7 +1024,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new HandleVerificationRequestContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -1055,7 +1055,7 @@ namespace OpenIddict.Server
                             Response = new OpenIddictResponse()
                         };
 
-                        await _provider.DispatchAsync(@event);
+                        await _dispatcher.DispatchAsync(@event);
 
                         if (@event.IsRequestHandled)
                         {
@@ -1093,10 +1093,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class ApplyVerificationResponse<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public ApplyVerificationResponse([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public ApplyVerificationResponse([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -1127,7 +1127,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ApplyVerificationResponseContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     if (notification.IsRequestHandled)
                     {
@@ -1154,10 +1154,10 @@ namespace OpenIddict.Server
             /// </summary>
             public class AttachUserCodePrincipal : IOpenIddictServerHandler<HandleVerificationRequestContext>
             {
-                private readonly IOpenIddictServerProvider _provider;
+                private readonly IOpenIddictServerDispatcher _dispatcher;
 
-                public AttachUserCodePrincipal([NotNull] IOpenIddictServerProvider provider)
-                    => _provider = provider;
+                public AttachUserCodePrincipal([NotNull] IOpenIddictServerDispatcher dispatcher)
+                    => _dispatcher = dispatcher;
 
                 /// <summary>
                 /// Gets the default descriptor definition assigned to this handler.
@@ -1192,7 +1192,7 @@ namespace OpenIddict.Server
                     }
 
                     var notification = new ProcessAuthenticationContext(context.Transaction);
-                    await _provider.DispatchAsync(notification);
+                    await _dispatcher.DispatchAsync(notification);
 
                     // Store the context object in the transaction so it can be later retrieved by handlers
                     // that want to access the authentication result without triggering a new authentication flow.

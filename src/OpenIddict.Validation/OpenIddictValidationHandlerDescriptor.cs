@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -48,6 +49,11 @@ namespace OpenIddict.Validation
         public ServiceDescriptor ServiceDescriptor { get; private set; }
 
         /// <summary>
+        /// Gets the type associated with the handler.
+        /// </summary>
+        public OpenIddictValidationHandlerType Type { get; private set; }
+
+        /// <summary>
         /// Creates a builder allowing to initialize an immutable descriptor.
         /// </summary>
         /// <typeparam name="TContext">The event context type.</typeparam>
@@ -64,6 +70,7 @@ namespace OpenIddict.Validation
             private ServiceDescriptor _descriptor;
             private readonly List<Type> _filterTypes = new List<Type>();
             private int _order;
+            private OpenIddictValidationHandlerType _type;
 
             /// <summary>
             /// Adds the type of a handler filter to the filters list.
@@ -132,6 +139,23 @@ namespace OpenIddict.Validation
             }
 
             /// <summary>
+            /// Sets the type associated to the handler.
+            /// </summary>
+            /// <param name="type">The handler type.</param>
+            /// <returns>The builder instance, so that calls can be easily chained.</returns>
+            public Builder<TContext> SetType(OpenIddictValidationHandlerType type)
+            {
+                if (!Enum.IsDefined(typeof(OpenIddictValidationHandlerType), type))
+                {
+                    throw new InvalidEnumArgumentException(nameof(type), (int) type, typeof(OpenIddictValidationHandlerType));
+                }
+
+                _type = type;
+
+                return this;
+            }
+
+            /// <summary>
             /// Configures the descriptor to use the specified inline handler.
             /// </summary>
             /// <param name="handler">The handler instance.</param>
@@ -192,7 +216,8 @@ namespace OpenIddict.Validation
                 ContextType = typeof(TContext),
                 FilterTypes = _filterTypes.ToImmutableArray(),
                 Order = _order,
-                ServiceDescriptor = _descriptor ?? throw new InvalidOperationException("No service descriptor was set.")
+                ServiceDescriptor = _descriptor ?? throw new InvalidOperationException("No service descriptor was set."),
+                Type = _type
             };
         }
     }
